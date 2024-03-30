@@ -1,0 +1,3525 @@
+﻿This file includes only a short list of the changes between Media Player Classic - BE's versions.
+
+1.6.11 - 2023-12-27
+=============================
+StreamReader
+Fixed opening HLS Live.
+
+MP4Splitter
+Fixed player crash on some incorrect MP4 files.
+
+MpaDecFilter.
+Memory leak fixed.
+
+MPCVideoDec
+Fixed freezing on some H.264 streams when playing WTV.
+
+Subtitles
+Improved support for RealMedia subtitles. Developments from the MPC-HC project were used.
+Additional information in the external subtitle file name should only be after the dot symbol.
+
+YouTube
+Improved work with yt-dlp.
+If the built-in Youtube parser was unable to receive links, then an attempt will be made to use yt-dlp.
+
+Player
+Added the ability to change the "Move window by the video area" setting using a hotkey.
+If the "Show milliseconds" setting is active (Status), then milliseconds will be recorded in the screenshot file name.
+The separator for "Track Priority" is now only a space.
+Added the ability to copy paths of history entries to the clipboard.
+Fixed copying MediaInfo data to the clipboard.
+Fixed the operation of the "On Top > While Playing..." setting when the player window is hidden by another window.
+Added extension .kar in group of formats MIDI.
+
+Installer
+MPC Video Renderer 0.7.1 is included in the installer.
+
+Updated Japanese translation (by tsubasanouta).
+Updated Spanish translation (by IPeluchito).
+Updated German translation (by Klaus1189).
+Updated Italian translation (by mapi68).
+Updated Turkish translation (by cmhrky).
+Updated Romanian translation (by AndreiMiloiu).
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Hungarian translation (by mickey).
+Updated Ukrainian translation (by arestarh).
+Updated Korean translation (by Hackjjang).
+Updated Dutch and Chinese (Traditional) translation (by beter).
+Updated French translation (by rhahgleuhargh).
+
+Updated libraries:
+	ffmpeg git-n6.2-dev-567-gf5f414d9c4;
+	Little-CMS git-lcms2.16-8-gf1060e7;
+	MediaInfo git-v23.11-26-gd6ee71845;
+	nanosvg git-706eb06;
+	rapidjson git-v1.1.0-745-g6089180e;
+	ZenLib git-v0.4.41-7-g1250d32.
+
+
+1.6.10 - 2023-10-07
+=============================
+Various fixes to reduce the likelihood of memory leaks and improve stability.
+The COPYING.txt file has been renamed to LICENSE.txt.
+
+AudioSplitter
+Added support for multiple ARTIST tags for FLAC.
+
+MP4Splitter
+Added support for the "default" flag for subtitles.
+
+MpaDecFilter
+Added support for the "Intel Music Coder" codec.
+Fixed decoding of 24-bit "Monkey's Audio" (FFmpeg updated).
+
+MPCVideoDec
+Added support for the "Intel H.263" codec.
+
+VideoRenderers
+Fixed hang when using post-resize pixel shaders in SyncRenderer.
+
+Subtitles
+Improved support for WebVTT subtitles. Developments from the MPC-HC project were used.
+
+YouTube
+Added support for downloading subtitle tracks for YouTube videos.
+
+Player
+Added a Gamma shader with a value of 1.3 which makes the image slightly lighter.
+The work of the playlist command "Remove missing files" has been fixed.
+Fixed loading of inappropriate external audio files.
+The "Delete to Recycle bin" command will not work for .ifo, .bdmv and .mpls files.
+Fixed opening of some Cue Sheet (.cue) files.
+Fixed Drag'n'Drop from browsers.
+Speeded up work with large playlists.
+Added the ability to specify the full path to "ffmpeg.exe". Added search for "ffmpeg.exe" in "App Paths".
+The dialog for saving files has been redesigned.
+
+Installer
+The files for "H.264 MVC 3D Decoder" are now included in the installer.
+
+Updated Korean translation (by Hackjjang).
+Updated Romanian translation (by AndreiMiloiu).
+Updated Hungarian translation (by mickey).
+Updated German translation (by Klaus1189).
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Turkish translation (by cmhrky).
+Updated Italian translation (by mapi68).
+Updated Dutch and Chinese (Traditional) translation (by beter).
+
+Updated libraries:
+	dav1d git-1.3.0-3-g47107e3;
+	ffmpeg git-n6.1-dev-2279-g5d98259841;
+	MediaInfo git-v23.10-2-g0530bf162;
+	zlib 1.3.
+
+
+1.6.9 - 2023-08-16
+=============================
+FLVSplitter
+Added support for HEVC, VP9, AV1 in "Enhanced flv".
+
+MPCVideoDec
+Added export of Dolby Vision metadata via the IMediaSideData interface.
+Fixed D3D11 copyback hardware decoding on some Intel graphics cards.
+Fixed output format selection when decoding some 10-bit HEVC.
+
+YouTube
+Improved support for YouTube in the built-in parser.
+
+Player
+Checking for updates will not be performed if the player is launched with files open.
+
+Installer
+Added the ability to install "MPC Video Renderer 0.6.9".
+
+Updated Korean translation (by Hackjjang).
+
+Updated libraries:
+	dav1d git-1.2.1-46-ge58afe4;
+	ffmpeg git-n6.1-dev-1778-g0e9956a06e;
+	Little-CMS git-lcms2.15-72-g6cabbce;
+	MediaInfo git-v23.07-14-g993216d0d;
+	ZenLib git-v0.4.41-5-g36c8e41;
+	Detours git-v4.0.1-109-g4b8c659;
+	rapidjson git-v1.1.0-737-g956063db.
+
+
+1.6.8.5 - 2023-07-05
+=============================
+MPegSplitter
+Fixed detection of SMPTE 302M audio tracks.
+
+MatroskaSplitter
+Fixed navigation for MKA/WebM audio files. Always use index list.
+
+YouTube
+Fixed navigation for VP9+Opus clips.
+Fixed opening of some Live broadcasts on YouTube.
+
+
+1.6.8 - 2023-07-01
+=============================
+ShoutcastSource
+Optimized work with the internal buffer.
+
+StreamReader
+Improved HLS M3U8 parsing.
+
+MpegSplitter
+Fixed playback of some MPEG-PS.
+
+MP4Splitter
+Improved PCM audio support.
+Fixed getting track language.
+
+MatroskaSplitter
+Use the index list only if there is a video track.
+
+MpaDecFilter
+Optimized work with the internal buffer.
+
+MPCVideoDec
+Fixed playback for WMV3.
+Added support for "Dxtory" codec.
+
+Subtitles
+Removed broken subtitle download from Online Subtitle Database.
+Improved display of subtitles with a large font size.
+
+YouTube
+Fixed selection of the preferred audio track language for the built-in YouTube parser for MP4 720p and MP4 360p formats. When there are several languages, only DASH streams will be used.
+Updated yt-dlp support.
+Added support for links like "youtube.com/live/".
+
+Player
+Added the ability to choose the location of the playlist window in the playlist menu.
+The playlist is now on the right side by default.
+Fixed and accelerated the return of screenshots when using the Web-interface.
+Added option "Display title for URL in recent files".
+Added the ability to edit a playlist item by pressing the F2 button.
+In the shader selection and editing windows, DX11 will initially be selected if MPC VR is selected in the settings and Windows 8 or later is used.
+Added the ability to view the MediaInfo report for connected external audio tracks.
+Increased maximum OSD font size to 40.
+Added step 0.05 to change playback speed.
+
+Updated Dutch and Chinese (Traditional) translation (by beter).
+Updated Japanese translation (by tsubasanouta).
+Updated German translation (by Klaus1189).
+Updated Hungarian translation (by mickey).
+Updated Turkish translation (by cmhrky).
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Italian translation (by mapi68).
+Updated Korean translation (by Hackjjang and Potmarigold).
+Updated Ukrainian translation (by arestarh).
+Updated Spanish translation (by IPeluchito).
+
+Updated libraries:
+	dav1d git-1.2.1-8-g8b419c1;
+	ffmpeg git-n6.1-dev-1426-g96d6990517;
+	Little-CMS git-lcms2.15-64-gbbf77c6;
+	MediaInfo git-v23.06-4-gbeaba12f3;
+	ZenLib git-v0.4.41-2-g4f10e1b.
+
+
+1.6.7 - 2023-05-05
+=============================
+Windows Vista is no longer supported.
+
+Splitters
+Added identify of Atmos in EAC3 and TrueHD, as well as DTS:X and DTS:X IMAX in audio tracks.
+
+MpaSplitter
+Avoid accidental connection to .wtv files (Windows Television).
+
+Mp4Splitter
+Fixed a rare crash when working with DASH streams.
+File navigation has been optimized.
+
+MPegSplitter
+Fixed audio track detection for some HLS streams.
+
+MPCVideoDec
+Fixed playback for VC-1.
+
+AudioSwitcher
+Added "For audio with whisper and explosion parts" preset for FFmpeg filters.
+Added the ability to connect to the "Resampler DMO" system filter.
+
+MPCAudioRenderer
+Fixed a crash when outputting to 24bit and changing the playback speed.
+
+VideoRenderers
+Removed support for PowerStrip and "Sync display to video" mode for Sync Renderer.
+EVR-CP and Sync Renderer now show the exact value of the display refresh rate.
+The "10-bit RGB output" option now only works for the corresponding display mode.
+
+Subtitles
+Fixed style change for simple text subtitles (SubRip, etc.).
+Added the ability to turn off subtitles through "Default track preference".
+Added loading of subtitles from subfolder ".\Subs\FILENAME_WITHOUT_EXT\".
+
+YouTube
+Added the ability to choose in advance only sound in the built-in parser.
+Added support for links "youtube.com/@".
+Fixed support for new versions of yt-dlp.
+Added choice of the preferred language of the audio track.
+Fixed getting metadata.
+
+Player
+Added display of a single audio track in the OSD when trying to switch to the next or previous one.
+Added display of audio track number in OSD.
+The history window no longer blocks interaction with the main player window.
+Fixed launching bookmarks from the menu.
+Improved opening of URLs requiring authorization.
+Fixed saving path to external subtitle file in history.
+Added "Skip invalid elements" option to the playlist.
+Speed up opening and navigation for URLs with redirect.
+Various interface fixes.
+
+Installer
+Added the ability to install "MPC Video Renderer 0.6.7".
+
+Updated German translation (by Klaus1189).
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Korean translation (by Hackjjang and Potmarigold).
+Updated Hungarian translation (by mickey).
+Updated Turkish translation (by cmhrky).
+Updated Ukrainian translation (by arestarh).
+Updated Italian translation (by mapi68).
+Updated Spanish translation (by IPeluchito).
+Updated Dutch and Chinese (Traditional) translation (by beter).
+Updated Japanese translation (by tsubasanouta).
+
+Updated libraries:
+	dav1d git-1.1.0-33-g922bd82;
+	ffmpeg git-n6.1-dev-518-ge3143703e9;
+	Little-CMS git-lcms2.15-44-g2dec684;
+	MediaInfo git-v23.04-gdd350156;
+	zlib 1.2.13;
+	rapidjson git-v1.1.0-727-g949c771b.
+
+
+1.6.6 - 2023-02-10
+=============================
+MPCStreamReader
+Added support for URL redirection for HLS.
+Improved work with some broadcasts.
+
+AudioSplitter
+Fixed playback of initial samples of FLAC files.
+
+MpaDecFilter
+Fixed decoding of some TrueHD streams.
+Improved support for bitstreaming when changing device.
+
+FLVSplitter
+Improved HEVC video support.
+
+MpegSplitter
+Fixed time navigation for 3D Blu-ray.
+Added option "Support 3D MVC Extension".
+
+MPCVideoDec
+Fixed decoding of some MPEG-4 ASP.
+
+MpcAudioRenderer
+Fixed audio dropout when changing speed at the end of playback.
+
+VideoRenderers
+Refactoring and optimization.
+EVR-CP can now be used as a preview renderer.
+Fixed output of some Stereo 3D subtitles for EVR-CP.
+Added ability to convert Stereo3D from Half OverUnder to Interlace for MPC Video Renderer 0.6.4.1986 (393835e) or newer.
+An experimental MPCVRFullscreenControl option is now available from the player interface.
+
+Subtitles
+Improved parsing of polygon parameters in SSA/ASS subtitles.
+Minor rendering optimizations for PGS/DVB subtitles.
+Fixed player crash on some corrupted subtitles.
+
+YouTube
+Significantly increased the speed of saving videos from YouTube.
+Significantly increased the speed of the built-in Source Filters with YouTube.
+
+Player
+Added option to select preview renderer.
+Fixed placement of a vertically stretched frame in the preview window.
+Additional tracks will no longer appear in the list of recent Windows files.
+Reduced the chance of false positives when moving a window by the video area.
+Added saving the current position after a 5 second pause.
+Added the ability to change the maximum number of entries in the history.
+Various interface fixes.
+
+Installer
+Added the ability to install "MPC Video Renderer 0.6.5".
+
+Updated Korean translation (by Potmarigold and Hackjjang).
+Updated Italian translation (by mapi68).
+Updated Hungarian translation (by mickey).
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Turkish translation (by cmhrky).
+Updated German translation (by Klaus1189).
+Updated Dutch and Chinese (Traditional) translation (by beter).
+Updated Spanish translation (by IPeluchito).
+
+Updated libraries:
+	dav1d git-1.0.0-112-g77b3955;
+	ffmpeg git-n5.2-dev-2245-gab8cde6efa;
+	Little-CMS git-lcms2.14-44-ge71aeb6;
+	MediaInfo git-v22.12-17-gaa0dc68a2;
+	nanosvg git-9da543e.
+
+
+1.6.5.3 - 2022-11-14
+=============================
+Fixed crash when playing AVS3 video on CPU without AVX instructions.
+
+
+1.6.5 - 2022-11-11
+=============================
+Splitters
+Fixed reading images from ID3v2 tags.
+
+MPCStreamReader
+The filter will not connect to completed broadcasts.
+
+MpaSplitter
+Added support for multiple ID3 tags at the beginning of a file or stream.
+
+OggSplitter
+Added update of metadata while playing radio broadcasts.
+
+MpegSplitter
+Unsupported G.722.1 audio tracks for Hikvision (IMKH) camera files will be ignored.
+Added support for AVS3 video codec.
+
+MatroskaSplitter
+Fixed a crash on some MKVs.
+Added support for AVS3 video codec.
+
+MP4Splitter
+Added support for MP4 with multiple headers.
+
+RawVideoSplitter
+Added support for color range and color location for YUV4MPEG2.
+
+MPCVideoDec
+Fixed output media type properties for RAW video when MPC Video Converter is used.
+Fixed angle switching for Stereo 3D.
+Added support for AVS3 video decoding.
+
+Player
+Added the ability to specify "User agent". The default is "Mozilla/5.0".
+Fixed blinking of the preview window.
+Fixed remembering history when opening BD ISO.
+The display of the list of player translations has been optimized.
+Fixed player operation in case of impossibility to change the playback speed.
+Added the ability to temporarily disable (and re-enable) the preview window for the current file by clicking the middle mouse button.
+The function to add all files from a folder now ignores playlists.
+Fixed decoding error for some JPEG files.
+Fixed update of the "Information" panel for Ogg radio.
+Fixed detection of file extensions for URLs.
+Optimized CD/DVD presence detection for some drives.
+Fixed playback from the webcam after resetting the settings.
+Various interface fixes.
+
+Updated Hungarian translation (by mickey).
+Updated Turkish translation (by cmhrky).
+Updated German translation (by Klaus1189).
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Dutch and Chinese (Traditional) translation (by beter).
+Updated Japanese translation.
+Updated Italian translation (by mapi68).
+
+Updated libraries:
+	ffmpeg git-n5.2-dev-1381-g65f96a965a;
+	Little-CMS git-lcms2.14rc1-3-g496293a;
+	MediaInfo git-v22.09-8-gb4863b677.
+
+
+1.6.4 - 2022-09-07
+=============================
+MPCStreamReader (MPC UDP/HTTP Reader)
+Added support for HLS Live.
+
+MPegSplitter
+Fixed playback of VOB files with an incorrect empty block at the beginning.
+Faster navigation for Blu-ray files, added support for keyframes.
+Optimized calculation of unknown frame rate.
+
+MpcDvdVideoDecoder (Mpeg2DecFilter)
+Removed option to read aspect ratio from video stream. This option is not required when playing DVD-Video.
+
+MPCVideoDec
+Implemented correct output of YUV 4:2:0 and 4:2:2 formats when odd sizes are specified for the video stream.
+Improved operation of D3D11 Copy Back and NVDEC decoders in some situations.
+Added support for MEDIASUBTYPE_av01.
+
+VideoRenderers
+Сolor management now works for 10-bit surfaces as well.
+
+Subtitles
+Subtitle delay is now applied on pause.
+Fixed display of symbols in some external fonts.
+
+Youtube and other online services
+Fixed work with yt-dlp on some sites.
+Use "ffmpeg.exe" to merge individual video and audio files obtained using the "Save As" command.
+Disable SSL certificate verification in yt-dlp.
+Improved support for online playlists.
+
+Player
+Fixed display of text with "&" symbols in the "Information" panel.
+Fixed LAV Splitter freezing when watching some Live broadcasts.
+Fixed detection of "dxva2cb" mode when using LAV Video Decoder.
+Fixed player crash during frame-by-frame navigation at the end of playback.
+
+Installer
+Compiling the installer requires InnoSetup 6.1.0 or later.
+Updated installer translation files.
+Added the ability to install "MPC Video Renderer 0.6.3".
+Added the ability to offline install previously downloaded components.
+
+Updated German translation (by Klaus1189).
+Updated Turkish translation (by cmhrky).
+Updated Spanish translation (by pruebaz).
+Updated Catalan translation (by pruebaz).
+Updated Japanese translation.
+Added Croatian translation.
+
+Updated libraries:
+	dav1d git-1.0.0-45-ga029d68;
+	ffmpeg git-n5.2-dev-506-g5c217119c8;
+	Little-CMS git-lcms2.13.1-70-gf3f6b7b;
+	MediaInfo git-v22.06-34-g90e59c5ed;
+	ZenLib git-v0.4.39-12-gde2787a;
+	nanosvg git-bd16c4e.
+
+
+1.6.3 - 2022-06-15
+=============================
+MpaSplitter
+Fixed working with online streams.
+Improved support for embedded images.
+
+AudioSplitter
+Improved FLAC playback via HTTP.
+Fixed APE Tag reading in some situations.
+
+MP4Splitter
+Fixed playing files with tracks with negative delay.
+Improved work with PCM audio.
+Fixed opening of some corrupted files.
+
+MatroskaSplitter
+Fixed aspect ratio setting for VFW codecs.
+
+MpaDecFilter
+Added support for AAC 22.2 audio decoding with automatic mixing in 7.1.
+Added support for ATRAC9.
+Fixed "stereodownmix" setting.
+
+MPCVideoDec
+Fixed D3D11 decoder in some situations.
+Added support for Intel D3D11 hardware acceleration for HEVC 4:2:0 12bit, 4:2:2 10/12bit, 4:4:4 8/10/12bit decoding.
+Fixed support for AV1 hardware decoding in D3D11 Copy-Back and NVDEC modes.
+
+VideoRenderers
+Fixed frame rotating for SyncVR.
+Removed PS 2.x shader support for EVR-CP and SyncVR.
+
+Subtitles
+Added support for outputting subtitles in DirectX 11 mode. Used together with MPC Video Renderer 0.6.0.1896 or later.
+Various subtitle output optimizations in DirectX 9 mode.
+Fixed positioning of subtitles in MicroDVD format.
+
+Youtube
+Added support for links "youtube.com/clip/", "youtube.com/c/.../live" and "youtube.com/channel/.../live".
+
+Player
+Added option "Use Window Media Controls". It is disabled by default.
+Added shaders to convert stereo 3D to red-cyan anaglyph for Direct3D9.
+Added the ability to set the color of the program window title on Windows 11.
+Fixed EVR-CP bug with "Failed to RegisterClass" error for the case when playback is forced to end after the first frame.
+Fixed remembering the starting window size for some situations.
+Moving a window outside the video area now also works for a maximized window.
+Deleting from history also removes entries from the list of recent files in the taskbar.
+Added the ability to open local files with a long path (more than 260 characters).
+Fixed saving position in history when shutting down Windows.
+Improved blocking the computer from going to sleep.
+Added the ability to use DVD bookmarks with a position on another computer.
+Added extension .ec3 in group of formats AC-3.
+Miscellaneous fixes.
+
+Updated Turkish translation (by cmhrky).
+Updated German translation (by Klaus1189).
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Ukrainian translation (by arestarh).
+Updated Japanese translation.
+Updated Dutch and Chinese (Traditional) translation (by beter).
+Updated Hungarian translation (by mickey).
+Updated Spanish translation (by IPeluchito).
+
+Updated libraries:
+	dav1d git-1.0.0;
+	Detours git-v4.0.1-97-g66d6f2d;
+	ffmpeg git-n5.1-dev-1440-gaa0829d834;
+	libflac git-1.3.3-93-ga2fe43f6;
+	Little-CMS git-lcms2.13.1-23-gab22640;
+	MediaInfo git-v22.03-g6d3271df;
+	openjpeg git-v2.4.0-89-g6a29f5a9;
+	rapidjson git-v1.1.0-685-ge4bde977;
+	zlib 1.2.12;
+	nanosvg git-3bcdf2f.
+
+
+1.6.1 - 2022-01-30
+=============================
+Removed MPC RealVideo Decoder and MPC RealAudio Decoder.
+
+MPCVideoDec
+Added the ability to select a graphics adapter for the D3D11 copy back decoder.
+Fixed AV1 video decoding.
+
+Subtitles
+Removed "&lrm;" code display for some subtitles.
+Fixed drawing of an opaque frame.
+
+Player
+Added the ability to store the settings file in the user profile.
+Added the ability to call the recent files menu, history windows and shader selection windows by pressing a key.
+Miscellaneous fixes.
+
+MPCBEShellExt (explorer extension)
+Fixed operation of "Open files using" command.
+
+Updated German translation (by Klaus1189).
+Updated Portuguese (Brazil) translation (by Siegfried Janke).
+Updated Dutch and Chinese (Traditional) translation (by beter).
+Updated Turkish translation (by cmhrky).
+Updated Hungarian translation (by mickey).
+Updated Ukrainian translation (by arestarh1986).
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Japanese translation.
+
+Updated libraries:
+	dav1d git-0.9.2-85-g633c63e;
+	ffmpeg git-n5.1-dev-188-gdcc9454ab9;
+	Little-CMS git-lcms2.13rc1-6-ge090fcf;
+	MediaInfo git-v21.09-72-ge481a58e7.
+
+
+1.6.0 - 2021-12-27
+=============================
+MP4Splitter
+Extended support for PCM audio ('ipcm').
+The analysis of the average bitrate of audio tracks has been removed. This will speed up the opening of some files.
+Improved support for files with tracks with offset timestamps.
+Changed the format of the output pins and the list of audio tracks in the player.
+Fixed distortion of frame proportions when using the 'pasp' atom in some cases.
+
+OggSplitter
+Fixed reading of metadata in some files.
+
+MpegSplitter
+Fixed MPEG Audio track detection.
+
+AudioSplitter
+Added support for Cue Sheet inside 'TXXX' tag.
+
+RealMediaDecoders
+Fixed work of the RealAudio decoder.
+Removed compilation of x64 decoders. Decoders didn't work because there is no RealMedia library for x64.
+
+MPCVideoDec
+Eliminated high load on the system with frequent navigation on H.264 and MPEG-2 videos when using the D3D11 decoder.
+The MVC decoder information is now available through the IExFilterConfig interface.
+Added support for "copy-back" mode for D3D11 decoder.
+Added support for NVDEC decoder for NVIDIA video cards.
+Added support for output in YUV444P16 format ('Y3[0][16]').
+Fixed output format setting for some codecs.
+
+AudioSwitcher
+Optimized auto volume control code.
+Added audio processing with "compand" audio filter (included in FFmpeg).
+Added dithering when outputting to Int16, if the sound was of higher bit depth before.
+
+MpcAudioRenderer
+Fixed freezing at the end of playback in some cases.
+Corrected sample format selection for WASAPI Shared mode when "Windows Sonic for Headphones" is active in Windows 10.
+Reduced size of MpcAudioRenderer.ax.
+Added dithering when outputting to Int16, if the sound was of higher bit depth before.
+Added reset button.
+
+VideoRenderers
+EVR-CP and Sync Renderer no longer require d3dx9_43.dll to render statistics text.
+Removed the ability to disable desktop composition (Aero) on Windows 7.
+Uses more correct locking of D3DDevice from different threads for EVR-CP.
+
+Subtitles
+Texture size 2560x1600 changed to 2560x1440.
+
+Youtube
+Improved retrieval of video metadata.
+Added error output for videos with restrictions.
+Added recognition of links like "youtube.com/shorts/".
+For videos VP9 and AV1 with a frame size of 360p or less, select the lowest audio quality so that the audio bitrate is no more than the video bitrate.
+Added sorting of formats when opening via youtube_dl.
+Fixed slow playback of some links.
+Subtitle support has been improved.
+Added support for yt-dlp and other analogs of youtube-dl. In the settings you can specify the name of the executable file or the full path. Added search for an executable file in the system registry in the "App Paths" branches. Fixed search for an executable file in folders specified in the system PATH variable.
+
+Player
+Reworked saving of many settings. The values of these settings will not be inherited when upgrading from older versions of the player.
+The history of open files and URLs is now saved in the history.mpc_lst file. Added a window for viewing history.
+Bookmarks are now saved in the favorites.mpc_lst file.
+Statistics information is now updated after navigation when playback is paused.
+Fixed DVD-Video playback with built-in filters.
+Open file/URL dialog now automatically removes enclosing quotes from given paths.
+Fixed shift and enlargement of the main window when hovering over the cover of the audio file displayed above the taskbar.
+Added the command "Add to playlist from clipboard" (Ctrl+V).
+Removed "Disable desktop effects (Aero)" option.
+The ability to call the properties of the active video renderer in the "Video" settings panel during playback has been implemented.
+Fixed working with Blu-ray playlists and chapters.
+Added support for System Media Transport Controls.
+The values of 33% and 67% for the option "After starting playback, fit window to screen" are now interpreted as 1/3 and 2/3.
+Added visual separation of external and internal subtitles in the subtitle menu for VSFilter.
+Fixed crash when outputting a scrollbar in exclusive mode with unknown duration.
+Other minor fixes and internal optimizations.
+
+MPCBEShellExt (explorer extension)
+Improved operation for users with limited rights.
+
+Updated Chinese (Simplified) translation (by wushantao).
+Updated German translation (by Klaus1189).
+Updated Hungarian translation (by mickey).
+Updated Dutch and Chinese (Traditional) translation (by beter).
+Updated Turkish translation (by cmhrky).
+Updated Portuguese (Brazil) translation (by Siegfried Janke).
+Updated Japanese translation.
+Updated Ukrainian translation (by arestarh1986).
+
+Updated libraries:
+	dav1d git-0.9.2-69-g396122d;
+	Detours git-v4.0.1-96-g45a76a3;
+	ffmpeg git-n4.5-dev-2772-g6c45d34e50;
+	libflac git-1.3.3-85-gb358381a;
+	libpng git-v1.6.37-36-ga37d48365;
+	Little-CMS git-2.12-39-gc07b7e3;
+	MediaInfo git-v21.09-16-g6ce198a2;
+	nanosvg git-ccdb199;
+	rapidjson git-v1.1.0-665-g00dbcf2c.
+
+
+1.5.8 - 2021-06-26
+=============================
+ShoutcastSource
+Added decoding of HTML codes like "&#NNNN;" in the title of the track.
+
+UDPReader
+Added decoding of HTML codes like "&#NNNN;" in the title of the track for Shoutcast and Icecast radio.
+
+AudioSplitter
+Improved work with DFF, DSF, DTD-HD and WAV.
+Fixed opening of some WAV files.
+
+MpcAudioRenderer
+Fixed playing of very short files.
+
+Subtitles
+Fixed display of external subtitles during playback after pressing "Stop".
+
+Youtube
+Updated support for opening videos and playlists.
+Fixed getting metadata.
+
+Player
+Added option "Move window by the video area".
+Added the "Remove missing files" command to the playlist menu.
+Fixed sorting in the "Explorer" playlist.
+Added and icons for display in the "tiles" of the Start menu.
+Fixed switching display mode in some cases.
+Fixed navigation when alternating step-by-step movement and movement for a specific time.
+Redesigned the "Frame synchronization" settings panel.
+Expanded the ability to play DVD-Video with region restrictions on drives with the same restriction.
+
+Updated German translation (by Klaus1189).
+Updated Hungarian translation (by mickey).
+Updated Turkish translation (by cmhrky).
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Ukrainian translation (by arestarh1986).
+Updated Chinese (Traditional) and Dutch translation (by beter).
+
+Updated libraries:
+	dav1d git-0.9.0-24-gddbbfde;
+	Detours git-v4.0.1-92-gfe7216c;
+	ffmpeg git-n4.5-dev-1109-g604924a069;
+	Little-CMS git-2.12-17-g79e8395;
+	MediaInfo git-v21.03-14-gee8c3c17;
+	Speex-1.2.0-25-g870ff84;
+	rapidjson git-v1.1.0-630-gb557259f;
+	ZenLib git-v0.4.39-g13b9d3db.
+
+
+1.5.7 - 2021-04-15
+=============================
+VSFilter is excluded from the project.
+
+AviSplitter
+Added support for 'MPNG' (PNG) codec.
+
+MP4Splitter
+Added support for 'MPNG' (PNG) codec.
+Added support for SpeedHQ codec.
+Added support for shifting tracks in time using the 'elst' atom.
+Added the ability to get a list of keyframes from the 'sbgp' atom.
+
+MatroskaSplitter
+Added support for 'MPNG' (PNG) codec.
+
+MPCVideoDec
+Improved AV1 multi-threaded decoding with dav1d library.
+Improved Apple ProRes support ('ap4h', 'ap4x').
+Added support for SpeedHQ codec.
+Added support for hardware decoding using Direct3D 11.
+Added support for AV1 hardware decoding.
+Added support for switching video streams of different formats, taking into account the presence or absence of hardware decoding.
+Improved support for MPEG-2 4:2:0.
+Fixed color distortion of VideoTransferMatrix BT2020 for EVR on Intel Iris Xe.
+
+Video renderers
+Improved display mode switching for interlaced files when using MPC Video Renderer.
+
+Subtitles
+Added support for MEDIASUBTYPE_WEBVTT.
+
+Youtube
+Added caching of signature decoding functions.
+Added ability to select "MP4-AV1" format as preferred format.
+Added support for AV1 10-bit HDR.
+Improved support for getting a list of chapters.
+
+Player
+Some parameters of the standard subtitle style can now be set to non-integer values.
+Fixed display of volume control in dark theme when using mouse.
+Added error message when opening DVD / Blu-ray folder in the status bar.
+Fixed X-mouse buttons working in full screen mode.
+Fixed display of the '&' symbol in the playlist.
+Added time display on scroll bar in exclusive full screen.
+Fixed display of the '&' symbol in the playlist.
+Added time display on seek bar in exclusive full screen.
+Improved player in an exclusive full screen MPC VR and madVR.
+Added the ability to open a file from the playlist in the explorer.
+Added display of tooltip for GPU icon.
+Added a button to call the properties window of some video renderers.
+Expanded functionality to add similar files.
+Various improvements in the player interface.
+
+Installer
+Removing the player no longer removes the external filter settings.
+
+Updated Japanese translation.
+Updated Portuguese (Brazil) translation (by Siegfried Janke).
+Updated German translation (by Klaus1189).
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Hungarian translation (by mickey).
+Updated Turkish translation (by cmhrky).
+Updated Chinese (Traditional) and Dutch translation (by beter).
+
+Updated libraries:
+	dav1d git-0.8.2-0-gf06148e;
+	Detours git-v4.0.1-87-g827b896;
+	ffmpeg git-n4.4-dev-3576-gab5803553b;
+	libflac git-1.3.3-70-g27c61570;
+	Little-CMS git-2.12-1-gab54114;
+	MediaInfo git-v20.09-125-gfb708c13;
+	openjpeg git-v2.4.0-16-g0bda7188;
+	rapidjson git-v1.1.0-588-g13dfc96c;
+	ZenLib git-v0.4.38-37-gd0c6f5b.
+
+
+1.5.6 - 2021-02-02
+=============================
+Splitters
+Improved work over the HTTP protocol.
+Removed MPC FLAC Source filter.
+Ignore corrupted 'APIC' and '\0PIC' tags in ID3v2.
+
+UDP/HTTP Reader
+Added support for ShoutCast.
+Added support for streams with content-type "video/mpeg".
+
+VTSReader
+Fixed getting the list of chapters.
+
+AudioSplitter
+Added support for chapters for WAV format.
+Added support for FLAC format.
+Added basic support for AIFF format.
+
+AviSplitter
+Added support for AV1 video.
+Improved compatibility with some external H.264 video decoders.
+
+DVRSplitter
+Added support for Chinese KKmoon CCTV camera file format.
+
+RawVideoSplitter
+Added support for AV1 OBU files.
+
+MatroskaSplitter
+Fixed playback of some VFW type videos.
+Fixed reading HDR data for VP9.
+Added support for the "ProjectionPoseRoll" element, in which the frame rotation angle is recorded.
+
+MP4Splitter
+Added pixel format detection for DNxHD.
+Fixed playing files from "edit list".
+Fixed getting frame sizes and aspect ratios for some MOV files.
+Fixed opening files with empty 'ctts' atom.
+Fixed bitrate detection for some audio tracks.
+
+MpaDecFilter
+Fixed encoding in AC-3. Added check for SPDIF output at 44100 Hz.
+
+MPCVideoDec
+Improved AV1 multithreading decoding.
+The DXVA2 decoder will only connect for compatible media types.
+
+AudioSwitcher
+Fixed turning off the mixer when not required.
+
+MpcAudioRenderer
+Fixed playback of DVD-Video with no sound in the menu.
+
+Video renderers
+Fixed display of HLG for EVR-CP.
+Fixed showing the first frame in some situations for EVR-CP.
+Minor optimization of EVR-CP and Sync.
+Removed support for VMR-7 ("System default") and VMR-9.
+
+Subtitles
+Fixed flickering of some subtitles.
+
+Youtube
+User pages like https://www.youtube.com/c/ are now parsed as playlists.
+Added check for the availability of the received link.
+Fixed opening of various links.
+Improved YouTube format selection menu.
+Added the ability to open only the audio track for a YouTube video.
+
+Player
+WIC is now used for imaging instead of GDI +.
+Fixed saving thumbnails for video files whose video tracks are noticeably shorter than audio tracks.
+External interface change files (toolbar.png, gpu.png, flybar.png) can now only be in PNG format.
+Added the ability to upload logo and covers in HEIF and WebP format.
+Reduce the size of large images when viewed in the "Logo" settings panel.
+The window size limits the size of the desktop when the player is started and at the beginning of playback.
+Fixed leaking GDI objects when using a playlist.
+Reworked mouse settings. Added the "Mouse" settings panel.
+Added the ability to set the Ctrl, Shift and "Right button" modifiers for some mouse actions.
+The "Previous" and "Next" control buttons are supplemented with the "Previous file" and "Next file" actions when the right mouse button is pressed.
+Optimized primary rendering of the main window for Windows 7, 8, 8.1.
+Fixed the state of the "GPU" indicator after closing a file.
+Optimized rendering of playlist items.
+Added "Repeat A-B" functionality.
+Added the ability to assign a hotkey to open a folder.
+Working with settings has been slightly optimized.
+Optimized text output in the "Information", "Statistics" fields and the status line.
+Improved OSD functionality when displaying permanent messages.
+Fixed various issues for exclusive full screen.
+Optimized Seek Bar output for an exclusive full screen.
+Added the ability to assign a hotkey for calling the "After playback" menu.
+Improved work on multiple displays and different DPI systems.
+Rotation and Flip commands have been added to the "Pan & Scan" submenu.
+Added the ability to add all media files in a folder when adding one file.
+Toolbar, flybar, taskbar buttons and other graphics are now in SVG format (thanks to Ivan Shatsky). Improved display of interface elements on large Windows scales. Added the ability to load external toolbar.svg and flybar.svg.
+Fixed display of chapters in the search bar for some DVD-Videos.
+Various fixes in the player interface.
+
+Installer
+Added path to the player to the "App Paths" registry key.
+
+Shell Extension
+Fixed freeze when opening files from qBittorrent.
+
+Updated Ukrainian translation (by arestarh1986).
+Updated German translation (by Klaus1189).
+Updated Hungarian translation (by mickey).
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Turkish translation (by cmhrky).
+Updated Chinese (Traditional) and Dutch translation (by beter).
+Updated Greek translation (by George).
+Updated Portuguese (Brazil) translation (by SIEGFRIED JANKE).
+Updated Polish translation (by maxoku).
+
+Updated libraries:
+	dav1d git-0.8.1-17-gb12229c;
+	ffmpeg git-n4.4-dev-2373-ga7f9b3b954;
+	Little-CMS git-2.11-42-g7dcc91f;
+	MediaInfo git-v20.09-66-gacf041ac;
+	openjpeg git-v2.3.1-59-g0f169867;
+	ZenLib git-v0.4.38-25-g11a96d5.
+
+
+1.5.5 - 2020-08-23
+=============================
+Windows 10 SDK version 10.0.17763.0 is now required to build in Visual Studio 2017.
+
+AudioSplitter
+Added support for DSD streams in WavPack (.wv) files.
+Added support for MusePack 7/8.
+
+FLVSplitter
+Fixed playback of files with incorrect indexes.
+
+MpegSplitter
+Added definition of AC-4 audio streams to be ignored.
+Added support for SMPTE 302M AES3 audio streams.
+Improved 3D Blu-ray support.
+Added information about MPEG-2 streams with separate fields in the output pin.
+
+MP4Splitter
+Added support for "AV1 Codec Configuration Box".
+Added support for TSC2 codec (TechSmith Camtasia).
+Fixed reading of parameters for some tracks in AAC format.
+Expanded support for tracks in AC-3 format.
+Added support for UtVideo.
+Added additional language codes.
+Fixed playing of some PCM tracks.
+
+MatroskaSplitter
+Added support for files with atypical block locations in the segment.
+A language code has been added to the track language name if the initials of the code differ from the name.
+Removed "Video N" label for named video tracks.
+Fixed crash when opening files with HEVC video and empty CodecPrivate block.
+Added support for "AV1 Codec Configuration Box".
+Improved search for the desired block.
+
+MPCVideoDec
+Added support for "AV1 Codec Configuration Box".
+Changed the calculation of the number of threads for multithreaded decoding.
+Fixed connection to Smart Tee Filter output.
+Fixed the name of the "Deinterlacing" setting to "Scan Type".
+Added support for UtVideo Pro with UQY0 code.
+Fixed order of output formats for PNG48.
+Improved DXVA decoder creation error handling.
+Improved support for Motion-JPEG streams after webcams.
+Fixed support for some older H.264 videos.
+DXVA decoder is no longer used for MPEG-2 streams with separate fields on AMD video cards.
+
+AudioSwitcher
+Fixed support for playback speed when applying delay.
+Added check for supported output formats.
+
+MpcAudioRenderer
+Added the ability to select a way to work with data "Event" or "Push".
+Fixed initialization of Shared mode for Windows Sonic.
+Added option "Don't fill channels when upmixing".
+
+VideoRenderers
+Added support for PostScale shaders for MPC Video Renderer.
+Added support for "ps_4_0" (Direct3D11) shaders for MPC Video Renderer.
+Fixed memory leaks when using Direct3D9.
+Fixed bug with creating EVR-CP when using Flip/FlipEx mode when the main window is minimized.
+Removed special priority YV12 over NV12 for Intel graphics cards.
+Added support for "lessRedraws" command for MPC Video Renderer.
+Added the ability to get the displayed image for MPC Video Renderer.
+Fixed resetting the frame state on pause for the case of rotation by 180 degrees and frame reflection.
+Fixed frame rotation on pause for madVR.
+Disabled support for exclusive full screen for SyncRenderer.
+Fixed work of menus and commands for active video renderer.
+
+Subtitles
+Improved support for Teletext subtitles.
+Added basic support for TTML (Timed Text Markup Language) subtitles.
+Fixed missing subtitles when setting a delay and using XySubFilter.
+
+Youtube
+Updated Youtube support.
+Expanded support for streams in the AV1 format.
+The player no longer uses the Google API.
+Added the ability to open some pages like https://www.youtube.com/user/ and https://www.youtube.com/channel/ as a playlist.
+Added selection of possible formats when the video is opened with youtube-dl.
+Added support for chapters.
+Added the ability to open a Youtube playlist when pasting from the clipboard.
+Fixed loading of some playlists.
+Added information about the duration of the playlist items.
+
+Player
+Added the command "Copy Image to Clipboard".
+Fixed saving image with some subtitles.
+PnS maximum scale increased from 3x to 5x.
+Fixed moving when scaling.
+Frame shift is limited to 0.1..0.9 range so that the frame does not disappear from view at all.
+Fixed auto-hide cursor when moving from one file to another.
+Added the ability to manually associate the .avs (AviSynth script) and .vpy (VapourSynth script) extensions.
+Fixed opening DVD-Video from the command line.
+Various shader changes in the Shaders folder.
+Added shaders "ps_4_0" (Direct3D11) to the Shaders11 folder.
+Added support for DX11 shaders in the "Shader Combiner" window.
+Minor changes to the Web interface.
+Returned the ability to rename items in the playlist.
+Removed the limitation of adding dubbing only for local files.
+Fixed work of the playlist with the "Shuffle" setting.
+The "Shuffle" setting is now available for the "Explorer" playlist.
+Optimized control panel and logo rendering.
+System registration of a file extension filter now has no special priority over system registration of a filter by signature (check bytes).
+Improved player control when playlist is active.
+Added filtering of the list of hotkeys.
+Added setting "Do not reset speed for session".
+Fixed issues when switching between playlists.
+When the player crashes, a .stacktrace.txt file will be created in addition to MiniDump.
+Fixed window size after exiting full screen mode on monitors with different DPI.
+The "Remember playlist" setting now works only for the main playlist and has been renamed to "Remember main playlist".
+Fixed sorting in the subtitle download dialog, now according to "Default track preference".
+Fixed incorrect display of control panel tips over video in some situations.
+Fixed incorrect handling of pressing the left mouse button in the main window in some situations.
+Added the ability to enable displaying milliseconds in the status bar during the session.
+Fixed rendering of the playlist.
+Pressing the "Alt + Key" key combination in the playlist is now transferred to the main window.
+Fixed URL opening inside M3U files.
+Fixed opening too long URLs (more than 2000 characters).
+Increased the width of the thumbnail image to 5120.
+Improved MPC Video Renderer support.
+Fixed opening of some types of local playlists.
+Added support for MBSE MultiChannel ASIO Renderer.
+The specified delay is applied when saving and copying subtitles to the clipboard.
+Morgan Stream Switcher and RatDVD are no longer supported.
+Added the ability to disable the display of the current frame in the Web interface.
+Fixed debugging of external filters with the release version of the player.
+Fixed the skipback and skipforward commands in the WEB interface.
+Removed unwanted dark frames on some system menus when using the dark menu in the player.
+Added support for pasting files and folders from the clipboard that were copied in Explorer.
+The limit for MPCPL playlists has been increased to 10 MB.
+Changed the way of setting the priority of tracks. Added support for quotes, "+" for multiple matches, and negation for Default and Forced.
+
+MPCBEShellExt (explorer extension)
+Added support for IDropTarget interface.
+
+Updated German translation (by Klaus1189).
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Turkish translation (by cmhrky).
+Updated Chinese (Traditional) and Dutch translation (by beter).
+Updated Ukrainian translation (by arestarh1986).
+Updated Hungarian translation (by mickey).
+Updated Greek translation (by George).
+Updated Japanese translation.
+
+Updated libraries:
+	dav1d git-0.7.1-14-g5fe20ec;
+	ffmpeg git-n4.4-dev-607-g1ead176d87;
+	libflac git-1.3.3-62-gce6dd6b5;
+	libogg git-v1.3.4-13-g0bbcba4;
+	libpng git-v1.6.37-16-g6dd99ca9c;
+	Little-CMS git-2.11-12-g29b0d79;
+	MediaInfo git-v20.08-g84d951c0;
+	rapidjson git-v1.1.0-549-g8f4c021f;
+	ZenLib git-v0.4.38-13-g54d2f0d.
+
+
+1.5.4 - 2019-12-27
+=============================
+Splitters
+Instead of the IBufferControl interface, the more universal IExFilterConfig interface is now used.
+
+ShoutcastSource
+Improved support for JSON metadata.
+
+Flacsource
+Added support for files with an unspecified number of samples.
+
+AudioSplitter
+Added support with ID3Tag for WavPack.
+
+RawVideoSplitter
+Fixed accidental connection to "MPEG-TS".
+
+RoQSplitter
+Fixed freezing when opening some files.
+
+OggSplitter
+Fixed errors when opening some files.
+
+FLVSplitter
+Added support for the KUX container.
+
+MpegSplitter
+Improved support for corrupted MPEG-PS.
+Fixed display of tracks for the current Blu-ray playlist (.mpls).
+
+MatroskaSplitter
+Added support for new font mime-types.
+Fixed crash on some corrupted files.
+
+MP4Splitter
+Extended support for DV Video.
+Fixed calculation of aspect ratio for some files.
+Improved support for Opus audio tracks.
+Fixed opening files with VC-1 video.
+Added support for TrueHD audio.
+Added support for covers in the 'covr' atom.
+
+MpaDecFilter
+Improved bitstream capability check.
+Improved DTS bitstream.
+Improved support for AAC HE v2.
+
+RoQVideoDecoder
+Removed output support for 'I420', 'IYUV', ARGB32, RGB565, RGB555.
+
+RealVideoDecoder
+Removed output support for 'I420' and 'IYUV'.
+
+Mpeg2decfilter
+Removed output support for 'I420' and 'IYUV'.
+The obsolete option "Enable planar YUV media types (NV12, YV12)" has been removed.
+
+MPCVideoDec
+Added media types to support DV Video.
+Fixed calculation of SAR video frame.
+Improved AV1 decoding.
+Implemented updating the output format in status after changing the settings.
+
+MPCVideoConverter
+Added support for 'b48r' video.
+
+MpcAudioRenderer
+Fixed playback of audio data with a time delay.
+Fixed DVD playback.
+The size of the internal buffer is now set depending on the buffer of the device. This improves playback on some audio devices.
+Improved switching between audio devices.
+Increased maximum playback speed to 16x.
+The device is now remembered not only by identifier, but also by name.
+If the Exclusive mode is unavailable, the Shared mode will be used.
+Improved support for Shared mode on Windows 10. Added support for virtual 7.1 speakers when activating the "Windows Sonic for Headphones" mode.
+Improved performance when resuming playback after a pause.
+
+EVR-CP
+Fixed interpolation of DXVA2 / DXVA-HD after reconstituting Direct3D9 device.
+Added ability to use Flip / FlipEx mode.
+Fixed display of the line "Processing" in statistics.
+Fixed display of the frame after stopping playback and subsequent navigation.
+Fixed overflow when calculating Diplay Aspect Ratio.
+
+Subtitles
+Fixed a high load on the CPU when displaying VobSub subtitles and the active option "Only forced".
+Improved support for PGS subtitles in incomplete .sup files.
+
+Youtube
+Updated support for Youtube.
+Added support for multi-channel (5.1) audio tracks.
+Added option "Select maximum frame rate or bit rate" when using youtube-dl.
+Added the ability to not use the available youtube-dl.
+
+Player
+Fixed the taskbar icon.
+Fixed auto-switching of display frequency for interlace.
+Removed the ability to launch files from the playlist using the "Space" key.
+Fixed display of tooltips in the playlist.
+Fixed background color of the search bar in the playlist.
+A playlist of type "Explorer" is no longer created by default, because it can slow down the start of the player.
+Pressing the middle mouse button is now redirected to the main window.
+At the beginning of playback, the player now sends a command to wake up the display or turn off the screen saver.
+Added "Refresh" command in the context menu of the playlist.
+Added support for MPC Video Renderer.
+Added support for subtitles from external audio files.
+After deleting the file in the trash in the playlist, the player will go to the next file.
+Added the ability to select multiple external audio tracks when opening a video file.
+Added forced closing of the filter properties window after closing the media file.
+Added the ability to select a priority filter for UDP streams.
+Adding subtitles by the Drag'n'drop method now works when the playlist is active.
+The playlist is now saved after each opening of the media file or link.
+The range of the option "Do not scale at small frame size decreases" is increased to 6.3%.
+Added setting "Auto-hide the pointer during playback in windowed mode".
+Added "Window size" settings panel.
+Improved subtitle update after changes in an external editor.
+Improved support for loading .m3u(hls) playlists with audio tracks in separate streams.
+Added command line parameter "/ clipboard".
+Added option "Go to the next on error" in the playlist menu.
+Added option "Remember selected tracks in playlist".
+Added the ability to open magnet links and .torrent files with TorrServer.
+Added ability to specify AceStream and TorrServer addresses.
+Improved functionality for adding similar files.
+Redesigned the video renderer selection option. Added information about installed but inaccessible renderers.
+Added "Network timeout" setting for URL checking.
+Added the ability to paste paths from the clipboard into the playlist using Ctrl+V.
+The transfer of the "Shaders" folder from the player’s folder to the user profile has been fixed.
+Improved calculation of the speed of saving online streams.
+Fixed navigation on folder shortcuts in the file open dialog.
+Added the command "Copy filter list to clipboard".
+Paths in the "Recent files" are no longer checked before displaying the menu. The path to DVD-Video now points to the VIDEO_TS.IFO file. The path to the BD now points to the index.bdmv file or the selected * .mpls.
+Added option "Do not show 000xx.mpls shorter than N min."
+The "Open Disc" command can now open "DVD-Audio". If the disc is mixed, "DVD-Video" will open.
+Improved dark menu.
+Added error message about opening file in OSD.
+The OSD font size range has been increased to 8...26 (it was 10...25).
+Fixed selection of displays for full-screen playback.
+Fixed OSD font size when using Windows scaling.
+Added saving display state of system time and file name.
+
+Updated Russian translation.
+Updated German translation (by Klaus1189).
+Updated Ukrainian translation (by arestarh1986).
+Updated Japanese translation.
+Updated Chinese (Simplified) translation (by wushantao).
+Updated Chinese (Traditional) and Dutch translation (by beter).
+Updated Turkish translation (by cmhrky).
+Updated Hungarian translation (by mickey).
+
+Updated libraries:
+	dav1d git-0.5.1-1-g07dab8c;
+	ffmpeg git-n4.3-dev-1770-g547b0c61af;
+	Little-CMS git-lcms2.9-43-g9a30662;
+	libflac git-1.3.3-44-gb02e1593;
+	MediaInfo git-v19.09-34-gfa8cba8f;
+	openjpeg git-v2.3.1-24-gac373737;
+	rapidjson git-v1.1.0-508-gd67a69a9;
+	ZenLib git-v0.4.37-50-gfef7392.
+
+
+1.5.3 - 2019-04-01
+=============================
+ShoutcastSource
+Added support for metadata written in json format.
+
+Oggsplitter
+Improved chapter support.
+Fixed playback of very small files.
+
+Flvsplitter
+Added support for Xunlei XV files.
+
+MpegSplitter
+Added support for mixed H.264 3D MVC streams.
+The initial size of the read data for local files is increased to 60 megabytes if there is a HEVC stream in the PMT.
+Added support for MPEG-PS with mu-law streams.
+Improved navigation on files with corrupted blocks.
+
+MP4Splitter
+Added support for the 'r210' video codec for MOV files.
+Added support for trimming the frame (atom 'clap').
+Added support for MP4 dash files, with separate segments for each track.
+Added support for Avid DNxHR video ('AVdh').
+Added color space support (atom 'colr').
+Added support for HDR Light Level (atom 'clli').
+Added support for HDR metadata (atom 'mdcv').
+
+DVRSplitter
+Added full support for DAV (DHAV) files.
+
+MpaDecFilter
+Always decode DTS Express streams to PCM.
+Improved DTS-HD HRA bitstream compatibility.
+Improved TrueHD+Atmos bitstream.
+Added MLP bitstream.
+
+Mpeg2DecFilter
+Changed the format of the brightness, contrast, hue and saturation.
+The filter built into the player is now only connected for DVD-Video. In other cases, for MPEG-1 and MPEG-2 MPCVideoDec will be connected.
+
+MPCVideoDec
+Removed option "H264 deblocking disable method".
+Added option "Skip B-frames".
+Corrected row order when converting RGR to RGB32.
+Added support for AVrp codec (Avid 1: 1 10-bit RGB Packer).
+Improved support for getting color space from the upstream filter.
+Added support for the HuffYUV MT codec ('HYMT').
+Added patch, any I-frame in the H.264 stream is defined as a keyframe. This speeds up navigation on some files.
+Added support for "Mirillis FIC" video ('FICV').
+Updated Intel MVC decoder.
+Accelerated decoding AV1. Now dav1d v0.2.0 library is used.
+Added support for Avid DNxHR video ('AVdh').
+
+MPCVideoConverter
+Added support for 'Y1 [0] [16]' (16-bit gray).
+Removed direct support for planar RGB48, now planar RGB are supported only through MEDIASUBTYPE_LAV_RAWVIDEO.
+
+MpcAudioRenderer
+Fixed status display during bitstream and audio track switching in the player.
+The buffer size is calculated more correctly when the DTS-HD is used.
+The option "Do not check format support" has been expanded.
+
+EVR-CP
+Changed the mechanism and synchronization settings.
+Improved the quality of screenshots of anamorphic frames.
+Correction shaders are also used when creating screenshots and thumbnails.
+
+Subtitles
+The size of very large subtitles is limited, otherwise they are incorrectly displayed.
+
+Youtube
+Updated support for Youtube.
+Correct the output of unsupported characters.
+Improved work with youtube-dl.
+Improved work with live broadcasts.
+
+Player
+Fixed FlyBar when choosing Hebrew translation.
+Improved definition of the choice of the main video when opening a Blu-Ray structure.
+Added the ability to assign a hotkey to the "Open Iso image" command.
+Improved automatic display mode switching. When the display is turned off, the settings are not lost.
+The page "variables.html" of the web-interface has been improved.
+Playlist now supports dark theme. Improved playlist rendering at high DPI.
+Fixed the operation of the button for resetting the list of media types for filters loaded on the file path (not registered in the system).
+Fixed the "Exclusive fullscreen" option when switching via "FlyBar".
+Added "dark" menu.
+Fixed the calculation of the window size when the "Limit window proportions on resize" option is active and the active playlist stuck to the left or right.
+Added the ability to increase the font size in the playlist.
+Added a command to get MediaInfo data in the playlist menu.
+Improved shuffle algorithm.
+The AC3 / DTS format group and the DTS / AC3 ​​filter group are divided into the AC3 and DTS / DTS-HD groups.
+Added support for ".dtsma", ".eac3" and ".weba" extensions.
+The ability to save up to 1000 bookmarks for media files is returned.
+Added support for the option "Allow Windows to fix blur in applications", which appeared in Windows 10.
+Settings item "Null (compressed)" renamed to "Null (any)".
+Implemented getting the disk name from the file "BDMV\META\DL\bdmt_eng.xml".
+Increased buffer size for open file dialog.
+Added the ability to use multiple playlists. Added new "Explorer" playlist type.
+Added the ability to search in the playlist.
+Added support for BMP format for audio covers.
+
+Updated libraries:
+	ffmpeg git-n4.2-dev-1150-g391f884675;
+	dav1d git-0.2.1-12-gbd12b1e;
+	libflac git-1.3.2-98-g421961f0;
+	libpng git-v1.6.36-805-g8439534da;
+	Little-CMS git-lcms2.9-29-gb5b36cd;
+	MediaInfo git-v18.12-100-ga0d9b962;
+	rapidjson git-v1.1.0-461-gbfdcf491;
+	ZenLib git-v0.4.37-34-g641e243.
+
+
+1.5.2 - 2018-10-29
+==============================
+Build in Visual Studio 2015 is no longer supported.
+
+VTSReader
+Fixed crash on some DVD-Audio with empty Title.
+
+UDP / HTTP Reader
+Added the ability to connect to streams with "Content-Type: None", this is found on some IPTV broadcasts.
+
+DTSAC3Source
+Added support for files with AC3 core + EAC3 dependent streams.
+
+Splitters
+Improved work with bad ID3m2 tags, added support for reading Extended header.
+Corrected extradata filling for H.264 and HEVC.
+Improved recovery of access to the playing file (after reconnecting the flash drive, network drive, etc.).
+Improved compatibility with StreamBuffRe.
+Added MPC DVR Splitter to work with recordings of some Chinese DVR / IP cameras ('HXVS').
+Improved support for chapters and images in ID3v2 tags.
+Optimized data reading.
+Maximum buffer size increased to 15 seconds. This should solve the problem with DVD-drives, in which the rotation speed increases with a large delay.
+
+MPEGSplitter
+Improved support for DVD-Audio.
+Improved support for online streams.
+Fixed playback of some MPEG-TS streams.
+Fixed time search of some MPEG-PS streams.
+Improved reading PSI (Program-specific information).
+Added support for displaying multiple languages in track titles (this is found in subtitles).
+Improved support for DTS-HD.
+Added support for files with AC3 core + EAC3 dependent streams.
+Fixed crash when opening "incomplete" Blu-ray structure.
+Added support for MPEG-4 ASP.
+Corrected settings window for large scales.
+The opening time of some files with AVC and HEVC streams has been reduced.
+
+MP4Splitter
+Improved support for Vorbis streams.
+Fixed a crash when opening DASH files with timestamps of the first segment starting from a value greater than zero.
+Fixed time search of fragmented (dash) files by non-indexes.
+Added support for "Vidvox Hap" video.
+Fixed crash when opening some MP4 files.
+Improved VP8 support.
+Added support for Opus in MP4.
+Added support for MPEG Audio Layer 2.
+Added support for AV1.
+
+MatroskaSplitter
+Added support for "ROTATE" and "ROTATION" parameters.
+Improved time search for incomplete files.
+Corrected bitrate display for AC3 and DTS tracks.
+Fixed crash when opening files with more than one video track.
+Added support for AV1.
+Extended support for E-AC3 tracks.
+Corrected work with the proportions and cropping video frame.
+Fixed splitter statistics (iBufferInfo).
+Optimized reading of the nearest subtitles after time search if there are data in the CueRelativePosition and CueDuration.
+
+FLVSplitter
+Added support for tags in UTF-8 format, added support for the "author" tag.
+
+Oggsplitter
+Fixed opening files if timestamps do not start from scratch.
+Added support for reading comments for FLAC tracks, added support for tags "CUESHEET" and "METADATA_BLOCK_PICTURE".
+Improved playback of live broadcasts and recordings.
+Fixed time search. Previously it worked incorrectly and could cause a discrepancy between audio and video.
+
+BinkSplitter
+Fixed calculation of timestamps for audio tracks.
+
+RawVideoSplitter
+Added support for IVF files ('DKIF').
+Extended support for RAW MPEG4 files (DivX5 and others).
+
+MpaSplitter
+Fixed opening of some small files.
+
+Audiosplitter
+Added support for ID3v2 in the header of APE files.
+Updated ID3v2 support in WAV files.
+
+MpaDecFilter
+Fixed 16bit BD LPCM decoding.
+Added support for PCM A-law and mu-law decoding.
+Remaked and fixed E-AC3 transmission over the bitstream via HDMI.
+Processing time stamps has been remaked, which should make playback of some formats (for example, RealAudio) more even.
+Added support for decoding DVD-Audio with two groups of channels whose frequency or bitdeph is different.
+Improved TrueHD bitstreaming.
+
+MPCVideoDec
+Fixed output of an inverted RGB image when working with VSFilter.
+If YUV video parameters are not specified, then set BT.601 or BT.709 based on the resolution for more correct conversion to RGB.
+Fixed playback of H.264 streams with a high ReFrames value.
+The frame size for the "Vertical stereo pair" mode has been adjusted.
+Now the flag on the type of interlace and color space of the parent filter (container) has a higher priority.
+Added support for RGBP16, which gives Avisynth+ together with FFVideoSource.
+Improved stream compatibility check with hardware decoding.
+Added the ability to hardware video decoding with a resolution of 720x1280 for older versions of Intel HD.
+Removed support for DXVA2_VP9_VLD_Intel mode.
+Added support for video "Vidvox Hap".
+Extended UtVideo support.
+Improved support for VC-1, MPEG-1/2, MPEG-4.
+The decoder now receives additional information from internal splitters.
+Added support for FMP4 codec (a kind of MPEG-4).
+Added support for AOMedia Video 1 (AV1).
+Fixed a hang after stopping when decoding 3D MVC and output via madVR.
+Fixed ffvhuff decoder.
+Fixed artifacts when time search H.264 video on AMD video adapters.
+Various changes in the HEVC decoder.
+
+AudioSwitcher
+Fixed incorrect display of the name of the tracks in some cases.
+Fixed 8-bit mono sound playback.
+Added the ability to adjust the level of the center and surround channel.
+
+MpcAudioRenderer
+Fixed 24bit output when changing playback speed.
+Improved changing settings and output devices during playback.
+Added stereo crossfeed function (for headphones). The bs2b library is used with parameters 700 Hz, 6 dB.
+Completely rewritten synchronization method. Now the audio renderer controls the clock itself.
+The "UseWasapi" option has been renamed to "DeviceMode".
+Now the default mode is WASAPI Shared, as the most user-friendly.
+Redesigned status window. Added the ability to translate.
+Added device buffer setting. Available values are "Default" (which gives the driver), 50 and 100 ms.
+
+EVR Custom Presenter
+Fixed using NominalRange for input video stream.
+By default, we use the shader method "PS: Simple averaging" to reduce the frame, and "PS: Catmull-Rom spline4" to increase the frame.
+Added indications for loading a GPU and using GPU Memory for Intel and AMD adapters.
+Added support for DXVA-HD interpolation (use only for Intel adapters).
+Added definition of "d3d11 native" modes (LAV Video) and Intel H.264 (MVC 3D).
+Removed support for "32-bit Floating Point" textures (D3DFMT_A32B32G32R32F). This does not give significant advantages compared to "16-bit Floating Point" (D3DFMT_A16B16G16R16F), but it causes various problems (performance drop, interface glitches, player crashes).
+Fixed the functionality of the options "Do not scale at small frame size increases/decreases" for an exclusive full screen.
+Fixed loading incorrect ICC profile for a non-primary display.
+Fixed detection of PS 2.0b shader support.
+Redesigned renderer statistics (Ctrl+J).
+
+Subtitles
+Fixed crash after incorrect result of CWord::Transform () functions.
+Fixed the "Position subtitles relative to video frame" option for text subtitles.
+Fixed missing or incorrect output of some effects while reducing images for text subtitles.
+Improved support for WebVTT subtitle format.
+Added support for LyRiCs format (.lrc).
+Files with a .txt extension are no longer identified as subtitled files.
+Correctly display external subtitles when changing playback speed.
+Fixed working with PGS subtitles. Now there is no need to allocate large buffers in splitters.
+Improved support for teletext subtitles.
+
+YouTube
+Improved work with the dashmpd list.
+Improved support for Youtube live stream.
+Ignore subtitles created automatically.
+Improved subtitle parser.
+Added automatic saving of external audio track if user saves video in DASH format.
+Added support for Youtube 1440p and 2160p live streams.
+Added support for 5K and 8K resolutions.
+Used by google api for parser playlists. This will allow you to download playlists with more than 200 items.
+Added support for youtube-dl. The file youtube-dl.exe should be located in the player folder or in the path specified in the variable "PATH".
+The "YouTube" settings panel has been renamed to "Online media services".
+Display the AV1 streams in the menu "Navigation->Jump To" if available.
+Fixed the name of the file to save after changing the resolution in the menu "Navigation->Jump To".
+Added support for 134 and 136 formats if 18 and 22 are missing.
+Fixed problems with subtitles after changing the quality of Youtube videos.
+
+Shaders
+Updated "grayscale.hlsl" shader.
+Added "treshold.hlsl" shader.
+Added "LumaSharpen.hlsl" shader (thanks to JNW).
+
+Installer
+Added handling of the case of unavailability of libmfxsw32/64.dll.zip in the temporary folder.
+Now the uninstaller can be signed with a digital signature.
+
+MPCBEShellExt
+Reduced size, no longer use MFC.
+
+Player
+Corrected file history saving.
+Fixed the "Apply" button in the settings.
+Fixed link to uICE website.
+Fixed inactivity of the subtitle selection button for some DVD-Video.
+Fixed the size of the external filter settings windows.
+Improve the playlist. The "Sort by Name" command has been fixed. Added "Reverse Sort".
+The list of MPCAPI_COMMAND is synchronized with the project MPC-HC. Incorrectly working commands fixed, CMD_OPENFILE_DUB added. MPCTestAPI refactoring.
+Added support for horizontal roller or mouse buttons (Mouse Wheel Left/Right).
+Fixed crash when trying to view MediaInfo data on some matroska files.
+Added processing of the / open parameter without specifying the path, in which case the last memorized file will be opened.
+Adjust OSD output.
+Fixed reading of the "INDEX" field in the Cue sheet.
+Fixed incorrect exit from full-screen mode in some cases.
+Removed useless "EDL window" and related functionality.
+Fixed incorrect display of messages about the inconsistency of the version of language .dll in the absence of these most .dll
+Fixed deleting files from the playlist and moving several items.
+Fixed processing of subfolders with Drag'n'Drop.
+Improved search for similar files.
+The option "Fullscreen Direct3D" has been renamed to "Exclusive Full Screen".
+Added the ability to open .url and .website files (similar to .lnk).
+Display the main menu instead of the context menu, when the main menu is hidden.
+Hot keys of the main window now work with an active playlist (except those used in the playlist itself).
+Added the ability to open AceStream links (acestream://).
+Improved work with M3U playlists. Fixed saving M3U playlists, missing duration in the #EXTINF field.
+Added the command "After playback: always close the file".
+Fixed a crash when you click "Previous" and the option "After playback-> Play next in the folder (loop)".
+Corrected standard ranges for switching display mode.
+Fixed contrast adjustment on values close to the minimum on renderers like EVR on Nvidia cards (Nvidia bug).
+MPC Audio Renderer has been moved to the top of the list of audio renderers and now has the number 0.
+Added option to control the display of text in the scroll bar. Changed the text output control in the title bar.
+Added the ability to connect an Acon Digital Media EffectChainer filter.
+Correctly handle the case when the external LOGO file is missing.
+Changed the logic of the previous and next commands when opening the Bly-ray structure. Now it is used to navigate between playlists (if there are more than one).
+A version of the MSVC compiler has been added to the "About ..." window.
+The "Default Style" and "Forced only" options in the "Subtitles" menu are now always active, you can now change them before starting playback.
+The selection of audio tracks and subtitles has been moved from "Navigation" to "Playback".
+Added support for Drag'n'Drop text (UNICODE / ANSI). If the text contains online links or existing paths to files, then it will be opened (will get into the playlist). Ticket #333.
+Fixed incorrect display of selected menu items "Stereo 3D mode".
+Duplicate and non-working commands for selecting audio tracks and subtitles are removed from the web interface.
+Replace some emoji with other characters for Win7 and Win8.
+Added the ability to delete files from the playlist to the Trash.
+Redesigned work with bookmarks. Bookmarks are now saved in the "Favorites2" section. Fixed saving bookmarks for paths with the symbol ';'. Fixed saving DVD-Video bookmarks open from images
+Fixed tracking of changes in external subtitles.
+Corrected the order of moving the "Tab" key in different dialogs.
+Fixed the width of the menu of chapters, subtitles and audio tracks when re-calling for another media file.
+Fixed capturing video from a webcam when changing video format.
+Fixed construction of DirectShow graph when recording captured video.
+Do not use DMO-encoders and OGM splitter when capturing video.
+Removed the display of the playlist from the menu "Navigate->Jump to".
+Fixed minimum height restriction for attachable windows.
+Many dockable windows now change the translation language without rebooting.
+Adjust the display frequency with an exclusive full mode on Windows 8 and higher.
+Added command line parameter "/randomize". Ticket #366.
+The .nut extension has been added to the "Other" video format group.
+Changed the display of Fourcc with non-standard characters.
+
+Updated Chinese (Traditional and Simplified), Japanese and Dutch translation (by beter).
+Updated German translation (by Klaus1189).
+Updated Ukrainian translation (by arestarh1986).
+
+Updated libraries:
+	ffmpeg git-n4.1-dev-1425-g7a6d88ee62;
+	libaom git-v1.0.0-748-g8048e8c0b;
+	libflac git-1.3.2-84-g452a4477;
+	libpng git-v1.6.35-29-ga54a0562c;
+	Little-CMS git-lcms2.9-23-g768f70c;
+	MediaInfo git-v18.08.1-15-gb3540b07;
+	openjpeg git-v2.3.0-9-gd9f8f7ba;
+	rapidjson git-v1.1.0-415-g73063f50;
+	Speex-1.2.0-6-g0c02121;
+	soxr git-0.1.3-0-g945b592;
+	ZenLib git-v0.4.37-23-g4255a20;
+	ResizableLib v1.5.1.
+
+
+1.5.1 - 2017-10-10
+==============================
+Requires an SSE2 capable CPU.
+Added archives with .pdb files, which are necessary for developers to work with dumps. Users do not need to download .pdb files.
+
+DTSAC3Source
+Added the ability to open TrueHD raw files (the duration may not be detected correctly).
+
+Splitters
+Added support for reading chapters from ID3v2 tags.
+Added the ability to open links with a user name and password (http: // user: pass @ url).
+Added the ability to transmit information about interlaced mode for MOV, MKV and YUV4MPEG2.
+
+AudioSplitter
+Added support for DST streams (Digital Stream Transfer).
+
+AviSplitter
+Expanded support for video MagicYUV format.
+More correctly determine the delta frames for Xvid and DivX 5 at rebuilding an index.
+
+MpegSplitter
+Improved work with AAC tracks.
+Improved support for teletext subtitles.
+Improved Blu-Ray rewind.
+
+FLVSplitter
+Improved opening of some files.
+Improved work with AAC tracks.
+Added support for reading meta-data.
+Use the list of key frames when rewinding.
+
+MP4Splitter
+Fixed rewind to the beginning on fragmented (DASH) files.
+Improved support of video in H. 264 format.
+Extended support video format MagicYUV.
+Improved support for DTS/DTS-HD, added support for DTS Express.
+Added support for forced flag for subtitles in tx3g.
+Fill the extradata of H. 264 and HEVC streams if it is not in the header.
+Added support for Apple ProRes 4444 XQ.
+Fixed opening of some old QT files.
+Added support for JPEG2000 video ID 'AVj2'.
+Added support for VP8 and VP9.
+
+MatroskaSplitter
+Improved detection of frame rate for MPEG-1 video.
+Fixed display of subtitles when rewinding on some files.
+Improved support for AC3.
+Added support for FFV1.
+Fill the extradata of H. 264 and HEVC streams if it is not in the header.
+Added support for reading and exporting additional HDR metadata.
+Improved support for WebVTT subtitles.
+
+RawVideoSplitter
+Added support for DAV format.
+
+MPCVideoDec
+Extended support for MagicYUV video.
+Fixed playback of streams VC-1 and MPEG2 with 3:2 pull-down flag.
+Fixed MPEG2 decoding in DXVA mode.
+Fixed synchronization after rewinding for MSDKDecoder.
+Added support GoToMeeting2 and GoToMeeting3.
+Added support for Apple ProRes 4444 XQ.
+Added support for retrieving and exporting additional HDR metadata.
+Automatically set unknown DXVA2_VideoTransferMatrix, do it more correctly than the system renderers.
+Improved support for Lagarith, Apple Prores, and FFV1.
+Fixed CFHD decoder.
+Fixed crash on some Apple ProRes.
+Added support for RGB48 output, which can make madVR. Disabled by default.
+Reduced memory usage for DXVA2 decoder.
+
+Mpeg2DecFilter
+Fixed crash on some DVDs.
+Fixed the scaling of setting window.
+
+MpaDecFilter
+Added support for decoding audio Based Music Codec (QDMC).
+Added support for decoding DST (Digital Stream Transfer).
+For the built-in decoder removed the format conversion sample.
+Improved working with AAC LATM.
+Added option to disable adjustment A/V sync.
+
+AudioSwitcher
+Audio delay now works in the SPDIF/HDMI passthrough.
+Fixed Bass Redirect for sound in Int24 format.
+The conversion of the sample format is added.
+
+MpcAudioRenderer
+Fixed loss of samples after pause.
+Added option "Release device when idle" for the exclusive mode after 3 seconds of inactivity. By default is off.
+
+VideoRenderers
+Fixed display of subtitles in stereo 3D.
+Fixed disable Aero option.
+Added P010 format for EVR-mixer.
+Added the ability to save the displayed frame (Shift+F5).
+Added HDR conversion in SDR.
+New interpolation methods have been added to reduce less than 50%.
+There have been marked methods for resizing the frame, which require the support of PixelShaders 3.0.
+Improved bug trail for Nvidia for video with a width of 1088 when using textures 16/32-bit floating.
+Considered the possibility of making UYVY input EVR-CP.
+Fixed problem with displaying YUV 4:2:2 (YUY2, UYVY) on Nvidia graphics cards (probably a bug of the driver).
+The texture format to "32-bit Floating Point" is marked as deprecated (generating a very large consumption of memory).
+Corrected explanations for video renderers.
+In statistics, the output information about the mode of operation of video decoders was changed, more detailed information was added for LAV Video Decoder.
+Added hack for correct setting of screen frequency for exclusive mode for Windows 8.1 and 10.
+
+DirectVobSubFilter
+Updated the black list of applications (the list is taken from MPC-HC).
+
+Subtitles
+Fixed crash on some animated subtitles.
+The mode "Only forced" now works with text subtitles.
+The command "Copy the displayed subtitles to the clipboard" is added.
+Send the information about the depth of 3D subtitles to the renderer.
+Automatic reopening of files with subtitles if they are changed.
+Optimizing the rendering of SSA / ASS subtitles.
+Correctly scale raster subtitles with transparency.
+
+YouTube
+Updated support for opening YouTube links.
+Added the ability to open links like www.youtube.com/embed/.
+Return support for opening video quality 240p.
+
+Player
+Various interface adjustments.
+Automatic insertion of links in the command "Open File/URL" is now optional.
+Improved work with CUE files.
+When you open the folder, we correctly ignore the playlists and clear the current one.
+Fixed reset settings (some settings might not reset).
+For the "Auto-zoom" option, the option "Auto fit (larger only)" is added.
+Fixed incorrect restore of the position and size of the window at startup, if the option "Tray icon" is turned on.
+In PinInfo for the parameter VIDEOINFOHEADER-> AvgTimePerFrame additionally show the equivalent FPS.
+Removed ability to upload subtitles on www.opensubtitles.org, which did not work.
+Changed the calculation of the window size when changing the scale for the case when the window does not fit on the screen.
+Improved hack for the "invisible borders" in Windows 10.
+Fixed positioning of the preview window.
+Fixed saving to playlist and bookmarks for BD, DVD and ISO.
+A complete overhaul of the Shader editor.
+Standard shaders are now available to all users.
+Fixed display of tooltips at large scale (DPI).
+Added saving thumbnails with captions.
+Added ability to open online playlists in different UTF encodings.
+Eliminated jitter of the frame width from the right side of the video area to ± 1 pixel when the window is changed and the option "Limit window proportions on resize" is on.
+Added support for opening UHD Blu-Ray.
+Increased maximum value of the history of open files to 100.
+Some settings transferred from "Audio" to "Sound processing" setting panel. Added option "Request stereo from the decoder".
+The optimization of resources.
+Added command "Jump to Beginning" (key "Home").
+Added remembering of the current item in the playlist.
+Remembering a position in a file now works not only for local files.
+Transfer the "Color Management" settings from the "Video" settings panel to the "Color Correction" settings panel.
+Improved HiDPI support.
+Added the ability to call the "Bookmarks" menu using the hotkey.
+The "Command Line Options" window has been changed.
+The framing mode can now only be saved from the "Video" settings panel. Changes to the mode from the menu only work for the current session. Added options "Do not scale at small frame size increases" and "Do not scale at small frame size decreases".
+The possibility of opening links "acestream://" is added.
+Added the ability to take the title from the playlist when the option "Replace file name with title".
+The scroll bar display title if it is missing then the file name.
+In the settings dialog "Keys", highlight the values that are duplicated.
+Added the ability to display the labels of the chapters for the light theme.
+Removed memorization of position for online broadcasts and sources with unknown duration.
+If possible, display the title instead of the link for YouTube and online links.
+Fixed saving of thumbnails when the thumbnail is larger than the original frame.
+Added mode "OverUnder" for stereo 3D output.
+Added the ability to get the displayed frame (command Shift+F5) for madVR v0.92.3.
+
+Updated Turkish translation (by cmhrky).
+Updated Japanese translation (by Socket774).
+Updated Ukrainian translation (by arestarh1986).
+Updated Chinese (Traditional and Simplified) and Dutch translation (by beter).
+Updated German translation (by Klaus1189).
+Updated Basque translation (by Azpidatziak).
+
+Updated libraries:
+	ffmpeg git-n3.4-dev-2207-geea64ef4cf;
+	libflac git-1.3.2-63-gf7cd466c;
+	libpng git-v1.6.31beta04-5-gcd3721018;
+	Little-CMS git-lcms2.8-96-gaeaaa78;
+	MediaInfo git-v0.7.99-2-g19ec4c30;
+	openjpeg git-v2.2.0-102-g28094e1e;
+	Speex-1.2.0-1-gcae5026;
+	rapidjson git-v1.1.0-242-g4c0f0036;
+	ZenLib git-v0.4.36-10-g6f187cb;
+	zlib 1.2.11.
+
+
+1.5.0 - 2016-12-05
+==============================
+Windows XP is no longer supported.
+Build in Visual Studio 2013 is no longer supported.
+Instead d3dcompiler_43.dll now used d3dcompiler_47.dll.
+
+CHTTPAsync
+Increased connection timeout of 10 seconds, removed timeouts when reading data.
+Improved work with some streams.
+
+UDPReader
+Added processing of type "video/unknown" for better compatibility with livestreamer.
+
+CDDAReader
+Added option on / off read text data (CD-TEXT).
+
+Splitters
+Added splitter for Bink Video.
+Removed extra check on extension, where a sufficient check on the signature.
+
+AudioSplitter
+Improved work on the HTTP Protocol.
+Added ID3V2 support for WAV files.
+Fixed opening WAV files with odd-size data region.
+
+MpaSplitter
+Improved work on the HTTP Protocol.
+Added support for reading ApeTag in MP3 files.
+Ignored IFF files (ANIM).
+
+RawVideoSplitter
+Added support for opening HTTP and stdin streams.
+Added simplified support H. 264 RAW, recorded with DVR Polyvision PVDR, LTV-DVR and others.
+
+MpegSplitter
+Fixed artifacts when playing 3D Blu-ray.
+
+MP4Splitter
+Added support for reading the names of the chapters in UTF16 format.
+Improved support for Dash files.
+Added support of RAW video 'b64a'.
+Fixed crash on some files.
+Fixed opening some files with an index that does not start from the beginning of data.
+Added experimental support for FLAC MP4.
+
+MatroskaSplitter
+Added support for reading tag "3d-plane" and export properties "stereo_subtitle_offset_ids".
+Added parsing and export Colour Format и SMPTE 2086(HDR) mastering data.
+
+Muxers
+Updated code of muxers (thanks to project MPC-HC).
+
+MPCVideoDec
+Removed DXVA1 decoder.
+Added support Ut Video 'UQY2', 'ULH0', 'ULH2', 'UQRG' and 'UQRA'.
+Improved display information about the input format in the status.
+Added support of RAW video 'b64a'.
+Added support for MPEG2 streams without I-frames.
+Fixed crash when converting a NV12->YUY2.
+Added decoder of H. 264 MVC 3D Intel Media SDK (with support for hardware decoding on Intel adapters).
+Added the ability to output stereo 3D in different modes.
+Pass custom DXVA2_ExtendedFormat to upstream filter.
+Optimize convert YUV to RGB (thanks to project LAV Filters). Fixed convert YCgCo to RGB.
+More appropriately define the pixel format at the beginning of playback for JPEG2000, FFV1, Motion-JPEG.
+To support decoding of 4k on Intel graphics (Ivy Bridge and newer) it is now necessary to install the driver-pack is not below v15.33.32.4061.
+To support decoding of 4k on AMD now driver must be installed not lower than v16.9.1.
+Bypass the bug in the function IDrect3D9::GetAdapterIdentifier(), seen on the Win8.1 and Win10.
+Fixed conversion 12 bit YUV 444 -> RGB.
+Added support for VP9 DXVA 10-bit Profile 2.
+
+AudioSwitcher
+Fill in the LFE channel when converting from 2.0 to 5.1/7.1.
+Added option to redirect bass from the front channels into the LFE.
+Added the ability to use CyberLink TimeStretch Filter (PDVD10).
+
+MpcAudioRenderer
+Updated list of supported formats when changing devices.
+Fixed a deadlock in some situations.
+Added support for output in "real" 32bit.
+Use avresample library instead  swresample.
+To change the frequency of the sound using the SoXR library.
+Added SSE2 optimizations for functions changing sample format.
+
+VideoRenderers
+Removed support for VMR-7 (windowed and renderless), VMR-9 (renderless).
+Videorenderer now report more detailed the name of the renderer.
+Pre-compile all interpolation shaders.
+Use a two pass interpolation shaders.
+Added method of interpolation Lanczos2 and Lanczos3, deleted Perlin Smootherstep.
+In statistics, added displaying the frequency of the GPU and video memory consumption.
+The maximum number of EVR buffers reduced to 30.
+Fixed display YCgCo-live at EVR (custom presenter) and Sync Renderer.
+Added the ability to convert the vertical anamorphic stereo pair mode to interleaving of rows.
+Removed rotations along the axes X and Y. Axis Z is pivoted in 90 degree increments.
+Added "flip horizontal" command.
+Fixed the playback in full screen on secondary display after switching with new Windows SDK.
+Added independent option for running interpolation if you reduce below 50%.
+Set the BackBuffer size sufficient for display on all connected displays. Now the option "Reinitialize when changing the monitor" is off by default.
+Fixed incorrect display YUV in full range Nvidia graphics cards (helps depending on driver settings).
+Fixed hardware decoding HEVC 8bit on a Radeon RX4xx.
+Fixed EVR (custom presenter) when switching the display at a higher resolution.
+
+Subtitles
+When displaying a stereoscopic subtitle added to the effect of "three-dimensionality".
+Added support for color range (TV/PC).
+For PGS/DVB subtitles added support for color information (BT.601/BT.709, TV/PC).
+Optimized handling of animated subtitles.
+Fixed switching VobSub subtitles with multiple indexes.
+
+Youtube
+Fixed opening live-links (broadcasts in real time, the hls format).
+In the menu "Navigate->Jump to" add list of available formats of Youtube.
+Changed the way the choice of format and resolution of YouTube videos.
+Fixed detection of file name extensions for the links received.
+Added ability to open Youtube playlists with Drag'n'drop.
+When saving the Youtube links, add a suffix video resolution (720p/1080p etc).
+Added support for WebM VP9 10bit.
+
+Player
+Corrected the calculation of the minimum window size.
+The maximum number of chapters increased to 300.
+AssFilterMod blocked due to incorrect operation.
+Added the ability to change channels on the analog TB-tuner buttons Previous and Next.
+Added display of number and frequency of the channel analog TB-tuner switching when you run and exit from a pause or stop.
+Added option to select the priority of the filters for http/https protocols.
+Use high-quality Resizer images when creating thumbnails (the original code - http://www.geisswerks.com/ryan/FAQS/resize.html).
+Added window while saving thumbnails. Now this process can be interrupted.
+Added the ability to save some HTTP and UDP streams.
+Reduced number of re-connections when opening http/https links.
+Do not reset the setting to English translation, if the translation file is not available.
+Fixed memorization of the analog capture device in "Capture" settings window.
+Display the type of audio codecs (ACM) in the capture window.
+Fixed a crash when changing the settings for the capture.
+Added extension .mk3d in group of formats Matroska.
+Improved support .asx playlists.
+Added ability to open "links" of local files beginning with "file://"
+Restored "DVD Menu Activate" key.
+Remember the current display status for remaining time in OSD.
+The minimum number of recent files is reduced to 5.
+Added commands "Previous" and "Next" for controlling via touchscreen.
+Fixed saving some numeric settings with simultaneous completion and closing the settings panel.
+Fixed switching to full screen by pressing the button in the preview on the taskbar.
+Adjustment of the description of command line parameters.
+Added commands to switch the output mode to stereo 3D.
+Added support for turning off the computer followed by a quick power-up. (Windows 8/10).
+Allow you to view and change the settings in the submenu "Frame" without running video.
+Improved work with bookmarks, memorizing the position in the file/DVD, added remembering of the current audio track and subtitles.
+It changed the method of storage of the latest files and DVD data.
+Changed command IDs "Subtitle Delay -", "Subtitle Delay +", "After Playback: Do Nothing", "After Playback: Play next in the folder" for compatibility with third-party utilities.
+In the settings panel "External filters" stands more and more media types.
+
+MPCBEShellExt
+Fixed a bug when the system does not open attached links in Explorer.
+
+Updated Ukrainian translation (by arestarh1986).
+Updated Chinese (Traditional and Simplified) and Dutch translation (by beter).
+Updated German translation (by Klaus1189).
+Updated Japanese translation (by Socket774).
+Updated Polish translation (by Volfield).
+Updated Greek translation (by Lampros Zouloumis).
+
+Updated libraries:
+	ffmpeg git-n3.3-dev-485-g42ae9c6;
+	jsoncpp git-1.7.7-2-ga1db52b;
+	libflac git-1.3.1-223-g55fba7e;
+	libpng git-v1.6.27beta01-2-gd65a92b;
+	Little-CMS git-lcms2.8-27-g5d91cf4;
+	MediaInfo git-v0.7.90-72-ge8ae8f6;
+	openjpeg 2.1.2 git-7113c4e;
+	soxr git-0.1.2-22-g5fa7eeb;
+	ZenLib git-v0.4.33-50-g586a518.
+
+
+1.4.6 - 2016-06-13
+==============================
+Splitters and source filters
+Added support for multiline tags in ID3v2.
+Fixed reading ID3v2.4 tags.
+Built-in filters sources can now work with HTTP / HTTPS independently.
+
+ShoutcastSource
+Fixed playback MPEG Version 2 Layer 3 streams.
+Added support for opening M3U and XSPF playlists. Improved support for PLS playlists.
+
+DTS AC3 Source
+Added support for DTS Express.
+
+UDP/HTTP Reader
+Added playback from standard input (stdin).
+Corrected shutdown of the filter.
+Reduced memory usage and waiting delay.
+Added support for opening streams with content-type "video/mp2t".
+Fixed a bug due to which the playback could stop.
+
+AviSplitter
+Added support for AAC audio tracks with ID 0x706D.
+
+AudioSplitter
+Fixed playback of TAK files.
+Added support .dtshd files (labeled 'DTSHDHDR' at the beginning of the file).
+
+MPEGSplitter
+Improved handling of invalid data at the beginning of MPEG files.
+Display a name of the service in the name of the program.
+Optimization of opening files.
+Fixed and optimized playback of HDMV and DVB subtitles.
+Added support for Teletext subtitles.
+Improved support for files that are downloaded and their size and duration are increased.
+Added support for Opus.
+Improved support for .ssif files.
+Added support for H.264 MVC streams for 3D Blu-ray discs (3D viewing requires LAV Video Decoder and madVR).
+Fixed incorrect determination of the duration for long records.
+Added support for DTS Express tracks.
+
+MatroskaSplitter
+Added "DESCRIPTION" tag support.
+Added support EBML elements with an unknown (not specified) length.
+Includes support for opening files from HTTP resources in tandem with File Source (URL).
+Added support for H264 MVC streams.
+Improved algorithm for finding the actual fps.
+Added support for exporting "STEREOSCOPIC3DMODE" properties.
+Added support WebVTT subtitles.
+Extended "A_QUICKTIME" format support, is now available 'ima4' and others.
+Added QDM2 sound support.
+Improved support for RV20 for the FFmpeg compatible decoders.
+Fixed rewind (does not work correctly on some files).
+Added support for "ALBUM" and "RATING" tags.
+Fixed and optimized playback of HDMV and DVB subtitles.
+Added support for DTS Express tracks.
+Optimized search engine after rewinding.
+
+MP4Splitter
+Fixed missing audio after rewinding some files.
+Fixed playback of some ALS tracks.
+Improved network streams.
+Added support for Windows Media Video 7 (WMV1), Canopus HQ, Canopus HQX, CineForm, Sorenson H263 (FLV1) and MagicYUV video streams.
+Fixed definition covers in JPEG format 'JFIF' and 'EXIF' segments.
+Optimized data reading.
+Improved support for DTS-HD tracks.
+Fixed work with RAW AAC data.
+Optimized to work with very short blocks of sound.
+
+OggSplitter
+Added support for "ALBUM".
+Added support for the VP8 video.
+Fixed Vorbis tags reading.
+
+MpaSplitter
+Increase the lookup length of ADTS header.
+
+RawVideoSplitter
+Added support for RAW MPEG-4 Visual. Filters "MPC MPEG4 Video Splitter" and "MPC MPEG4 Video Source" removed as non-working and more unnecessary.
+Added support for C420p10 format for Y4M files.
+
+RealMediaSplitter
+Fixed crashes on some files.
+
+MPCVideoDec
+Added additional check HEVC profile (older versions x265 recorded incorrect information in the header).
+Fixed conversion YUV420P10/16->NV12.
+Added information about the input format in the status.
+Added support for decoding of Canopus HQ and HQX.
+Added support for VP9 DXVA2.
+Added support MEDIASUBTYPE_LAV_RAWVIDEO.
+Fill in DXVA2_ExtendedFormat information about BT.2020 for madVR.
+Added the ability to transfer HEVC HDR metadata in the renderer.
+Removed the options "Standard" and "Preset".
+Improved compatibility with the WM ASF Reader.
+Added partial support for decoding CineForm and MagicYUV (FFmpeg does not fully support these codecs).
+Improved DXVA1 decoder.
+Changed priorities for output formats. Now preserve color resolution is more important than the color depth. For Intel GPU YV12 priority is now higher than the NV12.
+Added new IDs for graphics Intel Skylake to the list of cards that support 4k decoding.
+
+MpaDecFilter
+Added ability to switch between devices with SPDIF/Bitstream support to the device without such support.
+Fixed fast and slow playback modes.
+Fixed problems with playback in case of AC3 encoding the source with a frequency different from 44100/48000 Hz.
+Adjusted priorities of selecting a suitable output format.
+Improved output data bitstream for DTS-HD.
+
+AudioSwitcher
+Do not limit the sampling rate in the Audioswitcher if used MpcAudioRenderer or SanearAudioRenderer.
+Added the ability to connect to MultiChannel ASIO Renderer.
+Windows XP limit the maximum frequency of 96 kHz.
+Fixed allocation of initial buffer that eliminates the problem of playing some WMA files.
+Fixed error when connecting to the AC3Filter.
+Fixed a rare hang when switching tracks.
+
+MpcAudioRenderer
+Added interface IAMStreamSelect, that allows quickly and without changing the settings (only for the current session) to change the current audio device.
+Optimization and adjustment reinitialize the device. Added a mechanism for restoring a playback in case of loss of the device.
+
+VideoRenderers
+Slightly reduced load then downscaling frame using a shader interpolation.
+Using a shader "Simple averaging" for a strong downscaling in SyncRenderer.
+Fill DXVA2_ExtendedFormat only when using EVR / madVR.
+Fixed calculation of the size of the video in VMR9 renderless.
+Adjusting the graph scale in statistics.
+Improved madVR, adds the ability to disable Aero.
+Improved definition of connecting and disconnecting the output devices in a multi-monitor configuration.
+Added displaying information about the player memory consumption and loading Video Engine (VID Usage) in the statistic.
+For EVR-Custom added to the mix in the format D3DFMT_A2R10G10B10 for the input format P010 (works on Win8.1 and newer).
+Rewritten support "Rotation" flag is now the turn of the frame is carried out independently of the other strains.
+Built-in video renderers no longer support ISubPicAllocatorPresenter and ISubPicAllocatorPresenter2 interface.
+Fixed handling of resizing and the aspect ratio of the video frame in EVR-Custom and Sync renderer.
+Fixed crash EVR-mixer on Nvidia graphics cards on the float at the surface of the frame size 1920x1088 ('Integer division by zero' in nvd3dumx.dll).
+
+VSFilter
+Fixed use default style.
+Corrected display of the font selection dialog.
+Corrected display of the color selection dialog.
+Fixed output PGS/DVB subtitle if the subtitle resolution less than the resolution of the video.
+
+Subtitles
+When you open a file, reset the subtitle delay not only for the ISR, but for VSFilter/XySubFilter.
+Small optimization.
+Added basic support WebVTT subtitles.
+If forced using default style is rewritten not only the style, but also ignored the effects mentioned in the subtitle line.
+
+YouTube
+Added support for links such as "youtube.com/v/".
+Added support for the format WebM with separate streams of video and audio.
+Added ability to disable the built-in parser YouTube pages (required for 3DYD YouTube Source Filter).
+Added support 3DYD YouTube Source filter.
+Improved filling data on the video in the playlist.
+Removed the old built-in download files. Now sources filters alone download data without creating a temporary file.
+
+Player
+Fixed menu commands "Movie -> Set aspect ratio".
+Added the ability to resize the preview window.
+Added support High DPI and DPI Per Monitor.
+Fixed crash when calling windows file associations with administrative rights.
+In the FS mode, the D3D use switch the display mode to record in the register.
+Fixed display of available subtitles renderers.
+Added the ability to download fonts from the folder "fonts" located near the current video.
+Added option "Add similar files to playlist".
+For Windows XP, disable DXVA2 interpolation selection as unsupported.
+The download window subtitles added sorting by language and file name.
+Added option "Pause the video playback when minimized".
+Added support for "Press and Hold" for devices with touch screen for easy access to the context menu.
+Added support for gesture control.
+Added ability to use "*" in the last folder in the path of subtitles and audio tracks.
+Added keyboard shortcuts "Repeat forever".
+Fixed display for RLE8 and RLE4 media type in PinInfo window.
+Improved work with file associations in the Windows 8/10.
+Fixed condition button "Play/Pause" after clicking "Boss" button in the pause state.
+Added support for changing the activity of the buttons AUD / SUB on the toolbar.
+Do not switch the window to the foreground when using /add switch (provided that in the current playlist of the player already has files).
+Fixed missing item "Other PCM/ADPCM" in the list of built-in audio decoder.
+Removed "Real Script", "RatDVD" and "Indeo Video Format" group.
+Added extension .y4m (YUV4MPEG2) in "Raw Video" group.
+Added extensions .mxf and .ivf in "Other" group.
+Extension .divx moved to "AVI" group.
+Removed extensions .wvx, .wax, .wmx as unsupported formats from "Playlist" group.
+In the panel "Information" in "Description" field show only the first line (in the file properties show full).
+Added support for WPL playlists (Windows Media Player Playlist).
+
+Updated German translation (by Klaus1189).
+Updated Japanese translation (by Socket774).
+Updated Dutch and Chinese (Traditional and Simplified) translation (by beter).
+Updated Ukrainian translation (by arestarh1986).
+Updated Basque translation (by Azpidatziak).
+
+Updated libraries:
+	ffmpeg git-n3.1-dev-1426-g9486de5;
+	jsoncpp git-1.7.2-16-g43203f1;
+	libflac git-1.3.1-186-gfdc1ccf;
+	libpng git-v1.6.23rc02-1-gee3c4e4;
+	Little-CMS git-2.7-60-ge342f44;
+	MediaInfo git-v0.7.85-25-g993690e;
+	Speex-1.2rc2-9-g9172c7e;
+	ZenLib git-v0.4.33-11-g4bdc103.
+
+
+1.4.5 - 2015-09-24
+==============================
+ShoutcastSource
+Return AAC ADTS stream without a header according to the output subtype MEDIASUBTYPE_RAW_AAC1.
+
+FLACSource
+Writing metadata to extradata output format.
+
+VTSReader
+The option "Read All Program Chains (calculate duration)" was removed as invalid.
+Fixed calculation of the total duration.
+
+UDP / HTTP Reader
+Fixed function returns the data to the splitter, and now reader expects the missing data. This reduces the number of artifacts when watching IPTV.
+
+Splitters
+Removed the queue mechanism measured in number of packets and amount of data. Now the queue length is set in seconds.
+Improved handling of connection failure.
+Added function to change the buffer size from 1 to 10 seconds. The default is 3 seconds.
+
+AviSplitter
+Adds support for MJPEG stream with fourcc 'MSC2'.
+Added support for time delay stream (AVISTREAMHEADER :: dwStart).
+Added support for tag 'vprp' (VideoPropHeader) to obtain data on the aspect ratio.
+
+AudioSplitter
+Added the ability to work together with File Source (URL) in file downloading mode.
+
+MPEGSplitter
+Added support for MPEG-PS + G.711 A-law (such files created Hikvision CCTV cameras).
+Improved handling of MPEG-TS.
+Return AAC ADTS stream without a header according to the output subtype MEDIASUBTYPE_RAW_AAC1.
+Corrected calculation of the duration.
+Improved support for AAC-LATM.
+Removed option "alternative method of calculation of the duration."
+Improved seek accuracy when connected to VTSReader.
+Improved support for HEVC streams.
+Redesigned keyframe search algorithm.
+Added the ability to work together with File Source (URL) in file downloading and streaming mode.
+Optimized tracks search algorithm.
+Determine the change in file size in 10 seconds.
+Fixed and improved with PGS subtitles.
+
+MatroskaSplitter
+Corrected work with Theora video.
+Adjustment and optimization of the calculation of the frame rate in its absence.
+Improved work with VP9 video.
+Fixed and improved with PGS subtitles.
+
+MP4Splitter
+Fixed falling on some corrupted files.
+Added support for tag "Album".
+Added support for codec VC-1 and Windows Media Audio.
+Improved handling of fragmented files.
+
+MpaSplitter.
+Improved algorithm for calculating the duration of VBR streams without VBR header (now's the time in the status bar more stable).
+Fixed opening short of MP3-files.
+Fixed calculation of the duration of a single packet AAC ADTS.
+
+RawVideoSplitter
+Reduced memory consumption when working with H. 264 streams.
+
+RealMediaSplitter
+Fixed crash on some files.
+
+FLVSplitter
+Correctly open the files in which one of the tracks begins with a long delay
+
+MPCVideoDec:
+Improved handling of non-standard order B-frames.
+Fixed decoding of VP9 streams.
+Fill DXVA2_ExtendedFormat for YUV formats.
+Updated list of video cards that support decoding of 4k. Added AMD Radeon R9 285/380 AMD R9 FURY Series, the item has been added Intel HD Graphics and Intel Atom Z8000 Series.
+
+Mpeg2DecFilter
+The option "Send interlaced flag in output media type" is now enabled by default.
+Fixed with 2: 2 pulldown and 2: 3 pulldown.
+Corrected Weave deinterlacing methods work and Blend. Fixed Bob deinterlacing.
+Removed deinterlacing methods Field Shift and ELA as the outside.
+Fixed crash after playback of some animated DVD menus.
+The decoder is now draws subtitles in a DVD-only mode.
+Optimized DVD-menu rendering.
+
+MPC Audio Decoder.
+In status added layout of channels for multichannel sound.
+Use FLAC extradata to correctly specify the location of the channels.
+
+MPC Audio Renderer
+Fixed incorrect unregistering the filter.
+The default volume is 100%.
+In addition to synchronizing by timestamp added selection of the synchronization mode for the duration of the sound ("Sync video to audio"), which is enabled by default. If the video stream is missing, the sound is always synced in duration.
+Fixed Shared mode in case of receiving incorrect data from the driver.
+Added the ability to adjust the balance for PCM stream.
+
+VideoRenderers
+Fixed and optimized jitter calculations and the current frame rate.
+Added interpolation mode "DXVA2", which is available when select "8-bit Integer Surfaces".
+In statistics we have added information about the type of interpolation.
+
+VSFilter
+Fill DXVA2_ExtendedFormat for YUV formats.
+
+Subtitles
+Fixed a problem rendering the subtitles after use the code from MPC-HC (a74db2a6c1b2e710afbd35abbe0c7271c9651b06).
+Proportion adjustment for the internal subtitle rendering is only used for the built-in container stylized subtitles with the completed frame size, aspect ratio different from the aspect ratio of a video frame.
+Fixed support for fade in/out for VobSub subtitles.
+Fixed display of last segment for VobSub subtitles.
+
+YouTube
+Added support for google api V3 to retrieve information about the video.
+
+Player
+Fixed displaying the name of the video codec is shown in PinInfo.
+Added interface support IMadVRSubclassReplacement to submit events in madVR.
+Fixed the Chapter markers on the seek bar in DVD mode.
+Fixed Apply button in the settings window for different occasions.
+Fixed the order of selection options by using "Tab" in the setting window and dialog boxes.
+Fixed display of previews for the 10 and 16-bit video drivers on some Intel and Nvidia.
+In the settings panel "Frame synchronization" added the option "Enable frame time correction".
+Fixed opening additional files using File Source.
+Fixed with a list of "Favorites".
+Improved full-screen mode in Direct3D.
+When open the .ifo files using MediaInfo ignore information to vob-file menu (VTS_XX_0.VOB).
+The subtitle menu item "Insert" is now always active.
+Improved rotation with the flag in the media file. Now the video frame correctly fit the window.
+Fixed main window in the expanded mode.
+Fixed pressing the "Maximize / Restore" on FlayBar in full screen mode.
+Removed special commands to change the audio track and subtitles for the DVD (now used common commands for changing lanes).
+DVD toggle angle commands can now switch video streams in other formats.
+Fixed definition of the active monitor on some configurations.
+Added an .ismv extension to MP4 group.
+The standard list of folders with subtitles added to the folder ".\sub"
+Added shader Adaptive sharpen (author bacondither). Additional information - http://forum.doom9.org/showthread.php?t=172131
+Using the system copy dialog for the command "File->Save As...".
+Closed captions support is activated for the DVD mode using 2 MPC MPEG-Video Decoder.
+Added support for Windows 10.
+Added support Robust DirectShow audio renderer and Surodev ASIO Renderer.
+Added the ability to mount images using Virtual CloneDrive (http://www.slysoft.com/en/virtual-clonedrive.html).
+Fixed snapping to edge of the screen in Windows 10.
+Deleted settings panel Performance.
+Fixed reading ID3TagV2.
+If no description but the presence of ID3 tag 'LYRICS' (lyrics) derive its contents.
+Fixed problem with hovering OSD after hide and maximizing window if the OSD timeout ended when minimized.
+Fixed being able to re-start playback of the file after the end of play.
+Block all connections to MEDIATYPE_AUXLine21Data, if the Line 21 Decoder 2 was blocked for external filters, otherwise you can get the hang of the graph.
+Added an option to change the size of the splitter buffers from 1 to 10 seconds. Default 3 seconds.
+Added an option to change the window when playing audio files.
+Added option to delay play after changing screen resolution.
+Added icon for the Explorer context menu.
+
+Updated Dutch and Chinese (Traditional and Simplified) translation (by beter).
+Updated Japanese translation (by Socket774).
+Updated Ukrainian translation (by arestarh1986).
+Updated German translation (by Klaus1189).
+
+Updated libraries:
+	ffmpeg git-n2.8-dev-2658-g01770bf
+	libdcadec;
+	MediaInfo 0.7.74+ svn rev.6843;
+	ZenLib 0.4.31+ svn rev.514;
+	speex-1.2beta2-293-gecc63b3;
+	openjpeg 2.1.0 git-f6843d5;
+	libpng 1.6.19beta03 git-g33a97c5.
+
+
+1.4.4 - 2015-04-05
+==============================
+AviSplitter
+Fixed work with RGB555 video.
+
+MatroskaSplitter
+Fixed calculation TimeStamp for subtitles.
+Reduced memory consumption.
+Fixed processing subtitles (too long subtitles can be displayed with high latency).
+Fixed work with RGB555 video.
+Adjust correctly filled parameter biSize
+Correct the invalid parameter biSize BITMAPINFOHEADER structure after mkvmerge v7.7.0 for RGB8 formats and RGB565.
+
+MP4Splitter (Bento4)
+Fixed playback of files in which different tracks have the same TrackId.
+Added support for 'R10k' and 'R10g'.
+
+MPEGSplitter
+Added info about DTS-HD streams.
+
+ShoutcastSource
+Fixed processing "Stop" command.
+Works better with MPEG Audio.
+
+MPCVideoDecoder
+Added HEVC DXVA decoder (thanks to the author for his code LAV), 10bit decoding only works with EVR Custom / Sync.
+Updated list of Nvidia and Intel graphics card with support for hardware decoding 4k.
+A small adjustment in calculating the timestamp.
+Fixed crash after a "pause" include H.264 DXVA and "stop."
+Fixed crash mode H.264 DXVA 2.0 when the file is closed.
+Fixed crash when decoding VC1 on Intel's DXVA mode on some files.
+Fixed Displays the last frame for DXVA 2.0 decoder.
+Corrected calculation of timestamps.
+If the video parameters were determined inaccurately, after decoding the first frame to update the parameters of current and do reconect output pin.
+No longer use the table of Nvidia graphics cards with support for decoding 4k. Now to support decoding 4k driver must be installed v320.18 (v9.18.13.2018) or later.
+
+MPCVideoConverter
+Video decoder for uncompressed formats now works as a converter.
+Added support for r210, R10k, R10g, YVU9, IYUV, UYVY, YUY2, NV12, YV12, YV16, YV24.
+
+MpaDecFilter
+Fixed wrong connection to the PCM stream.
+Improved checking output support SPDIF/Bitstream.
+Fixed playback of some BINK audio.
+Fixed incorrect (intensive) playing on WinXP.
+The adjusted timestamp calculation.
+To decode DTS use libdcadec. Added support for decoding DTS 96/24 and DTS-HD MA.
+
+AudioSwitcher
+Reduce the frequency of the sound, if it is more 192000 Hz.
+Added timestamp adjustment after the frequency converter.
+Allow XySubFilter AutoLoader connections (it needed to connect XySubFilter).
+
+MPC Audio Renderer (WASAPI)
+Fixed mechanism of A/V sync.
+
+VSFilter / ISR
+Fixed crash when matching timestamps (rtStart and rtStop) of input sample.
+Fixed incorrect display of VobSub subtitles when fast.
+Fixed queue subtitles.
+Adjusted compensation font sizes for anamorphic video.
+Correction fall on some subtitles.
+Corrected automatic loading external subtitles.
+
+VideoRenderers
+Updated frame in pause mode after disabling shaders.
+Optimized Shader compilation.
+Added support XySubFilter.
+Fixed and updated output statistics renderers.
+Removed Shader bilinear interpolation.
+For graphics cards with support for ps_3_0 and above at the picture size of less than 50% use simple averaging of pixels.
+A more correct choice format mixer for EVR-custom.
+Optimization of displaying subtitles.
+Fixed format selection videobuffer on Intel cards.
+Fixed support for input formats.
+Update statistics (Ctrl+J) to pause.
+
+Player
+Fixed opening of BD structure from favorites after renaming.
+Fixed crash when calling "Reset subtitle".
+Fixed check for updates.
+Fixed playback of animated GIF files.
+Adjustment of the output current value of the rotation angle.
+Removed command "Reset to default renderer settings".
+Removed support frameworks QuickTime and RealMedia.
+Improved transition from full window to full screen and back.
+Added ability to select specific subtitle renderer.
+Fixed opening .bdmv files.
+Fixed opening HLS links that specify a relative path.
+Added the ability to display the menu by pressing Alt.
+Improved get fps using MediaInfo for switching frequencies.
+The button "Rename" in the Bookmarks renamed "Edit" to display a dialog box in which you added the ability to edit the path.
+Fixed color adjustment at the extreme values.
+The settings panel "EVR Sync Settings" renamed to "Frame synchronization".
+Advanced settings renderer redesigned and moved to the settings panel of the "Video" and "Frame synchronization".
+Fixed opening some .m3u playlists.
+Fixed autoload subtitles when opening files from a network path (the path starts with "\\").
+Improved work with Drag'n'drop.
+Restored and improved open Youtube links. Now don't need to have http, https and www.
+Added a caching mechanism to save in .ini file (thanks to the team MPC-HC for the code and idea).
+The ability to save in .ini file will be unavailable in the absence of permission entries in the directory.
+Improved logic to apply the settings file associations and context menus of Windows Explorer.
+Fixed display of information for RGB8 and RGB565. Do not change the register when displaying FourCC.
+Correctly restore the sound after playing ShockwaveGraph on Vista and later systems.
+Added option "Auto fit factor".
+Don't remember the full screen, if the option "RememberWindowPos" and "RememberWindowSize".
+
+Updated Dutch and Chinese (Traditional) translation (by beter).
+Updated Ukrainian translation (by arestarh1986).
+Updated Japanese translation (by Socket774).
+Updated German translation (by Klaus1189).
+Updated Chinese (Simplified) translation (by beter and insolo).
+Updated Italian translation (by Lord Maius).
+
+Updated libraries:
+	jsoncpp 1.0.0-212 git-gc1e834a.
+	MediaInfo 0.7.72+ svn rev.6720;
+	ffmpeg git-g399e314.
+
+
+1.4.3 - 2015-01-17
+==============================
+Removed AMRSplitter.
+Removed WVSplitter;
+
+VTSReader
+Added a dialog box with settings to choose from IFO file all programs or only the first (Program Chain).
+Added support for opening files of the IFO-ATS_XX_0.IFO (DVD-Audio language). The filter will load the chapters with the same format (LPCM or MLP) and the same channel laouts from AOB files.
+
+ShoutcastSource
+Added support for UTF8 in the title and description.
+
+DTSAC3Source
+Fixed overflow when searching for large files.
+
+FLACSource
+Added support for ID3 tags V2.
+The missing data at the end of the file, cosmetics.
+
+AudioSplitter
+Added support for WavPack, AMR, AMR-WB, DSF, DFF.
+Prevented a possible crash when playing TAK.
+
+MpaSplitter
+Fixed incorrect connection to other types of files.
+Allowed to change the title of the block when playing (occurs when writing online broadcasts).
+Improved work with streaming data.
+Improved synchronization (title search) after rewinding.
+
+AVISplitter
+Complemented ID list of codecs that are H.264 video (list taken from ffmpeg).
+Corrected output MediaType for H.264.
+Improved support for Matrox MPEG2 codecs, added fourcc M701-M705.
+
+MatroskaSplitter
+Added support CueDuration and CueRelativePosition to pre-read the subtitles.
+Added option "Calculate the duration based on the video data".
+More correct filling data for MPEG1 Layer 1/2, TrueHD / MLP and HEVC.
+Fixed playback of H.264 interlaced video.
+Loading embedded fonts in the file even if there are no subtitles.
+Improved mechanism for obtaining compute the timestamp packets, it has improved compatibility with some external video decoders.
+
+MPEGSplitter:
+Added support for files with variable size (record / download the file in real time).
+Added ability to switch programs in MPEG-TS, at the same time will switch all tracks of the program.
+Added support for SEGA CRI ADX ADPCM audio tracks.
+Improved rewind and playback MPEG-TS + H.264.
+Improved handling of HDMV LPCM (PCM in MPEG-TS) packets.
+Added support for MPEG-TS with incorrect PES and without it.
+Added support for the calculation of the duration/bitrate based on PCR (Program Clock Reference).
+Fixed work with AC3 data in TrueHD stream.
+Fixed detection of AC3 tracks on some files.
+Fixed crash when opening .mpls files, referring to non-existent .m2ts files.
+Added support for H.264 format data Annex B.
+Fixed work with MLP tracks in .aob files.
+Added the ability to work with changing AC3 streams.
+
+RawVideoSplitter
+If the frame rate is not specified, then take it to 25.
+Added support for H.264 streams in a format Annex B.
+Improved support for HEVC flows beginning with Nalu AUD.
+
+MP4Splitter (Bento4)
+Added support for the atom 'elst', which allowed processing delays when playing.
+Added support for fragmented files.
+Added support for HEVC videos tagged with 'hev1'.
+Improved mechanism for calculating the aspect ratio, are now recorded data that resides in the atom 'tkhd' and it have the highest priority.
+Optimization and adjustment of list building indexes.
+Process (and not ignore) atoms in which incorrectly specified size. This will allow to open files in which this happens.
+Fixed calculation fps for video, is now possible to use data from the 'stts' atom;
+Fixed search for files that have the atom 'stss' (a list of key frames) contains only one entry.
+Fixed incorrect display of the head in some cases.
+Fixed playback of some MOV-files with PCM track when observed accelerated playback.
+Fixed handling of some of the VobSub subtitles.
+Fixed code to work with time-stamped data now correctly handle negative offset and delay.
+Improved (accelerated) fast keyframe for conventional and for fragmented files.
+
+FLVSplitter
+Added support for H.264 format AnnexB.
+Adjustment calculation fps video.
+Improved support for "broken" files.
+
+OggSplitter
+Improved rewind, if the file contains a video track.
+Corrected reading of the Theora header.
+
+MPCVideoDec
+Fixed decoding of H.264 streams with non-standard order of B-frames
+Updated list of NVidia and Intel video card with support for hardware decoding 4k.
+Fixed overflow DXVA 2.0 buffer.
+Fixed reading of MPEG2 data .
+Added OpenHEVC optimization.
+Improved display of the last frame at the end of the play.
+Fixed crash when playing WMV3IMAGE and VC1IMAGE.
+Added Converter to convert 4:2:0 8bit -> NV12 (code taken from the LAV Filters).
+Improved mechanism for determining the length of the frame.
+Fixed video output 4:2:0 8bit -> YV12.
+
+Mpeg2DecFilter
+Fixed crash when BOB and ELA deinterlacing on some DVD-Video.
+Connect with permitted ffdshow raw video filter when playing DVD-Video.
+Fixed a hang on some DVD with animated menus on pause.
+
+MpaDecFilter
+Added support for decoding Opus, ATRAC3plus, SEGA CRI ADX ADPCM, Shorten, DSD.
+Rewritten PS2ADPCM decoder, now it is completely on integer arithmetic.
+Fixed playback end data (they could not be heard).
+Fix memory leak when using "Encode to AC-3.
+Bitrstrim E-AC3, DTS-HD and TrueHD is only available on Windows Vista and above.
+Added support for determining the SPDIF/Bitstream output for Windows Vista and above.
+Removed channel mixer.
+Added to decrease in frequency sounds with a sampling frequency of more than 192 kHz.
+
+AudioSwitcher
+Removed the "Custom channel mapping".
+Remove the old "normalization" algorithm.
+"Boost" renamed to "Gain" and now has a range of -3 dB to +10 dB.
+Added channel mixer.
+Added "Auto volume control".
+Audio switcher settings transferred to the panel "Audio".
+Now between audio switcher and audio renderer can connect AC3Filter, ffdshowAudioProcessor and DC-DSP Filter.
+Audio switcher now always active. It is necessary for proper operation of the player.
+
+MPC Audio Renderer (WASAPI)
+Added support for changing the playback speed.
+Improved option "Allow bit-exact output".
+Improved A/V sync.
+Fixed crash for various reasons.
+Show status information when the bitstream using.
+Added the ability to switch to the default device in the event of a power output device.
+
+VSFilter
+Added support to get the type of subtitles: internal/external.
+Added new option "Allow drop some subpicture"
+Fixed display of animated subtitles (the movement of the subtitles was jerking).
+Blocking connection Lentoid HEVC Decoder and input type IYUV, because decoder outputs "invalid" data.
+Fixed a crash when using the settings when playing active.
+Fixed display an icon in the system tray (sometimes hide the icon).
+Fixed incorrect font change.
+Returned to override colors instead of the default palette for VobSub-and without palette.
+
+Fixed handling of tags "\ fs +" and "\ fs-".
+Codes '& # xx' is converted to the corresponding character.
+Fixed subtitle display on pause with madVR.
+Fixed display of some PGS subtitles.
+Improved support for SAMI subtitle (.smi).
+
+VideoRenderers
+EVRCustom: improved redraw after after rewind on pause.
+VMR7 Renderless available under the x64 bit system, as well as if the height/width of the desktop more than 2,048.
+Rewritten and optimized mechanism DX9RenderingEngine, added shaders Perlin Smootherstep, B-spline, Mitchell-Netravali, Catmull-Rom.
+Fixed output text subtitle VMR7 Renderless.
+Fixed VMR7 Renderless mode VMR Mixer Mode.
+
+Player
+Added support for mounting images of optical disks with Windows 8/8.1.
+Added support for mounting images of optical disks using DAEMON Tools Lite for Windows XP, Vista and 7.
+Added "Restore the position of subtitles."
+Added an option to change the number of recently opened files.
+Added the possibility of multiple manual loading external subtitles and audio files.
+Fixed the incorrect display of '&' in the status bar.
+When you open an external audio adds the ability to open any file/container, not just the audio files.
+When using the "Play next in the folder" added the ability to play looped (in a circle).
+Do not show error reporting when using Direct3D fullscreen mode.
+Removed keyboard shortcuts "Toggle custom channel mapping".
+Keyboard commands "Toggle normalization" renamed "Toggle auto gain control".
+Limited opportunity selection of ports for Web server from 1 to 65535.
+Optimization and adjustment of the output information in PinInfo.
+.awb Extension added to the group "AMR", .sfd - in "MPEG";
+Group "Matroska" renamed "Matroska/WebM", "FLI/FLC" - "FLIC animation".
+Added DSD group and extensions .dsf and .dff.
+Extension .rmvb transferred from the group "other" to the group "RealMedia".
+Changed some of the settings and their location.
+Removed option "Round up to power of two" for subtitles.
+Removed the option "D3D Fullscreen GUI Support".
+Adjusted and optimized code with auto-tuning mode switch monitors.
+If the speed of play is different from the standard, we write it in the status bar.
+Fixed problem of clogging registry branch HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts when opening URL.
+Corrected speed change mechanism. Modify the list of steps to change the speed of 0.1, 0.2, 0.25, 0.5, 1.0.
+Adjusted the volume control work.
+Fixed handling of transparency settings OSD.
+Fixed display Win7 taskbar preview of the above.
+Removed enhanced support opening graphic formats.
+Removed ability to save screenshots and thumbnails formats webp/psd/tga.
+Fixed creation of default.mpcpl.
+Fixed display SeekBar when playing Flash files.
+Fixed getting the frame rate to auto-switch frequencies using MediaInfo.
+Fixed the field "created" in the properties of the file being played.
+Added check for updates.
+
+Improved YouTube, added to obtain information about the author, title, description and date of publication.
+Added support for YouTube live streaming (requires LAVSplitter).
+Removed support VIMEO (because it did not work).
+Changed opening playlists from YouTube, after the opening of the current clip starts playing.
+Playlist from YouTube is now loaded only when the option "Load playlist".
+Fixed auto-save screenshots for YouTube.
+Added support for subtitles when opening clips YouTube.
+
+Updated Russian translation
+Updated Basque translation (by azpidatziak);
+Updated Dutch translation (by beter);
+Updated Chinese (Traditional) translation (by beter);
+Updated Italian translation (by Lord Maius)
+Updated German translation (by Klaus).
+In the installer added DirectX DLL: D3DCompiler_43.dll and d3dx9_43.dll.
+
+Updated libraries:
+	ffmpeg git-g843d93d;
+	libpng 1.7.0 b35 git-f3b1eb68;
+	MediaInfo 0.7.70+ svn rev.6511;
+	Little-CMS 2.7 beta git-a41d62ee;
+	ZenLib 0.4.29+ svn rev.489;
+	jsoncpp 1.0.0.
+
+
+1.4.2 - 2014-04-02
+==============================
+Added (+):
+	+ MPCVideoDec - added support for decoding 'VP7';
+	 ... and many more.
+
+Changes (*):
+	* MPCVideoDec - add support MP4 H264 files with avcC atoms without any SPS/PPS (use code from LAV);
+	* MP4Splitter - correct aspect ratio for video tracks, has a higher priority value from the header(atom 'tkhd');
+	* After closing the Playlist/Shader Editor/Editor "Synchronize subtitle" - set the focus to the main window;
+	* In the property "FileVersion" indicates the version, including SVN revision number;
+	* ffmpeg 2.2 git-cecb6d6f;
+	* libwebp 0.4.0 git-af444608;
+	* MediaInfo 0.7.67+ svn rev.6177;
+	 ... and many more.
+
+Fixes (!):
+	! Fixed parser .ass subtitles, leading to hang when loading subtitle;
+	! OSD is displayed on top of all windows;
+	 ... and many more.
+
+
+1.4.1 - 2014-03-26
+==============================
+Changes (*):
+	* Renumbered versions - now it consists of three digits (MAJOR.MINOR.PATCH);
+	* MPCVideoDec - disable DXVA for WMV3 Complex profile;
+	* libpng 1.7.0 b35 git-3ac960f1;
+	 ... and many more.
+
+Fixes (!):
+	! Fixed crash when closing a window settings file associations when called from a UAC;
+	! Some menu items are not marked as active;
+	! Fixed changing settings interface;
+	 ... and many more.
+
+
+1.4.0.3 - 2014-03-24
+==============================
+Added (+):
+	+ added support for opening *.CUE;
+	+ added completely reengineered DXVA2 decoder;
+	+ added support for subtitles display for stereoscopic pictures;
+	+ AudioSplitter - added support for Monkey's Audio (.APE) and also for APE Tag, DTS-CD and AC3-CD, TTA, WAV and Wave64;
+	+ AviSplitter - added support for 'RPZA', 'RV24' (RGB24 with upside-down picture), uncommon YUV-formats;
+	+ MatroskaSplitter - added support for Microsoft MPEG4 V3, MJPEG, ProRes, SNOW and several types of uncompressed video ('V_UNCOMPRESSED');
+	+ MP4Splitter - added support for '2Vuy', 'DVOO', 'yuvs', 'yuv2', DNxHD, FFV1, 'v308', 'v408', 'V410';
+	+ MpaDecFilter - added support for decoding MEDIASUBTYPE_SIPR_WAVE - SIPR in .wmv, Voxware MetaSound;
+	+ MPCVideoDec - added output formats 'AYUV', 'YV16', 'YV24', 'P010', 'P210', 'P016', 'P0216', 'Y410' and 'Y416';
+	+ MPCVideoDec - added support for 'Avid DNxHD', HuffYUV, FFVH, FFV1 (FFmpeg video codec #1), QuickTime 8BPS video, 'RPZA', 'cyuv', 'yuv2', 'Y41B', 'Y42B', '444P', 'Y800', 'I420', 'V410';
+	+ MPCVideoDec - added support for decoding Windows Media Video 9.1 Image and Windows Media Video 9.1 Image V2 (WMVP, WVP2);
+	+ MPCVideoDec - added Status field containing verbose information on the decoder's state;
+	+ MPCVideoDec - added handling of input media type change in DXVA1 mode which allows switching video tracks in this mode;
+	+ MPCVideoDec - added a button for resetting the options to their defaults;
+	+ MPEGSplitter - added support for files with 'IMKH' header (DVR records in MPEG-PS format);
+	+ Null Video Renderer (Uncompressed) - added support for 'NV12', 'AYUV', 'YV16', 'YV24';
+	+ RawVideoSplitter - added support for 'YUV4MPEG2';
+	+ RawVideoSplitter - added partial support for черно-белых and 4:1:1 y4m files;
+	+ VSFilter - added AV Source/AV Splitter support for the auto-load option;
+	+ VSFilter - added support for NV12;
+	+ VSFilter - added support for scaling PGS/DVB subtitles;
+	+ VSFilter - added support for interlaced video;
+	+ Audiomixer - added support for muxing in 5.0;
+	+ Internal MPEG/DVD Decoder - added support for NV12 output;
+	+ added the 'Always use an external audio file as the main' option ;
+	+ added the 'Use Subresync' option;
+	+ video renderer statistics - added the 'GPU Load' indicator;
+	 ... and many more.
+
+Changes (*):
+	* AudioParser - minimal sound frequency for AAC-LATM is 8000 Hz (according to English Wikipedia);
+	* AudioSplitter - Source filter now accepts TTA with ID3v2 tags in the beginning of the file;
+	* AviSplitter - added sanity check for superindex blocks;
+	* AviSplitter - added association for 'P422';
+	* AviSplitter - removed association for 'cyuv';
+	* Blu-ray playlists are again associated as video files;
+	* DTSAC3Source - dropped support for DTS-CD and AC3-CD, AudioSplitter is used instead;
+	* EVR Custom/VMR9 Renderless -> GPUUsage: more robust NvAPI (Nvidia) handling;
+	* FLVSplitter - bogus tags are ignored upon opening a file and seeking tracks;
+	* FormatConverter - for 8- and 10-bit sources, P016 immediately follows P010 and P216 immediately follows P210;
+	* Line 21 Decoder - enabled for Microsoft DTV-DVD Video Decoder and EVR-CP;
+	* MatroskaSplitter - improved keyframe list building algorighm;
+	* MKVSplitter - FPS defaults to 23.976 when it cannot be calculated;
+	* MP4Splitter - support for reading palette from video tracks;
+	* MpaDecFilter - changed test for Bitstream/SPDIF-output support;
+	* MPCVideoDec - added labels '8-bit', '10-bit' and '16-bit' in Options window;
+	* MPCVideoDec - format conversion options are enabled/disabled according to whether YUV->RGB or RGB->YUV transform is performed;
+	* MPCVideoDec - 'YUY2' output is now possible for odd width and height;
+	* MPCVideoDec - 'P010', 'P210', 'P016', 'P0216' output formats are now enabled by default;
+	* MPCVideoDec - YUV 4:2:2 10-bit output format is selected for Apple ProRes;
+	* MPCVideoDec - YUV 4:2:2 8-bit output format is selected for Avid DNxHD;
+	* MPCVideoDec - YUV 4:2:2 output format is selected for Motion JPEG;
+	* MPCVideoDec - added output format determining for ProRes;
+	* MPCVideoDec - AVCOL_RANGE_JPEG is now ignored only for H.264;
+	* MPCVideoDec - interface and algorithm of output formats list building for software decoding are changed;
+	* MPCVideoDec - now it is possible to change settings of the 'Preset' and 'Standard' options at any moment. The 'RGB Output levels' option is enabled only if the 'RGB32' option is active;
+	* MPCVideoDec - VP5 and VP6 video cards list is updated;
+	* MPCVideoDec - the options 'VMR Mixer mode' + 'YUV Mixing' are disabled under Windows XP by default;
+	* MPCVideoDec - the 'Output levels' option is renamed to 'RGB Output levels';
+	* MPCVideoDec - corrected the choice of primary output format for 9-, 12- and 14-bit input formats;
+	* MPCVideoDec - corrected the sizes of GroupBox'es for different scalings;
+	* MPCVideoDec - the mechanism of changing output media type for different post-processings is re-worked;
+	* MPCVideoDec - the way of switching output format is changed. Also added automatic switching of output format when input format is changed;
+	* MPCVideoDec - upon filling the list of output media types, DXVA1 and DXVA2 are distinguished according to the operating system: DXVA1 is used for Windows XP, DXVA2, for Windows Vista and above;
+	* MPCVideoDec - removed redundant checks for output formats;
+	* MPCVideoDec - deleted the 'Input levels' option;
+	* MPCVideoDec - the AV_PIX_FMT_PAL8 format is now detected as RGB;
+	* MPCVideoDec/FormatConverter - added validity check for the output format;
+	* Mpeg2DecFilter - DVD subtitles rendering is added back for single VOB files;
+	* MPEGSplitter - removed the option to output the stream 'As is' for TrueHD audio;
+	* MPEGSplitter - changed handling of AC3 packets;
+	* MPEGSplitter - FPS defaults to 23.976 when it cannot be calculated;
+	* MPEGSplitter - slightly changed (unified) handling of AAC packets;
+	* MPEGSplitter - optimized seeking: only the primary track is used for seeking. If a video track is present, it and only it is used; audio tracks are used otherwise;
+	* MPEGSplitter - changed the way of detecting AAC/MPA tracks;
+	* MPEGSplitter - corrected Profile@Level display for MPEG2@4:2:2;
+	* MPEGSplitter - added handling and adding of DVB subtitles (without their actual seeking in the stream) upon searching and handling of Program Stream Map (MPEG-TS);
+	* MPEGSplitter - seeking in .ifo files (using VTSReader) is now always performed using timestamps;
+	* MPEGSplitter - implemented fast seek on 'any' MPEG-PS files;
+	* MpegSplitter - removed the 'Fast track switching' option;
+	* MPEGSplitter - improved seeking for Blu-ray;
+	* MPEGSplitter - unified streams pre-handling mechanism;
+	* 'Overlay Mixer Renderer' is now available only for Windows XP;
+	* RawVideoSplitter - numerous improvements for correct handling of 'LAV Video Decoder' and 'madVR';
+	* VSFilter - added automatic loading upon connecting to internal MPEGSplitter/MPEGSource;
+	* VSFilter - changed handling of input/output formats. Now the list of input formats and their priorities from the underlying filter are taken into account upon building the output formats list;
+	* VTSReader - all Program Chains are taken into account upon opening .ifo files in order to calculate DVD duration correctly;
+	* WASAPI Renderer - added synchronization mechanism;
+	* EVR Custom/VMR9 Renderless - source aspect ratio is taken into account when saving screenshots;
+	* Youtube - temporarily dropped support for 1080 and above formats;
+	* Youtube - redirects (location) are honored upon opening URLs;
+	* Audio muxer - mono is now expanded to stereo;
+	* object name (file/DVD/BD) is again displayed in OSD upon opening;
+	* external/standalone filters in the filter list are marked with the suffix 'external';
+	* Filter graph - an external standalone filter is now preferred to the internal one;
+	* MediaInfo - added the 'Copy to Clipboard' button;
+	* ffmpeg decoder is now used for decoding VP9 video;
+	* the folder of the last opened file is selected for saving playlists;
+	* added the possibility to move subtitles during playback;
+	* the buttons for file associations now do not change automatic playback options;
+	* 'Go To...', 'Filters', 'Video Frame', 'Override Aspect Ratio', 'On Top', 'After Playback' menus - more modern look of highlighted items;
+	* numerous improvements in OpenMedia/CloseMedia;
+	* 'Options' -> 'Output' -  removed merit (priority) display in the 'Audio Renderer' dropbox;
+	* MPEG sequence header parsing - added handling of sequence display extension in order to set Aspect ratio correctly;
+	* redefined palette for DVD subtitles that lack the palette;
+	* upon closing the player, the file is now closed first, and the main window is destroyed afterwards;
+	* 'Jump To...' dialog that seeks to the chosen time/frame is called upon right click on the SeekBar;
+	* upon opening a file, the current directory is switched to that file's directory;
+	* Subtitles rendering - considerably increased subtitles speed, their load time is decreased as well;
+	* Subtitles rendering - the default buffer capacity is increased to 10 fragments;
+	* removed 'Old Video Renderer';
+	* removed DTSSplitter;
+	* removed TTASplitter;
+	* improved file closing via menu/Ctrl+C and via right click on the Stop|Close button on the toolbar;
+	* improved opening of http-live-streaming links (in .m3u/.m3u8 format): they are not handled as a playlist anymore;
+	* VMR Mixer Mode and YUV Mixing modes now work for any VMR renderer;
+	* updated Basque translation (author azpidatziak);
+	* updated Italian translation (author Lord Maius);
+	* updated Dutch translation (author beter);
+	* updated Chinese (Traditional) translation (author beter);
+	* updated Chinese (Simplified) translation (author insolo);
+	* updated Korean translation (author kuh3h3);
+	* updated Ukrainian translation (author Arestarh1986);
+	* ffmpeg 2.2 git-c8246d37;
+	* libwebp 0.4.0 git-59daf083;
+	* libopus 1.1 git-253e15f7;
+	* libpng 1.7.0 b34 git-8ebdaa07;
+	* MediaInfo 0.7.67+ svn rev.6173;
+	* Little-CMS 2.6 git-08bbb31f;
+	* VirtualDub 1.10.4;
+	* ZenLib 0.4.29+ svn rev.456;
+	 ... and many more.
+
+Fixes (!):
+	! DXVA decoder - fixed crash upon closing/stopping playing VC1/MWV3;
+	! FLACSource - fixed Vorbis tags parser;
+	! FLVSplitter - repaired opening/playing files with HEVC streams;
+	! FLVSplitter - fixed parsing of metadata strings;
+	! FLVSplitter - fixed seeking and playback;
+	! FLVSplitter - corrected Speex audio codec work;
+	! FLVSplitter - fixed hang after seeking the end of a file;
+	! MP4Splitter - corrected and enhanced Apple XDCAM video support;
+	! MpaDecFilter - repaired conversion to AC3;
+	! MPCVideoDec - FormatConverter, fixed conversion of YUV input formats with full-scale (JPEG) color_range;
+	! MPCVideoDec - corrected the order of adding similar formats in the list of output media types;
+	! MPCVideoDec - fixed the effect of the 'RGB output levels' option after clicking the 'Reset' button;
+	! MPCVideoDec - fixed handling of H.264 format timestamps: ffmpeg logic is used;
+	! MPCVideoDec - fixed check for active YUV->RGB or RGB->YUV conversions;
+	! MPCVideoDec - fixed the case when a decoder tried to connect to LAV Video Decoder upon opening a DVD;
+	! MPCVideoDec - fixed GraphStudio crash during an attempt to change outpu format settings if no filter is connected to the output pin;
+	! MPCVideoDec - corrected an upside-down image for RGB32 output with connection to the VMR7 renderer with active VMR Mixer Mode + YUV Mixing options;
+	! MPCVideoDec - fixed image artifacts during playback of some H.264 video on Intel in the DXVA mode;
+	! MPCVideoDec - interlace flags were ignored in software decoding mode;
+	! MPCVideoDec- fixed RAW Video decoding for frame dimensions not divisible by 32;
+	! MPCVideoDec/FormatConverter - fixed crash after reinitialization;
+	! MPEG parser (sequence header) - fixed AR calculation;
+	! MPEGSplitter - fixed parsing of AAC header;
+	! MPEGSplitter - fixed parsing of PSM (Program Stream Map);
+	! MPEGSplitter - fixed FPS calculation for MPEG-PS (it is usually H.264);
+	! MPEGSplitter - fixed extradata creation for MPEG2;
+	! MPEGSplitter - fixed connecting/playing of TrueHD tracks;
+	! MpegSplitter - corrected reading of Program Stream Map (PSM) which could produce long delays in opening MPEG-PS files;
+	! OggSplitter - fixed errors which turned into incorrect playback of DIRAC and FLAC files;
+	! RawVideoSplitter - repaired HEVC opening;
+	! RawVideoSplitter - corrected seeking in 'YUV4MPEG2' format;
+	! RawVideoSplitter - fixed errors which led to false detection and incorrect work;
+	! RealMediaSplitter - fixed playback of files that miss certain data (i.e. the value is 0) in the header;
+	! RoQ video decoder has been added to the graph incorrectly;
+	! VSFilter - repaired subtitles display upon NV12/P010/P016 output with Flipped image;
+	! VSFilter - fixed DVB subtitles display;
+	! WASAPI Renderer - eliminated a deadlock upon close;
+	! WASAPI Renderer - the end of file was sometimes handled incorrectly after seeking;
+	! EVR Custom - fixed blinking/black screen during playback of some DVDs (during menu and subtitles output) and videos when working with Microsoft DTV-DVD Video Decoder;
+	! under OS Vista and above, the 'YUV mixing' option is again available for VMR-9 renderless. When 'YUV mixing' is enabled, the 'Dynamic switch to BOB' is now activated;
+	! corrected tips display on the "Output" page;
+	! fixed handling of the Play/Pause button's state;
+	! corrected loading playlists in the UTF8 format without the marker;
+	! fixed opening of DVD from Favorites with the position saved;
+	! fixed opening subtitles in ANSI encoding;
+	! fixed switching VobSub subtitles in the case one file has several subtitles;
+	! corrected errors in the 'Rewind in the end' option behavior;
+	! corrected errors which hanged mpc-be.exe process upon closing player/file;
+	! corrected errors which led to incorrect choice of audio tracks;
+	! fixed frame aspect ratio when saving thumbnails;
+	! the 'Open DVD/Blu-ray' menu did not work in fullscreen D3D mode;
+	! 'Properties' -> 'Resources' - fixed saving embedded objects;
+	! AVC parsed did not handle level 5.2;
+	! 'YouTube' properties page - formats settings have been saved incorrectly;
+	! 'Fullscreen' properties page - the 'Apply' button did not change its state sometimes;
+	 ... and many more.
+
+
+1.3.0.3 - 2013-11-03
+==============================
+Added (+):
+	+ Added .ini file validity check before use (opening);
+	+ Added remembering of the active tab in the file properties' window;
+	+ Added support for double audio output;
+	+ Added support for Win 8.1;
+	+ Added Blu-ray discs autoplay. This option is temporarily combined with that for DVD;
+	+ Added the option "Auto reload subtitle files after detecting modification". It is turned off by default;
+	+ Full integration of subtitles' control menu with VSFilter/XySubFilter;
+	+ Added history saving for Blu-ray and DVD;
+	+ Added the ability to automatically open external audio files and subtitles. Blu-ray name - root folder name or disc label (when opening a disc) - is used for searching;
+	+ MPC Audio Renderer: Added an algorithm for choosing the optimal output audio format. Conversion is used if needed;
+	+ FLVSplitter: added support for Speex tracks;
+	+ FLVSplitter: added support for HEVC video (external decoder is required);
+	+ FLVSplitter: added support for acquiring FrameRate and AudioSampleRate from metadata;
+	+ EVR-CP: added chapters output onto the seekbar in D3D Fulscreen mode;
+	+ MP4Splitter: added support for AIC icod (Apple Intermediate Codec);
+	+ MP4Splitter: added support for HEVC/H.265;
+	+ MatroskaSplitter: added options window and the "Load Embedded Fonts" option;
+	+ MatroskaSplitter: added support for the "A_OPUS" identifier;
+	+ MatroskaSplitter: added support for HEVC/H.265;
+	+ MatroskaSplitter: added support for VP9;
+	+ DTSAC3Source: added basic support for .dtshd/DTSHDHDR;
+	+ AviSplitter: added support for 'avc1' FOURCC;
+	+ AviSplitter: added support for HEVC/H.265;
+	+ MpaDecFilter: added support for TAK decoding;
+	+ MpegSplitter: added support for HEVC/H.265;
+	+ MPCVideoDec: enabled decoding of MJ2C video (j2k video family);
+	+ MPCVideoDec: added support for "Microsoft Video 1" (CRAM);
+	+ MPCVideoDec: added HEVC/H.265 decoder;
+	+ MPCVideoDec: added libvpx-based VP9 decoder;
+	+ MPCVideoDec: added support for AIC icod (Apple Intermediate Codec);
+	+ UDP/HTTP Reader: added support for IPTV (UDP multicast);
+	+ Added TAKSplitter;
+	+ Added MPC RAW Video Splitter with support for raw data opening (MPEG/H.264/VC-1/HEVC/H.265);
+	 ... and many more.
+
+Changes (*):
+	* Corrected enabling of external subtitles;
+	* No transition to fullscreen mode upon start (when the option "Launch files in FullScreen" is active) if the file has no video;
+	* Disabled speed control in the player when using MPC Audio Renderer;
+	* CShockwaveGraph: added support for obtaining real video size. Zoom works correctly;
+	* Improved handling of relative paths for files and playlists;
+	* Improved and updated interaction with Youtube;
+	* Disabled displaying DirectX SDK in the renderer's statistics;
+	* Tags from external audio files are ignored and are not displayed as the title, album, etc.;
+	* Removed the options "Automatically set speaker count for the ivideo AC3 decoder" and "Switch from madVR to another renderer";
+	* DVD options (Menu language, Audio, Subtitles): now either the user locale's language (when MUI is installed) or the system language is selected as the default one;
+	* Improved handling of URL playlists. Added opening of "application/vnd.apple.mpegurl". Added support for relative links in playlists;
+	* A correct file name is generated when saving network streams;
+	* Remembering the main filter during rendering a DirectShow graph is implemented. This eliminates incorrect detections upon adding external tracks and speeds up the player's tracks switching;
+	* Added an option to stop trying opening "bad" playlist elements by pressing Esc;
+	* The font in MediaInfo window is now scaled according to the system settings. "Consolas" is now the preferred font for Windows 7;
+	* The option "Store settings to .ini file" is renamed to "Store settings in the player folder";
+	* The size of filters' configuration buttons is increased. "MPEG-2 decoder configuration" -> "MPEG-2/DVD decoder configuration";
+	* Filter options window: only extradata is shown instead of pbFormat;
+	* Changed saving of Favorites during Blu-ray playback;
+	* Changed VSFilter blocking check: it is now blocked also in the presense of XySubFilter + madVR. XySubFilter is allowed only with madVR renderer;
+	* Subtitles loading now works with VSFilter;
+	* The contents of "Subtitles" and "Subtitles->Misc" panels are swapped;
+	* "Subtitles->Misc" is renamed to "Subtitles->Rendering";
+	* The "Auto-load subtitles" option is moved from the "Playback" panel to the "Subtitles" panel;
+	* The path from the currently played file is used to load subtitles;
+	* Now multiple subtitle files can be added to the player through Dran'n'Drop;
+	* Corrected subtitles scaling in the default style;
+	* Default subtitles style: now the changes are applied on-the-fly, added a button to reset the settings to their defaults;
+	* Upon opening and playing back DVD/Blu-ray the root folder is displayed as the title;
+	* HDMV (Blu-ray) structure reading: skipping data for the absent files. This allows opening "pieces" of Blu-ray;
+	* Added the possibility to read the information about the disc's title from the disc.inf file upon opening a Blu-ray structure;
+	* Blu-ray/DVD: Improved/speeded up seeking;
+	* Removed D2VSource;
+	* MPC Audio Renderer: re-worked the way of obtaining the list of supported formats, additional checks are made. Now the crashes when a certain format is unsupported are impossible;
+	* MPC Audio Renderer: implemented caching, which enhanced the stability of sound playback;
+	* MPC Audio Renderer - output parameters are configured basing on the frequency, and not bit depth. Also, if the frequency is not supported, the nearest allowed value is taken, and not the maximal one;
+	* FLVSplitter: updated metadata parser, added support for key frames (if the "keyframes" tag is present). In this case, seeking speed is greatly improved;
+	* WVSplitter: removed support for streaming media;
+	* WVSplitter: corrected initial opening and data validity checking (signature checking) - removed only the check in the very beginning and limited the data to check to 1 megabyte. This allows opening and playing back iso.wv;
+	* Mpeg2DecFilter: handling subtitles only during DVD playback, standard tools are used for ordinary files;
+	* EVR-CP: added CPU load output in the renderer's statistics;
+	* EVR-CP statistics: minimal font height is 6, minimal width, 4;
+	* EVR-CP: improved statistics updating upon changing input media type;
+	* MP4Splitter: removed output of "excess" subtitles in MEDIASUBTYPE_ASS2 format, only output as MEDIASUBTYPE_UTF8 is left;
+	* MatroskaSplitter: improved seeking in MKV files, where key frames (CuePoints) are placed very infrequently;
+	* MatroskaSplitter: upon opening/reading of corrupt/incomplete files, if 10 Mb of continuous garbage occurs, it is assumed that no useful information remains, and the reading stops. This will speed up opening of the files downloaded, for example, by torrent clients;
+	* AviSplitter: improved handling of AVC1/H.264 video;
+	* OggSplitter: corrected handling of packets with changing TimeStamp, improved playback of clips from livestream;
+	* OggSplitter: optimized handling of online sources. Now the opening will consume less time;
+	* OggSplitter: the search is rewritten, greatly improved seeking in files with Theora video;
+	* AudioSwitcher: added a function for fixing incorrect WAVEFORMATEX structures and their conversion in WAVEFORMATEXTENSIBLE;
+	* MpegSplitter: added the possibility to open video streams without timestamps (which occurs on sattelite TV and IPTV);
+	* MpegSplitter: optimized handling of IPTV;
+	* MpegSplitter: improved detection of AAC/MpegAudio;
+	* MpegSplitter: speeded up opening of BD structure, fixed playback of сшитых BD;
+	* MpaSplitter: the duration is displayed during playback of links to files;
+	* MPCVideoDec: improved VC1 DXVA decoder;
+	* MPCVideoDec: removed the "Resize Method" option;
+	* MPCVideoDec: the "Chroma to RGB" option is renamed to "Preset", added the "Fastest" mode;
+	* MPCVideoDec: the "Colorspace" option is renamed to "Standard";
+	* MPCVideoDec: removed RGB16 and RGB15 as output formats. The "SwOutputFormats" option is changed to "SwFormats";
+	* MPCVideoDec: changed the way of saving the list of active codecs for an external decoder;
+	* MPCVideoDec: changed the sizes of decoder configuration tabs;
+	* UDP/HTTP Reader: UDP Reader filter is rewritten, added support for reading HTTP;
+	* UDP/HTTP Reader: discontinue data reception during pause and stop;
+	* Updated Chinese (Simplified) translation (authors: insolo, beter);
+	* Updated Dutch translation (author: beter);
+	* Updated Chinese (Traditional) translation (author: beter);
+	* Updated Italian translation (author: Lord Maius);
+	* Updated Basque translation (author: azpidatziak);
+	* Updated Greek translation (author: beter);
+	* Updated Romanian translation (author: beter);
+	* Updated Turkish translation (author: Thingol);
+	* Updated Korean translation (author: kuh3h3);
+	* Updated ukrainian translation (author: Arestarh1986);
+	* Updated installer script translation - Dutch, Simplified and Traditional Chinese (author: beter);
+	* MediaInfo 0.7.64+ svn rev.5964;
+	* Little-CMS 2.5 git-69ecafd3;
+	* ffmpeg 2.1 git-0610d6e8;
+	* libwebp 0.3.1 git-6d0cb3de;
+	* libpng 1.7.0 b21 git-fe6e6cf1;
+	* libopus 1.1 git-8f466274;
+	* libvpx 1.2 git-b26ce8b1;
+	* ZenLib 0.4.29+ svn rev.447;
+	 ... and many more.
+
+Fixes (!):
+	! Fixed file display for the (*.*) mask when Chinese (Simplified) locale is selected;
+	! Fixed a bug in opening files from network resources;
+	! Fixed the size (location) of the dialog in the options window;
+	! Fixed a memory leak during filter graph building caused by incorrect deletion of an audio renderer from the filters list;
+	! Fixed the crash after moving to the next file when the previous one was absent;
+	! Fixed changing the case of the symbols when opening files through Drag-and-drop;
+	! Fixed progress in Win7/8's taskbar for streaming media and files with unknown duration;
+	! Fixed nesting of OpenMediaPrivate() calls when invalid elements are present in the playlist;
+	! Fixed incorrect remembering of a file's position when it has been opened with an external audio file;
+	! Fixed opening (parsing) of nested local .m3u files;
+	! Fixed a bug that made it impossible to sleep/blank the screen after closing a file;
+	! Fixed tree display in the options menu for certain languages;
+	! Fixed the crash on using DivX Demux Filter + DivX H.264 Decoder;
+	! Fixed playlist clearing upon loading an external audio file during playback;
+	! Fixed problems with disappearing of the Mute button upon theme switching and with placement of the Mute button in the classic theme;
+	! Parsing HDMV (PGS) subtitles: fixed reading and storing of a palette;
+	! Fixed loading of external subtitles with XySubFilter;
+	! Fixed and optimized handling of subtitles' list and menu with Haali Media Splitter;
+	! Fixed .sup files parser;
+	! Fixed reading of Blu-ray with Seamless branching;
+	! Fixed opening of incomplete Blu-ray;
+	! MPC Audio Renderer: eliminated noise and crackling upon starting playback;
+	! FLVSplitter: obtaining FPS, AudioSampleRate (nSamplesPerSec) from the file's header. AudioSampleRate has greater priority than the data from the stream's header. Also fixed determining FPS with video packets' TimeStamp in the case of its absense from the header;
+	! WVSplitter: corrected starting time and full duration (now there is no pause in the beginning of playback);
+	! WVSplitter: fixed absense of the sound after Play->Stop->Play;
+	! WVSplitter: fixed drop of data upon opening;
+	! MP4Splitter: fixed reading of chapters' list;
+	! MpaDecFilter: fixed the problem of compatibility with system's MPEG-I Stream Splitter filter;
+	! MpaDecFilter: fixed integer overflow for RealMedia;
+	! FLACSource: fixed Vorbis Comment tags parser;
+	! MPCVideoDec: fixed the crash on software MPEG2 decoding;
+	! MPCVideoDec: fixed playback of a H.264 stream without timestamps in the DXVA mode;
+	! MPCVideoDec: fixed saving format conversion options to an .ini file;
+	 ... and many more.
+
+
+1.2.0.3 - 2013-06-18
+==============================
+Added (+):
+	+ SPEEX decoder (Speex Audio);
+	+ MPC Audio Renderer - completely rewritten, now it fully supports WASAPI Exclusive/Shared modes. Uses event mode for rendering. Added internal volume control. Sound mute is also possible for Bitstream;
+	+ MPC Video Decoder: dynamic video stream / aspect ratio / frame size changing during playback is supported now;
+	+ MP4Splitter - Speex (Speex Audio) support;
+	+ MPEGSplitter - added (improved) support for Blu-ray with Seamless branching;
+	+ G2M video decoder (Go2Webinar);
+	+ LCDShader by JanWillem32;
+	+ XSPF (XML Shareable Playlist Format) support;
+	+ VMware Video ('VMnc') support;
+	+ Handling playlists (multiplaylist) from YouTube.com;
+	+ Opening and saving links from Vimeo.com;
+	+ Ability to set paths (templates) for automatic audio tracks loading;
+	+ Support for AAC stream playback in ShoutCastSource;
+	+ Support for description tag in ShoutCastSource;
+	+ Support for DVB subtitles in .wtv (Windows Media Center TV File);
+	+ MPEG-1/MPEG-2 software decoders based on ffmpeg;
+	+ Full support for Apple's MPEG2 in MP4/MOV Splitter ;
+	+ Parsing TrueHD in MPEGSplitter;
+	+ VC1-I decoding without DXVA;
+	+ Ability to open the file open dialog for adding files from the playlist;
+	+ Forced one-window mode;
+	+ Filter priority management system - choosing filters for specific file formats;
+	+ Alternate handling of Youtube video: the stream is downloaded into a temporary file in the current user's TEMP folder, and then played; the temporary file is deleted after playback;
+	+ Ability to choose desired format for Youtube clips;
+	+ Support for bitstreaming DTS-HD/E-AC3 (DDPlus)/TrueHD through HDMI;
+	+ Tag Specifications support. The information on the author, track's title, etc. is read and displayed;
+	+ Support for reading/displaying Album's data for FLAC, WavPack and MusePack;
+	+ Unsychronised lyrics support;
+	+ Support for V210 in MP4/MOV Splitter;
+	+ v210 video decoder;
+	+ Ability to specify image quality upon saving frames and thumbnails;
+	+ Speex support in OggSplitter;
+	+ MPEG1 support in AviSplitter;
+	+ Support for .avi's created with Matrox's MPEG-2 in AviSplitter;
+	+ OPUS support in MatroskaSplitter;
+	+ ALAC support in MatroskaSplitter;
+	+ MEDIASUBTYPE_Divx ('Divx') support;
+	+ Support for reading EDID info from monitor/TV;
+	+ Support for files with an ID3 Tag in the beginning in MusePackSplitter;
+	+ Automatic ShellExt registration from MPC-BE;
+	 ... and many more.
+
+Changes (*):
+	* MpaDecFilter - A/V sync (TimeStamp correction) is disabled when playing audio files and audio-only streams;
+	* Improved Interlaced frame detection in H.264 DXVA decoder;
+	* Updated frame size restrictions for VP5 video cards;
+	* Improved H.264 support in AVISplitter;
+	* Added support for AVC1-style video inside .avi;
+	* Added validity check for PTS;
+	* Improved .avi detection in MPCVideoDecFilter: it's now detected by header only, extension check is removed;
+	* Youtube parser: detecting video format by itag value;
+	* Before opening http/https/www links their validity is checked;
+	* Improved ShoutCast handling, links to playlists are handled better;
+	* SeekBar now shows data download progress (Buffering), mouse pointer is also changed;
+	* .M3U playlist parser is updated. Reading .M3U playlists is greatly improved;
+	* File format categories in the file opening dialog are optimized;
+	* The "Save Thumbnails" button is disabled for streaming video and for the video that is still being downloaded (Buffering ...);
+	* The correct name is used for saving a screenshot or thumbnail from Youtube;
+	* Improved handling HTTP/1.1 links in ShoutcastSource;
+	* Improved streaming audio handling in OggSplitter;
+	* Improved audio track selection strategy. Now it works correctly with external splitters. Information on presence of the Forced/Default flag is available from the external splitter;
+	* MatroskaSplitter: adding "Default" to the track's name (even if it has the Forced flag set);
+	* OggSplitter: improved ogg + vorbis support, now it is possible to play local files and streaming with changing pages;
+	* FLVSplitter: added reading file duration from the header;
+	* MatroskaSplitter: changed seeking principle, corrupt files and files without or with little key frames (MetaSeek/Cues info) are now seeked much better; 
+	* Improved behavior of FLV/MP4 splitters with incomplete files;
+	* Improved reading data (ID and language) about audio and subtitle tracks from an .IFO file;
+	* MPEGSplitter: improved tracks parsing (search) inside an MPEG stream;
+	* MP4Splitter: improved setting MediaType for Apple MPEG2 (HDV/XDV) output;
+	* MP4Splitter: improved searching for some files;
+	* OGGSplitter: improved seeking for files with Theora Video;
+	* MatroskaSplitter: improved key frames (MATROSKA_ID_CUES) and chapters (MATROSKA_ID_CHAPTERS) parsing;
+	* MPEGSplitter: improved HDMV LPCM parsing;
+	* FLVSplitter: improved handling of streaming data;
+	* Improved user-specified audio track selection, now it is possible to specify several conditions delimited by |;
+	* Disallowed striked and underlined fonts for default subtitles' style;
+	* Removed color selection in subtitle options;
+	* Forced toolbar redraw during window dragging;
+	* File opening dialog now offers a correct path (from the last opened file);
+	* Improved FlyBar functioning together with madVR;
+	* Last used path is now remembered for loading external DirectShow filter from file, loading external subtitles and DVD/BD opening dialogs;
+	* Changed elements display logic in subtitle options menu;
+	* MpaDecFilter, Real Audio decoding: if there are no data in the extradata block from the splitter, simply trying to decode "as is";
+	* Improved saving playlist in the .M3U format - added label information;
+	* Improved WavPack Parser behavior - playback duration is now calculated correctly;
+	* Slightly changed duplicates search upon adding a filter to the graph;
+	* Improved handling of covers with .jpeg and .png extensions. Added the "%file_name%.jpg" template;
+	* Removed Level & ReFrames restriction for Intel video cards;
+	* Playlist management is disabled for BD if internal MPEGSplitter is not selected in the options;
+	* Increased buffer size for playlist download;
+	* Improved streaming MPEG-TS (IPTV) playback;
+	* The MediaInfo tab is not shown for links now;
+	* Implemented starting upon pressing Enter in the playlist. Added support for multi-selection, Ctrl+A selects all, Ctrl+I inverts selection;
+	* Disabled deletion upon pressing BackSpace in Favorites;
+	* Improved MediaType checking algorithm for subtitles;
+	* MPEGSplitter: optimized streaming MPEG-TS handling;
+	* Added ability to change file "Properties" dialog's size, the new size is remembered;
+	* The menu with audio tracks is now shown on the toolbar for files without video;
+	* Disabled attempts to build preview graph for audio;
+	* MPEGSplitter: added an option to enable/disable dummy subtitles output;
+	* Improved madVR handling in multi-monitor configurations;
+	* OGGSplitter: improved Opus playback, packet duration is now calculated correctly;
+	* EVR Custom: VSync is not used on pause;
+	* MPC-BE playlist: added possibility to save/load element's duration;
+	* MPC-BE playlist: validity check, files over 1 MB in size are not loaded;
+	* MPC-BE playlist: current element is highlighted according to the color settings of the player's current theme;
+	* MPEGSplitter: improved handling of packets with bogus pts in MPEG-TS;
+	* Improved switching to MAXIMIZED window mode for captionless styles;
+	* Seek preview window is drawn UNDER the seekbar according to multi-monitor configuration;
+	* Priority control: now only the Splitters that have a compatible MediaType are shown for the formats;
+	* MPEGSplitter: increased queue depth for audio and subtitle tracks;
+	* Smoother movement of the preview window. Added event handlers for middle mouse button click (enable/disable preview) and scroll (cursor/preview movement by 5 pixels; by 1 with Ctrl, by 10 with Shift) when the cursor is over the seekbar;
+	* Shaders' code is moved to the Shaders folder which is created either in the profile, if the settings are saved in the registry, or in the player's .ЕХЕ folder, if the settings are saved in an .INI file;
+	* File opening dialog now monitors the clipboard and automatically substitutes the link on Youtube or Vimeo if one is found;
+	* MPCVideoDecFilter: changing "Output formats" on the fly now works for VMR renderers, too;
+	* EVR Custom now applies AR changes on the fly, it also adjusts FPS on the fly if it changes in the input's MediaType;
+	* Statistics: added input's MediaType data; the information about decoder and input's MediaType is now displayed also under VMR9;
+	* Added scaling to video renderer's statistics;
+	* MPCVideoDecFilter: removed options "Error resilience" and "IDCT Algorithm";
+	* Removed the second parsing of youtube.com and vimeo.com links upon saving the file;
+	* Preventing duplicates in the playlist upon opening BD;
+	* Real filter's name is shown in the graph instead of the file's name upon connecting Source;
+	* Maximal supported shaders' version is selected automatically;
+	* H.264 DXVA decoder: improved Interlaced content handling;
+	* MPCVideoDecFilter: tuned VC-1 handling, removed Jitter in DXVA mode;
+	* OSD now works independently of the renderer;
+	* Improved DXVA H.264 decoder functioning on "old" ATI UVD/UVD+ video cards;
+	* Removed automatic Mute when setting the volume to 0;
+	* Improved DXVA2 mode detection for several decoders (AcrSoft and Cyberlink);
+	* Removed .smi extension from the Real Script group;
+	* DXVA1 indication now works for any renderer;
+	* OSD: "Segoe UI" font is now used by default instead of "Calibri" for Windows Vistа and newer systems;
+	* The FIRST added element becomes active and highlighted upon adding files to the playlist;
+	* MPC-BE playlist: improved Drag'n'Drop DVD/BD support;
+	* Support for ShellExt registration when launching from the command line with parameters for [un]registering file associations. Now ShellExt are registered on program [un]install;
+	* VTSReader + MpegSplitter now reads Aspect Ratio data from the file itself upon opening an .IFO file and makes further use of those data in MpegSplitter;
+	* AviSplitter: improved playback of badly interlaced AVI-files, reduced memory consumption;
+	* AviSplitter: changed indexing strategy if the indexes are absent;
+	* AviSplitter: improved showing of DivX Subtitle;
+	* MatroskaSplitter: completely reworked AvgTimePerFrame calculation in the case of its absence from the header;
+	* MatroskaSplitter now also calculates the duration upon indexing of corrupt/incomplete/cut files;
+	* FLVSplitter: improved Metadata parser;
+	* FLVSplitter: improved duration calculation;
+	* AudioSwitcher: removed the "Down-sample to 44100 Hz" option;
+	* MPCVideoDec sets the restriction ref frames = 16 for nVIDIA, both for HD and SD video;
+	* DXVA decoder: improved WMV9/VC-1 handling;
+	* BaseVideoFilter and MPCVideoDec: decoder status (SOFT/DXVA1/DXVA2) now determined better;
+	* Updated Russian translation;
+	* Updated Italian translation (by Lord Maius);
+	* Updated Chinese (Simplified) translation (by insolo);
+	* Updated Korean translation (by kuh3h3);
+	* Updated Ukrainian translation (by arestarh1986);
+	* ffmpeg 1.2.1 git-8aea2f05;
+	* libopus 1.0.1 git-b518b56f;
+	* Little-CMS 2.5 rc1 git-e5ce1294;
+	* libwebp 0.3.0 git-3fa595a5;
+	* libopenjpeg 2.0.0 svn rev.2343;
+	* MediaInfo 0.7.63+ svn rev.5690;
+	* libpng 1.7.0 b15 git-1bc57477;
+	* ZenLib 0.4.29+ svn rev.443;
+	* VirtualDub 1.10.4 Test 6;
+	* zlib 1.2.8;
+	 ... and many more.
+
+Fixes (!):
+	! Software video decoder: changed the method of transferring active codecs list to the decoder;
+	! Tracking AR changes not only in the stream, but also according to video size;
+	! 1920х1080 video size was determined incorrectly;
+	! YouTube: now the time left is displayed in a usual hh:mm:ss way in the file saving dialog;
+	! Youtube parser: eliminated false positives and link opening problems;
+	! MpaDecFilter lost the sound on decoding error and further try tore-initialize ffmpeg decoder;
+	! Clip names in the playlist are displayed correctly for Youtube clips;
+	! OGGSplitter: fixed playback of some OGG files having packets with incorrect pts in the beginning;
+	! OggSplitter: if an empty "page" is detected during tracks enumeration, the player does not exit, but simply skips it;
+	! RealMediaSplitter: only "valid" packets having Data Packet Header are involved in duration calculation during indexing;
+	! If the length of the file is unknown for a keyboard seek operation, the seek is not performed; 
+	! Fixed crash on coding HDMV LPCM to AC3;
+	! Fixed OSD timer;
+	! MPEGSplitter: fixed handling of streaming MPEG-TS, now the playback should not pause/stop on buffer underrun;
+	! Fixed connecting own external filters when the internal ones are locked;
+	! Fixed the connection of Low Merit video decoder;
+	! Fixed a hang on WinXP upon resizing/moving the playlist;
+	! Black screen on OGG+Theora;
+	! The command assigned to the left mouse click did not work with Minimal preset;
+	! Fixed MUTE icon displacement on the toolbar upon using it;
+	! Several file opening dialogs were not displayed on Windows XP;
+	! BD opening did not work when using an external filter;
+	! Fixed dissynchronization for RealVideo 3/4 when using an internal video decoder with multithreading enabled;
+	! Fixed Real Audio playback with the internal splitter;
+	! Fixed tearing for some MPEG-TS/PS from network;
+	! Fixed inability to play incomplete MKV/WebM;
+	! MatroskaSplitter did not show the duration of streaming video (being downloaded);
+	! Fixed mixer crash in the 64-bit version;
+	! Fixed MKV VobSub subtitles display when they had the property "custom colors: ON";
+	! The flybar was not hidden upon SC_MINIMIZE to the main window (for example, in OnBossKey());
+	! Fixed parsing .M3U playlists from network;
+	! Fixed playback/seek of huge FLAC files;
+	! Fixed playback of video with the Rotate flag;
+	! Fixed MatroskaSplitter's behavior with VC1 + Cyberlink Video Decoder;
+	! WVSplitter: fixed opening of multichannel .wv files;
+	! Fixed accidental execution of the command assigned to the left mouse click upon double clicking the window's title;
+	! Fixed crash upon switching DVB subtitles from a smaller resolution to a bigger one;
+	! HD (PGS/DVB) subtitles were not shown in VMR7-Renderless output;
+	! Fixed connection of external audio tracks;
+	! FLVSplitter: fixed playback of files with an AAC track;
+	! MP4Splitter: fixed .m4v files playback;
+	! Fixed problems with registering some external filters (AMR/TTA/WV/MusePack) in the system;
+	! Fixed video streams switching;
+	! Fixed automatic loading of subtitles from network;
+	! Fixed DVD playback with VMR7/VMR9 renderers;
+	! MP4Splitter: fixed playback of some .3gp files with AMR sound;
+	! Fixed theme switching on the fly during playback - the play/pause sign was displayed incorrectly;
+	! File associations (formats): adding or deleting associations for user-supplied extensions did not work;
+	! Fixed new shader creation in the Shader Editor;
+	! Fixed play/pause buttons display upon deleting a file from the playlist;
+	! FLVSplitter: fixed Tags reading and handling;
+	! Playback is not paused anymore during seek to the nearest subtitles;
+	! Fixed incorrect aspect ratio setting during software WMV playback on VMR9/VMR7 renderers;
+	! Fixed false detection of AAC streams as MP3;
+	! MpaDecFilter: fixed Bitstream DTSWAV;
+	! MPASplitter: fixed MPEGAudio parsing;
+	 ... and many more.
+
+
+1.1.3.0 - 2012-12-27
+==============================
+A total of about 450 changes have been made in this version.
+
+Added (+):
+	+ MPEGSplitter - added a "fast seek" option;
+	+ File formats - button for deselecting all formats;
+	+ AVISplitter - added support for parsing MPEG Audio tracks, as there are files with "untrustworthy" headers;
+	+ MP4/MOV Splitter - added support for AMR Wide band audio tracks, support for Rotate tag;
+	+ Support for reading Rotate tag from QuickTime files (using internal splitter) and video rotation (if video renderer supports it);
+	+ Getting DXVA status for ANY compliant renderer, and not only internal one (works on EVR, madVR). Only DXVA 2.0 is supported;
+	+ Support for custom Pixel Shader in madVR;
+	+ Added commands for toolbar buttons SUB / AUD (Load Ext Subtitle... / Laod Ext Audio...) into context menu appearing upon right click;
+	+ WVSource/MusePackSource - added support for APE Tag, reading cuesheet (information about chapters);
+	+ FLACSource - support for reading information about chapters; in particular, using CUE file embedded into Flac's tag - CUESHEET;;
+	+ Support for subtitles in XSUB format (DiVX subtitles);
+	+ Added a possibility for setting icons by type (video and audio) instead of extension;
+	+ MPEG2 DXVA decoder - detecting 2:3 Pulldown and correctly setting frame duration;
+	+ Added two hotkeys for showing system time and file name in OSD;
+	+ Added basic support for handling subtitles with VSFilter - full support for managing subtitles' list, show/hide, switching, loading external subtitles via menu and via Drag'n'Drop;
+	+ MPCVideoDec - support for choosing Deintelacing method;
+	+ Support for external subtitles in UTF-8 without BOM header;
+	+ MPEGSplitter - support for reading palette for VobSub subtitles upon opening via .IFO;
+	+ Support for DVD_Subpicture;
+	+ Possibility for opening external logos in the following formats: *.bmp; *.jpg; *.jpeg; *.png; *.psd, *.gif; *.tif; *.tiff; *.tga, *.emf; *.ico; *.webp; *.webpll;
+	+ Added Flybar panel;
+	+ Added buttons for Flybar in D3D exclusive mode (file close and program exit);
+	+ "Download Toolbar Images" link;
+	+ Possibility for opening images: bmp, jpeg, gif, png, psd, tiff, emf, ico, webp and webpll;
+	+ Youtube clip title is now shown in main window's title, seekbar and OSD;
+	 ... and many more.
+
+Changes (*):
+	* Improved Vorbis parser;
+	* OggSplitter - added header check;
+	* Changed UTF-8 detection method in a file without BOM;
+	* MP4Splitter - improved Chapter support;
+	* FLVSplitter - improved streaming video support;
+	* Improved handling of external/system filters: now "Prefer" works for external Source/Splitter filters as well as for Transform filters. Also fixed priority setting for internal WavPack/MusePack/TTA/AMR Splitter (since they do not have their own Source);
+	* Stricter filter for loading logos for musical files;
+	* WVSource: code cosmetics;
+	* VSFilter - XSUB: if subtitles' size exceeds video size, then trying to fit the frame;
+	* MpaDecFilter -> Mixer: changed stereo upmix coefficients;
+	* MusePack/WavPack - APETAG support, now getting and showing in the player full information on artist, title, year, album, etc.;
+	* Small cosmetics for EVR/VMR9 statistics;
+	* Improved memory leaks handling mechanism;
+	* Enabled optimization of 7.1-to-stereo downmix;
+	* DXVA decoder - refined handling of an EndOfStream signal from a lower-merit filter;
+	* OSD options cosmetics;
+	* "Recent" jump list in Windows 7 taskbar is cleared upon clearing MRU files
+	list;
+	* File associations - if the user presses the "Apply" button, changes nothing and presses "OK", then file types registration is not launched once more; also, the window for choosing assotiated extensions/types is not shown under Win8
+	* Updated MediaInfo language files;
+	* MpaDecFilter: updated CMixer, optimization;
+	* MPEG2 DXVA decoder - changed handling of 2:3 Pulldown frames, disallowed setting constant frame duration, since there can be mixed content (interlaced
+	frames together with 2:3 Pulldown);
+	* XSUB subtitles - correct positioning and scaling upon changing window size;
+	* MpaDecFilter: using sample formats from ffmpeg for internal processing;
+	* MpaDecFilter: optimized decoding PS2PCM and PS2ADPCM;
+	* WebServer: optimization;
+	* Shaders are only saved when it is needed;
+	* OSD message upon changing subtitles' delay interval when using VSFilter;
+	* More correct display and behavior of "Subtitles" menu when using VSFilter;
+	* Improved handling of subtitles with VSFilter, also added a possibility to control delays (F1/F2) for VSFilter;
+	* Optimized volume level step setting;
+	* Improved HDMV (PGS) subtitles parsing;
+	* Subtitles queue handler - changing thread priority not only according to settings, but also for subtitles' type: ALWAYS setting low priority for raster subtitles;
+	* An error or warning message upon creating video renderer is displayed only once;
+	* FLACSource - changed mechanism of tags extraction, now UTF8 tags are read correctly;
+	* SaveAs - using only file name, without path, for local files;
+	* Video renderer, statistics - obtaining and showing frame type (progressive/interlace) regardless of decoder;
+	* Correct setting mouse cursor for filters' settings, now the hand (IDC_HAND) is set only for relevant elements;
+	* Changed algorighm of UTF-8 recognition;
+	* Improved background painting for VolumeCtrl;
+	* Checking toolbar и flybar for correct sizes;
+	* Transparency in logos and external images is rendered correctly;
+	* DXVA H.264 - improved supported video check for DXVA decoding;
+	* Weakened restriction on frame size for Nvidia GTX 660Ti;
+	* Removed switching player's mode (look) on pressing Esc;
+	* MPEGSplitter - upon opening a .vob/.mpg file, looking for a DVD .ifo file with a corresponding structure, and if one is found - reading palette from it for rendering VobSub subtitles;
+	* Subtitles - improved action of TextPassThruFilter filter;
+	* Optimized FlyBar behavior;
+	* Completely revised H.264 DXVA decoder, improved handling of H.264 Interlaced;
+	* Youtube parser: added stereo3d format to exception list;
+	* Removed exception for taking screenshots for MadVR with version 0.84.0 and above;
+	* Added SeekBar in compact mode;
+	* Saving screenshots in JPG and TIFF is now performed through GDI+;
+	* MPEG2 DXVA Decoder - optimization;
+	* DVD: if FirstPlay command is absent, trying opening DVD Menu Title;
+	* Removed automatic switching the sound on/off upon changing the volume;
+	* Optimized AsyncReader;
+	* Optimized opening and saving images;
+	* Optimized opening links from youtu.be;
+	* Added a possibility to disable internal logic of choosing audio tracks and subtitles;
+	* Updated Korean translation, author - kuh3h3;
+	* Updated Ukrainian translation, author - arestarh1986;
+	* Updated German translation, author - Markus Gaugg;
+	* libwebp 0.2.1 git-6bf20874;
+	* libpng 1.5.13 git-753fd3f;
+	* libopus 1.0.1 git-5367dac3;
+	* Virtualdub 1.10.3 Test 7;
+	* ffmpeg git-ceee4407;
+	* MediaInfo 0.7.61+ svn rev.5314;
+	* ZenLibs v0.4.28+ svn rev.411;
+	* Little-CMS git-e4624c8d;
+	* SoundTouch svn rev.160;
+	 ... and many more.
+
+Fixes (!):
+	! HDMV(PGS) субтитры - fixed several problems leading to runtime errors;
+	! Fixed subtitles handling;
+	! DVB subtitles parser: parsing PAGE was not fully correct;
+	! AudioSwitcher: fixed overflow (which could result in stutter and crash on some WavPack tracks);
+	! Slightly corrected handling of raster subtitles, fixed problems that resulted in runtime errors;
+	! When opening a link from Youtube, OSD now correctly displays the clip's title;
+	! DirectVobSub (VSFilter) - fixed handling of P010/P016 video;
+	! The command "reload subtitles" was erroneously exchanged with subtitles' style dialog;
+	! DirectVobSub - crashed upon showing PGS/DVB subtitles when their resolution exceeded video stream resolution;
+	! DirectVobSub (auto-loading version) - was not loaded automatically under Win7;
+	! DXVA decoding of VC1-I;
+	! Showing time on the scrollbar when "Subresync" is enabled;
+	! MpaDecFilter: fixed crash on DTS files;
+	! AviSplitter: corrected playback of files with corrupt fragments in the header;
+	! PGS subtitles parser;
+	! The possibility of switching tracks with subtitles via filter's menu should not depend on subtitles' handling in the player itself;
+	! The Lock/Unlock button on the flybar was rendered incorrectly;
+	! Playlist closed upon opening a file;
+	! Big CPU load in DXVA mode during H.264 decoding;
+	! Seekbar and statusbar do not indicate image loading;
+	! Playlistbar: fixed background rendering upon switching a theme;
+	! Internal FLACSource did not play files whose header lacked information about minimal and maximal frame size;
+	! Subtitles were not shown when using ffdshow video decoder & subtitle filter;
+	! FLACSource - problem opening corrupt files;
+	! SaveAs - removing "incorrect" characters - only for files from youtube;
+	! Subtitles' option "Всегда использовать внешние субтитры как основные" did not work when internal track selection logic was disabled;
+	! Opening some ANSI/ASCII files;
+	! MPEGSplitter - sometimes not all data were read from Packetized Elementary Stream (PES) header;
+	! Language switching - buttons' tooltips language was not changed in Win 7'spreview in the taskbar;
+	! Some external filters were not registered;
+	! Showing subtitles in YUY2 output mode;
+	! MPEGSplitter - some MPEG-TS could not be opened;
+	! Fixed problem with png rendering;
+	! MPCVideoDec, external filter - codecs' selection was not saved;
+	! External filters - Settings' header missed text;
+	! VP3, THEORA, MPEG4 - eliminated artifacts and picture "spilling" after seek;
+	! H264 DXVA decoder - slice control data were supplied to the decoder incorrectly for some specific Interlaced streams;
+	! FLV splitter - incorrect handling of PCM audio tracks;
+	! VolumeCtrl sometimes caused malfunction;
+	! Fixed volume control rendering;
+	! Memory leak in MPADecFilter when using mixer;
+	! WebServer - numerous fixes and optimization;
+	! Main window header was constructed incorrectly;
+	! Installer - fixed the error on uninstall;
+	! Hangs in specific circumstances with Preview enabled;
+	 ... and many more.
+
+
+1.0.3.1 - 2012-09-26
+==============================
+Added (+):
+	+ Added an option in "Speed Step" settings;
+	+ DXVA (GPU) indicator on the toolbar;
+	+ JPEG 2000 support in MP4/MOV splitter and decoder, ffmpeg + OpenJPEG library (http://www.openjpeg.org) is used for decoding;
+	+ Full Opus support, splitter + decoder, ffmpeg + libopus is used for decoding;
+
+Changes (*):
+	* FLVSplitter, streaming video (youtube or any other http source) - opening speed-up, determining file duration during playback;
+	* Short links support - youtu.be;
+	* PGS subtitles parsing/handling mechanism has been revised - multiple subtitles are correctly displayed simultaneously now;
+	* PGS/DVB subtitles rendering - optimization;
+	* YouTube parser optimization;
+	* Ukrainian localization update;
+	* Disabled DVR-MS Caption;
+	* ShellExt - module operation improvement, optimization;
+	* MediaInfo 0.7.60+ svn rev.5104;
+	* libpng 1.5.13 git-11c1e0d;
+	* ffmpeg git-f75c5f0;
+	* openjpeg 1.5;
+	* libopus (version git 2c3b5ee dated 20120921);
+
+Fixes (!):
+	! Fixed problem with incorrect selecting and highlighting of DVD objects (there was displacement of coordinates);
+	! Fixed problem with saving window state on program exit (SIZE_MAXIMIZED/SIZE_MINIMIZED);
+	! Fixed problem with player startup in "Use same process for every file" mode, multiple windows were opened after multiple clicks, ticket #29;
+	! MpcAudioRenderer - WASAPI Shared mode is not used now if sampling rates of the input and output streams differ;
+
+
+1.0.3.0 - 2012-09-17
+============================
+
+
+1.0.1.0 (Beta) - 2012-09-12
+============================
+
+
+2011-02-17
+============================
+MPC-HC - Black Edition Mod

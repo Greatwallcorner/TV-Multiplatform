@@ -1,0 +1,1392 @@
+{
+  "class": [
+    {
+      "type_id": "1",
+      "type_name": "玩偶电影"
+    },
+    {
+      "type_id": "2",
+      "type_name": "玩偶剧集"
+    },
+    {
+      "type_id": "3",
+      "type_name": "动漫"
+    },
+    {
+      "type_id": "4",
+      "type_name": "综艺"
+    },
+    {
+      "type_id": "6",
+      "type_name": "短剧"
+    },
+    {
+      "type_id": "5",
+      "type_name": "音乐"
+    }
+  ],
+  "list": [
+    {
+      "vod_id": "/index.php/voddetail/81365.html",
+      "vod_name": "坚如磐石",
+      "vod_pic": "https://pic.wujinpp.com/upload/vod/20231001-1/faf091642f68e94773ca345db15462bb.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/78229.html",
+      "vod_name": "速度与激情10",
+      "vod_pic": "https://img.liangzipic.com/upload/vod/20230518-1/87fa923da8ccd50b93948b868f6bf9e0.jpg",
+      "vod_remarks": "4K"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82048.html",
+      "vod_name": "惊奇队长2",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-11-11/16996656491.jpg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82377.html",
+      "vod_name": "饥饿游戏：鸣鸟与蛇之歌",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-09/17021336691.jpg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82368.html",
+      "vod_name": "凶案深处",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-08/202312081702005883.jpg",
+      "vod_remarks": "全26集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81344.html",
+      "vod_name": "前任4：英年早婚",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/09/30/p2896815253.md.jpeg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81743.html",
+      "vod_name": "志愿军：雄兵出击",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231029-1/1d39a7c88a5828d91c6964d22ff2f3d5.jpg",
+      "vod_remarks": "4K"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81912.html",
+      "vod_name": "花月杀手",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-10-21/16978950301.jpg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82338.html",
+      "vod_name": "斗罗大陆 导演剪辑版",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2022-04-01/164881667012.jpg",
+      "vod_remarks": "4K"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80018.html",
+      "vod_name": "热烈",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/31/p2895553074.md.jpeg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82323.html",
+      "vod_name": "甜蜜家园2",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-01/17014011031.jpg",
+      "vod_remarks": "全8集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/79743.html",
+      "vod_name": "巫蛊人偶",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/18/1689556370-443899-p2890507464.md.jpeg",
+      "vod_remarks": "HD"
+    },
+    {
+      "vod_id": "/index.php/voddetail/79399.html",
+      "vod_name": "妙事无穷",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/08/p2881557504.md.webp",
+      "vod_remarks": "HD"
+    },
+    {
+      "vod_id": "/index.php/voddetail/79398.html",
+      "vod_name": "新死亡列车",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/08/p2882245950.md.webp",
+      "vod_remarks": "HD"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81973.html",
+      "vod_name": "杀手",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-11-10/16996057771.jpg",
+      "vod_remarks": "4K"
+    },
+    {
+      "vod_id": "/index.php/voddetail/79508.html",
+      "vod_name": "碟中谍7：致命清算（上）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/11/p2892147732.md.jpeg",
+      "vod_remarks": "HD"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82441.html",
+      "vod_name": "鲲鹏击浪",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-18/17029005011.jpg",
+      "vod_remarks": "更新至02集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82026.html",
+      "vod_name": "中央广播电视总台2023主持人大赛",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-10-07/16966395721.jpg",
+      "vod_remarks": "更新至第20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81761.html",
+      "vod_name": "OVERTAKE！",
+      "vod_pic": "https://img.lzzyimg.com/upload/vod/20231001-1/3d6ae488e0750cf2ed14d760d33ab87b.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82328.html",
+      "vod_name": "欢迎回到三达里",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-02/17015281081.jpg",
+      "vod_remarks": "更新至第06集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81733.html",
+      "vod_name": "超超超超超喜欢你的100个女朋友",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231008-1/6cab4c2bd6b8628cd1863f19bfd6c9fb.jpg",
+      "vod_remarks": "更新至第11集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81466.html",
+      "vod_name": "我们的歌第五季",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231008-1/e7663636050572076b548a3c74a81eb8.jpg",
+      "vod_remarks": "更新至第20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82342.html",
+      "vod_name": "夜幕降临2023",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-03/17016186911.jpg",
+      "vod_remarks": "更新至第09集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82020.html",
+      "vod_name": "头文字D续作",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-10-01/16961143621.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81389.html",
+      "vod_name": "暴食的巴萨卡",
+      "vod_pic": "https://pic.wujinpp.com/upload/vod/20231001-1/6b1b9ca0d436d9ea59f36a80286dc7e8.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82155.html",
+      "vod_name": "万古神话",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221105-1/222b21af2b2a0bd4b3a8aa12582b183a.jpg",
+      "vod_remarks": "更新至第144集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82432.html",
+      "vod_name": "看不见的朋友",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-18/17028593851.jpg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81270.html",
+      "vod_name": "仙逆",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20230925-1/8cf0e04a2995d98b194274a3d1c63838.jpg",
+      "vod_remarks": "更新至第15集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80671.html",
+      "vod_name": "独步逍遥",
+      "vod_pic": "https://pic.lzzypic.com/upload/vod/20220319-1/55b6f94492546f97cf22f0ed7cb083bb.jpg",
+      "vod_remarks": "更新至第374集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81485.html",
+      "vod_name": "万界仙踪",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221125-1/a94a70874ea198d9bdc66bf4f6ea6939.jpg",
+      "vod_remarks": "更新至第408集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/78839.html",
+      "vod_name": "逆天至尊",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221115-1/1c6805bdaf862adf0a7fef6f22190bf8.jpg",
+      "vod_remarks": "更新至第259集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82032.html",
+      "vod_name": "无上神帝",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221115-1/b65cc779b3ec9164ec4b649cf08b79e3.jpg",
+      "vod_remarks": "更新至第336集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82432.html",
+      "vod_name": "看不见的朋友",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-18/17028593851.jpg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82431.html",
+      "vod_name": "粽邪3：鬼门开",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-18/17028896901.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80978.html",
+      "vod_name": "哨兵",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/09/10/p2897842155.md.jpeg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82428.html",
+      "vod_name": "冒险王2023",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-17/202312171702797352.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82420.html",
+      "vod_name": "酿魂",
+      "vod_pic": "https://pic.wujinpp.com/upload/vod/20231215-1/1ef501555cd5f9e838dbce3ee0c18dbe.jpg",
+      "vod_remarks": "HD国语|粤语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82425.html",
+      "vod_name": "看不见的他们",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-16/17027117271.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82423.html",
+      "vod_name": "生死交锋",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-16/17026969861.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82427.html",
+      "vod_name": "深渊宝藏",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-17/202312171702776918.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82394.html",
+      "vod_name": "大家的歌",
+      "vod_pic": "https://img.lzzyimg.com/upload/vod/20231212-1/c1103c7a6061029a08f6721a2e0a7e10.jpg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82424.html",
+      "vod_name": "普通男女",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-14/17025386291.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81365.html",
+      "vod_name": "坚如磐石",
+      "vod_pic": "https://pic.wujinpp.com/upload/vod/20231001-1/faf091642f68e94773ca345db15462bb.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82417.html",
+      "vod_name": "家庭计划",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-15/17026089601.jpg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82418.html",
+      "vod_name": "TheWild：野兽们的战争",
+      "vod_pic": "https://pic.wujinpp.com/upload/vod/20231214-1/f114c385b18fdacb60c20dc915186688.jpg",
+      "vod_remarks": "HD"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82409.html",
+      "vod_name": "不日成婚2",
+      "vod_pic": "/img.php?url=https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2889238555.jpg",
+      "vod_remarks": "HD国语|粤语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/79759.html",
+      "vod_name": "发条橙",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221127-1/c9418ad39042081f75bb9451534bb3a5.jpg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/78229.html",
+      "vod_name": "速度与激情10",
+      "vod_pic": "https://img.liangzipic.com/upload/vod/20230518-1/87fa923da8ccd50b93948b868f6bf9e0.jpg",
+      "vod_remarks": "4K"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82441.html",
+      "vod_name": "鲲鹏击浪",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-18/17029005011.jpg",
+      "vod_remarks": "更新至02集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82328.html",
+      "vod_name": "欢迎回到三达里",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-02/17015281081.jpg",
+      "vod_remarks": "更新至第06集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82342.html",
+      "vod_name": "夜幕降临2023",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-03/17016186911.jpg",
+      "vod_remarks": "更新至第09集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80889.html",
+      "vod_name": "优雅帝国",
+      "vod_pic": "https://pic.lzzypic.com/upload/vod/20230808-1/c2ebbf41432dda02cba423f4900fd85e.jpg",
+      "vod_remarks": "更新至第80集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82036.html",
+      "vod_name": "23号灯塔",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-11-13/16998621741.jpg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82408.html",
+      "vod_name": "脱轨",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-14/17025499811.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82387.html",
+      "vod_name": "鸣龙少年",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-10/17022157711.jpg",
+      "vod_remarks": "更新至第11集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82277.html",
+      "vod_name": "一念关山",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231128-1/4388e002629d4471848f3c00a8f1bbcd.jpg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82403.html",
+      "vod_name": "问苍茫",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-12/17023873711.jpg",
+      "vod_remarks": "更新至第07集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/75270.html",
+      "vod_name": "怎么办家康",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20230108-1/4888e6e0b325f87ff373200cee4cba61.jpg",
+      "vod_remarks": "全48集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82316.html",
+      "vod_name": "很想很想你",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231130-1/a6aea4df3ba8ee32afe4383385cf9199.jpg",
+      "vod_remarks": "全33集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82389.html",
+      "vod_name": "神隐2023",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-11/17022884851.jpg",
+      "vod_remarks": "更新至16集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82429.html",
+      "vod_name": "大指挥家：弦上的真相",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-09/202312091702131806.jpg",
+      "vod_remarks": "更新至04集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82244.html",
+      "vod_name": "烈女朴氏契约结婚传",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231124-1/968d3ab5b6d8a57587197fe00d3eb0c9.jpg",
+      "vod_remarks": "更新至08集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82234.html",
+      "vod_name": "与恶魔有约",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231124-1/2233f235d4eb5c358d422fdbdaaf3e00.jpg",
+      "vod_remarks": "更新至08集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82371.html",
+      "vod_name": "斗破苍穹之少年归来",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231208-1/34892f5dd1dc6a0610ddfa66e98f2d07.jpg",
+      "vod_remarks": "更新至20集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81761.html",
+      "vod_name": "OVERTAKE！",
+      "vod_pic": "https://img.lzzyimg.com/upload/vod/20231001-1/3d6ae488e0750cf2ed14d760d33ab87b.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81733.html",
+      "vod_name": "超超超超超喜欢你的100个女朋友",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231008-1/6cab4c2bd6b8628cd1863f19bfd6c9fb.jpg",
+      "vod_remarks": "更新至第11集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82020.html",
+      "vod_name": "头文字D续作",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-10-01/16961143621.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81389.html",
+      "vod_name": "暴食的巴萨卡",
+      "vod_pic": "https://pic.wujinpp.com/upload/vod/20231001-1/6b1b9ca0d436d9ea59f36a80286dc7e8.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82155.html",
+      "vod_name": "万古神话",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221105-1/222b21af2b2a0bd4b3a8aa12582b183a.jpg",
+      "vod_remarks": "更新至第144集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81270.html",
+      "vod_name": "仙逆",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20230925-1/8cf0e04a2995d98b194274a3d1c63838.jpg",
+      "vod_remarks": "更新至第15集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80671.html",
+      "vod_name": "独步逍遥",
+      "vod_pic": "https://pic.lzzypic.com/upload/vod/20220319-1/55b6f94492546f97cf22f0ed7cb083bb.jpg",
+      "vod_remarks": "更新至第374集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81485.html",
+      "vod_name": "万界仙踪",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221125-1/a94a70874ea198d9bdc66bf4f6ea6939.jpg",
+      "vod_remarks": "更新至第408集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/78839.html",
+      "vod_name": "逆天至尊",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221115-1/1c6805bdaf862adf0a7fef6f22190bf8.jpg",
+      "vod_remarks": "更新至第259集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82032.html",
+      "vod_name": "无上神帝",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221115-1/b65cc779b3ec9164ec4b649cf08b79e3.jpg",
+      "vod_remarks": "更新至第336集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81446.html",
+      "vod_name": "剑域风云",
+      "vod_pic": "https://pic.lzzypic.com/upload/vod/20220412-1/06b24282a033f2944794f3da1f60f2b1.jpg",
+      "vod_remarks": "更新至第108集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80468.html",
+      "vod_name": "九天玄帝诀",
+      "vod_pic": "https://vip.imgffzy.com/upload/vod/20230503-1/4d6a6353091d9ca09240e7482500bb49.jpg",
+      "vod_remarks": "更新至第205集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81460.html",
+      "vod_name": "三十六骑",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231009-1/a35a199e24fae27ee301d25dac09814c.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80102.html",
+      "vod_name": "黑暗集会",
+      "vod_pic": "https://img.liangzipic.com/upload/vod/20230710-1/efd9755483ef1da954fde1f649155e3a.jpg",
+      "vod_remarks": "更新至第24集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81831.html",
+      "vod_name": "瑞克和莫蒂第七季",
+      "vod_pic": "https://img.lzzyimg.com/upload/vod/20231016-1/7e75d90573cbffe6048dfb5e540c39af.jpg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81384.html",
+      "vod_name": "队长小翼2世少篇",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231001-1/fbe5faee959c89bc593c1a4c74529cbf.jpg",
+      "vod_remarks": "更新至12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82026.html",
+      "vod_name": "中央广播电视总台2023主持人大赛",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-10-07/16966395721.jpg",
+      "vod_remarks": "更新至第20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81466.html",
+      "vod_name": "我们的歌第五季",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231008-1/e7663636050572076b548a3c74a81eb8.jpg",
+      "vod_remarks": "更新至第20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81462.html",
+      "vod_name": "哎呀好身材第五季",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231007-1/91fafb0f06ca85a4bb910cc38b2126f6.jpg",
+      "vod_remarks": "更新至第20231218期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81977.html",
+      "vod_name": "爱的修学旅行",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231106-1/286a5daa89665f87124d7aaf2b442fd4.jpg",
+      "vod_remarks": "更新至第20231218期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81601.html",
+      "vod_name": "王牌对王牌第八季",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231020-1/039bce2bba19b373bbec93ad8ed3cec7.jpg",
+      "vod_remarks": "更新至第20231218期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82160.html",
+      "vod_name": "奔跑吧·生态篇",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231118-1/110cdbfdff98ec26cae9a42fefb0ad41.jpg",
+      "vod_remarks": "更新至第20231218期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81609.html",
+      "vod_name": "我可以47",
+      "vod_pic": "https://img.lzzyimg.com/upload/vod/20231021-1/87242b7087e1eb71cdd9908735ecc16d.jpg",
+      "vod_remarks": "更新至第20231218期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82322.html",
+      "vod_name": "声生不息·家年华",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231201-1/ecdb35601aeec632d7ed858d4418b4fd.jpg",
+      "vod_remarks": "更新至20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/76523.html",
+      "vod_name": "Running Man",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221114-1/316f1ba9413875c81884ba125a0c4179.jpg",
+      "vod_remarks": "更新至第20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82025.html",
+      "vod_name": "一路前行",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-11-11/16997128641.jpg",
+      "vod_remarks": "更新至06集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81873.html",
+      "vod_name": "火星情报局第六季",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231103-1/b9ab922ae144a4fe181ac8c6eae61d0d.jpg",
+      "vod_remarks": "更新至20231216期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81690.html",
+      "vod_name": "我们的美好生活",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231026-1/7953823684732aa51a8aa1f40ea56724.jpg",
+      "vod_remarks": "更新至20231216期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81888.html",
+      "vod_name": "这！就是街舞第六季",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231104-1/76de2893c853a2adcd232914a9e0f06b.jpg",
+      "vod_remarks": "更新至20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82235.html",
+      "vod_name": "势不可挡2023",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-11-24/17008378251.jpg",
+      "vod_remarks": "更新至20231216期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82233.html",
+      "vod_name": "名侦探学院第七季",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-11-24/202311241700798396.jpg",
+      "vod_remarks": "更新至20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80002.html",
+      "vod_name": "你好星期六",
+      "vod_pic": "https://vip.imgffzy.com/upload/vod/20221102-1/fd6e7b0bc241ae5ef8487bc864aad9f4.jpg",
+      "vod_remarks": "更新至20231216期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81681.html",
+      "vod_name": "齐妙请微笑",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231026-1/6981b210191090cf29f9aa24a521e2b6.jpg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81789.html",
+      "vod_name": "真千金的璀璨人生 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81802.html",
+      "vod_name": "从今天开始当藩王（ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81800.html",
+      "vod_name": "世上无人再似她 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81799.html",
+      "vod_name": "万古齐天 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81790.html",
+      "vod_name": "盖世杀神 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81788.html",
+      "vod_name": "禁忌岛 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81787.html",
+      "vod_name": "离婚后我能预知未来（ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81786.html",
+      "vod_name": "绝世战魔的女帝老婆 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81785.html",
+      "vod_name": "绝代战魔 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81784.html",
+      "vod_name": "至尊医圣 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81783.html",
+      "vod_name": "进击的小辰子 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81782.html",
+      "vod_name": "都市超级医圣 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81781.html",
+      "vod_name": "都穿越了谁还当太子 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81780.html",
+      "vod_name": "锦衣天下 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81779.html",
+      "vod_name": "黑暗元城 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82246.html",
+      "vod_name": "周杰伦MV专辑142首蓝光至尊版",
+      "vod_pic": "/img.php?url=https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2588112269.jpg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82245.html",
+      "vod_name": "迈克尔·杰克逊经典演唱会合集",
+      "vod_pic": "/img.php?url=https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2551821812.jpg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81776.html",
+      "vod_name": "林俊杰音乐",
+      "vod_pic": "https://imagev2.xmcdn.com/storages/52f4-audiofreehighqps/F0/C1/GKwRIJII1xL-AAIXiAJZ4zLw.jpg!strip=1&quality=7&magick=jpg&op_type=5&upload_type=cover&name=web_large&device_type=ios",
+      "vod_remarks": "无损"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81775.html",
+      "vod_name": "90后经典无损音乐4",
+      "vod_pic": "https://imagev2.xmcdn.com/group58/M02/FD/17/wKgLc1zgzvKSfjloAACTn0mP9gc192.jpg!op_type%3D3%26columns%3D290%26rows%3D290",
+      "vod_remarks": "无损"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81774.html",
+      "vod_name": "90后经典无损音乐3",
+      "vod_pic": "https://imagev2.xmcdn.com/group58/M02/FD/17/wKgLc1zgzvKSfjloAACTn0mP9gc192.jpg!op_type%3D3%26columns%3D290%26rows%3D290",
+      "vod_remarks": "无损"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81773.html",
+      "vod_name": "90后经典无损音乐2",
+      "vod_pic": "https://imagev2.xmcdn.com/group58/M02/FD/17/wKgLc1zgzvKSfjloAACTn0mP9gc192.jpg!op_type%3D3%26columns%3D290%26rows%3D290",
+      "vod_remarks": "无损"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81772.html",
+      "vod_name": "90后经典无损音乐",
+      "vod_pic": "https://imagev2.xmcdn.com/group58/M02/FD/17/wKgLc1zgzvKSfjloAACTn0mP9gc192.jpg!op_type%3D3%26columns%3D290%26rows%3D290",
+      "vod_remarks": "无损"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80424.html",
+      "vod_name": "鹿晗演唱会 20230812演唱会",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/08/18/p94808371.md.jpeg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80038.html",
+      "vod_name": "薛之谦「可」线上演唱会完整",
+      "vod_pic": "https://pic.wujinpp.com/upload/vod/20230204-1/5cbab7ee0e5afef5585179375e7b9f2a.jpg",
+      "vod_remarks": "HD"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80039.html",
+      "vod_name": "郑秀文[4K城堡].Touch.Mi.2.演唱会",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/08/01/u759815969871303648fm253fmtautoapp138fJPEG.th.webp",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80040.html",
+      "vod_name": "李知恩 2019 巡回演唱会",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/08/01/p2616781944.md.jpeg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80016.html",
+      "vod_name": "一人一首成名曲",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/31/2403491535.md.png",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80015.html",
+      "vod_name": "香港电影中的50首经典歌曲",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/31/a7bf960dddb14143c238e85a9c365a172beae69c.md.jpeg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/79990.html",
+      "vod_name": "轻音少女横滨、埼玉演唱会合集",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/30/p2633772105.md.jpeg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/79988.html",
+      "vod_name": "2021不能不聽的100首歌",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/30/636058071.md.png",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/79944.html",
+      "vod_name": "刀郎2023年最新专辑",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/26/2023.md.png",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82432.html",
+      "vod_name": "看不见的朋友",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-18/17028593851.jpg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82431.html",
+      "vod_name": "粽邪3：鬼门开",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-18/17028896901.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80978.html",
+      "vod_name": "哨兵",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/09/10/p2897842155.md.jpeg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82428.html",
+      "vod_name": "冒险王2023",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-17/202312171702797352.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82420.html",
+      "vod_name": "酿魂",
+      "vod_pic": "https://pic.wujinpp.com/upload/vod/20231215-1/1ef501555cd5f9e838dbce3ee0c18dbe.jpg",
+      "vod_remarks": "HD国语|粤语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82425.html",
+      "vod_name": "看不见的他们",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-16/17027117271.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82423.html",
+      "vod_name": "生死交锋",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-16/17026969861.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82427.html",
+      "vod_name": "深渊宝藏",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-17/202312171702776918.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82394.html",
+      "vod_name": "大家的歌",
+      "vod_pic": "https://img.lzzyimg.com/upload/vod/20231212-1/c1103c7a6061029a08f6721a2e0a7e10.jpg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82424.html",
+      "vod_name": "普通男女",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-14/17025386291.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81365.html",
+      "vod_name": "坚如磐石",
+      "vod_pic": "https://pic.wujinpp.com/upload/vod/20231001-1/faf091642f68e94773ca345db15462bb.jpg",
+      "vod_remarks": "HD国语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82417.html",
+      "vod_name": "家庭计划",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-15/17026089601.jpg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82418.html",
+      "vod_name": "TheWild：野兽们的战争",
+      "vod_pic": "https://pic.wujinpp.com/upload/vod/20231214-1/f114c385b18fdacb60c20dc915186688.jpg",
+      "vod_remarks": "HD"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82409.html",
+      "vod_name": "不日成婚2",
+      "vod_pic": "/img.php?url=https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2889238555.jpg",
+      "vod_remarks": "HD国语|粤语"
+    },
+    {
+      "vod_id": "/index.php/voddetail/79759.html",
+      "vod_name": "发条橙",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221127-1/c9418ad39042081f75bb9451534bb3a5.jpg",
+      "vod_remarks": "HD中字"
+    },
+    {
+      "vod_id": "/index.php/voddetail/78229.html",
+      "vod_name": "速度与激情10",
+      "vod_pic": "https://img.liangzipic.com/upload/vod/20230518-1/87fa923da8ccd50b93948b868f6bf9e0.jpg",
+      "vod_remarks": "4K"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82441.html",
+      "vod_name": "鲲鹏击浪",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-18/17029005011.jpg",
+      "vod_remarks": "更新至02集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82328.html",
+      "vod_name": "欢迎回到三达里",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-02/17015281081.jpg",
+      "vod_remarks": "更新至第06集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82342.html",
+      "vod_name": "夜幕降临2023",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-03/17016186911.jpg",
+      "vod_remarks": "更新至第09集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80889.html",
+      "vod_name": "优雅帝国",
+      "vod_pic": "https://pic.lzzypic.com/upload/vod/20230808-1/c2ebbf41432dda02cba423f4900fd85e.jpg",
+      "vod_remarks": "更新至第80集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82036.html",
+      "vod_name": "23号灯塔",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-11-13/16998621741.jpg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82408.html",
+      "vod_name": "脱轨",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-14/17025499811.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82387.html",
+      "vod_name": "鸣龙少年",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-10/17022157711.jpg",
+      "vod_remarks": "更新至第11集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82277.html",
+      "vod_name": "一念关山",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231128-1/4388e002629d4471848f3c00a8f1bbcd.jpg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82403.html",
+      "vod_name": "问苍茫",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-12/17023873711.jpg",
+      "vod_remarks": "更新至第07集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/75270.html",
+      "vod_name": "怎么办家康",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20230108-1/4888e6e0b325f87ff373200cee4cba61.jpg",
+      "vod_remarks": "全48集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82316.html",
+      "vod_name": "很想很想你",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231130-1/a6aea4df3ba8ee32afe4383385cf9199.jpg",
+      "vod_remarks": "全33集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82389.html",
+      "vod_name": "神隐2023",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-11/17022884851.jpg",
+      "vod_remarks": "更新至16集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82429.html",
+      "vod_name": "大指挥家：弦上的真相",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-12-09/202312091702131806.jpg",
+      "vod_remarks": "更新至04集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82244.html",
+      "vod_name": "烈女朴氏契约结婚传",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231124-1/968d3ab5b6d8a57587197fe00d3eb0c9.jpg",
+      "vod_remarks": "更新至08集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82234.html",
+      "vod_name": "与恶魔有约",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231124-1/2233f235d4eb5c358d422fdbdaaf3e00.jpg",
+      "vod_remarks": "更新至08集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82371.html",
+      "vod_name": "斗破苍穹之少年归来",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231208-1/34892f5dd1dc6a0610ddfa66e98f2d07.jpg",
+      "vod_remarks": "更新至20集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81761.html",
+      "vod_name": "OVERTAKE！",
+      "vod_pic": "https://img.lzzyimg.com/upload/vod/20231001-1/3d6ae488e0750cf2ed14d760d33ab87b.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81733.html",
+      "vod_name": "超超超超超喜欢你的100个女朋友",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231008-1/6cab4c2bd6b8628cd1863f19bfd6c9fb.jpg",
+      "vod_remarks": "更新至第11集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82020.html",
+      "vod_name": "头文字D续作",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-10-01/16961143621.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81389.html",
+      "vod_name": "暴食的巴萨卡",
+      "vod_pic": "https://pic.wujinpp.com/upload/vod/20231001-1/6b1b9ca0d436d9ea59f36a80286dc7e8.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82155.html",
+      "vod_name": "万古神话",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221105-1/222b21af2b2a0bd4b3a8aa12582b183a.jpg",
+      "vod_remarks": "更新至第144集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81270.html",
+      "vod_name": "仙逆",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20230925-1/8cf0e04a2995d98b194274a3d1c63838.jpg",
+      "vod_remarks": "更新至第15集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80671.html",
+      "vod_name": "独步逍遥",
+      "vod_pic": "https://pic.lzzypic.com/upload/vod/20220319-1/55b6f94492546f97cf22f0ed7cb083bb.jpg",
+      "vod_remarks": "更新至第374集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81485.html",
+      "vod_name": "万界仙踪",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221125-1/a94a70874ea198d9bdc66bf4f6ea6939.jpg",
+      "vod_remarks": "更新至第408集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/78839.html",
+      "vod_name": "逆天至尊",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221115-1/1c6805bdaf862adf0a7fef6f22190bf8.jpg",
+      "vod_remarks": "更新至第259集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82032.html",
+      "vod_name": "无上神帝",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221115-1/b65cc779b3ec9164ec4b649cf08b79e3.jpg",
+      "vod_remarks": "更新至第336集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81446.html",
+      "vod_name": "剑域风云",
+      "vod_pic": "https://pic.lzzypic.com/upload/vod/20220412-1/06b24282a033f2944794f3da1f60f2b1.jpg",
+      "vod_remarks": "更新至第108集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80468.html",
+      "vod_name": "九天玄帝诀",
+      "vod_pic": "https://vip.imgffzy.com/upload/vod/20230503-1/4d6a6353091d9ca09240e7482500bb49.jpg",
+      "vod_remarks": "更新至第205集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81460.html",
+      "vod_name": "三十六骑",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231009-1/a35a199e24fae27ee301d25dac09814c.jpg",
+      "vod_remarks": "更新至第12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80102.html",
+      "vod_name": "黑暗集会",
+      "vod_pic": "https://img.liangzipic.com/upload/vod/20230710-1/efd9755483ef1da954fde1f649155e3a.jpg",
+      "vod_remarks": "更新至第24集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81831.html",
+      "vod_name": "瑞克和莫蒂第七季",
+      "vod_pic": "https://img.lzzyimg.com/upload/vod/20231016-1/7e75d90573cbffe6048dfb5e540c39af.jpg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81384.html",
+      "vod_name": "队长小翼2世少篇",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231001-1/fbe5faee959c89bc593c1a4c74529cbf.jpg",
+      "vod_remarks": "更新至12集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82026.html",
+      "vod_name": "中央广播电视总台2023主持人大赛",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-10-07/16966395721.jpg",
+      "vod_remarks": "更新至第20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81466.html",
+      "vod_name": "我们的歌第五季",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231008-1/e7663636050572076b548a3c74a81eb8.jpg",
+      "vod_remarks": "更新至第20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81462.html",
+      "vod_name": "哎呀好身材第五季",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231007-1/91fafb0f06ca85a4bb910cc38b2126f6.jpg",
+      "vod_remarks": "更新至第20231218期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81977.html",
+      "vod_name": "爱的修学旅行",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231106-1/286a5daa89665f87124d7aaf2b442fd4.jpg",
+      "vod_remarks": "更新至第20231218期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81601.html",
+      "vod_name": "王牌对王牌第八季",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231020-1/039bce2bba19b373bbec93ad8ed3cec7.jpg",
+      "vod_remarks": "更新至第20231218期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82160.html",
+      "vod_name": "奔跑吧·生态篇",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231118-1/110cdbfdff98ec26cae9a42fefb0ad41.jpg",
+      "vod_remarks": "更新至第20231218期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81609.html",
+      "vod_name": "我可以47",
+      "vod_pic": "https://img.lzzyimg.com/upload/vod/20231021-1/87242b7087e1eb71cdd9908735ecc16d.jpg",
+      "vod_remarks": "更新至第20231218期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82322.html",
+      "vod_name": "声生不息·家年华",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231201-1/ecdb35601aeec632d7ed858d4418b4fd.jpg",
+      "vod_remarks": "更新至20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/76523.html",
+      "vod_name": "Running Man",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20221114-1/316f1ba9413875c81884ba125a0c4179.jpg",
+      "vod_remarks": "更新至第20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82025.html",
+      "vod_name": "一路前行",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-11-11/16997128641.jpg",
+      "vod_remarks": "更新至06集"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81873.html",
+      "vod_name": "火星情报局第六季",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231103-1/b9ab922ae144a4fe181ac8c6eae61d0d.jpg",
+      "vod_remarks": "更新至20231216期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81690.html",
+      "vod_name": "我们的美好生活",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231026-1/7953823684732aa51a8aa1f40ea56724.jpg",
+      "vod_remarks": "更新至20231216期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81888.html",
+      "vod_name": "这！就是街舞第六季",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231104-1/76de2893c853a2adcd232914a9e0f06b.jpg",
+      "vod_remarks": "更新至20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82235.html",
+      "vod_name": "势不可挡2023",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-11-24/17008378251.jpg",
+      "vod_remarks": "更新至20231216期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82233.html",
+      "vod_name": "名侦探学院第七季",
+      "vod_pic": "https://pic1.zykpic.com/upload/vod/2023-11-24/202311241700798396.jpg",
+      "vod_remarks": "更新至20231217期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80002.html",
+      "vod_name": "你好星期六",
+      "vod_pic": "https://vip.imgffzy.com/upload/vod/20221102-1/fd6e7b0bc241ae5ef8487bc864aad9f4.jpg",
+      "vod_remarks": "更新至20231216期"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81681.html",
+      "vod_name": "齐妙请微笑",
+      "vod_pic": "https://svip.picffzy.com/upload/vod/20231026-1/6981b210191090cf29f9aa24a521e2b6.jpg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81789.html",
+      "vod_name": "真千金的璀璨人生 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81802.html",
+      "vod_name": "从今天开始当藩王（ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81800.html",
+      "vod_name": "世上无人再似她 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81799.html",
+      "vod_name": "万古齐天 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81790.html",
+      "vod_name": "盖世杀神 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81788.html",
+      "vod_name": "禁忌岛 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81787.html",
+      "vod_name": "离婚后我能预知未来（ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81786.html",
+      "vod_name": "绝世战魔的女帝老婆 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81785.html",
+      "vod_name": "绝代战魔 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81784.html",
+      "vod_name": "至尊医圣 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81783.html",
+      "vod_name": "进击的小辰子 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81782.html",
+      "vod_name": "都市超级医圣 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81781.html",
+      "vod_name": "都穿越了谁还当太子 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81780.html",
+      "vod_name": "锦衣天下 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81779.html",
+      "vod_name": "黑暗元城 （ 短剧 ）",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/11/17/99ac8ea0ef629e100356456ae3cb3d66.md.jpeg",
+      "vod_remarks": "独家云盘"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82246.html",
+      "vod_name": "周杰伦MV专辑142首蓝光至尊版",
+      "vod_pic": "/img.php?url=https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2588112269.jpg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/82245.html",
+      "vod_name": "迈克尔·杰克逊经典演唱会合集",
+      "vod_pic": "/img.php?url=https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2551821812.jpg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81776.html",
+      "vod_name": "林俊杰音乐",
+      "vod_pic": "https://imagev2.xmcdn.com/storages/52f4-audiofreehighqps/F0/C1/GKwRIJII1xL-AAIXiAJZ4zLw.jpg!strip=1&quality=7&magick=jpg&op_type=5&upload_type=cover&name=web_large&device_type=ios",
+      "vod_remarks": "无损"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81775.html",
+      "vod_name": "90后经典无损音乐4",
+      "vod_pic": "https://imagev2.xmcdn.com/group58/M02/FD/17/wKgLc1zgzvKSfjloAACTn0mP9gc192.jpg!op_type%3D3%26columns%3D290%26rows%3D290",
+      "vod_remarks": "无损"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81774.html",
+      "vod_name": "90后经典无损音乐3",
+      "vod_pic": "https://imagev2.xmcdn.com/group58/M02/FD/17/wKgLc1zgzvKSfjloAACTn0mP9gc192.jpg!op_type%3D3%26columns%3D290%26rows%3D290",
+      "vod_remarks": "无损"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81773.html",
+      "vod_name": "90后经典无损音乐2",
+      "vod_pic": "https://imagev2.xmcdn.com/group58/M02/FD/17/wKgLc1zgzvKSfjloAACTn0mP9gc192.jpg!op_type%3D3%26columns%3D290%26rows%3D290",
+      "vod_remarks": "无损"
+    },
+    {
+      "vod_id": "/index.php/voddetail/81772.html",
+      "vod_name": "90后经典无损音乐",
+      "vod_pic": "https://imagev2.xmcdn.com/group58/M02/FD/17/wKgLc1zgzvKSfjloAACTn0mP9gc192.jpg!op_type%3D3%26columns%3D290%26rows%3D290",
+      "vod_remarks": "无损"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80424.html",
+      "vod_name": "鹿晗演唱会 20230812演唱会",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/08/18/p94808371.md.jpeg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80038.html",
+      "vod_name": "薛之谦「可」线上演唱会完整",
+      "vod_pic": "https://pic.wujinpp.com/upload/vod/20230204-1/5cbab7ee0e5afef5585179375e7b9f2a.jpg",
+      "vod_remarks": "HD"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80039.html",
+      "vod_name": "郑秀文[4K城堡].Touch.Mi.2.演唱会",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/08/01/u759815969871303648fm253fmtautoapp138fJPEG.th.webp",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80040.html",
+      "vod_name": "李知恩 2019 巡回演唱会",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/08/01/p2616781944.md.jpeg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80016.html",
+      "vod_name": "一人一首成名曲",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/31/2403491535.md.png",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/80015.html",
+      "vod_name": "香港电影中的50首经典歌曲",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/31/a7bf960dddb14143c238e85a9c365a172beae69c.md.jpeg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/79990.html",
+      "vod_name": "轻音少女横滨、埼玉演唱会合集",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/30/p2633772105.md.jpeg",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/79988.html",
+      "vod_name": "2021不能不聽的100首歌",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/30/636058071.md.png",
+      "vod_remarks": "已完结"
+    },
+    {
+      "vod_id": "/index.php/voddetail/79944.html",
+      "vod_name": "刀郎2023年最新专辑",
+      "vod_pic": "https://s1.imagehub.cc/images/2023/07/26/2023.md.png",
+      "vod_remarks": "已完结"
+    }
+  ],
+  "parse": 0,
+  "jx": 0,
+  "url":"http://baidu.com",
+  "filters": {
+    "a": [
+      {
+        "key": "12",
+        "name": "34",
+        "init": "45",
+        "value": [
+          {
+            "n": "s",
+            "v": "t"
+          }
+        ]
+      }
+    ]
+  }
+}

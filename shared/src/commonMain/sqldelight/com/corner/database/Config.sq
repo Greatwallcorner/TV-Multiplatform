@@ -1,0 +1,43 @@
+CREATE TABLE IF NOT EXISTS Config
+(`id` INTEGER PRIMARY KEY AUTOINCREMENT, `type` INTEGER NOT NULL,
+`time` INTEGER NOT NULL, `url` TEXT, `json` TEXT DEFAULT NULL, `name` TEXT DEFAULT NULL, `home` TEXT DEFAULT NULL, `parse` TEXT DEFAULT NULL);
+
+CREATE UNIQUE INDEX IF NOT EXISTS config_type_url ON Config(type, url);
+
+selectById:
+SELECT * FROM
+Config
+WHERE id = :id;
+
+save:
+INSERT INTO Config(type, time, url, json, name, home, parse)
+VALUES (?,?,?,?,?,?,?);
+
+update:
+UPDATE `Config`
+SET `type` = ?, `time` = CURRENT_TIMESTAMP ,url = ?,json = ?,
+name = ?,home = ?,parse = ? WHERE id = ?;
+
+updateOne:
+UPDATE `Config` SET json = ?, home = ?, parse = ?, time = CURRENT_TIMESTAMP WHERE id = ?;
+
+updateUrl:
+UPDATE Config SET url = ?, time = CURRENT_TIMESTAMP WHERE id = ?;
+
+selectOneByType:
+SELECT * FROM
+Config
+WHERE `type` = ?
+ORDER BY time DESC LIMIT 1;
+
+setHome:
+UPDATE `Config` SET home = ?
+WHERE type = ? AND url = ?;
+
+find:
+SELECT * FROM
+Config
+WHERE type = ? AND url = ?;
+
+
+

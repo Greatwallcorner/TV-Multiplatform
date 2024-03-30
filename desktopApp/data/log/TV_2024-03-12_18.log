@@ -1,0 +1,56 @@
+2024-03-12 15:00:16,997 DEBUG [AWT-EventQueue-0 @coroutine#6] SpiderDebug: 自定義爬蟲代碼載入成功！
+2024-03-12 15:00:17,019 INFO  [AWT-EventQueue-0 @coroutine#6] application: Autoreload is disabled because the development mode is off.
+2024-03-12 15:00:17,199 INFO  [AWT-EventQueue-0 @coroutine#6] application: Application started in 0.187 seconds.
+2024-03-12 15:00:17,203 DEBUG [AWT-EventQueue-0 @coroutine#6] InternalLoggerFactory: Using SLF4J as the default logging framework
+2024-03-12 15:00:17,220 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent0: -Dio.netty.noUnsafe: false
+2024-03-12 15:00:17,220 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent0: Java version: 17
+2024-03-12 15:00:17,221 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent0: sun.misc.Unsafe.theUnsafe: available
+2024-03-12 15:00:17,229 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent0: sun.misc.Unsafe.copyMemory: available
+2024-03-12 15:00:17,230 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent0: sun.misc.Unsafe.storeFence: available
+2024-03-12 15:00:17,231 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent0: java.nio.Buffer.address: available
+2024-03-12 15:00:17,231 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent0: direct buffer constructor: unavailable: Reflective setAccessible(true) disabled
+2024-03-12 15:00:17,232 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent0: java.nio.Bits.unaligned: available, true
+2024-03-12 15:00:17,232 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent0: jdk.internal.misc.Unsafe.allocateUninitializedArray(int): unavailable: class io.netty.util.internal.PlatformDependent0$7 cannot access class jdk.internal.misc.Unsafe (in module java.base) because module java.base does not export jdk.internal.misc to unnamed module @7eee7e54
+2024-03-12 15:00:17,233 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent0: java.nio.DirectByteBuffer.<init>(long, {int,long}): unavailable
+2024-03-12 15:00:17,233 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent: sun.misc.Unsafe: available
+2024-03-12 15:00:17,233 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent: -Dio.netty.tmpdir: C:\Users\wallc\AppData\Local\Temp (java.io.tmpdir)
+2024-03-12 15:00:17,233 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent: -Dio.netty.bitMode: 64 (sun.arch.data.model)
+2024-03-12 15:00:17,234 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent: Platform: Windows
+2024-03-12 15:00:17,234 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent: -Dio.netty.maxDirectMemory: -1 bytes
+2024-03-12 15:00:17,234 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent: -Dio.netty.uninitializedArrayAllocationThreshold: -1
+2024-03-12 15:00:17,235 DEBUG [AWT-EventQueue-0 @coroutine#6] CleanerJava9: java.nio.ByteBuffer.cleaner(): available
+2024-03-12 15:00:17,235 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent: -Dio.netty.noPreferDirect: false
+2024-03-12 15:00:17,273 DEBUG [AWT-EventQueue-0 @coroutine#6] MultithreadEventLoopGroup: -Dio.netty.eventLoopThreads: 24
+2024-03-12 15:00:17,278 DEBUG [AWT-EventQueue-0 @coroutine#6] GlobalEventExecutor: -Dio.netty.globalEventExecutor.quietPeriodSeconds: 1
+2024-03-12 15:00:17,280 DEBUG [AWT-EventQueue-0 @coroutine#6] InternalThreadLocalMap: -Dio.netty.threadLocalMap.stringBuilder.initialSize: 1024
+2024-03-12 15:00:17,281 DEBUG [AWT-EventQueue-0 @coroutine#6] InternalThreadLocalMap: -Dio.netty.threadLocalMap.stringBuilder.maxSize: 4096
+2024-03-12 15:00:17,284 DEBUG [AWT-EventQueue-0 @coroutine#6] NioEventLoop: -Dio.netty.noKeySetOptimization: false
+2024-03-12 15:00:17,284 DEBUG [AWT-EventQueue-0 @coroutine#6] NioEventLoop: -Dio.netty.selectorAutoRebuildThreshold: 512
+2024-03-12 15:00:17,286 DEBUG [AWT-EventQueue-0 @coroutine#6] PlatformDependent: org.jctools-core.MpscChunkedArrayQueue: available
+2024-03-12 15:00:17,324 DEBUG [AWT-EventQueue-0 @coroutine#6] DefaultChannelId: -Dio.netty.processId: 9852 (auto-detected)
+2024-03-12 15:00:17,326 DEBUG [AWT-EventQueue-0 @coroutine#6] NetUtil: -Djava.net.preferIPv4Stack: false
+2024-03-12 15:00:17,326 DEBUG [AWT-EventQueue-0 @coroutine#6] NetUtil: -Djava.net.preferIPv6Addresses: false
+2024-03-12 15:00:17,337 DEBUG [AWT-EventQueue-0 @coroutine#6] NetUtilInitializations: Loopback interface: lo (Software Loopback Interface 1, 127.0.0.1)
+2024-03-12 15:00:17,338 DEBUG [AWT-EventQueue-0 @coroutine#6] NetUtil: Failed to get SOMAXCONN from sysctl and file \proc\sys\net\core\somaxconn. Default: 200
+2024-03-12 15:00:17,382 DEBUG [AWT-EventQueue-0 @coroutine#6] DefaultChannelId: -Dio.netty.machineId: 00:50:56:ff:fe:c0:00:01 (auto-detected)
+2024-03-12 15:00:17,391 DEBUG [AWT-EventQueue-0 @coroutine#6] ResourceLeakDetector: -Dio.netty.leakDetection.level: simple
+2024-03-12 15:00:17,391 DEBUG [AWT-EventQueue-0 @coroutine#6] ResourceLeakDetector: -Dio.netty.leakDetection.targetRecords: 4
+2024-03-12 15:00:17,410 DEBUG [AWT-EventQueue-0 @coroutine#6] PooledByteBufAllocator: -Dio.netty.allocator.numHeapArenas: 24
+2024-03-12 15:00:17,410 DEBUG [AWT-EventQueue-0 @coroutine#6] PooledByteBufAllocator: -Dio.netty.allocator.numDirectArenas: 24
+2024-03-12 15:00:17,410 DEBUG [AWT-EventQueue-0 @coroutine#6] PooledByteBufAllocator: -Dio.netty.allocator.pageSize: 8192
+2024-03-12 15:00:17,410 DEBUG [AWT-EventQueue-0 @coroutine#6] PooledByteBufAllocator: -Dio.netty.allocator.maxOrder: 9
+2024-03-12 15:00:17,410 DEBUG [AWT-EventQueue-0 @coroutine#6] PooledByteBufAllocator: -Dio.netty.allocator.chunkSize: 4194304
+2024-03-12 15:00:17,410 DEBUG [AWT-EventQueue-0 @coroutine#6] PooledByteBufAllocator: -Dio.netty.allocator.smallCacheSize: 256
+2024-03-12 15:00:17,410 DEBUG [AWT-EventQueue-0 @coroutine#6] PooledByteBufAllocator: -Dio.netty.allocator.normalCacheSize: 64
+2024-03-12 15:00:17,410 DEBUG [AWT-EventQueue-0 @coroutine#6] PooledByteBufAllocator: -Dio.netty.allocator.maxCachedBufferCapacity: 32768
+2024-03-12 15:00:17,410 DEBUG [AWT-EventQueue-0 @coroutine#6] PooledByteBufAllocator: -Dio.netty.allocator.cacheTrimInterval: 8192
+2024-03-12 15:00:17,410 DEBUG [AWT-EventQueue-0 @coroutine#6] PooledByteBufAllocator: -Dio.netty.allocator.cacheTrimIntervalMillis: 0
+2024-03-12 15:00:17,410 DEBUG [AWT-EventQueue-0 @coroutine#6] PooledByteBufAllocator: -Dio.netty.allocator.useCacheForAllThreads: false
+2024-03-12 15:00:17,410 DEBUG [AWT-EventQueue-0 @coroutine#6] PooledByteBufAllocator: -Dio.netty.allocator.maxCachedByteBuffersPerChunk: 1023
+2024-03-12 15:00:17,418 DEBUG [AWT-EventQueue-0 @coroutine#6] ByteBufUtil: -Dio.netty.allocator.type: pooled
+2024-03-12 15:00:17,418 DEBUG [AWT-EventQueue-0 @coroutine#6] ByteBufUtil: -Dio.netty.threadLocalDirectBufferSize: 0
+2024-03-12 15:00:17,418 DEBUG [AWT-EventQueue-0 @coroutine#6] ByteBufUtil: -Dio.netty.maxThreadLocalCharBufferSize: 16384
+2024-03-12 15:00:17,419 DEBUG [AWT-EventQueue-0 @coroutine#6] ChannelInitializerExtensions: -Dio.netty.bootstrap.extensions: null
+2024-03-12 15:00:17,429 INFO  [DefaultDispatcher-worker-3 @coroutine#62] application: Responding at http://127.0.0.1:9978
+2024-03-12 15:00:18,904 DEBUG [DefaultDispatcher-worker-3 @coroutine#63] SpiderDebug: home:{"class":[],"list":[],"parse":0,"jx":0}
+2024-03-12 15:00:18,904 DEBUG [DefaultDispatcher-worker-3 @coroutine#63] SpiderDebug: {}
