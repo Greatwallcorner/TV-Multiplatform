@@ -18,3 +18,8 @@
 - 动画
 - 代码优化
   
+# screenshoot
+![](readme_images\home.png)
+
+# 讨论群
+[TG](https://t.me/tv_multiplatform)
