@@ -1,11 +1,11 @@
 import com.github.catvod.bean.Doh
-import com.github.catvod.crawler.Spider1
 import com.google.common.collect.Lists
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.loader.JarLoader
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.server.KtorD
+import com.github.catvod.crawler.Spider
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.decodeFromStream
@@ -32,7 +32,6 @@ class commonTest {
                 "        \"token\": \"影視天下第一\",\n" +
                 "        \"filter\": \"https://fm.t4tv.hz.cz/json/wogg.json\"\n" +
                 "      }", "./jar/fan.txt;md5;364c0f012e73a8801a69900fc25ae9c1")
-        println(Spider1)
 //        println(Spider.safeDns())
         val homeContent = spider?.homeContent(false)
 //        val homeVideoContent = spider?.homeContent(filter = false)
@@ -94,7 +93,8 @@ class commonTest {
                 ), commonTest::class.java.classLoader
             )
         println(commonTest::class.java.classLoader)
-        val loadClass: Spider1 = urlClassLoader.loadClass("com.github.catvod.spider.Wogg").getDeclaredConstructor().newInstance() as Spider1
+        val loadClass: Spider = urlClassLoader.loadClass("com.github.catvod.spider.Wogg").getDeclaredConstructor().newInstance() as Spider
+
         loadClass.init()
 
 //        val exists =

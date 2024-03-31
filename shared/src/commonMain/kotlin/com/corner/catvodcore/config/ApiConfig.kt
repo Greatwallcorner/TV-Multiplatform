@@ -1,6 +1,5 @@
 package com.corner.catvodcore.config
 
-import com.github.catvod.crawler.Spider1
 import com.github.catvod.crawler.Spider
 import com.corner.catvod.enum.bean.Api
 import com.corner.catvod.enum.bean.Rule

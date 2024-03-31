@@ -1,6 +1,5 @@
 package com.corner.catvodcore.loader
 
-import com.github.catvod.crawler.Spider1
 import com.github.catvod.crawler.Spider
 import com.corner.catvodcore.Constant
 import com.corner.catvodcore.config.api

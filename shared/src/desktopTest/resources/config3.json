@@ -51,6 +51,15 @@
       "timeout": 30
     },
     {
+      "key": "Dovx",
+      "name": "Dovx┃搜索",
+      "type": 3,
+      "api": "csp_Dovx",
+      "searchable": 1,
+      "changeable": 1,
+      "timeout": 30
+    },
+    {
       "key": "找資源",
       "name": "找資源",
       "type": 3,
