@@ -14,6 +14,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import com.corner.bean.SettingStore
 import com.corner.init.Init
 import com.corner.init.generateImageLoader
 import com.corner.ui.Util
@@ -39,6 +40,7 @@ fun main() = application {
             LocalContextMenuRepresentation provides remember { contextMenuRepresentation }
         ) {
             MainView(windowState) {
+                SettingStore.write()
                 exitApplication()
             }
         }

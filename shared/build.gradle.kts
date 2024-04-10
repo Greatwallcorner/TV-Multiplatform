@@ -31,14 +31,12 @@ kotlin {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material)
-//                implementation(compose.material3)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class) implementation(compose.components.resources)
                 implementation(compose.uiTooling)
                 implementation(compose.ui)
                 implementation(compose.materialIconsExtended)
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
                 api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-//                implementation("org.jetbrains.compose.material:material-icons-core-desktop:1.6.1")
 
 //                // tool
                 api("com.google.guava:guava:31.1-jre")

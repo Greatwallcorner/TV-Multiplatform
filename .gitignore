@@ -15,6 +15,6 @@ iosApp/iosApp.xcodeproj/*
 shared/shared.podspec
 cache
 **/TV/**
-*.log
+**/*.log
 
 /desktopApp/data/

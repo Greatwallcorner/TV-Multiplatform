@@ -275,7 +275,7 @@ fun DetailDialog(showDetailDialog: Boolean, vod: Vod?, key: String, onClose: () 
                                                         version = (detail!!.version++)
                                                     )
                                                     val result = SiteViewModel.playerContent(
-                                                        api?.recent ?: "",
+                                                        detail?.site?.key ?: "",
                                                         detail?.currentFlag?.flag ?: "",
                                                         it.url ?: ""
                                                     )
@@ -298,12 +298,12 @@ fun DetailDialog(showDetailDialog: Boolean, vod: Vod?, key: String, onClose: () 
 }
 
 private fun closeDetailDialog(onClose: () -> Unit) {
-    onClose()
     quickSearchResult.value = listOf()
     detail = null
     SiteViewModel.clearQuickSearch()
     jobList.cancelAll().clear()
     launched = false
+    onClose()
 }
 
 private fun nextSite(lastVod: Vod?) {

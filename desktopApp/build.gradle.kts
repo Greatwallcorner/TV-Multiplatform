@@ -1,5 +1,4 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import java.util.*
 
 plugins {
     kotlin("multiplatform")
@@ -22,7 +21,7 @@ compose.desktop {
     application {
         mainClass = "com.corner.MainKt"
 
-        buildTypes.release.proguard{
+        buildTypes.release.proguard {
 //            obfuscate.set(true)
             isEnabled.set(true)
             configurationFiles.from(project.file("rules.pro"))
@@ -33,13 +32,12 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Pkg)
             packageName = "TV"
-            packageVersion = "1.0.2"
-            modules(/*"java.instrument",*//* "java.management",*/ "java.net.http", "java.sql",
-                "jdk.unsupported")
-            println(project.layout.projectDirectory.dir("/"))
-            if(System.getProperty("os.name").lowercase(Locale.getDefault()).contains("win")){
-                appResourcesRootDir.set(project.file("resources/windows"))
-            }
+            packageVersion = "1.0.3"
+            vendor = "TV Multiplatform"
+
+            modules("java.net.http", "java.sql", "jdk.unsupported")
+            println("include resource win")
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             windows {
                 iconFile.set(project.file("src/jvmMain/resources/TV-icon-s.png"))
                 dirChooser = true

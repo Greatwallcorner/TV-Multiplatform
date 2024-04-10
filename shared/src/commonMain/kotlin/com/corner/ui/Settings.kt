@@ -17,23 +17,19 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
-import ch.qos.logback.classic.Level
 import com.corner.bean.Setting
+import com.corner.bean.SettingStore
+import com.corner.bean.SettingType
 import com.corner.catvodcore.config.api
 import com.corner.catvodcore.enum.ConfigType
-import com.corner.catvodcore.util.Jsons
-import com.corner.catvodcore.util.Paths
 import com.corner.database.Db
 import com.corner.init.initConfig
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.Dialog
-import com.github.sardine.model.Set
+import com.corner.ui.scene.SnackBar
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
 import org.jsoup.internal.StringUtil
-import java.nio.file.Files
 import java.util.*
-import kotlin.io.path.exists
 
 @Composable
 fun SettingItem(modifier: Modifier, label: String, value: String?, onClick: () -> Unit) {
@@ -76,29 +72,15 @@ fun SettingItem2(modifier: Modifier, label: String, content: @Composable () -> U
     }
 }
 
-private val defaultList = listOf(
-    Setting("vod", "点播", ""),
-    Setting("player", "外部播放器", ""),
-    Setting("log", "日志级别", Level.INFO.levelStr)
-)
-//private var settingListData = mutableStateOf<MutableList<Setting>>(mutableListOf())
-private var settingListData = mutableListOf<Setting>()
-
-fun getSettingItem(s: String): String {
-    return settingListData.find { it.id == s }?.value ?: ""
-}
-
 @Composable
 fun SettingScene(modifier: Modifier, onClickBack: () -> Unit) {
+    var settingList = remember{ mutableStateListOf<Setting>()}
     var showEditDialog by remember { mutableStateOf(false) }
     var currentChoose by remember { mutableStateOf<Setting?>(null) }
-//    val settingList = rememberUpdatedState{ settingListData }
-    var settingList = remember { mutableStateOf<List<Setting>>(listOf()) }
     DisposableEffect("setting") {
-        initSetting()
-        settingList.value = settingListData.toList()
+        settingList.addAll(SettingStore.getSettingList())
         onDispose {
-            Files.write(Paths.setting(), Jsons.encodeToString(settingListData.toList()).toByteArray())
+            SettingStore.write()
         }
     }
 
@@ -116,7 +98,7 @@ fun SettingScene(modifier: Modifier, onClickBack: () -> Unit) {
                 )
             }
             LazyColumn {
-                items(settingList.value) {
+                items(settingList) {
                     SettingItem(
                         modifier, it.label, it.value
                     ) {
@@ -127,29 +109,10 @@ fun SettingScene(modifier: Modifier, onClickBack: () -> Unit) {
             }
         }
         DialogEdit(showEditDialog, onClose = { showEditDialog = false }, currentChoose = currentChoose) {
-//            settingListData = settingListData.toList().toMutableList()
-            settingList.value = settingListData.toList().toMutableList().toList()
+            settingList = SettingStore.getSettingList().toList().toMutableStateList()
         }
     }
 
-}
-
-fun initSetting() {
-    val file = Paths.setting()
-    if (file.exists() && settingListData.size == 0) {
-        settingListData.addAll(Jsons.decodeFromString<List<Setting>>(Files.readString(file)))
-        if (settingListData.size != defaultList.size) {
-            defaultList.forEach { setting ->
-                if (settingListData.find { setting.id == it.id } == null) {
-                    settingListData.add(setting)
-                }
-            }
-        }
-    }
-    if (settingListData.size == 0) {
-        settingListData.addAll(defaultList)
-        Files.write(file, Jsons.encodeToString(settingListData.toList()).toByteArray())
-    }
 }
 
 @Composable
@@ -188,12 +151,13 @@ fun DialogEdit(
                 )
             }
             Button(modifier = Modifier.align(Alignment.End), onClick = {
-                if (textFieldValue == null || textFieldValue == "") {
-                    return@Button
-                }
                 SiteViewModel.viewModelScope.launch {
                     when (currentChoose!!.id) {
                         "vod" -> {
+                            if (textFieldValue == null || textFieldValue == "") {
+                                SnackBar.postMsg("不可为空")
+                                return@launch
+                            }
                             val config = Db.Config.find(textFieldValue!!, ConfigType.SITE.ordinal.toLong())
                             if (config == null) {
                                 Db.Config.save(
@@ -204,25 +168,26 @@ fun DialogEdit(
                             } else {
                                 Db.Config.updateUrl(config.id, textFieldValue as String)
                             }
-                            settingListData.find { it.id == "vod" }?.value = textFieldValue
+                            SettingStore.setValue(SettingType.VOD, textFieldValue!!)
                             api?.cfg?.value = Db.Config.find(textFieldValue!!, ConfigType.SITE.ordinal.toLong())
                             initConfig()
                         }
-
                         "player" -> {
-                            val find = settingListData.find { it.id == "player" }
-                            find?.value = textFieldValue
+                            SettingStore.setValue(SettingType.PLAYER, textFieldValue!!)
                         }
 
                         "log" -> {
-                            val find = settingListData.find { it.id == "log" }
-                            find?.value = textFieldValue
+                            if (textFieldValue == null || textFieldValue == "") {
+                                SnackBar.postMsg("不可为空")
+                                return@launch
+                            }
+                            SettingStore.setValue(SettingType.LOG, textFieldValue!!)
                         }
                     }
                 }.invokeOnCompletion {
-                    Files.write(Paths.setting(), Jsons.encodeToString(settingListData.toList()).toByteArray())
                     onValueChange(textFieldValue ?: "")
                     onClose()
+
                 }
             }) {
                 Text("确认")

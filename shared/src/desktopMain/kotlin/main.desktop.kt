@@ -21,6 +21,7 @@ import com.corner.catvodcore.enum.Menu
 import com.corner.database.appModule
 import com.corner.ui.*
 import com.corner.ui.scene.*
+import com.corner.ui.search.SearchScene
 import com.corner.ui.video.videoScene
 
 actual fun getPlatformName(): String = "Desktop"

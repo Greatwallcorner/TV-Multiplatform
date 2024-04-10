@@ -1,6 +1,8 @@
 package com.corner.server
 
+import com.corner.catvodcore.util.KtorClient
 import com.corner.server.plugins.configureRouting
+import io.ktor.client.engine.cio.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -11,11 +13,22 @@ object KtorD {
 
     var server:ApplicationEngine? = null
 
+    /**
+     * https://ktor.io/docs/configuration-file.html#predefined-properties
+     */
     suspend fun init() {
         port = 9978
         do {
             try {
-                server = embeddedServer(Netty, port = port, host = "0.0.0.0", module = Application::module)
+                server = embeddedServer(Netty, port = port, host = "0.0.0.0", module = Application::module, configure = {
+                    connectionGroupSize = 20
+                    workerGroupSize = 8
+                    callGroupSize = 15
+                    shutdownGracePeriod = 2000
+                    shutdownTimeout = 3000
+                    responseWriteTimeoutSeconds = -1
+                    requestReadTimeoutSeconds = 0
+                })
                     .start(wait = false)
                 break
             } catch (e: Exception) {
@@ -29,6 +42,7 @@ object KtorD {
 }
 
 private fun Application.module() {
+
 //    install(ContentNegotiation){
 //        json(Json {
 //            isLenient = true

@@ -43,14 +43,15 @@ fun isShowProgress(): Boolean {
 }
 
 @Composable
-fun ExpandedText(text: String, maxLine: Int) {
+fun ExpandedText(text: String, maxLine: Int, textStyle: TextStyle = TextStyle()) {
     var expanded by remember { mutableStateOf(false) }
     SelectionContainer {
         Text(
             text = text,
             maxLines = if (expanded) Int.MAX_VALUE else maxLine,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.clickable(onClick = { expanded = !expanded })
+            modifier = Modifier.clickable(onClick = { expanded = !expanded }),
+            style = textStyle
         )
     }
 }

@@ -1,12 +1,17 @@
 package com.corner.ui.video
 
 import SiteViewModel
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,7 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.layout.*
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -36,14 +41,15 @@ import com.corner.catvodcore.config.api
 import com.corner.catvodcore.config.setHome
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.enum.Menu
+import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
 import com.corner.ui.AppTheme
 import com.corner.ui.scene.Dialog
 import com.corner.ui.scene.RatioBtn
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
-import com.corner.util.Utils.addIfAbsent
 import com.seiko.imageloader.ui.AutoSizeImage
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
@@ -145,7 +151,6 @@ fun videoScene(
             }
         }
         onDispose {
-//            page = 1
         }
     }
 
@@ -249,6 +254,7 @@ private fun homeLoad() {
     page+=1
 }
 
+private val isRunning = mutableStateOf(false)
 @Composable
 fun VideoTopBar(
     onClickSearch: () -> Unit,
@@ -256,6 +262,26 @@ fun VideoTopBar(
     onClickSetting: () -> Unit,
     onClickHistory: () -> Unit
 ) {
+    val prompt = remember { mutableStateOf<String>("请输入") }
+    LaunchedEffect(Unit){
+        SiteViewModel.viewModelScope.launch {
+            if(isRunning.value) return@launch
+            isRunning.value = true
+            delay(1500) // 等待获取热门数据列表
+            val list = GlobalModel.hotList.value
+            val size = list.size
+            var idx = 0
+
+            while (true) {
+                if(idx >= size) idx = 0
+                prompt.value = list[idx++].title
+                delay(2000)
+            }
+        }.invokeOnCompletion {
+            println("scroll invoke complete")
+            isRunning.value = false
+        }
+    }
     TopAppBar(modifier = Modifier.height(50.dp), elevation = 5.dp, contentPadding = PaddingValues(1.dp)) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
             IconButton(modifier = Modifier,
@@ -277,11 +303,17 @@ fun VideoTopBar(
                 .clickable {
                     onClickSearch()
                 }) {
-                Text(
-                    text = "请输入",
-                    modifier = Modifier.align(Alignment.Center).fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
+                AnimatedContent(targetState = prompt.value,
+                    contentAlignment = Alignment.Center,
+                    transitionSpec = { slideInVertically { height -> height } + fadeIn() togetherWith
+                            slideOutVertically { height -> -height } + fadeOut()},
+                     modifier = Modifier.fillMaxHeight().padding(top = 4.dp)){
+                    Text(
+                        text = it,
+                        modifier = Modifier.align(Alignment.Center).fillMaxWidth().fillMaxHeight(),
+                        textAlign = TextAlign.Center
+                    )
+                }
                 Icon(
                     Icons.Outlined.Search,
                     contentDescription = "搜索",

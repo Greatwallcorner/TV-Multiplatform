@@ -1,5 +1,6 @@
 package com.corner.catvodcore.util
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.*
@@ -19,3 +20,4 @@ object JsonStrToMapSerializer: JsonTransformingSerializer<Map<String, String>>(M
     }
 
 }
+

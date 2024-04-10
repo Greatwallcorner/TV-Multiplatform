@@ -1,13 +1,23 @@
+import com.corner.bean.Hot
 import com.github.catvod.bean.Doh
 import com.google.common.collect.Lists
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.loader.JarLoader
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
+import com.corner.catvodcore.util.KtorClient
+import com.corner.init.Init
 import com.corner.server.KtorD
 import com.github.catvod.crawler.Spider
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToJsonElement
 import java.io.File
@@ -158,6 +168,22 @@ class commonTest {
     fun flowTest(){
         runBlocking {
             (1..3).asFlow().collect{println(it)}
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    @Test
+    fun hotTest(){
+
+        // {"data":[{"title":"与凤行","comment":"赵丽颖林更新绝美仙侠恋","upinfo":"更新至30集","doubanscore":"","id":0,"cat":2,"pv":"219,500","cover":"https://p7.qhimg.com/d/dy_dc82e931cba0d62a8f59246055e1fdda.jpg","url":"http://www.360kan.com/tv/QbJvaX7mSGPoMH.html","percent":"1","ent_id":"QbJvaX7mSGPoMH","moviecat":["古装","言情","奇幻","剧情"],"vip":true,"description":"该剧改编自晋江文学城九鹭非香小说《本王在此》，讲述了灵界碧苍王沈璃（赵丽颖 饰），因逃婚受伤坠落人间，机缘巧合下偶遇下凡体验生活的最后一位上古神行止（林更新 饰），两人纵横三界，携手展开了一段强强联合、充满烟火气和磅礴之力的新神话爱情故事。","pubdate":"2024-03-18"},
+        runBlocking {
+            val response = KtorClient.client.get("https://api.web.360kan.com/v1/rank?cat=1") {
+                headers {
+                    set(HttpHeaders.Referrer, "https://www.360kan.com/rank/general")
+                }
+            }
+//            val hot = Jsons.decodeFromStream<Hot>(response.bodyAsChannel().toInputStream())
+            println(response.bodyAsText())
         }
     }
 }
