@@ -11,6 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: gradle/actions/setup-gradle@v3
       - run: ls
+      - run: cd desktopApp
       - run: ./gradlew packageReleaseMsi
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ls
@@ -20,6 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: gradle/actions/setup-gradle@v3
       - run: ls
+      - run: cd desktopApp
       - run: ./gradlew packageReleaseMsi
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ls
@@ -29,6 +31,7 @@ jobs:
        - uses: actions/checkout@v4
        - uses: gradle/actions/setup-gradle@v3
        - run: ls
+       - run: cd desktopApp
        - run: ./gradlew packageReleaseMsi
        - run: ./gradlew packageReleaseDistributionForCurrentOS
        - run: ls
