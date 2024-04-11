@@ -1,0 +1,34 @@
+name: TV-Multiplatform Build
+on: [push]
+#  push:
+#    tags:
+#      - v1.*
+#      - v2.*
+jobs:
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/actions/setup-gradle@v3
+      - run: ls
+      - run: ./gradlew packageReleaseMsi
+      - run: ./gradlew packageReleaseDistributionForCurrentOS
+      - run: ls
+  build-linux:
+    runs-on: debian-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/actions/setup-gradle@v3
+      - run: ls
+      - run: ./gradlew packageReleaseMsi
+      - run: ./gradlew packageReleaseDistributionForCurrentOS
+      - run: ls
+  build-mac:
+    runs-on: macos-latest
+    steps:
+       - uses: actions/checkout@v4
+       - uses: gradle/actions/setup-gradle@v3
+       - run: ls
+       - run: ./gradlew packageReleaseMsi
+       - run: ./gradlew packageReleaseDistributionForCurrentOS
+       - run: ls
