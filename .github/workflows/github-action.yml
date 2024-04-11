@@ -10,6 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: gradle/actions/setup-gradle@v3
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
       - run: ls
       - run: cd desktopApp
       - run: ./gradlew packageReleaseMsi
@@ -20,6 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: gradle/actions/setup-gradle@v3
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
       - run: ls
       - run: cd desktopApp
       - run: ./gradlew packageReleaseMsi
@@ -30,6 +38,10 @@ jobs:
     steps:
        - uses: actions/checkout@v4
        - uses: gradle/actions/setup-gradle@v3
+       - uses: actions/setup-java@v4
+         with:
+           distribution: 'temurin'
+           java-version: 17
        - run: ls
        - run: cd desktopApp
        - run: ./gradlew packageReleaseMsi
