@@ -9,7 +9,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: gradle/actions/setup-gradle@v3
+#      - uses: gradle/actions/setup-gradle@v3
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -19,31 +19,39 @@ jobs:
       - run: ./gradlew packageReleaseMsi
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ls
-  build-linux:
-    runs-on: debian-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: gradle/actions/setup-gradle@v3
-      - uses: actions/setup-java@v4
+      - run: makecab ./desktopApp/build/compose/binaries/main-release/app/TV ./TV-$GITHUB_REF_NAME.zip && cp ./desktopApp/build/compose/binaries/main-release/msi/* ./
+      - uses: actions/upload-artifact@v4
         with:
-          distribution: 'temurin'
-          java-version: 17
-      - run: ls
-      - run: cd desktopApp
-      - run: ./gradlew packageReleaseMsi
-      - run: ./gradlew packageReleaseDistributionForCurrentOS
-      - run: ls
-  build-mac:
-    runs-on: macos-latest
-    steps:
-       - uses: actions/checkout@v4
-       - uses: gradle/actions/setup-gradle@v3
-       - uses: actions/setup-java@v4
-         with:
-           distribution: 'temurin'
-           java-version: 17
-       - run: ls
-       - run: cd desktopApp
-       - run: ./gradlew packageReleaseMsi
-       - run: ./gradlew packageReleaseDistributionForCurrentOS
-       - run: ls
+          name: release file
+          path: |
+            *.exe
+            *.zip
+#  build-linux:
+#    runs-on: debian-latest
+#    steps:
+#      - uses: actions/checkout@v4
+##      - uses: gradle/actions/setup-gradle@v3
+#      - uses: actions/setup-java@v4
+#        with:
+#          distribution: 'temurin'
+#          java-version: 17
+#      - run: ls
+##      - run: cd desktopApp
+#      - run: ./gradlew packageReleaseMsi
+#      - run: ./gradlew packageReleaseDistributionForCurrentOS
+#      - run: ls
+#      - run:
+#  build-mac:
+#    runs-on: macos-latest
+#    steps:
+#       - uses: actions/checkout@v4
+#       - uses: gradle/actions/setup-gradle@v3
+#       - uses: actions/setup-java@v4
+#         with:
+#           distribution: 'temurin'
+#           java-version: 17
+#       - run: ls
+#       - run: cd desktopApp
+#       - run: chmod +x ./gradlew && ./gradlew packageReleaseMsi
+#       - run: ./gradlew packageReleaseDistributionForCurrentOS
+#       - run: ls
