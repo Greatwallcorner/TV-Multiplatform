@@ -6,20 +6,23 @@
 # 声明
 - 本项目现在只支持java爬虫，JS和Py暂时没有计划，过多类型的语言现在感觉不是很有必要。编写爬虫现在还是有门槛， 语言多也不会有很多人贡献代码。
 
-- 需要调用外部的播放器软件，可以通过命令行传递视频网络地址的播放器都可以使用
-  1. potplayer
-  2. vlc
-  3. mpc-be
-  4. mpv 等
+- 需要调用外部的播放器软件，可以通过命令行传递视频网络地址的播放器都可以使用, potplayer无法拖进度条,不推荐。
+  1. vlc
+  2. mpc-hc
+  3. mpv 等
 - 本项目按道理支持win/linux/macos, 但只在win上测试过
 
-# TOODO
+# TODO
 - Decompose
 - 动画
 - 代码优化
   
 # screenshoot
+## 首页
 ![](readme_images\home.png)
+## 搜索
+![](readme_images\search.png)
+
 
 # 讨论群
 [TG](https://t.me/tv_multiplatform)
