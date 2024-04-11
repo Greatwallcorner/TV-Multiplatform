@@ -5,13 +5,16 @@ import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.catvodcore.bean.Result
 import com.corner.ui.scene.SnackBar
+import com.corner.util.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.io.FilenameFilter
 import java.util.*
+import java.util.zip.ZipFile
 
 /**
 @author heatdesert
@@ -41,11 +44,12 @@ fun getProcessBuilder(result: Result?, title: String?): ProcessBuilder? {
     val playerPath = SettingStore.getSettingItem(SettingType.PLAYER.id)
     if(!checkPlayer(playerPath)) {
         log.info("未配置播放器 使用默认播放器")
-        val resourcesDir = File(System.getProperty("compose.application.resources.dir")).resolve("MPC-BE\\mpc-be64.exe").path
-        if(resourcesDir.isNullOrBlank()){
+        val path = getDefaultPlayerPath()
+        log.info("默认播放器路径:{}", path)
+        if(path.isBlank()){
             return null
         }
-        return MPC.getProcessBuilder(result, title ?: "TV", resourcesDir)
+        return MPC.getProcessBuilder(result, title ?: "TV", path)
     }
     val compare = File(playerPath).name.lowercase(Locale.getDefault())
     if(compare.contains("potplayer")){
@@ -57,6 +61,19 @@ fun getProcessBuilder(result: Result?, title: String?): ProcessBuilder? {
         return MPC.getProcessBuilder(result, title ?: "TV", playerPath)
     }
     return Default.getProcessBuilder(result, title ?: "TV", playerPath)
+}
+
+fun getDefaultPlayerPath():String {
+    val resourcesDir = File(System.getProperty("compose.application.resources.dir"))
+    val list = resourcesDir.list(FilenameFilter { dir, name -> name.lowercase().matches(Regex("mpc-hc\\X*.zip")) })
+    if(list.size == 0) return ""
+    val destDir = resourcesDir.resolve("mpc-hc")
+    log.info("解压默认播放器 MPC-HC")
+    Utils.unZipFiles(resourcesDir.resolve(list[0]), destDir.path)
+    val exeList = destDir.list(FilenameFilter { dir, name -> name.lowercase().matches(Regex("mpc-hc\\X*.exe")) })
+    if(exeList.size == 0) return ""
+    return destDir.resolve(exeList[0]).path
+
 }
 
 private fun checkPlayer(playerPath:String):Boolean{
