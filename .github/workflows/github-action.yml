@@ -32,7 +32,7 @@ jobs:
             *.exe
             *.zip
   build-linux:
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
