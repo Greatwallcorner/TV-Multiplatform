@@ -24,27 +24,37 @@ jobs:
       - name: move result to root
         shell: pwsh
         run: Move-Item -Path "./desktopApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./desktopApp/build/compose/binaries/main-release/msi/*。msi" -Destination "./"
+      - run: ls
       - uses: actions/upload-artifact@v4
         with:
-          name: release file
+          name: win-file
           path: |
             *.exe
             *.zip
-#  build-linux:
-#    runs-on: debian-latest
-#    steps:
-#      - uses: actions/checkout@v4
-##      - uses: gradle/actions/setup-gradle@v3
-#      - uses: actions/setup-java@v4
-#        with:
-#          distribution: 'temurin'
-#          java-version: 17
-#      - run: ls
-##      - run: cd desktopApp
-#      - run: ./gradlew packageReleaseMsi
-#      - run: ./gradlew packageReleaseDistributionForCurrentOS
-#      - run: ls
-#      - run:
+  build-linux:
+    runs-on: debian-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+      - run: ls
+      - run: ./gradlew createReleaseDistributable
+      - run: ./gradlew packageReleaseDistributionForCurrentOS
+      - run: ls && tree
+      - name: compress
+        run: zip -q -r ./TV-$GITHUB_REF_NAME.zip ./desktopApp/build/compose/binaries/main-release/app/TV
+      - name: move file
+        run: mv ./desktopApp/build/compose/binaries/main-release/app/TV/*.zip ./ && mv ./desktopApp/build/compose/binaries/main-release/msi/*.msi ./
+      - run: ls
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-file
+          path: |
+            *.exe
+            *.zip
+
 #  build-mac:
 #    runs-on: macos-latest
 #    steps:
