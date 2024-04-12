@@ -15,11 +15,15 @@ jobs:
           distribution: 'temurin'
           java-version: 17
       - run: ls
-#      - run: cd desktopApp
-      - run: ./gradlew packageReleaseMsi
       - run: ./gradlew packageReleaseDistributionForCurrentOS
-      - run: ls
-      - run: makecab ./desktopApp/build/compose/binaries/main-release/app/TV ./TV-$GITHUB_REF_NAME.zip && cp ./desktopApp/build/compose/binaries/main-release/msi/* ./
+      - run: ./gradlew createReleaseDistributable
+      - run: ls && tree ./desktopApp /f
+      - name: compress
+        shell: pwsh
+        run: Compress-Archive -Path "./desktopApp/build/compose/binaries/main-release/app/TV" -DestinationPath "TV-$GITHUB_REF_NAME.zip"
+      - name: move result to root
+        shell: pwsh
+        run: Move-Item -Path "./desktopApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./desktopApp/build/compose/binaries/main-release/msi/*。msi" -Destination "./"
       - uses: actions/upload-artifact@v4
         with:
           name: release file
