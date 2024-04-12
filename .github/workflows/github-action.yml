@@ -40,7 +40,7 @@ jobs:
           distribution: 'temurin'
           java-version: 17
       - run: ls
-      - run: ./gradlew createReleaseDistributable
+      - run: chmod +x ./gradlew && ./gradlew createReleaseDistributable
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ls && tree
       - name: compress
