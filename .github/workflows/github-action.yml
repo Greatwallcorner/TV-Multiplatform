@@ -5,32 +5,32 @@ on: [push]
 #      - v1.*
 #      - v2.*
 jobs:
-  build-win:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-#      - uses: gradle/actions/setup-gradle@v3
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: 17
-      - run: ls
-      - run: ./gradlew packageReleaseDistributionForCurrentOS
-      - run: ./gradlew createReleaseDistributable
-      - run: ls && tree ./desktopApp /f
-      - name: compress
-        shell: pwsh
-        run: Compress-Archive -Path "./desktopApp/build/compose/binaries/main-release/app/TV" -DestinationPath "TV-$GITHUB_REF_NAME.zip"
-      - name: move result to root
-        shell: pwsh
-        run: Move-Item -Path "./desktopApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./desktopApp/build/compose/binaries/main-release/msi/*。msi" -Destination "./"
-      - run: ls
-      - uses: actions/upload-artifact@v4
-        with:
-          name: win-file
-          path: |
-            *.exe
-            *.zip
+#  build-win:
+#    runs-on: windows-latest
+#    steps:
+#      - uses: actions/checkout@v4
+##      - uses: gradle/actions/setup-gradle@v3
+#      - uses: actions/setup-java@v4
+#        with:
+#          distribution: 'temurin'
+#          java-version: 17
+#      - run: ls
+#      - run: ./gradlew packageReleaseDistributionForCurrentOS
+#      - run: ./gradlew createReleaseDistributable
+#      - run: ls && tree ./desktopApp /f
+#      - name: compress
+#        shell: pwsh
+#        run: Compress-Archive -Path "./desktopApp/build/compose/binaries/main-release/app/TV" -DestinationPath "TV-$GITHUB_REF_NAME.zip"
+#      - name: move result to root
+#        shell: pwsh
+#        run: Move-Item -Path "./desktopApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./desktopApp/build/compose/binaries/main-release/msi/*。msi" -Destination "./"
+#      - run: ls
+#      - uses: actions/upload-artifact@v4
+#        with:
+#          name: win-file
+#          path: |
+#            *.exe
+#            *.zip
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -46,13 +46,13 @@ jobs:
       - name: compress
         run: zip -q -r ./TV-$GITHUB_REF_NAME.zip ./desktopApp/build/compose/binaries/main-release/app/TV
       - name: move file
-        run: mv ./desktopApp/build/compose/binaries/main-release/app/TV/*.zip ./ && mv ./desktopApp/build/compose/binaries/main-release/msi/*.msi ./
+        run: mv ./desktopApp/build/compose/binaries/main-release/deb/*.deb ./
       - run: ls
       - uses: actions/upload-artifact@v4
         with:
           name: linux-file
           path: |
-            *.exe
+            *.deb
             *.zip
 
 #  build-mac:
