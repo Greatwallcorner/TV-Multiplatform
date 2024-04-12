@@ -5,32 +5,32 @@ on: [push]
 #      - v1.*
 #      - v2.*
 jobs:
-#  build-win:
-#    runs-on: windows-latest
-#    steps:
-#      - uses: actions/checkout@v4
-##      - uses: gradle/actions/setup-gradle@v3
-#      - uses: actions/setup-java@v4
-#        with:
-#          distribution: 'temurin'
-#          java-version: 17
-#      - run: ls
-#      - run: ./gradlew packageReleaseDistributionForCurrentOS
-#      - run: ./gradlew createReleaseDistributable
-#      - run: ls && tree ./desktopApp /f
-#      - name: compress
-#        shell: pwsh
-#        run: Compress-Archive -Path "./desktopApp/build/compose/binaries/main-release/app/TV" -DestinationPath "TV-$GITHUB_REF_NAME.zip"
-#      - name: move result to root
-#        shell: pwsh
-#        run: Move-Item -Path "./desktopApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./desktopApp/build/compose/binaries/main-release/msi/*。msi" -Destination "./"
-#      - run: ls
-#      - uses: actions/upload-artifact@v4
-#        with:
-#          name: win-file
-#          path: |
-#            *.exe
-#            *.zip
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+#      - uses: gradle/actions/setup-gradle@v3
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+      - run: ls
+      - run: ./gradlew packageReleaseDistributionForCurrentOS
+      - run: ./gradlew createReleaseDistributable
+      - run: ls && tree ./desktopApp /f
+      - name: compress
+        shell: pwsh
+        run: Compress-Archive -Path "./desktopApp/build/compose/binaries/main-release/app/TV" -DestinationPath "TV-$GITHUB_REF_NAME.zip"
+      - name: move result to root
+        shell: pwsh
+        run: Move-Item -Path "./desktopApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./desktopApp/build/compose/binaries/main-release/msi/*。msi" -Destination "./"
+      - run: ls
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-file
+          path: |
+            *.exe
+            *.zip
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -44,7 +44,7 @@ jobs:
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ls && tree
       - name: compress
-        run: zip -q -r ./TV-$GITHUB_REF_NAME.zip ./desktopApp/build/compose/binaries/main-release/app/TV
+        run: zip -q -r ./TV-mac-$GITHUB_REF_NAME.zip ./desktopApp/build/compose/binaries/main-release/app/TV
       - name: move file
         run: mv ./desktopApp/build/compose/binaries/main-release/deb/*.deb ./
       - run: ls
@@ -54,18 +54,47 @@ jobs:
           path: |
             *.deb
             *.zip
+  release:
+    runs-on: ubuntu-latest
+    needs: [ build-win, build-linux]
+    steps:
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v4
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            *.zip
+            *.deb
+            *.pkg
+            *.dmg
+    permissions:
+      contents: write
 
+
+      #            https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Signing_and_notarization_on_macOS/README.md
 #  build-mac:
 #    runs-on: macos-latest
 #    steps:
 #       - uses: actions/checkout@v4
-#       - uses: gradle/actions/setup-gradle@v3
 #       - uses: actions/setup-java@v4
 #         with:
 #           distribution: 'temurin'
 #           java-version: 17
 #       - run: ls
-#       - run: cd desktopApp
-#       - run: chmod +x ./gradlew && ./gradlew packageReleaseMsi
+#       - run: chmod +x ./gradlew && ./gradlew createReleaseDistributable
 #       - run: ./gradlew packageReleaseDistributionForCurrentOS
 #       - run: ls
+#       - name: compress
+#         run: zip -q -r ./TV-$GITHUB_REF_NAME.zip ./desktopApp/build/compose/binaries/main-release/app/TV
+#       - name: move file
+#         run: mv ./desktopApp/build/compose/binaries/main-release/pkg/*.pkg ./ && mv ./desktopApp/build/compose/binaries/main-release/pkg/*.pkg ./
+#       - run: ls
+#       - uses: actions/upload-artifact@v4
+#         with:
+#           name: mac-file
+#           path: |
+#             *.pkg
+#             *.dmg
+#             *.zip
+         
