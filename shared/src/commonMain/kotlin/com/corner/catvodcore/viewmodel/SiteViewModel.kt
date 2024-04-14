@@ -27,12 +27,6 @@ import okhttp3.Headers.Companion.toHeaders
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
-
-/**
-@author heatdesert
-@date 2023-12-21 20:47
-@description
- */
 object SiteViewModel {
     private val log = LoggerFactory.getLogger("SiteViewModel")
 //    val episode: MutableState<Episode?> = mutableStateOf<Episode?>(null)
@@ -60,7 +54,7 @@ object SiteViewModel {
                     val homeVideoContent = spider.homeVideoContent()
                     SpiderDebug.log(homeVideoContent)
                     rst.list.addAll(Jsons.decodeFromString<Result>(homeContent).list)
-                    return rst.also { this.result.value = it }
+                    result.value = rst.also { this.result.value = it }
                 }
 
                 4 -> {
@@ -69,20 +63,22 @@ object SiteViewModel {
                     params.put("filter", "true")
                     val homeContent = call(site, params, false)
                     SpiderDebug.log(homeContent)
-                    return Jsons.decodeFromString<Result>(homeContent).also { this.result.value = it }
+                    result.value = Jsons.decodeFromString<Result>(homeContent).also { this.result.value = it }
                 }
 
                 else -> {
                     val homeContent: String =
                         Http.newCall(site.api, site.header?.toHeaders() ?: headersOf()).execute().body.string()
                     SpiderDebug.log(homeContent)
-                    return fetchPic(site, Jsons.decodeFromString<Result>(homeContent)).also { result.value = it }
+                    result.value = fetchPic(site, Jsons.decodeFromString<Result>(homeContent)).also { result.value = it }
                 }
             }
         } catch (e: Exception) {
             log.error("home Content site:{}", site.name, e)
             return Result()
         }
+        result.value.list.forEach{it.site = site}
+        return result.value
     }
 
     fun detailContent(key: String, id: String): Result? {

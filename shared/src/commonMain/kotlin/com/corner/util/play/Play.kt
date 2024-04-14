@@ -1,10 +1,10 @@
 package com.corner.util.play
 
 import MPC
+import PotPlayer
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.catvodcore.bean.Result
-import com.corner.ui.scene.SnackBar
 import com.corner.util.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,13 +14,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FilenameFilter
 import java.util.*
-import java.util.zip.ZipFile
-
-/**
-@author heatdesert
-@date 2024-01-07 21:50
-@description
- */
 
 private val log = LoggerFactory.getLogger("Player")
 

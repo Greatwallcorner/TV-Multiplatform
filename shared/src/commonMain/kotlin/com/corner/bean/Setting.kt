@@ -3,19 +3,11 @@ package com.corner.bean
 import ch.qos.logback.classic.Level
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Paths
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import java.nio.file.Files
-import java.util.LinkedList
-import java.util.Queue
 import kotlin.io.path.exists
 
-/**
-@author heatdesert
-@date 2023-12-16 12:10
-@description
- */
 @Serializable
 data class Setting(val id: String, val label: String, var value: String?)
 

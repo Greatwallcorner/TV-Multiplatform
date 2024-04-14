@@ -3,11 +3,6 @@ package com.corner.bean
 import com.corner.catvodcore.util.Jsons
 import kotlinx.serialization.Serializable
 
-/**
-@author heatdesert
-@date 2024-04-06 11:56
-@description
- */
 
 @Serializable
 class Suggest {

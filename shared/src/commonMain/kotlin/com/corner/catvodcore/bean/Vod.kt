@@ -6,11 +6,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-/**
-@author heatdesert
-@date 2023-12-18 23:06
-@description
- */
 @Serializable
 data class Vod(
     @SerialName("vod_id")var vodId:String = "",

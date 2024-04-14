@@ -5,11 +5,6 @@ import androidx.compose.ui.unit.dp
 import java.awt.Point
 import java.awt.Toolkit
 
-/**
-@author heatdesert
-@date 2023-12-20 22:19
-@description
- */
 object Util {
 
     /**

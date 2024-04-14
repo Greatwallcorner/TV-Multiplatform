@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +20,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.Setting
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
@@ -24,6 +28,7 @@ import com.corner.catvodcore.config.api
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.database.Db
 import com.corner.init.initConfig
+import com.corner.ui.decompose.component.DefaultSettingComponent
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.Dialog
 import com.corner.ui.scene.SnackBar
@@ -56,32 +61,20 @@ fun SettingItem(modifier: Modifier, label: String, value: String?, onClick: () -
 }
 
 @Composable
-fun SettingItem2(modifier: Modifier, label: String, content: @Composable () -> Unit) {
-    Row(
-        modifier
-            .shadow(3.dp)
-            .background(MaterialTheme.colors.background, shape = RoundedCornerShape(4))
-            .padding(start = 20.dp, end = 20.dp)
-    ) {
-        Text(
-            label,
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp),
-            color = MaterialTheme.colors.onBackground
-        )
-        content()
-    }
-}
-
-@Composable
-fun SettingScene(modifier: Modifier, onClickBack: () -> Unit) {
-    var settingList = remember{ mutableStateListOf<Setting>()}
+fun SettingScene(component: DefaultSettingComponent, modifier: Modifier, onClickBack: () -> Unit) {
+    val model = component.model.subscribeAsState()
     var showEditDialog by remember { mutableStateOf(false) }
     var currentChoose by remember { mutableStateOf<Setting?>(null) }
     DisposableEffect("setting") {
-        settingList.addAll(SettingStore.getSettingList())
+        component.sync()
         onDispose {
             SettingStore.write()
         }
+    }
+
+    DisposableEffect(model.value.settingList){
+        println("settingList 修改")
+        onDispose {  }
     }
 
     Box(
@@ -89,7 +82,7 @@ fun SettingScene(modifier: Modifier, onClickBack: () -> Unit) {
             .background(MaterialTheme.colors.background)
     ) {
         Column(modifier.fillMaxSize()) {
-            BackRow(modifier, onClickBack = { onClickBack() }) {
+            BackRow(Modifier, onClickBack = { onClickBack() }) {
                 Text(
                     "设置",
                     style = MaterialTheme.typography.h4,
@@ -98,7 +91,7 @@ fun SettingScene(modifier: Modifier, onClickBack: () -> Unit) {
                 )
             }
             LazyColumn {
-                items(settingList) {
+                items(model.value.settingList) {
                     SettingItem(
                         modifier, it.label, it.value
                     ) {
@@ -109,7 +102,7 @@ fun SettingScene(modifier: Modifier, onClickBack: () -> Unit) {
             }
         }
         DialogEdit(showEditDialog, onClose = { showEditDialog = false }, currentChoose = currentChoose) {
-            settingList = SettingStore.getSettingList().toList().toMutableStateList()
+            component.sync()
         }
     }
 
@@ -172,6 +165,7 @@ fun DialogEdit(
                             api?.cfg?.value = Db.Config.find(textFieldValue!!, ConfigType.SITE.ordinal.toLong())
                             initConfig()
                         }
+
                         "player" -> {
                             SettingStore.setValue(SettingType.PLAYER, textFieldValue!!)
                         }
@@ -187,7 +181,6 @@ fun DialogEdit(
                 }.invokeOnCompletion {
                     onValueChange(textFieldValue ?: "")
                     onClose()
-
                 }
             }) {
                 Text("确认")

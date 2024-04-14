@@ -1,6 +1,5 @@
 package com.corner.catvodcore.config
 
-import com.github.catvod.crawler.Spider
 import com.corner.catvod.enum.bean.Api
 import com.corner.catvod.enum.bean.Rule
 import com.corner.catvod.enum.bean.Site
@@ -11,7 +10,7 @@ import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Urls
 import com.corner.database.Config
 import com.corner.database.Db
-import com.corner.ui.video.Home
+import com.github.catvod.crawler.Spider
 import okio.Path.Companion.toPath
 import org.apache.commons.lang3.StringUtils
 import java.nio.file.Files
@@ -21,7 +20,10 @@ var api: Api? = null
 
 fun parseConfig(cfg: Config, isJson: Boolean): Api? {
     val data = getData(if (isJson) cfg.json ?: "" else cfg.url!!, isJson) ?: throw RuntimeException("配置读取异常")
-    if(StringUtils.isBlank(data)) return api
+    if(StringUtils.isBlank(data)) {
+        setHome(null)
+        return api
+    }
     val apiConfig = Jsons.decodeFromString<Api>(data)
     api = apiConfig
     api?.url = cfg.url
@@ -33,12 +35,11 @@ fun parseConfig(cfg: Config, isJson: Boolean): Api? {
         setHome(api?.sites?.first())
     }
     JarLoader.loadJar("", api!!.spider)
-    return apiConfig;
+    return apiConfig
 }
 
 fun setHome(home:Site?){
     api?.home?.value = home
-    Home = home
 }
 
 fun getSpider(site: Site): Spider {

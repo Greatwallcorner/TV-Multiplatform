@@ -10,21 +10,15 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.core.encoder.LayoutWrappingEncoder
 import ch.qos.logback.core.rolling.RollingFileAppender
-import ch.qos.logback.core.rolling.RollingPolicy
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy
 import ch.qos.logback.core.spi.ContextAwareBase
 import ch.qos.logback.core.util.FileSize
 import com.corner.catvodcore.util.Paths
 
-/**
-@author heatdesert
-@date 2024-03-09 9:30
-@description
- */
 class TVLogConfigurator():ContextAwareBase(),Configurator {
     override fun configure(context: LoggerContext?): ExecutionStatus {
-        addInfo("Setting up TV logback configuration.");
+        addInfo("Setting up TV logback configuration.")
         println("log config")
         val ca = consoleAppender(context)
         val fa = fileAppender(context)
@@ -69,20 +63,20 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
 
     private fun consoleAppender(context: LoggerContext?): ConsoleAppender<ILoggingEvent> {
         val ca = ConsoleAppender<ILoggingEvent>();
-        ca.setContext(context);
-        ca.setName("console");
+        ca.setContext(context)
+        ca.setName("console")
         val encoder = LayoutWrappingEncoder<ILoggingEvent>()
-        encoder.context = context;
+        encoder.context = context
         // same as
         // PatternLayout layout = new PatternLayout();
         // layout.setPattern("%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} -
         // %msg%n");
-        val layout = TTLLLayout();
-        layout.context = context;
-        layout.start();
-        encoder.setLayout(layout);
-        ca.setEncoder(encoder);
-        ca.start();
+        val layout = TTLLLayout()
+        layout.context = context
+        layout.start()
+        encoder.setLayout(layout)
+        ca.setEncoder(encoder)
+        ca.start()
         return ca
     }
 }

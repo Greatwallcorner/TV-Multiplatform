@@ -22,7 +22,7 @@ kotlin {
     jvm("desktop")
 
     sourceSets {
-        val ktorVer = "2.3.7"
+        val ktorVer = "2.3.8"
         val logbackVer = "1.3.14"
         val imageLoader = "1.7.4"
         val kotlinVersion = extra["kotlin.version"] as String
@@ -82,8 +82,10 @@ kotlin {
                 implementation("org.jupnp:org.jupnp:2.7.1")
                 implementation("org.jupnp:org.jupnp.support:2.7.1")
 
-//                implementation("com.arkivanov.decompose:decompose:2.2.2")
-//                implementation("com.arkivanov.decompose:extensions-compose-jetbrains:2.2.2")
+                api("com.arkivanov.decompose:decompose:2.2.2")
+                api("com.arkivanov.decompose:extensions-compose-jetbrains:2.2.2")
+                // Add the dependency, typically under the commonMain source set
+                api("com.arkivanov.essenty:lifecycle:1.3.0")
 
             }
         }
@@ -108,7 +110,7 @@ kotlin {
             JavaVersion.VERSION_17
             dependencies {
                 implementation(compose.desktop.common)
-                implementation("app.cash.sqldelight:sqlite-driver:2.0.0")
+                implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
 //                implementation("org.nanohttpd:nanohttpd:2.3.1")
                 // Player
                 implementation("uk.co.caprica:vlcj:4.8.2")
@@ -120,7 +122,7 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
                 implementation("io.mockk:mockk:1.12.5")
                 // kotest
                 implementation("io.kotest:kotest-runner-junit5:5.3.1")

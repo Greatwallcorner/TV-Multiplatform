@@ -12,11 +12,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.slf4j.LoggerFactory
 
-/**
-@author heatdesert
-@date 2023-12-14 21:11
-@description
- */
 suspend fun proxy(params: Map<String, String>): Array<Any>? {
     if (params.containsKey("do") && params.get("do")?.equals("js") ?: false) {
 

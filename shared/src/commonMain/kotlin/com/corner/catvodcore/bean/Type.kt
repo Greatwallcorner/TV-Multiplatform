@@ -4,11 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-/**
-@author heatdesert
-@date 2024-01-25 21:30
-@description
- */
+
 @Serializable
 class Type {
     constructor(id:String, name:String){

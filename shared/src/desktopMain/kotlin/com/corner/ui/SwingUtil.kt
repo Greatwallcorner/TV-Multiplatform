@@ -3,12 +3,8 @@ package com.corner.ui
 import java.awt.Dimension
 import java.awt.Point
 import java.awt.Toolkit
+import javax.swing.SwingUtilities
 
-/**
-@author heatdesert
-@date 2023-12-30 16:56
-@description
- */
 object SwingUtil {
     /**
      * 屏幕像素密度
@@ -52,5 +48,27 @@ object SwingUtil {
         val x = ((screenSize.getWidth() - BottomBarHeight) / 2) - winWidth.toDouble() / 2
         val y = ((screenSize.getHeight() - BottomBarHeight) / 2) - winHeight.toDouble() / 2
         return Point(x.toInt(), y.toInt())
+    }
+
+    fun <T> runOnUiThread(block: () -> T): T {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return block()
+        }
+
+        var error: Throwable? = null
+        var result: T? = null
+
+        SwingUtilities.invokeAndWait {
+            try {
+                result = block()
+            } catch (e: Throwable) {
+                error = e
+            }
+        }
+
+        error?.also { throw it }
+
+        @Suppress("UNCHECKED_CAST")
+        return result as T
     }
 }

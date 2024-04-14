@@ -1,10 +1,6 @@
 import kotlinx.coroutines.*
 
-/**
-@author heatdesert
-@date 2023-12-16 11:35
-@description
- */
+
 class PlayerTest {
     val playerPath = "\"E:\\Program File\\Tools\\Scoop\\apps\\potplayer\\current\\PotPlayerMini64.exe\""
 

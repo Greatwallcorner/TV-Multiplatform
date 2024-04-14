@@ -1,12 +1,10 @@
 package com.corner.catvodcore.util;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-/**
- * @author heatdesert
- * @date 2023-11-20 22:23
- * @description
- */
 public class Executors {
 
     private Executors(){}

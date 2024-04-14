@@ -4,11 +4,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.test.Test
 
-/**
-@author heatdesert
-@date 2024-03-09 11:11
-@description
- */
 class scopeTest{
     @Test
     fun main(): Unit {

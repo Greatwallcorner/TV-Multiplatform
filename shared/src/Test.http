@@ -31,3 +31,26 @@ Content-Type: application/json
   "pg": "1"
 
 }
+
+
+###
+POST https://exservice.12306.cn/lxgjadmin/bs-service-pre/reception/submit
+Content-Type: application/json
+
+{
+  "ACCOUNT_PARAM":[
+    {
+      "VALUE":"SIGN",
+      "KEY":"0af211cdc4973845628ac6f81f8b481b"
+    },
+    {
+      "VALUE":"wzl_ai_fs",
+      "KEY":"PRODUCT_ID"
+    }
+  ],
+  "ID":"2100000003480798",
+  "ORDER_TIME":"2023-02-22 09:31:53",
+  "PHONE_NUMBER":"18652056535",
+  "TRADE_ID":"6000000713222079"
+}
+

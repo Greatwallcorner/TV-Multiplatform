@@ -2,7 +2,6 @@ package com.corner.ui.video
 
 import SiteViewModel
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -34,7 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.corner.catvod.enum.bean.Site
+import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.arkivanov.decompose.value.update
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Type
 import com.corner.catvodcore.config.api
@@ -44,6 +44,7 @@ import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
 import com.corner.ui.AppTheme
+import com.corner.ui.decompose.component.DefaultVideoComponent
 import com.corner.ui.scene.Dialog
 import com.corner.ui.scene.RatioBtn
 import com.corner.ui.scene.hideProgress
@@ -53,15 +54,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
-/**
-@author heatdesert
-@date 2023-12-18 23:03
-@description
- */
-private val log: Logger = LoggerFactory.getLogger("Video")
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -102,17 +94,10 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
     }
 }
 
-private var homeVodResult by mutableStateOf<MutableSet<Vod>?>(null)
-private var homeLoaded by mutableStateOf(false)
-private var classList by mutableStateOf<MutableSet<Type>>(mutableSetOf())
-private var currentClass by mutableStateOf<Type?>(null)
-private var page = 1
-var Home by mutableStateOf<Site?>(null)
-
 @Composable
-fun videoScene(
-    modifier: Modifier,
-    onClickSwitch: (Menu) -> Unit
+fun videoScene(component:DefaultVideoComponent,
+               modifier: Modifier,
+               onClickSwitch: (Menu) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = SnackbarHostState()
@@ -120,30 +105,32 @@ fun videoScene(
     val state = rememberLazyGridState()
     val adapter = rememberScrollbarAdapter(state)
 
+    val model = component.model.subscribeAsState()
+
     LaunchedEffect("homeLoad") {
-        homeLoad()
+        component.homeLoad()
     }
 
     val canLoad = rememberUpdatedState(state.canScrollForward)
     DisposableEffect(canLoad.value) {
         if (!canLoad.value) {
             showProgress()
-            page += 1
+            model.value.page += 1
             SiteViewModel.viewModelScope.launch {
                 try {
-                    if (currentClass == null || currentClass?.typeId == "home") return@launch
+                    if (model.value.currentClass == null || model.value.currentClass?.typeId == "home") return@launch
                     SiteViewModel.categoryContent(
                         api?.home?.value?.key ?: "",
-                        currentClass?.typeId,
-                        page.toString(),
+                        model.value.currentClass?.typeId,
+                        model.value.page.toString(),
                         true,
                         HashMap()
                     )
                     val list = SiteViewModel.result.value.list
                     if (list.isNotEmpty()) {
-                        val vodList = homeVodResult?.toMutableList()
+                        val vodList = model.value.homeVodResult?.toMutableList()
                         vodList?.addAll(list)
-                        homeVodResult = vodList?.toSet()?.toMutableSet()
+                        component.model.update { it.copy(homeVodResult = vodList?.toSet()?.toMutableSet()) }
                     }
                 } finally {
                     hideProgress()
@@ -162,6 +149,7 @@ fun videoScene(
         scaffoldState = scaffoldState,
         topBar = {
             VideoTopBar(
+                component = component,
                 onClickSearch = { onClickSwitch(Menu.SEARCH) },
                 onClickChooseHome = { showChooseHome = true },
                 onClickSetting = { onClickSwitch(Menu.SETTING) },
@@ -169,7 +157,7 @@ fun videoScene(
         }
     ) {
         Box(modifier = modifier.fillMaxSize()) {
-            if (homeVodResult?.isEmpty() == true) {
+            if (model.value.homeVodResult?.isEmpty() == true) {
                 Image(
                     modifier = modifier.align(Alignment.Center),
                     painter = androidx.compose.ui.res.painterResource("nothing.png"),
@@ -178,9 +166,9 @@ fun videoScene(
                 )
             } else {
                 Column {
-                    if (classList.isNotEmpty()) {
-                        ClassRow(classList) {
-                            page = 1
+                    if (model.value.classList.isNotEmpty()) {
+                        ClassRow(component) {
+                            model.value.page = 1
                             scope.launch {
                                 state.animateScrollToItem(0)
                             }
@@ -195,7 +183,7 @@ fun videoScene(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         userScrollEnabled = true
                     ) {
-                        itemsIndexed(homeVodResult?.toList() ?: listOf()) { _, item ->
+                        itemsIndexed(model.value.homeVodResult?.toList() ?: listOf()) { _, item ->
                             VideoItem(Modifier, item, false) {
                                 chooseVod = it
                                 showDetailDialog = true
@@ -212,7 +200,7 @@ fun videoScene(
                 )
             }
             DetailDialog(showDetailDialog, chooseVod, api?.home?.value?.key ?: "") { showDetailDialog = false }
-            ChooseHomeDialog(showChooseHome, onClose = { showChooseHome = false }) {
+            ChooseHomeDialog(component,showChooseHome, onClose = { showChooseHome = false }) {
                 scope.launch {
                     state.animateScrollToItem(0)
                 }
@@ -221,52 +209,20 @@ fun videoScene(
     }
 }
 
-private fun homeLoad() {
-    SiteViewModel.viewModelScope.launch {
-        showProgress()
-        try {
-            if (!homeLoaded) {
-                if (api?.home == null) return@launch
-                homeVodResult = SiteViewModel.homeContent().list.toMutableSet()
-                classList = SiteViewModel.result.value.types.toMutableSet()
-
-                // 有首页内容
-                if (homeVodResult?.isNotEmpty() == true) {
-                    classList = (mutableSetOf(Type.home()) + classList) as MutableSet<Type>
-                } else {
-                    val types = SiteViewModel.result.value.types
-                    if (types.isEmpty()) return@launch
-                    SiteViewModel.categoryContent(api?.home?.value?.key ?: "", types.get(0).typeId, page.toString(), true, HashMap())
-                    homeVodResult = SiteViewModel.result.value.list.toMutableSet()
-                }
-                if (classList.size > 0) {
-                    currentClass = classList.first()
-                }
-                homeLoaded = true
-            }
-        } catch (e: Exception) {
-            log.error("homeLoad", e)
-        } finally {
-//            page = 2
-            hideProgress()
-        }
-    }
-    page+=1
-}
-
-private val isRunning = mutableStateOf(false)
 @Composable
 fun VideoTopBar(
+    component: DefaultVideoComponent,
     onClickSearch: () -> Unit,
     onClickChooseHome: () -> Unit,
     onClickSetting: () -> Unit,
     onClickHistory: () -> Unit
 ) {
+    val model = component.model.subscribeAsState()
     val prompt = remember { mutableStateOf<String>("请输入") }
     LaunchedEffect(Unit){
         SiteViewModel.viewModelScope.launch {
-            if(isRunning.value) return@launch
-            isRunning.value = true
+            if(model.value.isRunning) return@launch
+            component.model.update { it.copy(isRunning = true) }
             delay(1500) // 等待获取热门数据列表
             val list = GlobalModel.hotList.value
             val size = list.size
@@ -279,7 +235,7 @@ fun VideoTopBar(
             }
         }.invokeOnCompletion {
             println("scroll invoke complete")
-            isRunning.value = false
+            component.model.update { it.copy(isRunning = false) }
         }
     }
     TopAppBar(modifier = Modifier.height(50.dp), elevation = 5.dp, contentPadding = PaddingValues(1.dp)) {
@@ -292,7 +248,7 @@ fun VideoTopBar(
                         contentDescription = "Choose Home",
                         modifier = Modifier.padding(end = 3.dp)
                     )
-                    Text(Home?.name ?: "无")
+                    Text(model.value.getHomeSite()?.name ?: "无")
                 }
             }
 
@@ -350,29 +306,30 @@ fun previewImageItem() {
 }
 
 @Composable
-fun ClassRow(list: MutableSet<Type>, onCLick: () -> Unit) {
+fun ClassRow(component: DefaultVideoComponent, onCLick: () -> Unit) {
+    val model = component.model.subscribeAsState()
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(top = 5.dp, start = 5.dp, end = 5.dp),
         userScrollEnabled = true
     ) {
-        items(list.toList()) {
+        items(model.value.classList.toList()) {
             RatioBtn(text = it.typeName, onClick = {
                 SiteViewModel.viewModelScope.launch {
                     showProgress()
                     try {
-                        for (type in list) {
+                        for (type in model.value.classList) {
                             type.selected = it.typeId == type.typeId
                         }
-                        currentClass = it
-                        classList = classList.toSet().toMutableSet()
+                        model.value.currentClass = it
+                        model.value.classList = model.value.classList.toSet().toMutableSet()
                         if (it.typeId == "home") {
                             SiteViewModel.homeContent()
                         } else {
                             SiteViewModel.categoryContent(api?.home?.value?.key ?: "", it.typeId, "1", true, HashMap())
                         }
-                        homeVodResult = SiteViewModel.result.value.list.toMutableSet()
+                        component.model.update { it.copy(homeVodResult = SiteViewModel.result.value.list.toMutableSet()) }
                     } finally {
                         hideProgress()
                         onCLick()
@@ -388,12 +345,13 @@ fun ClassRow(list: MutableSet<Type>, onCLick: () -> Unit) {
 fun previewClassRow() {
     AppTheme {
         val list = listOf(Type("1", "ABC"), Type("2", "CDR"), Type("3", "ddr"))
-        ClassRow(list.toMutableSet(), {})
+//        ClassRow(list.toMutableSet()) {}
     }
 }
 
 @Composable
-fun ChooseHomeDialog(showDialog: Boolean, onClose: () -> Unit, onClick: () -> Unit) {
+fun ChooseHomeDialog(component: DefaultVideoComponent, showDialog: Boolean, onClose: () -> Unit, onClick: () -> Unit) {
+    val model = component.model.subscribeAsState()
     Dialog(Modifier
         .wrapContentWidth(Alignment.CenterHorizontally)
         .wrapContentHeight(Alignment.CenterVertically)
@@ -408,9 +366,10 @@ fun ChooseHomeDialog(showDialog: Boolean, onClose: () -> Unit, onClick: () -> Un
                 OutlinedButton(modifier = Modifier.width(180.dp),
                     onClick = {
                         SiteViewModel.viewModelScope.launch {
+                            model.value.home = item
                             setHome(item)
-                            homeLoaded = false
-                            homeLoad()
+                            model.value.homeLoaded = false
+                            component.homeLoad()
                             Db.Config.setHome(api?.url, ConfigType.SITE.ordinal, item.key)
                         }
                         onClose()

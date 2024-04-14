@@ -32,11 +32,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import java.util.concurrent.ConcurrentLinkedQueue
 
-/**
-@author heatdesert
-@date 2024-01-23 20:56
-@description
- */
 object SnackBar {
 
     private val msgQueue = ConcurrentLinkedQueue<String>()

@@ -22,12 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.corner.catvodcore.enum.Menu
 import com.corner.ui.AppTheme
 
-/**
-@author heatdesert
-@date 2023-12-22 21:08
-@description
- */
-
 private var showProgress by mutableStateOf(false)
 
 fun showProgress() {

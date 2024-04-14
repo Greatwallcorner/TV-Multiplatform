@@ -22,40 +22,35 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.config.api
+import com.corner.ui.decompose.SearchComponent
+import com.corner.ui.decompose.component.DefaultSearchComponentComponent
 import com.corner.ui.scene.RatioBtn
 import com.corner.ui.video.DetailDialog
 import com.corner.ui.video.VideoItem
-import kotlinx.coroutines.*
-
-/**
-@author heatdesert
-@date 2024-01-17 22:11
-@description
- */
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 enum class SearchPageType {
     page,
     content
 }
 
-private val searchScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-private var isSearching = mutableStateOf(false)
-
 @Composable
-fun SearchScene(onClickBack: () -> Unit) {
+fun SearchScene(component: DefaultSearchComponentComponent, onClickBack: () -> Unit) {
+    val model = component.models.subscribeAsState()
     var currentPage by remember { mutableStateOf(SearchPageType.page) }
     var keyword by remember { mutableStateOf("") }
-    if (currentPage == SearchPageType.page) {
-        SearchPage(onClickBack = { onClickBack() }, onSearch = { s ->
+    when(currentPage){
+        SearchPageType.page -> SearchPage(component, onClickBack = { onClickBack() }, onSearch = { s ->
             keyword = s
             currentPage = SearchPageType.content
         })
-    } else {
-        SearchResult(keyword = keyword, onClickBack = { onClickBack() }, searching = isSearching.value)
+        SearchPageType.content -> SearchResult(model, keyword = keyword, onClickBack = { onClickBack() }, searching = model.value.isSearching.value)
     }
 }
 
@@ -67,10 +62,8 @@ fun SearchScene(onClickBack: () -> Unit) {
 //    }
 //}
 
-private var jobList = mutableListOf<Job>()
-
 @Composable
-private fun SearchResult(keyword: String, onClickBack: () -> Unit, searching: Boolean) {
+private fun SearchResult(model:State<SearchComponent.Model>, keyword: String, onClickBack: () -> Unit, searching: Boolean) {
     var searchText by remember { mutableStateOf(keyword) }
     val result = remember { mutableStateOf(SiteViewModel.search) }
     var currentCollect by remember { mutableStateOf<Collect?>(SiteViewModel.search[0]) }
@@ -82,30 +75,30 @@ private fun SearchResult(keyword: String, onClickBack: () -> Unit, searching: Bo
     var chooseVod by remember { mutableStateOf<Vod?>(null) }
  
     DisposableEffect(searchText) {
-        isSearching.value = true
-        cancleAndClearJobList()
+        model.value.isSearching.value = true
+        model.value.cancelAndClearJobList()
         SiteViewModel.clearSearch()
         SiteViewModel.viewModelScope.launch {
             SettingStore.addSearchHistory(keyword)
             val searchableSites = api?.sites?.filter { it.searchable == 1 }
             searchableSites?.forEach {
-                val job = searchScope.launch {
+                val job = model.value.searchScope.launch {
                     SiteViewModel.searchContent(it, searchText, false)
                 }
                 job.invokeOnCompletion {
                     currentVodList =
                         SiteViewModel.search.find { it.isActivated().value }?.getList()?.toList()?.toMutableList()
                 }
-                jobList.add(job)
+                model.value.jobList.add(job)
             }
-            searchScope.coroutineContext[Job]?.children?.forEach { it.join() }
-            isSearching.value = false
+            model.value.searchScope.coroutineContext[Job]?.children?.forEach { it.join() }
+            model.value.isSearching.value = false
         }
 
         onDispose {
             SiteViewModel.clearSearch()
-            cancleAndClearJobList()
-            isSearching.value = false
+            model.value.cancelAndClearJobList()
+            model.value.isSearching.value = false
         }
     }
     Box(modifier = Modifier.fillMaxSize()) {
@@ -201,13 +194,4 @@ private fun SearchResult(keyword: String, onClickBack: () -> Unit, searching: Bo
             showDetailDialog = false
         }
     }
-}
-
-private fun cancleAndClearJobList() {
-    jobList.forEach { i -> i.cancel("search") }
-    jobList.clear()
-}
-
-private fun searchSites() {
-
 }

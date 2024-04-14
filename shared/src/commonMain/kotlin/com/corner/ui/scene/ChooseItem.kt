@@ -2,7 +2,6 @@ package com.corner.ui.scene
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,13 +20,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.corner.ui.AppTheme
 
-/**
-@author heatdesert
-@date 2023-12-31 18:51
-@description
- */
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RatioBtn(text: String, onClick: () -> Unit, selected: Boolean, loading: Boolean = false) {
     Surface(

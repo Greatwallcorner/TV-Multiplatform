@@ -3,13 +3,7 @@ package com.corner.catvodcore.bean
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.util.*
-import kotlin.Comparator
 
-/**
-@author heatdesert
-@date 2023-12-28 21:43
-@description
- */
 @Serializable
 data class Flag (
     var flag: String? = null,

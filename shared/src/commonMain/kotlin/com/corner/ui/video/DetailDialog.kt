@@ -77,6 +77,7 @@ fun DetailDialog(showDetailDialog: Boolean, vod: Vod?, key: String, onClose: () 
                             }
                         }
                     }
+                    detail?.site = vod.site
                 }
             }
         }

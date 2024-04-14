@@ -24,12 +24,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.catvod.enum.bean.Vod
-import com.corner.catvodcore.config.api
 import com.corner.database.Db
 import com.corner.database.History
 import com.corner.database.repository.buildVod
 import com.corner.database.repository.getSiteKey
+import com.corner.ui.decompose.component.DefaultHistoryComponentComponent
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
@@ -90,7 +91,8 @@ fun HistoryItem(
 }
 
 @Composable
-fun HistoryScene(onClickBack: () -> Unit) {
+fun HistoryScene(component: DefaultHistoryComponentComponent, onClickBack: () -> Unit) {
+    val model = component.model.subscribeAsState()
     var chooseHistory by remember { mutableStateOf<History?>(null) }
     var vod by remember { mutableStateOf<Vod?>(null) }
     var showDetailDialog by remember { mutableStateOf(false) }
@@ -101,20 +103,18 @@ fun HistoryScene(onClickBack: () -> Unit) {
         }
         onDispose { }
     }
-    val historyList = remember { mutableStateListOf<History>() }
     LaunchedEffect(Unit) {
         showProgress()
         SiteViewModel.viewModelScope.launch {
             try {
-                historyList.clear()
-                val list = Db.History.findAll(api?.cfg?.value?.id)
-                historyList.addAll(list)
+                component.fetchHistoryList()
             } finally {
                 hideProgress()
             }
         }
     }
-    Box(modifier = Modifier.fillMaxSize().padding(5.dp)) {
+    Box(modifier = Modifier.fillMaxSize()
+        .background(MaterialTheme.colors.background)) {
         Column {
             BackRow(modifier = Modifier.align(Alignment.Start), { onClickBack() }) {
                 Row(modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
@@ -125,9 +125,7 @@ fun HistoryScene(onClickBack: () -> Unit) {
                     )
                     IconButton(modifier = Modifier.align(Alignment.CenterVertically).padding(end = 20.dp), onClick = {
                         Db.History.deleteAll()
-                        historyList.clear()
-                        val list = Db.History.findAll(api?.cfg?.value?.id)
-                        historyList.addAll(list)
+                        component.fetchHistoryList()
                     }) {
                         Row {
                             Icon(Icons.Default.Delete, "delete all", tint = MaterialTheme.colors.onSurface)
@@ -146,13 +144,11 @@ fun HistoryScene(onClickBack: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 userScrollEnabled = true,
             ) {
-                items(historyList) {
+                items(model.value.historyList) {
                     HistoryItem(Modifier,
                         it, showSite = false, { key ->
                             Db.History.deleteBatch(listOf(key))
-                            historyList.clear()
-                            val list = Db.History.findAll(api?.cfg?.value?.id)
-                            historyList.addAll(list)
+                            component.fetchHistoryList()
                         }) {
                         chooseHistory = it
                         showDetailDialog = true

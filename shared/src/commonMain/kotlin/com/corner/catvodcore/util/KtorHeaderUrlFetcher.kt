@@ -13,11 +13,6 @@ import io.ktor.util.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.serialization.json.jsonObject
 
-/**
-@author heatdesert
-@date 2024-01-27 19:40
-@description
- */
 
 class KtorHeaderUrlFetcher private constructor(
     private val httpUrl: String,

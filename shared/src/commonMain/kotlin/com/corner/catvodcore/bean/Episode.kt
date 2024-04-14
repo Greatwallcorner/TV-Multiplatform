@@ -3,11 +3,6 @@ package com.corner.catvodcore.bean
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
-/**
-@author heatdesert
-@date 2023-12-24 12:47
-@description
- */
 @Serializable
 class Episode {
     companion object {

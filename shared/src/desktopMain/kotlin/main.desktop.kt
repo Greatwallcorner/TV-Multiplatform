@@ -1,12 +1,14 @@
-import androidx.compose.animation.*
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,10 +21,8 @@ import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.WindowState
 import com.corner.catvodcore.enum.Menu
 import com.corner.database.appModule
-import com.corner.ui.*
-import com.corner.ui.scene.*
-import com.corner.ui.search.SearchScene
-import com.corner.ui.video.videoScene
+import com.corner.ui.AppTheme
+import com.corner.ui.ControlBar
 
 actual fun getPlatformName(): String = "Desktop"
 
@@ -113,33 +113,33 @@ fun WindowScope.MainView(state: WindowState, onClose: () -> Unit) {
 //                    }
 //                }
 //            }
-            Box {
-                AnimatedContent(currentChoose,
-                    modifier = Modifier.background(color = MaterialTheme.colors.background),
-                     transitionSpec = {
-                         fadeIn(initialAlpha = 0.3f) togetherWith fadeOut()
-//                         slideInVertically (
-//                             animationSpec = tween(150),
-//                             initialOffsetY = { fullHeight -> fullHeight }
-//                         ) togetherWith
-//                                 slideOutVertically(
-//                                     animationSpec = tween(200),
-//                                     targetOffsetY = { fullHeight -> -fullHeight }
-//                                 )
-                     }) {
-                    when (currentChoose) {
-                        Menu.HOME -> videoScene(
-                            modifier = Modifier,
-                            onClickSwitch = {menu-> currentChoose = menu})
-
-                        Menu.SETTING -> SettingScene(modifier = Modifier, onClickBack = { currentChoose = Menu.HOME })
-                        Menu.SEARCH -> SearchScene(onClickBack = { currentChoose = Menu.HOME })
-                        Menu.HISTORY -> HistoryScene { currentChoose = Menu.HOME }
-                    }
-                }
-                SnackBar.SnackBarList()
-                LoadingIndicator(showProgress = isShowProgress())
-            }
+//            Box {
+//                AnimatedContent(currentChoose,
+//                    modifier = Modifier.background(color = MaterialTheme.colors.background),
+//                     transitionSpec = {
+//                         fadeIn(initialAlpha = 0.3f) togetherWith fadeOut()
+////                         slideInVertically (
+////                             animationSpec = tween(150),
+////                             initialOffsetY = { fullHeight -> fullHeight }
+////                         ) togetherWith
+////                                 slideOutVertically(
+////                                     animationSpec = tween(200),
+////                                     targetOffsetY = { fullHeight -> -fullHeight }
+////                                 )
+//                     }) {
+//                    when (currentChoose) {
+//                        Menu.HOME -> videoScene(
+//                            modifier = Modifier,
+//                            onClickSwitch = {menu-> currentChoose = menu})
+//
+//                        Menu.SETTING -> SettingScene(modifier = Modifier, onClickBack = { currentChoose = Menu.HOME })
+//                        Menu.SEARCH -> SearchScene(onClickBack = { currentChoose = Menu.HOME })
+//                        Menu.HISTORY -> HistoryScene { currentChoose = Menu.HOME }
+//                    }
+//                }
+//                SnackBar.SnackBarList()
+//                LoadingIndicator(showProgress = isShowProgress())
+//            }
         }
     }
 }

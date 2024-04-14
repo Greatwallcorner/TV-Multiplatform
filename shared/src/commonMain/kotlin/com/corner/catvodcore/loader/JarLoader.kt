@@ -1,22 +1,17 @@
 package com.corner.catvodcore.loader
 
-import com.github.catvod.crawler.Spider
 import com.corner.catvodcore.Constant
 import com.corner.catvodcore.config.api
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Paths
 import com.corner.catvodcore.util.Urls
 import com.corner.catvodcore.util.Utils
+import com.github.catvod.crawler.Spider
 import java.io.File
 import java.lang.reflect.Method
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 
-/**
-@author heatdesert
-@date 2023-11-30 22:41
-@description
- */
 object JarLoader {
     private val loaders: ConcurrentHashMap<String, URLClassLoader> by lazy { ConcurrentHashMap() }
 
@@ -44,8 +39,8 @@ object JarLoader {
 
     private fun load(key: String, jar: File) {
         loaders[key] =  URLClassLoader(arrayOf(jar.toURI().toURL()),this.javaClass.classLoader)
-        invokeInit(key)
         putProxy(key)
+        invokeInit(key)
     }
 
     private fun putProxy(key: String) {

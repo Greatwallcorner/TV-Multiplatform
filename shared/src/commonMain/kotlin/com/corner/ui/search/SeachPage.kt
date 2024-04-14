@@ -21,10 +21,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.HotData
-import com.corner.bean.SettingStore.getHistoryList
-import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.AppTheme
+import com.corner.ui.decompose.component.DefaultSearchComponentComponent
 import com.corner.ui.scene.ExpandedText
 
 /**
@@ -32,8 +32,9 @@ import com.corner.ui.scene.ExpandedText
  *热门推荐
  */
 @Composable
-fun SearchPage(onClickBack: () -> Unit, onSearch: (String) -> Unit) {
+fun SearchPage(component: DefaultSearchComponentComponent, onClickBack: () -> Unit, onSearch: (String) -> Unit) {
     val focusRequester = remember { FocusRequester() }
+    val model = component.models.subscribeAsState()
 
     LaunchedEffect("focus") {
         focusRequester.requestFocus()
@@ -57,16 +58,16 @@ fun SearchPage(onClickBack: () -> Unit, onSearch: (String) -> Unit) {
                 SearchBar(Modifier.align(Alignment.CenterVertically), focusRequester, "", onSearch, false)
             }
             Column(Modifier.fillMaxSize()) {
-                if (getHistoryList().isNotEmpty()) {
+                if (model.value.historyList.isNotEmpty()) {
                     Box(modifier = Modifier.fillMaxHeight(0.3f)) {
-                        HistoryPanel(Modifier.padding(15.dp), getHistoryList()) {
+                        HistoryPanel(Modifier.padding(15.dp), model.value.historyList) {
                             onSearch(it)
                         }
                     }
                 }
-                if (GlobalModel.hotList.value.isNotEmpty()) {
+                if (model.value.hotList.isNotEmpty()) {
                     Box(modifier = Modifier.fillMaxHeight()) {
-                        HotPanel(Modifier.padding(horizontal = 15.dp), GlobalModel.hotList.value) {
+                        HotPanel(Modifier.padding(horizontal = 15.dp), model.value.hotList) {
                             onSearch(it.title)
                         }
                     }

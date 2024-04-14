@@ -5,16 +5,10 @@ import com.corner.catvodcore.config.api
 import com.corner.database.Database
 import com.corner.database.Db
 import com.corner.database.History
-import org.apache.commons.lang3.StringUtils
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 
-/**
-@author heatdesert
-@date 2024-02-03 21:46
-@description
- */
 interface HistoryRepository {
     fun save(key: String,
              vodPic:String,
@@ -79,7 +73,7 @@ class HistoryRepositoryImpl:HistoryRepository, KoinComponent{
     }
 
     override fun findAll(cId: Long?): List<History> {
-        if(cId == null) return listOf();
+        if(cId == null) return listOf()
        return historyQueries.getAll(cId).executeAsList()
     }
 
