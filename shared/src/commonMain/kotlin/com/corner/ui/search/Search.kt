@@ -9,11 +9,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -102,11 +102,11 @@ private fun SearchResult(model:State<SearchComponent.Model>, keyword: String, on
         }
     }
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
+        Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
 //        TopBar
             Row(
                 modifier = Modifier.align(Alignment.Start)
-                    .background(MaterialTheme.colors.background)
+                    .background(MaterialTheme.colorScheme.surface)
                     .height(75.dp)
             ) {
                 IconButton(
@@ -115,9 +115,9 @@ private fun SearchResult(model:State<SearchComponent.Model>, keyword: String, on
                     onClick = { onClickBack() }
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = "back to video home",
-                        tint = MaterialTheme.colors.onBackground
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
                 SearchBar(

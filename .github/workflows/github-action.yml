@@ -23,7 +23,7 @@ jobs:
         run: Compress-Archive -Path "./desktopApp/build/compose/binaries/main-release/app/TV" -DestinationPath "TV-$GITHUB_REF_NAME.zip"
       - name: move result to root
         shell: pwsh
-        run: Move-Item -Path "./desktopApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./desktopApp/build/compose/binaries/main-release/msi/*。msi" -Destination "./"
+        run: Move-Item -Path "./desktopApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./desktopApp/build/compose/binaries/main-release/msi/*.msi" -Destination "./"
       - run: ls
       - uses: actions/upload-artifact@v4
         with:
@@ -60,6 +60,7 @@ jobs:
     steps:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
+      - run: ls && tree
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
@@ -68,6 +69,7 @@ jobs:
             *.deb
             *.pkg
             *.dmg
+            *.msi
     permissions:
       contents: write
 

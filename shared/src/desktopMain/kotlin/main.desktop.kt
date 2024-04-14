@@ -1,4 +1,3 @@
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -21,12 +20,10 @@ import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.WindowState
 import com.corner.catvodcore.enum.Menu
 import com.corner.database.appModule
-import com.corner.ui.AppTheme
 import com.corner.ui.ControlBar
 
 actual fun getPlatformName(): String = "Desktop"
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun WindowScope.MainView(state: WindowState, onClose: () -> Unit) {
     AppTheme(useDarkTheme = true) {

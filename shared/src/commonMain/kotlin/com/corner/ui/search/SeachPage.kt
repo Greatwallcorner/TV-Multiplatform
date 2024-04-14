@@ -1,5 +1,6 @@
 package com.corner.ui.search
 
+import AppTheme
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -8,9 +9,9 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,7 +24,6 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.HotData
-import com.corner.ui.AppTheme
 import com.corner.ui.decompose.component.DefaultSearchComponentComponent
 import com.corner.ui.scene.ExpandedText
 
@@ -40,19 +40,19 @@ fun SearchPage(component: DefaultSearchComponentComponent, onClickBack: () -> Un
         focusRequester.requestFocus()
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(modifier = Modifier.align(alignment = Alignment.TopStart)) {
             // TopBar
-            Row(modifier = Modifier.align(Alignment.Start).background(MaterialTheme.colors.background).height(80.dp)) {
+            Row(modifier = Modifier.align(Alignment.Start)/*.background(MaterialTheme.colors.background)*/.height(80.dp)) {
                 IconButton(
                     modifier = Modifier.align(Alignment.CenterVertically)
                         .padding(start = 20.dp, end = 20.dp),
                     onClick = { onClickBack() }
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = "back to video home",
-                        tint = MaterialTheme.colors.onBackground
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
                 SearchBar(Modifier.align(Alignment.CenterVertically), focusRequester, "", onSearch, false)
@@ -85,8 +85,8 @@ fun HotPanel(modifier: Modifier, hots: List<HotData>, onClick: (HotData) -> Unit
         Text(
             "热搜",
             modifier = Modifier.padding(vertical = 5.dp, horizontal = 15.dp),
-            color = MaterialTheme.colors.onBackground,
-            style = MaterialTheme.typography.h6
+            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.headlineMedium
         )
         LazyHorizontalStaggeredGrid(
             rows = StaggeredGridCells.Adaptive(80.dp),
@@ -112,34 +112,34 @@ fun HotItem(modifier: Modifier, hotData: HotData, onClick: (HotData) -> Unit) {
         Surface(modifier = Modifier.border(width = 2.dp, Color.Gray.copy(blue = 0.6f), shape = RoundedCornerShape(5.dp))) {
             Column(
                 modifier = Modifier.fillMaxWidth(0.5f)
-                    .background(MaterialTheme.colors.surface, shape = RoundedCornerShape(5.dp))
+                    .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(5.dp))
                     .shadow(5.dp, RoundedCornerShape(5.dp), clip = true, ambientColor = Color.Gray)
                     .clip(RoundedCornerShape(5.dp))
                     .padding(15.dp)
             ) {
                 if(hotData.comment.isNotEmpty()){
-                    Text(hotData.comment, style = MaterialTheme.typography.h6)
+                    Text(hotData.comment, style = MaterialTheme.typography.headlineMedium)
                 }
                 Text(
                     modifier = Modifier.padding(top = 10.dp),
                     text = hotData.description,
-                    style = MaterialTheme.typography.body2
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }
     }) {
         Surface(
             modifier
-                .background(MaterialTheme.colors.surface, shape = RoundedCornerShape(15.dp))
-                .border(width = 1.dp, MaterialTheme.colors.secondaryVariant, RoundedCornerShape(15.dp))
+                .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(15.dp))
+                .border(width = 1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(15.dp))
                 .clickable(enabled = true) { onClick(hotData) }
                 .clip(RoundedCornerShape(15.dp)),
         ) {
             Column(
                 modifier = modifier.padding(10.dp).wrapContentWidth(Alignment.CenterHorizontally).wrapContentHeight()
             ) {
-                Text(hotData.title, style = MaterialTheme.typography.h6.copy(fontSize = TextUnit(15f, TextUnitType.Sp)))
-                ExpandedText(hotData.upinfo.trim(), 1, MaterialTheme.typography.caption)
+                Text(hotData.title, style = MaterialTheme.typography.headlineMedium.copy(fontSize = TextUnit(15f, TextUnitType.Sp)))
+                ExpandedText(hotData.upinfo.trim(), 1, MaterialTheme.typography.bodyMedium)
             }
         }
     }
@@ -170,12 +170,13 @@ fun previewHotPanel() {
 @Composable
 fun HistoryItem(modifier: Modifier, str: String, onClick: (String) -> Unit) {
     Surface(
-        modifier.background(MaterialTheme.colors.surface, shape = RoundedCornerShape(15.dp))
-            .border(width = 1.dp, MaterialTheme.colors.secondaryVariant, RoundedCornerShape(15.dp))
+        modifier
+            .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(15.dp))
+            .border(width = 1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(15.dp))
             .clickable(enabled = true) { onClick(str) }
             .clip(RoundedCornerShape(15.dp))
     ) {
-        Text(str, color = MaterialTheme.colors.onBackground, modifier = modifier.padding(10.dp))
+        Text(str, color = MaterialTheme.colorScheme.onBackground, modifier = modifier.padding(10.dp))
     }
 }
 
@@ -186,10 +187,9 @@ fun HistoryPanel(modifier: Modifier, histories: Set<String>, onClick: (String) -
         Text(
             "搜索历史",
             modifier = Modifier.padding(vertical = 5.dp, horizontal = 15.dp),
-            color = MaterialTheme.colors.onBackground,
-            style = MaterialTheme.typography.h6
+            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.headlineMedium
         )
-//        LazyHorizontalGrid(rows = GridCells.)
         LazyHorizontalStaggeredGrid(
             rows = StaggeredGridCells.Adaptive(55.dp),
             state = rememberLazyStaggeredGridState(), contentPadding = PaddingValues(10.dp),

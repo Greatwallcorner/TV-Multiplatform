@@ -8,9 +8,9 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +19,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,10 +38,7 @@ import com.corner.ui.scene.showProgress
 import com.corner.ui.video.DetailDialog
 import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun HistoryItem(
     modifier: Modifier,
@@ -51,7 +49,7 @@ fun HistoryItem(
 ) {
     Card(
         modifier = modifier.clickable(enabled = true, onClick = { click(history) }),
-        elevation = 8.dp,
+        elevation = CardDefaults.cardElevation(8.dp),
         shape = RoundedCornerShape(8.dp)
     ) {
         ContextMenuArea(items = {
@@ -68,24 +66,23 @@ fun HistoryItem(
                     errorPainter = { painterResource("empty.png") })
                 Text(
                     text = history.vodName!!,
-                    modifier = Modifier.background(Color.DarkGray.copy(alpha = 0.6F)).align(Alignment.BottomCenter)
+                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer).align(Alignment.BottomCenter)
                         .fillMaxWidth().padding(0.dp, 10.dp),
-                    color = darkColors().onBackground, maxLines = 1, softWrap = true,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer, maxLines = 1, softWrap = true,
                     overflow = TextOverflow.Ellipsis, style = TextStyle(textAlign = TextAlign.Center)
                 )
-            }
-            Text(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(3.dp))
-                    .width(10.dp)
-                    .padding(5.dp),
-                text = if (showSite) history.vodFlag ?: "" else history.vodRemarks!!,
-                fontWeight = FontWeight.Bold,
-                style = TextStyle(
-                    color = Color.White,
-                    shadow = Shadow(Color.Black, offset = Offset(2F, 2F), blurRadius = 1.5F)
+                Text(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(3.dp))
+                        .padding(5.dp),
+                    text = if (showSite) history.vodFlag ?: "" else history.vodRemarks!!,
+                    fontWeight = FontWeight.Bold,
+                    style = TextStyle(
+                        color = Color.White,
+                        shadow = Shadow(Color.Black, offset = Offset(2F, 2F), blurRadius = 1.5F)
+                    )
                 )
-            )
+            }
         }
     }
 }
@@ -114,22 +111,24 @@ fun HistoryScene(component: DefaultHistoryComponentComponent, onClickBack: () ->
         }
     }
     Box(modifier = Modifier.fillMaxSize()
-        .background(MaterialTheme.colors.background)) {
+        .background(MaterialTheme.colorScheme.background)) {
         Column {
             BackRow(modifier = Modifier.align(Alignment.Start), { onClickBack() }) {
                 Row(modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
                     Text(
-                        "历史记录", style = MaterialTheme.typography.h4,
-                        color = MaterialTheme.colors.onBackground,
+                        "历史记录", style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.align(Alignment.CenterVertically)
                     )
-                    IconButton(modifier = Modifier.align(Alignment.CenterVertically).padding(end = 20.dp), onClick = {
+                    IconButton(modifier = Modifier.align(Alignment.CenterVertically)
+                        .padding(end = 20.dp)
+                        .size(80.dp), onClick = {
                         Db.History.deleteAll()
                         component.fetchHistoryList()
                     }) {
-                        Row {
-                            Icon(Icons.Default.Delete, "delete all", tint = MaterialTheme.colors.onSurface)
-                            Text("清空", color = MaterialTheme.colors.onSurface)
+                        Row(modifier = Modifier.padding(2.dp)) {
+                            Icon(Icons.Default.Delete, "delete all", tint = MaterialTheme.colorScheme.onSurface)
+                            Text("清空", color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }

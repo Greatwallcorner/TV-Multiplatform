@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +40,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(
     modifier: Modifier,
@@ -85,19 +86,21 @@ fun SearchBar(
         },
         shape = RoundedCornerShape(50),
         placeholder = {
-            Text(
-                "请输入",
-                modifier = Modifier.fillMaxSize(),
-                fontSize = TextUnit(12f, TextUnitType.Sp)
-            )
+//            Box{
+//                Text(
+//                    "请输入",
+//                    modifier = Modifier.align(Alignment.Center),
+////                    fontSize = TextUnit(12f, TextUnitType.Sp)
+//                )
+//            }
         },
         value = searchText,
         leadingIcon = {
             if (isSearching) {
                 CircularProgressIndicator(
                     modifier = Modifier.fillMaxHeight(),
-                    color = MaterialTheme.colors.secondary,
-                    backgroundColor = MaterialTheme.colors.secondaryVariant
+//                    color = MaterialTheme.colors.secondary,
+//                    backgroundColor = MaterialTheme.colors.secondaryVariant
                 )
             }
         },
@@ -126,8 +129,8 @@ fun SearchBar(
         colors = TextFieldDefaults.textFieldColors(
             focusedIndicatorColor = Color.Transparent, // 焦点时下划线颜色
             unfocusedIndicatorColor = Color.Transparent,
-            backgroundColor = Color.Gray.copy(alpha = 0.3f),
-            textColor = MaterialTheme.colors.onBackground
+//            backgroundColor = Color.Gray.copy(alpha = 0.3f),
+//            textColor = MaterialTheme.colors.onBackground
         )
     )
 
@@ -155,14 +158,13 @@ fun SearchBar(
                         suggestions.clear()
                         onSearch(it.name)
                     },
-                    contentPadding = PaddingValues(horizontal = 15.dp, vertical = 5.dp),
-                ) {
-                    Text(
+                    contentPadding = PaddingValues(horizontal = 15.dp, vertical = 5.dp)
+                    ,text = {Text(
                         it.name,
-                        style = MaterialTheme.typography.caption,
-                        modifier = Modifier.align(alignment = Alignment.CenterVertically)
-                    )
-                }
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                    )}
+                )
             }
         }
     }

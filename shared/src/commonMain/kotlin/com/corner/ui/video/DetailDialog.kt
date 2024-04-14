@@ -1,5 +1,6 @@
 package com.corner.ui.video
 
+import AppTheme
 import SiteViewModel
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
@@ -14,9 +15,9 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -35,7 +37,6 @@ import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.detailIsEmpty
 import com.corner.catvodcore.config.api
 import com.corner.database.Db
-import com.corner.ui.AppTheme
 import com.corner.ui.scene.*
 import com.corner.util.Utils.cancelAll
 import com.corner.util.play.Play
@@ -43,7 +44,6 @@ import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.*
 import org.apache.commons.lang3.StringUtils
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 import org.slf4j.LoggerFactory
 
 private var detail by mutableStateOf<Vod?>(null)
@@ -141,7 +141,7 @@ fun DetailDialog(showDetailDialog: Boolean, vod: Vod?, key: String, onClose: () 
                                 .scrollable(state = rememberScrollState, orientation = Orientation.Vertical)
                                 .weight(0.8f)
                         ) {
-                            ToolTipText(detail?.vodName ?: "无", MaterialTheme.typography.h3)
+                            ToolTipText(detail?.vodName ?: "无", MaterialTheme.typography.headlineMedium)
                             Spacer(modifier = Modifier.size(10.dp))
                             Row {
                                 if (detail?.site?.name?.isNotBlank() == true) {
@@ -252,13 +252,13 @@ fun DetailDialog(showDetailDialog: Boolean, vod: Vod?, key: String, onClose: () 
                                                 // composable tooltip content
                                                 Surface(
                                                     modifier = Modifier.shadow(4.dp),
-                                                    color = MaterialTheme.colors.surface,
+//                                                    color = MaterialTheme.colors.surface,
                                                     shape = RoundedCornerShape(4.dp)
                                                 ) {
                                                     Text(
                                                         text = it.name ?: "",
                                                         modifier = Modifier.padding(10.dp),
-                                                        color = MaterialTheme.colors.onSurface
+//                                                        color = MaterialTheme.colors.onSurface
                                                     )
                                                 }
                                             },

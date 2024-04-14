@@ -1,5 +1,6 @@
 package com.corner.ui.decompose
 
+import AppTheme
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
@@ -19,7 +20,6 @@ import com.arkivanov.decompose.extensions.compose.jetbrains.stack.Children
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.fade
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.stackAnimation
 import com.corner.catvodcore.enum.Menu
-import com.corner.ui.AppTheme
 import com.corner.ui.ControlBar
 import com.corner.ui.HistoryScene
 import com.corner.ui.SettingScene
@@ -32,7 +32,7 @@ import com.corner.ui.video.videoScene
 
 @Composable
 fun WindowScope.RootContent(component: RootComponent, modifier: Modifier = Modifier, state:WindowState, onClose:()->Unit) {
-    AppTheme {
+    AppTheme(useDarkTheme = true) {
         Column(
             modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(12.dp)).border(
                 border = BorderStroke(1.dp, Color(59, 59, 60)), // firefox的边框灰色
@@ -61,7 +61,7 @@ fun WindowScope.RootContent(component: RootComponent, modifier: Modifier = Modif
                     }
                     is RootComponent.Child.SearchChild -> SearchScene(child.component){component.onClickBack()}
                     is RootComponent.Child.HistoryChild -> HistoryScene(child.component){component.onClickBack()}
-                    is RootComponent.Child.SettingChild -> SettingScene(child.component, modifier){component.onClickBack()}
+                    is RootComponent.Child.SettingChild -> SettingScene(child.component){component.onClickBack()}
                 }
 
 //            Box {

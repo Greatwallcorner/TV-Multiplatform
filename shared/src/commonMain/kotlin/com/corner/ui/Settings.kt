@@ -1,5 +1,6 @@
 package com.corner.ui
 
+import AppTheme
 import SiteViewModel
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
@@ -9,10 +10,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,25 +44,25 @@ fun SettingItem(modifier: Modifier, label: String, value: String?, onClick: () -
             .clickable {
                 onClick()
             }.shadow(3.dp)
-            .background(MaterialTheme.colors.background, shape = RoundedCornerShape(4))
+            .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp))
             .padding(start = 20.dp, end = 20.dp)
     ) {
         Text(
             label,
             modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp),
-            color = MaterialTheme.colors.onBackground
+            color = MaterialTheme.colorScheme.onBackground
         )
         Text(
             text = if (StringUtil.isBlank(value)) "无" else value ?: "",
             modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp)
                 .weight(0.5f),
-            color = MaterialTheme.colors.onBackground
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
 
 @Composable
-fun SettingScene(component: DefaultSettingComponent, modifier: Modifier, onClickBack: () -> Unit) {
+fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
     var showEditDialog by remember { mutableStateOf(false) }
     var currentChoose by remember { mutableStateOf<Setting?>(null) }
@@ -79,21 +80,21 @@ fun SettingScene(component: DefaultSettingComponent, modifier: Modifier, onClick
 
     Box(
         modifier = Modifier.fillMaxSize()
-            .background(MaterialTheme.colors.background)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        Column(modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
             BackRow(Modifier, onClickBack = { onClickBack() }) {
                 Text(
                     "设置",
-                    style = MaterialTheme.typography.h4,
-                    color = MaterialTheme.colors.onBackground,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
             }
             LazyColumn {
                 items(model.value.settingList) {
                     SettingItem(
-                        modifier, it.label, it.value
+                        Modifier, it.label, it.value
                     ) {
                         showEditDialog = true
                         currentChoose = it
@@ -132,7 +133,7 @@ fun DialogEdit(
     ) {
         Column(modifier = Modifier.padding(horizontal = 15.dp, vertical = 25.dp)) {
             Row(modifier = Modifier.fillMaxWidth()) {
-                Text(currentChoose?.label ?: "", color = MaterialTheme.colors.onBackground)
+                Text(currentChoose?.label ?: ""/*, color = MaterialTheme.colors.onBackground*/)
                 Spacer(modifier = Modifier.size(35.dp))
                 TextField(
                     modifier = Modifier.fillMaxWidth(0.8f).focusRequester(focusRequester),

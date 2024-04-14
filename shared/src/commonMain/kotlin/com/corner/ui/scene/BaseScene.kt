@@ -1,5 +1,6 @@
 package com.corner.ui.scene
 
+import AppTheme
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.desktop.ui.tooling.preview.Preview
@@ -8,7 +9,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +21,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.corner.catvodcore.enum.Menu
-import com.corner.ui.AppTheme
 
 private var showProgress by mutableStateOf(false)
 
@@ -59,8 +59,8 @@ fun LoadingIndicator(showProgress: Boolean) {
         ) {
             CircularProgressIndicator(
                 modifier = Modifier.width(64.dp).align(Alignment.Center).alpha(alpha),
-                color = MaterialTheme.colors.secondary,
-                backgroundColor = MaterialTheme.colors.secondaryVariant,
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.secondaryContainer,
             )
 
         }
@@ -75,7 +75,6 @@ fun previewLoadingIndicator() {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MenuItem(
     modifier: Modifier,
@@ -83,8 +82,8 @@ fun MenuItem(
     onClick: () -> Unit,
     chosen: Boolean,
 ) {
-    val background = if (chosen) Color.Gray else MaterialTheme.colors.background
-    val primaryColor = if (chosen) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
+    val background = if (chosen) Color.Gray else MaterialTheme.colorScheme.background
+    val primaryColor = if (chosen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
     Surface(modifier = Modifier.fillMaxWidth().background(background).padding(horizontal = 0.dp, vertical = 8.dp),
         onClick = {
             onClick()
@@ -123,7 +122,6 @@ fun Dialog(modifier: Modifier, showDialog: Boolean, onClose: () -> Unit, content
                     .align(Alignment.Center)
                     .clickable(enabled = false, onClick = {}),
                 shape = RoundedCornerShape(15.dp),
-                elevation = 3.dp,
                 border = BorderStroke(2.dp, Color.Gray)
             ) {
                 content()
@@ -140,19 +138,19 @@ fun ToolTipText(text: String, textStyle: TextStyle) {
             // composable tooltip content
             Surface(
                 modifier = Modifier.shadow(4.dp),
-                color = MaterialTheme.colors.surface,
+                color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
                     text = text,
                     modifier = Modifier.padding(10.dp),
-                    color = MaterialTheme.colors.onSurface,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
         },
         delayMillis = 600
     ) {
-        Text(text = text, maxLines = 1, style = textStyle.copy(MaterialTheme.colors.onSurface), overflow = TextOverflow.Ellipsis)
+        Text(text = text, maxLines = 1, style = textStyle.copy(MaterialTheme.colorScheme.onSurface), overflow = TextOverflow.Ellipsis)
     }
 }
 
