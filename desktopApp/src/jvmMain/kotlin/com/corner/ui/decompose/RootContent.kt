@@ -21,13 +21,14 @@ import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.fade
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.stackAnimation
 import com.corner.catvodcore.enum.Menu
 import com.corner.ui.ControlBar
+import com.corner.ui.DetailScene
 import com.corner.ui.HistoryScene
 import com.corner.ui.SettingScene
 import com.corner.ui.scene.LoadingIndicator
 import com.corner.ui.scene.SnackBar
 import com.corner.ui.scene.isShowProgress
 import com.corner.ui.search.SearchScene
-import com.corner.ui.video.videoScene
+import com.corner.ui.video.VideoScene
 
 
 @Composable
@@ -51,7 +52,7 @@ fun WindowScope.RootContent(component: RootComponent, modifier: Modifier = Modif
             }
             Children(stack = component.childStack, modifier = modifier, animation = stackAnimation(fade())){
                 when (val child = it.instance) {
-                    is RootComponent.Child.VideoChild -> videoScene(child.component, modifier = Modifier){menu->
+                    is RootComponent.Child.VideoChild -> VideoScene(child.component, modifier = Modifier, {component.showDetail(it)}){menu->
                         when(menu){
                             Menu.SEARCH -> component.onClickSearch()
                             Menu.HOME -> component.backToHome()
@@ -60,8 +61,9 @@ fun WindowScope.RootContent(component: RootComponent, modifier: Modifier = Modif
                         }
                     }
                     is RootComponent.Child.SearchChild -> SearchScene(child.component){component.onClickBack()}
-                    is RootComponent.Child.HistoryChild -> HistoryScene(child.component){component.onClickBack()}
+                    is RootComponent.Child.HistoryChild -> HistoryScene(child.component, {component.showDetail(it)}){component.onClickBack()}
                     is RootComponent.Child.SettingChild -> SettingScene(child.component){component.onClickBack()}
+                    is RootComponent.Child.DetailChild -> DetailScene(child.component){component.onClickBack()}
                 }
 
 //            Box {

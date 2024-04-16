@@ -30,7 +30,6 @@ import com.corner.catvodcore.config.api
 import com.corner.ui.decompose.SearchComponent
 import com.corner.ui.decompose.component.DefaultSearchComponentComponent
 import com.corner.ui.scene.RatioBtn
-import com.corner.ui.video.DetailDialog
 import com.corner.ui.video.VideoItem
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -190,8 +189,8 @@ private fun SearchResult(model:State<SearchComponent.Model>, keyword: String, on
             }
         }
 
-        DetailDialog(showDetailDialog, chooseVod, chooseVod?.site?.key ?: "") {
-            showDetailDialog = false
-        }
+//        DetailDialog(showDetailDialog, chooseVod, chooseVod?.site?.key ?: "") {
+//            showDetailDialog = false
+//        }
     }
 }

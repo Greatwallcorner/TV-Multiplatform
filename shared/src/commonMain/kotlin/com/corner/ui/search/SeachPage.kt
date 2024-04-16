@@ -59,7 +59,7 @@ fun SearchPage(component: DefaultSearchComponentComponent, onClickBack: () -> Un
             }
             Column(Modifier.fillMaxSize()) {
                 if (model.value.historyList.isNotEmpty()) {
-                    Box(modifier = Modifier.fillMaxHeight(0.3f)) {
+                    Box(modifier = Modifier.fillMaxHeight(0.4f)) {
                         HistoryPanel(Modifier.padding(15.dp), model.value.historyList) {
                             onSearch(it)
                         }
@@ -190,17 +190,20 @@ fun HistoryPanel(modifier: Modifier, histories: Set<String>, onClick: (String) -
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.headlineMedium
         )
-        LazyHorizontalStaggeredGrid(
-            rows = StaggeredGridCells.Adaptive(55.dp),
-            state = rememberLazyStaggeredGridState(), contentPadding = PaddingValues(10.dp),
-            horizontalItemSpacing = 8.dp,
-            verticalArrangement = Arrangement.spacedBy(5.dp),
-            modifier = Modifier.fillMaxWidth(),
-            userScrollEnabled = true
-        ) {
-            items(list.toList()) {
-                HistoryItem(Modifier.wrapContentHeight(), it) {
-                    onClick(it)
+        Box(){
+            val state = rememberLazyStaggeredGridState()
+            LazyHorizontalStaggeredGrid(
+                rows = StaggeredGridCells.Adaptive(55.dp),
+                state = state, contentPadding = PaddingValues(10.dp),
+                horizontalItemSpacing = 8.dp,
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                modifier = Modifier.fillMaxWidth(),
+                userScrollEnabled = true,
+            ) {
+                items(list.toList()) {
+                    HistoryItem(Modifier.wrapContentHeight(), it) {
+                        onClick(it)
+                    }
                 }
             }
         }

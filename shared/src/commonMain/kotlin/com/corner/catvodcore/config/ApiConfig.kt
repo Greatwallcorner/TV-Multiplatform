@@ -8,8 +8,10 @@ import com.corner.catvodcore.loader.JarLoader
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Urls
+import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Config
 import com.corner.database.Db
+import com.corner.util.isEmpty
 import com.github.catvod.crawler.Spider
 import okio.Path.Companion.toPath
 import org.apache.commons.lang3.StringUtils
@@ -29,17 +31,17 @@ fun parseConfig(cfg: Config, isJson: Boolean): Api? {
     api?.url = cfg.url
     api?.data = data
     api?.cfg?.value = cfg
+    JarLoader.loadJar("", api!!.spider)
     if(cfg.home?.isNotBlank() == true) {
         setHome(api?.sites?.find { it.key == cfg.home })
     }else{
         setHome(api?.sites?.first())
     }
-    JarLoader.loadJar("", api!!.spider)
     return apiConfig
 }
 
 fun setHome(home:Site?){
-    api?.home?.value = home
+    GlobalModel.home.value = home ?: Site.get("","")
 }
 
 fun getSpider(site: Site): Spider {
@@ -91,9 +93,9 @@ fun Api.initSite() {
         site.api = parseApi(site.api)
         site.ext = parseExt(site.ext)
     }
-    if (home == null && sites.size > 0) {
-        home?.value =  sites.first()
-        Db.Config.setHome(url, ConfigType.SITE.ordinal, home.toString())
+    if (GlobalModel.home.value.isEmpty() && sites.size > 0) {
+        GlobalModel.home.value = sites.first()
+        Db.Config.setHome(url, ConfigType.SITE.ordinal, GlobalModel.home.value.toString())
     }
 }
 

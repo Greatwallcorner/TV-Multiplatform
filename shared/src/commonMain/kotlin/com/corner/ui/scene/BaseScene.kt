@@ -150,7 +150,12 @@ fun ToolTipText(text: String, textStyle: TextStyle) {
         },
         delayMillis = 600
     ) {
-        Text(text = text, maxLines = 1, style = textStyle.copy(MaterialTheme.colorScheme.onSurface), overflow = TextOverflow.Ellipsis)
+        Text(
+            text = text,
+            maxLines = 1,
+            style = textStyle.copy(MaterialTheme.colorScheme.onSurface),
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -165,6 +170,3 @@ fun previewDrawer() {
 //        }
     }
 }
-
-//@Composable
-//expect fun getScreenSize(): Dimension

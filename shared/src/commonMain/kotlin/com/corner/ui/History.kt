@@ -30,12 +30,10 @@ import com.corner.catvod.enum.bean.Vod
 import com.corner.database.Db
 import com.corner.database.History
 import com.corner.database.repository.buildVod
-import com.corner.database.repository.getSiteKey
 import com.corner.ui.decompose.component.DefaultHistoryComponentComponent
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
-import com.corner.ui.video.DetailDialog
 import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.launch
 
@@ -66,9 +64,9 @@ fun HistoryItem(
                     errorPainter = { painterResource("empty.png") })
                 Text(
                     text = history.vodName!!,
-                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer).align(Alignment.BottomCenter)
+                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)).align(Alignment.BottomCenter)
                         .fillMaxWidth().padding(0.dp, 10.dp),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer, maxLines = 1, softWrap = true,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f), maxLines = 1, softWrap = true,
                     overflow = TextOverflow.Ellipsis, style = TextStyle(textAlign = TextAlign.Center)
                 )
                 Text(
@@ -88,18 +86,11 @@ fun HistoryItem(
 }
 
 @Composable
-fun HistoryScene(component: DefaultHistoryComponentComponent, onClickBack: () -> Unit) {
+fun HistoryScene(component: DefaultHistoryComponentComponent, onClickItem:(Vod)->Unit, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
     var chooseHistory by remember { mutableStateOf<History?>(null) }
     var vod by remember { mutableStateOf<Vod?>(null) }
     var showDetailDialog by remember { mutableStateOf(false) }
-    DisposableEffect(chooseHistory) {
-        if (chooseHistory != null) {
-            vod = chooseHistory?.buildVod()
-            showDetailDialog = true
-        }
-        onDispose { }
-    }
     LaunchedEffect(Unit) {
         showProgress()
         SiteViewModel.viewModelScope.launch {
@@ -149,19 +140,20 @@ fun HistoryScene(component: DefaultHistoryComponentComponent, onClickBack: () ->
                             Db.History.deleteBatch(listOf(key))
                             component.fetchHistoryList()
                         }) {
+                        onClickItem(it.buildVod())
                         chooseHistory = it
-                        showDetailDialog = true
+//                        showDetailDialog = true
                     }
                 }
             }
             VerticalScrollbar(rememberScrollbarAdapter(gridState))
         }
-        if (vod != null) {
-            DetailDialog(showDetailDialog, vod, chooseHistory?.getSiteKey() ?: "") {
-                showDetailDialog = false
-                vod = null
-                chooseHistory = null
-            }
-        }
+//        if (vod != null) {
+//            DetailDialog( vod, chooseHistory?.getSiteKey() ?: "") {
+//                showDetailDialog = false
+//                vod = null
+//                chooseHistory = null
+//            }
+//        }
     }
 }

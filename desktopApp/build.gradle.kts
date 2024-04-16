@@ -36,7 +36,6 @@ compose.desktop {
             vendor = "TV Multiplatform"
 
             modules("java.net.http", "java.sql", "jdk.unsupported")
-            println("include resource win")
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             windows {
                 iconFile.set(project.file("src/jvmMain/resources/TV-icon-s.png"))

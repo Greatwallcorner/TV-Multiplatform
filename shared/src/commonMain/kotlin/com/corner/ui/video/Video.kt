@@ -5,6 +5,7 @@ import SiteViewModel
 import androidx.compose.animation.*
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.arkivanov.decompose.value.update
+import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Type
 import com.corner.catvodcore.config.api
@@ -53,7 +56,6 @@ import com.corner.ui.scene.RatioBtn
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
 import com.seiko.imageloader.ui.AutoSizeImage
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -97,20 +99,16 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
 }
 
 @Composable
-fun videoScene(
+fun VideoScene(
     component: DefaultVideoComponent,
     modifier: Modifier,
+    onClickItem:(Vod) -> Unit,
     onClickSwitch: (Menu) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val state = rememberLazyGridState()
     val adapter = rememberScrollbarAdapter(state)
-
     val model = component.model.subscribeAsState()
-
-    LaunchedEffect(model.value.getHomeSite()) {
-        component.homeLoad()
-    }
 
     val shouldLoadMore by remember {
         derivedStateOf {
@@ -121,16 +119,13 @@ fun videoScene(
 
     DisposableEffect(shouldLoadMore) {
         if (shouldLoadMore) {
-            println(state.layoutInfo.visibleItemsInfo.lastOrNull()?.index)
-            println(state.layoutInfo.visibleItemsInfo.size)
-            println(state.layoutInfo.totalItemsCount)
             showProgress()
             model.value.page += 1
             SiteViewModel.viewModelScope.launch {
                 try {
                     if (model.value.currentClass == null || model.value.currentClass?.typeId == "home") return@launch
                     SiteViewModel.categoryContent(
-                        api?.home?.value?.key ?: "",
+                        GlobalModel.home.value.key,
                         model.value.currentClass?.typeId,
                         model.value.page.toString(),
                         true,
@@ -152,21 +147,20 @@ fun videoScene(
     }
 
     var showChooseHome by remember { mutableStateOf(false) }
-    var showDetailDialog by remember { mutableStateOf(false) }
 
-    var chooseVod by remember { mutableStateOf<Vod?>(null) }
     Scaffold(
         topBar = {
             VideoTopBar(
                 component = component,
                 onClickSearch = { onClickSwitch(Menu.SEARCH) },
-                onClickChooseHome = { showChooseHome = true },
+                onClickChooseHome = { showChooseHome = true},
                 onClickSetting = { onClickSwitch(Menu.SETTING) },
                 onClickHistory = { onClickSwitch(Menu.HISTORY) })
         }
     ) {
         Box(modifier = modifier.fillMaxSize().padding(it)) {
             if (model.value.homeVodResult?.isEmpty() == true) {
+                Text("这里什么都没有...")
                 Image(
                     modifier = modifier.align(Alignment.Center),
                     painter = painterResource("nothing.png"),
@@ -195,8 +189,7 @@ fun videoScene(
                     ) {
                         itemsIndexed(model.value.homeVodResult?.toList() ?: listOf()) { _, item ->
                             VideoItem(Modifier, item, false) {
-                                chooseVod = it
-                                showDetailDialog = true
+                                onClickItem(it)
                             }
                         }
                     }
@@ -210,8 +203,8 @@ fun videoScene(
                     )
                 )
             }
-            DetailDialog(showDetailDialog, chooseVod, api?.home?.value?.key ?: "") { showDetailDialog = false }
             ChooseHomeDialog(component, showChooseHome, onClose = { showChooseHome = false }) {
+                showChooseHome  = false
                 scope.launch {
                     state.animateScrollToItem(0)
                 }
@@ -229,30 +222,13 @@ fun VideoTopBar(
     onClickSetting: () -> Unit,
     onClickHistory: () -> Unit
 ) {
+    val home = GlobalModel.home.subscribeAsState()
     val model = component.model.subscribeAsState()
-    val prompt = remember { mutableStateOf<String>("请输入") }
-    LaunchedEffect(Unit) {
-        SiteViewModel.viewModelScope.launch {
-            if (model.value.isRunning) return@launch
-            component.model.update { it.copy(isRunning = true) }
-            delay(1500) // 等待获取热门数据列表
-            val list = GlobalModel.hotList.value
-            val size = list.size
-            var idx = 0
 
-            while (true) {
-                delay(2000)
-                if (idx >= size) idx = 0
-                prompt.value = list[idx++].title
-            }
-        }.invokeOnCompletion {
-            println("scroll invoke complete")
-            component.model.update { it.copy(isRunning = false) }
-        }
-    }
     TopAppBar(modifier = Modifier.height(50.dp).padding(1.dp), title = {}, actions = {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-            IconButton(modifier = Modifier.size(120.dp),
+            IconButton(modifier = Modifier.size(120.dp)
+                .indication(MutableInteractionSource(), indication = rememberRipple(bounded = true, radius = 50.dp)),
                 onClick = { onClickChooseHome() }) {
                 Row(Modifier.wrapContentWidth()) {
                     Icon(
@@ -260,7 +236,7 @@ fun VideoTopBar(
                         contentDescription = "Choose Home",
                         modifier = Modifier.padding(end = 3.dp)
                     )
-                    Text(model.value.getHomeSite()?.name ?: "无", modifier = Modifier.wrapContentWidth())
+                    Text(home.value.name, modifier = Modifier.wrapContentWidth())
                 }
             }
 
@@ -272,17 +248,19 @@ fun VideoTopBar(
                     onClickSearch()
                 }) {
                 AnimatedContent(
-                    targetState = prompt.value,
+                    targetState = model.value.prompt,
                     contentAlignment = Alignment.Center,
                     transitionSpec = {
                         slideInVertically { height -> height } + fadeIn() togetherWith
                                 slideOutVertically { height -> -height } + fadeOut()
                     },
-                    modifier = Modifier.fillMaxHeight().padding(top = 4.dp)
+                    modifier = Modifier.fillMaxHeight()/*.padding(top = 4.dp)*/
                 ) {
                     Text(
                         text = it,
-                        modifier = Modifier.align(Alignment.Center).fillMaxWidth().fillMaxHeight(),
+                        modifier = Modifier.align(Alignment.Center)
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
                         textAlign = TextAlign.Center
                     )
                 }
@@ -343,7 +321,7 @@ fun ClassRow(model: State<VideoComponent.Model>, onCLick: (Type) -> Unit) {
                             SiteViewModel.homeContent()
                         } else {
                             SiteViewModel.categoryContent(
-                                api?.home?.value?.key ?: "",
+                                GlobalModel.home.value.key,
                                 it.typeId,
                                 "1",
                                 true,
@@ -370,16 +348,15 @@ fun previewClassRow() {
 }
 
 @Composable
-fun ChooseHomeDialog(component: DefaultVideoComponent, showDialog: Boolean, onClose: () -> Unit, onClick: () -> Unit) {
+fun ChooseHomeDialog(component: DefaultVideoComponent, showDialog: Boolean, onClose: () -> Unit, onClick: (Site) -> Unit) {
     val model = component.model.subscribeAsState()
     Box() {
         Dialog(Modifier
             .wrapContentWidth(Alignment.CenterHorizontally)
             .wrapContentHeight(Alignment.CenterVertically)
             .defaultMinSize(minWidth = 100.dp)
-            .padding(20.dp), showDialog, onClose = { onClose() }) {
+            .padding(20.dp), onClose = { onClose() }, showDialog = showDialog) {
             val lazyListState = rememberLazyListState(0)
-            val adapter = rememberScrollbarAdapter(lazyListState)
             LazyColumn(
                 modifier = Modifier.padding(20.dp).wrapContentHeight(Alignment.CenterVertically),
                 state = lazyListState
@@ -388,14 +365,11 @@ fun ChooseHomeDialog(component: DefaultVideoComponent, showDialog: Boolean, onCl
                     OutlinedButton(modifier = Modifier.width(180.dp),
                         onClick = {
                             SiteViewModel.viewModelScope.launch {
-                                model.value.home = item
                                 setHome(item)
                                 model.value.homeLoaded = false
-                                component.homeLoad()
                                 Db.Config.setHome(api?.url, ConfigType.SITE.ordinal, item.key)
                             }
-                            onClose()
-                            onClick()
+                            onClick(item)
                         }) {
                         Text(item.name, textAlign = TextAlign.Center)
                     }

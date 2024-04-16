@@ -2,6 +2,7 @@ package com.corner.ui.decompose
 
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.value.Value
+import com.corner.catvod.enum.bean.Vod
 import com.corner.ui.decompose.component.DefaultHistoryComponentComponent
 import com.corner.ui.decompose.component.DefaultSearchComponentComponent
 import com.corner.ui.decompose.component.DefaultSettingComponent
@@ -18,6 +19,9 @@ interface RootComponent{
 
     fun onClickSetting()
 
+    fun showChooseHomeDialog()
+
+    fun showDetail(vod: Vod)
 
 
     fun onClickBack()
@@ -31,5 +35,9 @@ interface RootComponent{
         class HistoryChild(val component: DefaultHistoryComponentComponent):Child()
 
         class SettingChild(val component: DefaultSettingComponent):Child()
+
+        class DetailChild(val component: DetailComponent):Child()
     }
+
+//    val dialogSlot: Value<ChildSlot<DialogConfig, DialogComponent>>
 }

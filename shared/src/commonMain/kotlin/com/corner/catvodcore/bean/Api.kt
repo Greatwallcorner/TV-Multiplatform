@@ -2,8 +2,8 @@ package com.corner.catvod.enum.bean
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import com.github.catvod.bean.Doh
 import com.corner.database.Config
+import com.github.catvod.bean.Doh
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -26,8 +26,8 @@ data class Api(
     @Transient
     var recent: String? = null
 
-    @Transient
-    var home: MutableState<Site?>? = mutableStateOf(null)
+//    @Transient
+//    var home: MutableState<Site?>? = mutableStateOf(null)
 
     @Transient
     var cfg: MutableState<Config?> = mutableStateOf(null)

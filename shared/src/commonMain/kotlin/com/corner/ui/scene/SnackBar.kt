@@ -97,14 +97,15 @@ object SnackBar {
                         .width((35 * msg.value.length).dp)
                         .align(Alignment.Center),
                     shape = RoundedCornerShape(25),
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     action = {
                         Box(modifier = Modifier.fillMaxHeight()) {
                             Icon(
                                 imageVector = Icons.Outlined.Close, contentDescription = "Close the SnackBar",
                                 modifier = Modifier.clickable(onClick = { msgList[index].value = "" })
-                                    .align(Alignment.Center)
+                                    .align(Alignment.Center),
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
                     }

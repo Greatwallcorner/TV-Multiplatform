@@ -15,6 +15,7 @@ import com.corner.catvodcore.config.setRecent
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Utils
+import com.corner.catvodcore.viewmodel.GlobalModel
 import com.github.catvod.crawler.Spider
 import com.github.catvod.crawler.SpiderDebug
 import io.ktor.http.*
@@ -40,7 +41,7 @@ object SiteViewModel {
     val viewModelScope = CoroutineScope(Dispatchers.Default + supervisorJob)
 
     fun homeContent(): Result {
-        val site: Site = api?.home?.value ?: return result.value
+        val site: Site = GlobalModel.home.value ?: return result.value
         result.value = Result()
         try {
             when (site.type) {

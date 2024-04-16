@@ -27,6 +27,8 @@ import com.corner.ui.Util
 import com.corner.ui.decompose.DefaultRootComponent
 import com.corner.ui.decompose.RootContent
 import com.seiko.imageloader.LocalImageLoader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalDecomposeApi::class)
 fun main() = application {
@@ -38,7 +40,9 @@ fun main() = application {
     }
 
     LaunchedEffect(Unit) {
-        Init.start()
+        launch(Dispatchers.Default){
+            Init.start()
+        }
     }
     val windowState = rememberWindowState(
         size = Util.getPreferWindowSize(800, 800), position = WindowPosition.Aligned(Alignment.Center)

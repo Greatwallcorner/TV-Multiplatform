@@ -21,6 +21,7 @@ fun generateImageLoader(): ImageLoader {
             memoryCacheConfig {
                 maxSizeBytes(32 * 1024 * 1024) // 32MB
             }
+
             diskCacheConfig {
                 directory(Paths.picCache().toOkioPath())
                 maxSizeBytes(512L * 1024 * 1024) // 512MB

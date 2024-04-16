@@ -13,7 +13,7 @@
 - 本项目按道理支持win/linux/macos, 但只在win上测试过
 
 # TODO
-- Decompose
+- [x] Decompose
 - 动画
 - 代码优化
   
