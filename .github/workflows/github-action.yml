@@ -1,9 +1,8 @@
 name: TV-Multiplatform Build
-on: [push]
-#  push:
-#    tags:
-#      - v1.*
-#      - v2.*
+on:
+  push:
+    tags:
+      - v*.*.*
 jobs:
   build-win:
     runs-on: windows-latest
