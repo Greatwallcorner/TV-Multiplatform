@@ -19,7 +19,7 @@
   
 # screenshoot
 ## 首页
-![](readme_images\home.png)
+![](readme_images/home.png)
 ## 搜索
 ![](readme_images/search.png)
 ## 历史记录
