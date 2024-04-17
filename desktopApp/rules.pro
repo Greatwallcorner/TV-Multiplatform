@@ -51,6 +51,7 @@
 -keep class com.google.common.** {*;}
 -keep class org.jsoup.** {*;}
 -keep class app.cash.sqldelight.** {*;}
+-keep class com.arkivanov.decompose.** {*;}
 
 
 -dontwarn org.jboss.marshalling.**
