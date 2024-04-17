@@ -20,7 +20,7 @@ jobs:
       - run: ls && tree ./desktopApp /f
       - name: compress
         shell: pwsh
-        run: Compress-Archive -Path "./desktopApp/build/compose/binaries/main-release/app/TV" -DestinationPath "TV-$GITHUB_REF_NAME.zip"
+        run: Compress-Archive -Path "./desktopApp/build/compose/binaries/main-release/app/TV" -DestinationPath 。/TV-win-$GITHUB_REF_NAME.zip
       - name: move result to root
         shell: pwsh
         run: Move-Item -Path "./desktopApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./desktopApp/build/compose/binaries/main-release/msi/*.msi" -Destination "./"
@@ -44,7 +44,7 @@ jobs:
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ls && tree
       - name: compress
-        run: zip -q -r ./TV-mac-$GITHUB_REF_NAME.zip ./desktopApp/build/compose/binaries/main-release/app/TV
+        run: zip -q -r ./TV-linux-$GITHUB_REF_NAME.zip ./desktopApp/build/compose/binaries/main-release/app/TV
       - name: move file
         run: mv ./desktopApp/build/compose/binaries/main-release/deb/*.deb ./
       - run: ls
@@ -65,11 +65,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            *.zip
-            *.deb
-            *.pkg
-            *.dmg
-            *.msi
+            **/*.zip
+            **/*.deb
+            **/*.pkg
+            **/*.dmg
+            **/*.msi
     permissions:
       contents: write
 
