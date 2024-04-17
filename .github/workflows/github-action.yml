@@ -19,7 +19,7 @@ jobs:
       - run: ls && tree ./desktopApp /f
       - name: compress
         shell: pwsh
-        run: Compress-Archive -Path "./desktopApp/build/compose/binaries/main-release/app/TV" -DestinationPath 。/TV-win-$GITHUB_REF_NAME.zip
+        run: Compress-Archive -Path "./desktopApp/build/compose/binaries/main-release/app/TV" -DestinationPath ./TV-win-$GITHUB_REF_NAME.zip
       - name: move result to root
         shell: pwsh
         run: Move-Item -Path "./desktopApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./desktopApp/build/compose/binaries/main-release/msi/*.msi" -Destination "./"
