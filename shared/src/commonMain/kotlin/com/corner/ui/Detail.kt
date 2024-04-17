@@ -65,7 +65,10 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column(Modifier.padding(8.dp)) {
-            BackRow(Modifier, onClickBack = { onClickBack() }) {
+            BackRow(Modifier, onClickBack = {
+                component.clear()
+                onClickBack()
+            }) {
                 Text(
                     detail?.vodName ?: "",
                     style = MaterialTheme.typography.headlineMedium,

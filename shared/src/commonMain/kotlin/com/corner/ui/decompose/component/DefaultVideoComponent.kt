@@ -31,7 +31,7 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
     private var promptJob: Job? = null;
 
     init {
-        GlobalModel.home.observe { site ->
+        GlobalModel.home.observe {
             homeLoad()
         }
         GlobalModel.hotList.observe {
@@ -86,7 +86,7 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
                         val types = SiteViewModel.result.value.types
                         if (types.isEmpty()) return@launch
                         SiteViewModel.categoryContent(
-                            home.value?.key ?: "",
+                            home.value.key ,
                             types.get(0).typeId,
                             _model.value.page.toString(),
                             true,

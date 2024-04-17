@@ -7,7 +7,6 @@ interface DetailComponent {
 
     val model: MutableValue<Model>
     data class Model(
-        var chooseVod: Vod = Vod(),
         var siteKey:String = "",
         var detail:Vod? = null,
         var quickSearchResult:List<Vod> = listOf()
