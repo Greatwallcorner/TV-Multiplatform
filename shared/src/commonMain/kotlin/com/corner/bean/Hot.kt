@@ -25,7 +25,9 @@ data class Hot(val data:List<HotData>) {
                 }
 
                 if(response.status == HttpStatusCode.OK)
-                    GlobalModel.hotList.value.addAll(Jsons.decodeFromStream<Hot>(response.bodyAsChannel().toInputStream()).data)
+                    GlobalModel.hotList.value = Jsons.decodeFromStream<Hot>(response.bodyAsChannel().toInputStream()).data
+//                    GlobalModel.hotList.update { it. = Jsons.decodeFromStream<Hot>(response.bodyAsChannel().toInputStream()).data}
+//                    GlobalModel.hotList.value.addAll()
             }
         }
     }

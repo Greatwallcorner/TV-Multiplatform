@@ -32,16 +32,23 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Pkg)
             packageName = "TV"
-            packageVersion = "1.1.2"
+            packageVersion = "1.1.5"
             vendor = "TV Multiplatform"
 
             modules("java.net.http", "java.sql", "jdk.unsupported")
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
+//            app icons https://github.com/JetBrains/compose-multiplatform/tree/master/tutorials/Native_distributions_and_local_execution#app-icon
             windows {
-                iconFile.set(project.file("src/jvmMain/resources/TV-icon-s.png"))
+                iconFile.set(project.file("src/jvmMain/resources/icon-s.ico"))
                 dirChooser = true
                 upgradeUuid = "161FA5A0-A30B-4568-9E84-B3CD637CC8FE"
             }
+
+            linux{
+                iconFile.set(project.file("src/jvmMain/resources/TV-icon-s.png"))
+
+            }
+
         }
 
     }

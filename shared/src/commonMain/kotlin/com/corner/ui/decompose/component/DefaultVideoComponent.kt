@@ -34,6 +34,11 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
         GlobalModel.home.observe { site ->
             homeLoad()
         }
+        GlobalModel.hotList.observe {
+            if(it.isEmpty()) return@observe
+            searchBarPrompt()
+        }
+
         lifecycle.subscribe(callbacks = object :Lifecycle.Callbacks{
             override fun onCreate() {
                 println("onCreate")
@@ -41,7 +46,7 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
 
             override fun onStart() {
                 println("onStart")
-                searchBarPrompt()
+//                searchBarPrompt()
 //                homeLoad()
             }
 
@@ -59,7 +64,7 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
 
             override fun onStop() {
                 println("onStop")
-                promptJob?.cancel()
+//                promptJob?.cancel()
             }
         })
     }
