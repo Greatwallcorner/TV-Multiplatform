@@ -49,6 +49,10 @@ compose.desktop {
 
             }
 
+            macOS{
+                iconFile.set(project.file("src/jvmMain/resources/icon.icns"))
+            }
+
         }
 
     }
