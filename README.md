@@ -15,6 +15,7 @@
 # TODO
 - [x] Decompose
 - [ ] vlcj
+- [ ] 自更新
 - 动画
 - 代码优化
   

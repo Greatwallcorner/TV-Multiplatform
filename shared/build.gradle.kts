@@ -40,6 +40,7 @@ kotlin {
 
 //                // tool
                 api("com.google.guava:guava:31.1-jre")
+                api("cn.hutool:hutool-core:5.8.27")
 
                 //DI
                 api("io.insert-koin:koin-core:3.5.3")
@@ -89,14 +90,14 @@ kotlin {
 
             }
         }
-        val androidMain by getting {
-            dependencies {
-                api("androidx.activity:activity-compose:1.8.2")
-                api("androidx.appcompat:appcompat:1.6.1")
-                api("androidx.core:core-ktx:1.12.0")
-                api("io.insert-koin:koin-androidx-compose:3.5.3")
-            }
-        }
+//        val androidMain by getting {
+//            dependencies {
+//                api("androidx.activity:activity-compose:1.8.2")
+//                api("androidx.appcompat:appcompat:1.6.1")
+//                api("androidx.core:core-ktx:1.12.0")
+//                api("io.insert-koin:koin-androidx-compose:3.5.3")
+//            }
+//        }
 //        val iosX64Main by getting
 //        val iosArm64Main by getting
 //        val iosSimulatorArm64Main by getting

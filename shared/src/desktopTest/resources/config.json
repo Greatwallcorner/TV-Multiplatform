@@ -41,6 +41,15 @@
       "timeout": 30
     },
     {
+      "key": "PanSearch",
+      "name": "PanSearch┃搜索",
+      "type": 3,
+      "api": "csp_PanSearch",
+      "searchable": 1,
+      "changeable": 1,
+      "timeout": 30
+    },
+    {
       "key": "YiSo",
       "name": "易搜┃搜索",
       "type": 3,

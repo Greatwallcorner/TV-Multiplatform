@@ -2,13 +2,14 @@ package com.corner.util.play
 
 import MPC
 import PotPlayer
+import cn.hutool.core.util.ZipUtil
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.catvodcore.bean.Result
-import com.corner.util.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okio.Path.Companion.toPath
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -58,15 +59,25 @@ fun getProcessBuilder(result: Result?, title: String?): ProcessBuilder? {
 
 fun getDefaultPlayerPath():String {
     val resourcesDir = File(System.getProperty("compose.application.resources.dir"))
-    val list = resourcesDir.list(FilenameFilter { dir, name -> name.lowercase().matches(Regex("mpc-hc\\X*.zip")) })
-    if(list.size == 0) return ""
+    // 已经解压
+    var exeList = resourcesDir.resolve("mpc-hc").list(FilenameFilter { _, name -> name.lowercase().matches(Regex("mpc-hc\\X*.exe")) })
+    if(exeList != null && exeList.isNotEmpty()) return resourcesDir.resolve("mpc-hc").resolve(exeList[0]).path
+
+    val list = resourcesDir.list(FilenameFilter { _, name -> name.lowercase().matches(Regex("mpc-hc\\X*.zip")) })
+    if(list == null || list.isEmpty()) {
+        log.error("没有找到默认播放器压缩包")
+        return ""
+    }
     val destDir = resourcesDir.resolve("mpc-hc")
     log.info("解压默认播放器 MPC-HC")
-    Utils.unZipFiles(resourcesDir.resolve(list[0]), destDir.path)
-    val exeList = destDir.list(FilenameFilter { dir, name -> name.lowercase().matches(Regex("mpc-hc\\X*.exe")) })
-    if(exeList.size == 0) return ""
-    return destDir.resolve(exeList[0]).path
 
+    ZipUtil.unzip(resourcesDir.resolve(list[0]), destDir.path.toPath().toFile())
+    exeList = destDir.list(FilenameFilter { _, name -> name.lowercase().matches(Regex("mpc-hc\\X*.exe")) })
+    if(exeList == null || exeList.isEmpty()) {
+        log.error("没有找到播放器exe")
+        return ""
+    }
+    return destDir.resolve(exeList[0]).path
 }
 
 private fun checkPlayer(playerPath:String):Boolean{

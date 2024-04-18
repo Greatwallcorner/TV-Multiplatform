@@ -52,6 +52,7 @@
 -keep class org.jsoup.** {*;}
 -keep class app.cash.sqldelight.** {*;}
 -keep class com.arkivanov.decompose.** {*;}
+-keep class cn.hutool.core.** {*;}
 
 
 -dontwarn org.jboss.marshalling.**
