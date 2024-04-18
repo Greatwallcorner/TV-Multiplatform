@@ -27,6 +27,7 @@ import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.config.api
+import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.SearchComponent
 import com.corner.ui.decompose.component.DefaultSearchComponentComponent
 import com.corner.ui.scene.RatioBtn
@@ -40,7 +41,7 @@ enum class SearchPageType {
 }
 
 @Composable
-fun SearchScene(component: DefaultSearchComponentComponent, onClickBack: () -> Unit) {
+fun SearchScene(component: DefaultSearchComponentComponent,onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
     val model = component.models.subscribeAsState()
     var currentPage by remember { mutableStateOf(SearchPageType.page) }
     var keyword by remember { mutableStateOf("") }
@@ -49,7 +50,10 @@ fun SearchScene(component: DefaultSearchComponentComponent, onClickBack: () -> U
             keyword = s
             currentPage = SearchPageType.content
         })
-        SearchPageType.content -> SearchResult(model, keyword = keyword, onClickBack = { onClickBack() }, searching = model.value.isSearching.value)
+        SearchPageType.content -> SearchResult(model, keyword = keyword, onClickBack = { onClickBack() },
+            searching = model.value.isSearching.value){
+            onClickItem(it)
+        }
     }
 }
 
@@ -62,7 +66,11 @@ fun SearchScene(component: DefaultSearchComponentComponent, onClickBack: () -> U
 //}
 
 @Composable
-private fun SearchResult(model:State<SearchComponent.Model>, keyword: String, onClickBack: () -> Unit, searching: Boolean) {
+private fun SearchResult(model:State<SearchComponent.Model>,
+                         keyword: String,
+                         onClickBack: () -> Unit,
+                         searching: Boolean,
+                         onClickItem:(Vod)->Unit) {
     var searchText by remember { mutableStateOf(keyword) }
     val result = remember { mutableStateOf(SiteViewModel.search) }
     var currentCollect by remember { mutableStateOf<Collect?>(SiteViewModel.search[0]) }
@@ -70,9 +78,6 @@ private fun SearchResult(model:State<SearchComponent.Model>, keyword: String, on
     val state = rememberLazyGridState()
     val adapter = rememberScrollbarAdapter(state)
 
-    var showDetailDialog by remember { mutableStateOf(false) }
-    var chooseVod by remember { mutableStateOf<Vod?>(null) }
- 
     DisposableEffect(searchText) {
         model.value.isSearching.value = true
         model.value.cancelAndClearJobList()
@@ -172,8 +177,8 @@ private fun SearchResult(model:State<SearchComponent.Model>, keyword: String, on
                         ) {
                             itemsIndexed(currentVodList ?: listOf()) { _, item ->
                                 VideoItem(Modifier, item, true) {
-                                    chooseVod = it
-                                    showDetailDialog = true
+                                    GlobalModel.chooseVod.value = it
+                                    onClickItem(it)
                                 }
                             }
                         }
@@ -188,9 +193,5 @@ private fun SearchResult(model:State<SearchComponent.Model>, keyword: String, on
                 }
             }
         }
-
-//        DetailDialog(showDetailDialog, chooseVod, chooseVod?.site?.key ?: "") {
-//            showDetailDialog = false
-//        }
     }
 }
