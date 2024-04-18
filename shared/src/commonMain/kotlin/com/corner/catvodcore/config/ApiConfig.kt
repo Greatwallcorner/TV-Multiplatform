@@ -11,13 +11,17 @@ import com.corner.catvodcore.util.Urls
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Config
 import com.corner.database.Db
+import com.corner.ui.scene.SnackBar
 import com.corner.util.isEmpty
 import com.github.catvod.crawler.Spider
 import okio.Path.Companion.toPath
 import org.apache.commons.lang3.StringUtils
+import org.slf4j.LoggerFactory
 import java.nio.file.Files
 
 var api: Api? = null
+
+private val log = LoggerFactory.getLogger("apiConfig")
 
 
 fun parseConfig(cfg: Config, isJson: Boolean): Api? {
@@ -144,6 +148,8 @@ private fun getData(str: String, isJson: Boolean): String? {
             return Files.readString(file.toPath())
         }
     } catch (e: Exception) {
+        SnackBar.postMsg("获取配置失败: "+e.message)
+        log.error("获取配置失败", e)
         return ""
     }
     return ""

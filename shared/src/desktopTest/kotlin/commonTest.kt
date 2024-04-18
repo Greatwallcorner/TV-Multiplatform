@@ -6,6 +6,7 @@ import com.corner.catvodcore.loader.JarLoader
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.KtorClient
+import com.corner.catvodcore.util.Urls
 import com.corner.init.Init
 import com.corner.server.KtorD
 import com.github.catvod.crawler.Spider
@@ -53,6 +54,11 @@ class commonTest {
         )
 
         println()
+    }
+    @Test
+    fun exceptionTest(){
+        val e = Exception("test")
+        e.stackTraceToString()
     }
 
     @Test
@@ -185,6 +191,14 @@ class commonTest {
 //            val hot = Jsons.decodeFromStream<Hot>(response.bodyAsChannel().toInputStream())
             println(response.bodyAsText())
         }
+    }
+
+    @Test fun urlResolve(){
+        var convert: String = Urls.convert(
+            "https://raw.githubusercontent.com/Greatwallcorner/CatVodSpider/master/json/config.json",
+            "../jar/spider.jar"
+        )
+        println(convert)
     }
 }
 
