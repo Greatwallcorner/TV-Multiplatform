@@ -8,24 +8,24 @@ import kotlinx.serialization.Transient
 
 @Serializable
 data class Vod(
-    @SerialName("vod_id")var vodId:String = "",
-    @SerialName("vod_name")var vodName:String? = null,
-    @SerialName("type_name")var typeName:String? = null,
-    @SerialName("vod_pic")var vodPic:String? = null,
-    @SerialName("vod_remarks")var vodRemarks:String? = null,
-    @SerialName("vod_year")var vodYear:String? = null,
-    @SerialName("vod_area")var vodArea:String? = null,
-    @SerialName("vod_director")var vodDirector:String? = null,
-    @SerialName("vod_actor")var vodActor:String? = null,
-    @SerialName("vod_content")var vodContent:String? = null,
-    @SerialName("vod_play_from")var vodPlayFrom:String? = null,
-    @SerialName("vod_play_url")var vodPlayUrl:String? = null,
-    @SerialName("vod_tag")var vodTag:String? = null,
-    @SerialName("cate")var cate:String? = null,
-    @SerialName("style")var style:String? = null,
-    @SerialName("land")var land:String? = null,
-    @SerialName("circle")var circle:String? = null,
-    @SerialName("ratio")var ratio:String? = null,
+    @SerialName("vod_id") var vodId: String = "",
+    @SerialName("vod_name") var vodName: String? = null,
+    @SerialName("type_name") var typeName: String? = null,
+    @SerialName("vod_pic") var vodPic: String? = null,
+    @SerialName("vod_remarks") var vodRemarks: String? = null,
+    @SerialName("vod_year") var vodYear: String? = null,
+    @SerialName("vod_area") var vodArea: String? = null,
+    @SerialName("vod_director") var vodDirector: String? = null,
+    @SerialName("vod_actor") var vodActor: String? = null,
+    @SerialName("vod_content") var vodContent: String? = null,
+    @SerialName("vod_play_from") var vodPlayFrom: String? = null,
+    @SerialName("vod_play_url") var vodPlayUrl: String? = null,
+    @SerialName("vod_tag") var vodTag: String? = null,
+    @SerialName("cate") var cate: String? = null,
+    @SerialName("style") var style: String? = null,
+    @SerialName("land") var land: String? = null,
+    @SerialName("circle") var circle: String? = null,
+    @SerialName("ratio") var ratio: String? = null,
     @Transient
     var vodFlags: MutableList<Flag?> = mutableListOf(),
     @Transient
@@ -37,14 +37,15 @@ data class Vod(
     @Transient
     var currentTabIndex: Int = 0,
     @Transient
-    var version:Int = 0
-){
-    companion object{
-        fun Vod.setCurrentFlag(idx:Int){
+    var version: Int = 0
+) {
+    companion object {
+        fun Vod.setCurrentFlag(idx: Int) {
             currentFlag = vodFlags[idx]
             currentFlag?.activated = true
         }
-        fun Vod.setCurrentFlag(flag:Flag?){
+
+        fun Vod.setCurrentFlag(flag: Flag?) {
             currentFlag = flag
             currentFlag?.activated = true
         }
@@ -53,9 +54,9 @@ data class Vod(
             val playFlags: List<String>? = vodPlayFrom?.split("\\$\\$\\$".toRegex())
             val playUrls: List<String>? = vodPlayUrl?.split("\\$\\$\\$".toRegex())
 
-            if(!playFlags.isNullOrEmpty() && !playUrls.isNullOrEmpty()){
+            if (!playFlags.isNullOrEmpty() && !playUrls.isNullOrEmpty()) {
                 for (i in 0 until playFlags.size) {
-                    if(playFlags[i].isEmpty() || i >= playUrls.size) continue
+                    if (playFlags[i].isEmpty() || i >= playUrls.size) continue
                     val item = Flag.create(playFlags[i].trim())
                     item.createEpisode(playUrls[i])
                     vodFlags.add(item)
@@ -68,7 +69,7 @@ data class Vod(
             setCurrentFlag(0)
         }
 
-        fun List<Episode>.getPage(index:Int):MutableList<Episode>{
+        fun List<Episode>.getPage(index: Int): MutableList<Episode> {
             val list = this.subList(
                 index * 15,
                 if (index * 15 + 15 > size) size else index * 15 + 15
@@ -76,4 +77,13 @@ data class Vod(
             return list
         }
     }
+
+    fun isFolder():Boolean{
+        return VodTag.Folder.called == vodTag
+    }
+}
+
+enum class VodTag(val called: String) {
+    Folder("folder"),
+    File("file")
 }

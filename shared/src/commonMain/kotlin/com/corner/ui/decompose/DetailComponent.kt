@@ -2,6 +2,7 @@ package com.corner.ui.decompose
 
 import com.arkivanov.decompose.value.MutableValue
 import com.corner.catvod.enum.bean.Vod
+import java.util.concurrent.CopyOnWriteArrayList
 
 interface DetailComponent {
 
@@ -9,7 +10,7 @@ interface DetailComponent {
     data class Model(
         var siteKey:String = "",
         var detail:Vod? = null,
-        var quickSearchResult:List<Vod> = listOf()
+        var quickSearchResult:CopyOnWriteArrayList<Vod> = CopyOnWriteArrayList()
     )
 
     fun load()
@@ -24,4 +25,5 @@ interface DetailComponent {
 
     fun getChooseVod(): Vod
 
+    fun setDetail(vod: Vod)
 }

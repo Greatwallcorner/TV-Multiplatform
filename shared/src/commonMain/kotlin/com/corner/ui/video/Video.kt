@@ -102,7 +102,7 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
 fun VideoScene(
     component: DefaultVideoComponent,
     modifier: Modifier,
-    onClickItem:(Vod) -> Unit,
+    onClickItem: (Vod) -> Unit,
     onClickSwitch: (Menu) -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -119,28 +119,7 @@ fun VideoScene(
 
     DisposableEffect(shouldLoadMore) {
         if (shouldLoadMore) {
-            showProgress()
-            model.value.page += 1
-            SiteViewModel.viewModelScope.launch {
-                try {
-                    if (model.value.currentClass == null || model.value.currentClass?.typeId == "home") return@launch
-                    SiteViewModel.categoryContent(
-                        GlobalModel.home.value.key,
-                        model.value.currentClass?.typeId,
-                        model.value.page.toString(),
-                        true,
-                        HashMap()
-                    )
-                    val list = SiteViewModel.result.value.list
-                    if (list.isNotEmpty()) {
-                        val vodList = model.value.homeVodResult?.toMutableList()
-                        vodList?.addAll(list)
-                        component.model.update { it.copy(homeVodResult = vodList?.toSet()?.toMutableSet()) }
-                    }
-                } finally {
-                    hideProgress()
-                }
-            }
+            component.loadMore()
         }
         onDispose {
         }
@@ -153,10 +132,13 @@ fun VideoScene(
             VideoTopBar(
                 component = component,
                 onClickSearch = { onClickSwitch(Menu.SEARCH) },
-                onClickChooseHome = { showChooseHome = true},
+                onClickChooseHome = { showChooseHome = true },
                 onClickSetting = { onClickSwitch(Menu.SETTING) },
                 onClickHistory = { onClickSwitch(Menu.HISTORY) })
-        }
+        },
+//        floatingActionButton = {
+//            FloatButton(component)
+//        }
     ) {
         Box(modifier = modifier.fillMaxSize().padding(it)) {
             if (model.value.homeVodResult?.isEmpty() == true) {
@@ -189,27 +171,49 @@ fun VideoScene(
                     ) {
                         itemsIndexed(model.value.homeVodResult?.toList() ?: listOf()) { _, item ->
                             VideoItem(Modifier, item, false) {
-                                onClickItem(it)
+                                if (item.isFolder()) {
+                                    SiteViewModel.viewModelScope.launch {
+
+                                    }
+                                } else {
+                                    onClickItem(it)
+                                }
                             }
                         }
                     }
                 }
-                VerticalScrollbar(
-                    adapter, modifier = Modifier.align(Alignment.CenterEnd)
-                        .padding(end = 10.dp),
-                    style = defaultScrollbarStyle().copy(
-                        unhoverColor = Color.DarkGray.copy(0.3F),
-                        hoverColor = Color.DarkGray
-                    )
-                )
             }
+            VerticalScrollbar(
+                adapter, modifier = Modifier.align(Alignment.CenterEnd)
+                    .padding(end = 10.dp),
+                style = defaultScrollbarStyle().copy(
+                    unhoverColor = Color.DarkGray.copy(0.3F),
+                    hoverColor = Color.DarkGray
+                )
+            )
             ChooseHomeDialog(component, showChooseHome, onClose = { showChooseHome = false }) {
-                showChooseHome  = false
+                showChooseHome = false
                 scope.launch {
                     state.animateScrollToItem(0)
                 }
             }
         }
+    }
+}
+
+@Composable
+fun FloatButton(component: DefaultVideoComponent) {
+    val show = remember { derivedStateOf { GlobalModel.chooseVod.value.isFolder() } }
+    AnimatedVisibility(show.value,
+        /*enter = slideInVertically(
+        initialOffsetY = { fullHeight -> -fullHeight },
+        animationSpec = tween(durationMillis = 150, easing = LinearOutSlowInEasing)
+    ),
+        exit = slideOutVertically(
+            targetOffsetY = { fullHeight -> -fullHeight },
+            animationSpec = tween(durationMillis = 250, easing = FastOutLinearInEasing)
+        )*/){
+//        ElevatedButton()
     }
 }
 
@@ -228,7 +232,10 @@ fun VideoTopBar(
     TopAppBar(modifier = Modifier.height(50.dp).padding(1.dp), title = {}, actions = {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
             IconButton(modifier = Modifier.size(120.dp)
-                .indication(MutableInteractionSource(), indication = rememberRipple(bounded = true, radius = 50.dp)),
+                .indication(
+                    MutableInteractionSource(),
+                    indication = rememberRipple(bounded = true, radius = 50.dp)
+                ),
                 onClick = { onClickChooseHome() }) {
                 Row(Modifier.wrapContentWidth()) {
                     Icon(
@@ -348,14 +355,21 @@ fun previewClassRow() {
 }
 
 @Composable
-fun ChooseHomeDialog(component: DefaultVideoComponent, showDialog: Boolean, onClose: () -> Unit, onClick: (Site) -> Unit) {
+fun ChooseHomeDialog(
+    component: DefaultVideoComponent,
+    showDialog: Boolean,
+    onClose: () -> Unit,
+    onClick: (Site) -> Unit
+) {
     val model = component.model.subscribeAsState()
     Box() {
-        Dialog(Modifier
-            .wrapContentWidth(Alignment.CenterHorizontally)
-            .wrapContentHeight(Alignment.CenterVertically)
-            .defaultMinSize(minWidth = 100.dp)
-            .padding(20.dp), onClose = { onClose() }, showDialog = showDialog) {
+        Dialog(
+            Modifier
+                .wrapContentWidth(Alignment.CenterHorizontally)
+                .wrapContentHeight(Alignment.CenterVertically)
+                .defaultMinSize(minWidth = 100.dp)
+                .padding(20.dp), onClose = { onClose() }, showDialog = showDialog
+        ) {
             val lazyListState = rememberLazyListState(0)
             LazyColumn(
                 modifier = Modifier.padding(20.dp).wrapContentHeight(Alignment.CenterVertically),

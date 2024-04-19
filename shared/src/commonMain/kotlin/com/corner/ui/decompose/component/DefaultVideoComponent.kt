@@ -28,7 +28,7 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
 
     override var model: MutableValue<VideoComponent.Model> = _model
 
-    private var promptJob: Job? = null;
+    private var promptJob: Job? = null
 
     init {
         GlobalModel.home.observe {
@@ -83,11 +83,12 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
                     if (list.isNotEmpty()) {
                         classList = (mutableSetOf(Type.home()) + classList).toMutableSet()
                     } else {
-                        val types = SiteViewModel.result.value.types
-                        if (types.isEmpty()) return@launch
+                        if (classList.isEmpty()) return@launch
+                        val types = classList.firstOrNull()
+                        types?.selected = true
                         SiteViewModel.categoryContent(
                             home.value.key ,
-                            types.get(0).typeId,
+                            types?.typeId,
                             _model.value.page.toString(),
                             true,
                             HashMap()
@@ -105,6 +106,31 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
             }
         }
         _model.value.page += 1
+    }
+
+    override fun loadMore() {
+        showProgress()
+        model.value.page += 1
+        SiteViewModel.viewModelScope.launch {
+            try {
+                if (model.value.currentClass == null || model.value.currentClass?.typeId == "home") return@launch
+                SiteViewModel.categoryContent(
+                    GlobalModel.home.value.key,
+                    model.value.currentClass?.typeId,
+                    model.value.page.toString(),
+                    true,
+                    HashMap()
+                )
+                val list = SiteViewModel.result.value.list
+                if (list.isNotEmpty()) {
+                    val vodList = model.value.homeVodResult?.toMutableList()
+                    vodList?.addAll(list)
+                    model.update { it.copy(homeVodResult = vodList?.toSet()?.toMutableSet()) }
+                }
+            } finally {
+                hideProgress()
+            }
+        }
     }
 
     fun searchBarPrompt(){

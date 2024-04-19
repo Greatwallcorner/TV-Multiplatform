@@ -1,5 +1,5 @@
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
@@ -27,6 +27,7 @@ import okhttp3.Headers.Companion.headersOf
 import okhttp3.Headers.Companion.toHeaders
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CopyOnWriteArrayList
 
 object SiteViewModel {
     private val log = LoggerFactory.getLogger("SiteViewModel")
@@ -34,14 +35,14 @@ object SiteViewModel {
     val result: MutableState<Result> by lazy {  mutableStateOf(Result())}
     val detail: MutableState<Result> by lazy {  mutableStateOf(Result())}
     val player: MutableState<Result> by lazy {  mutableStateOf(Result())}
-    val search: MutableList<Collect> = mutableStateListOf(Collect.all())
-    val quickSearch: MutableList<Collect> = mutableStateListOf(Collect.all())
+    val search: MutableList<Collect> by mutableStateOf<CopyOnWriteArrayList<Collect>>(CopyOnWriteArrayList(listOf(Collect.all())))
+    val quickSearch: MutableList<Collect>by mutableStateOf<CopyOnWriteArrayList<Collect>>(CopyOnWriteArrayList(listOf(Collect.all())))
 
     private val supervisorJob = SupervisorJob()
     val viewModelScope = CoroutineScope(Dispatchers.Default + supervisorJob)
 
     fun homeContent(): Result {
-        val site: Site = GlobalModel.home.value ?: return result.value
+        val site: Site = GlobalModel.home.value
         result.value = Result()
         try {
             when (site.type) {

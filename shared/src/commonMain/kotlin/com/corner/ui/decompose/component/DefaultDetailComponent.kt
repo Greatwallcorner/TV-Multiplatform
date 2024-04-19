@@ -14,8 +14,10 @@ import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.scene.SnackBar
 import com.corner.util.Utils.cancelAll
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Semaphore
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CopyOnWriteArrayList
 
 class DefaultDetailComponent(componentContext: ComponentContext) : DetailComponent,
     ComponentContext by componentContext {
@@ -27,8 +29,11 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     private val log = LoggerFactory.getLogger("Detail")
 
     private val lock = Any()
+
     @Volatile
     private var launched = false
+
+    private var currentSiteKey = MutableValue("")
 
     private val jobList = mutableListOf<Job>()
 
@@ -37,6 +42,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     override fun load() {
         val chooseVod = getChooseVod()
+        currentSiteKey.value = chooseVod.site?.key ?: ""
         SiteViewModel.viewModelScope.launch {
             val dt = SiteViewModel.detailContent(chooseVod.site?.key ?: "", chooseVod.vodId)
             if (dt == null || dt.detailIsEmpty()) {
@@ -49,7 +55,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                     for (it: Episode in detail.subEpisode ?: listOf()) {
                         if (it.name.equals(getChooseVod().vodRemarks)) {
                             it.activated = true
-                            break;
+                            break
                         }
                     }
                 }
@@ -58,20 +64,34 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             }
         }
     }
-     override fun quickSearch() {
+
+    override fun quickSearch() {
         searchScope.launch {
-            val quickSearchSites = api?.sites?.filter { it.changeable == 1 }
+            val quickSearchSites = api?.sites?.filter { it.changeable == 1 }?.shuffled()
+            log.debug("开始执行快搜 sites:{}", quickSearchSites?.map { it.name }.toString())
+            val semaphore = Semaphore(2)
             quickSearchSites?.forEach {
                 val job = launch() {
+                    semaphore.acquire()
                     withTimeout(2500L) {
                         SiteViewModel.searchContent(it, getChooseVod().vodName ?: "", true)
                         log.debug("{}完成搜索", it.name)
                     }
+                    semaphore.release()
                 }
 
                 job.invokeOnCompletion {
-                    model.update { it.copy(quickSearchResult = SiteViewModel.quickSearch.get(0).getList()?.toList() ?: listOf()) }
-                    log.debug("一个job执行完毕 result size:{}", model.value.quickSearchResult.size)
+                    if (it != null) {
+                        log.error("quickSearch 协程执行异常 msg:{}", it.message)
+                    }
+                    model.update {
+                        val list = CopyOnWriteArrayList<Vod>()
+                        list.addAllAbsent(SiteViewModel.quickSearch.get(0).getList())
+                        it.copy(
+                            quickSearchResult = list
+                        )
+                    }
+                    if(it == null) log.debug("一个job执行完毕 result size:{}", model.value.quickSearchResult.size)
 
                     synchronized(lock) {
                         if (model.value.quickSearchResult.isNotEmpty() && model.value.detail == null && !launched) {
@@ -86,26 +106,23 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 it.join()
             }
             if (model.value.quickSearchResult.isEmpty()) {
-//                model.update { it.copy(chooseVod = vod) }
+                model.update { it.copy(detail = GlobalModel.chooseVod.value) }
                 SnackBar.postMsg("暂无线路数据")
             }
         }
     }
 
-     override fun loadDetail(vod: Vod) {
+    override fun loadDetail(vod: Vod) {
         val dt = SiteViewModel.detailContent(vod.site?.key!!, vod.vodId)
         if (dt == null || dt.detailIsEmpty()) {
             nextSite(vod)
         } else {
-            if (vod.site?.name?.isNotBlank() == true && model.value.detail != null && !model.value.detail?.site?.name?.equals(vod.site!!.name)!!) SnackBar.postMsg(
-                "正在切换站源至 [${vod.site!!.name}]"
-            )
             var first = dt.list[0]
             first = first.copy(
                 subEpisode = first.vodFlags.get(0)?.episodes?.getPage(first.currentTabIndex)?.toMutableList()
             )
             first.site = vod.site
-            model.update { it.copy(detail = first) }
+            setDetail(first)
             launched = false
 //        searchScope.cancel("已找到可用站源${detail?.site?.name}")
             supervisor.cancelChildren()
@@ -115,7 +132,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     override fun nextSite(lastVod: Vod?) {
         if (model.value.quickSearchResult.isEmpty()) return
-        val list = model.value.quickSearchResult.toMutableList()
+        val list = model.value.quickSearchResult
         if (lastVod != null) list.remove(lastVod)
         model.update { it.copy(quickSearchResult = list) }
         if (model.value.quickSearchResult.isNotEmpty()) loadDetail(model.value.quickSearchResult[0])
@@ -129,14 +146,27 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         return list
     }
 
-    override fun clear(){
-        model.update { it.copy(quickSearchResult = listOf(), detail = null) }
-        SiteViewModel.clearQuickSearch()
-        jobList.cancelAll().clear()
-        launched = false
+    override fun clear() {
+        SiteViewModel.viewModelScope.launch {
+            supervisor.cancel("退出详情页")
+            delay(2000)
+            jobList.clear()
+            model.update { it.copy(quickSearchResult = CopyOnWriteArrayList(), detail = null) }
+            SiteViewModel.clearQuickSearch()
+            launched = false
+        }
     }
 
     override fun getChooseVod(): Vod {
         return GlobalModel.chooseVod.value
+    }
+
+    override fun setDetail(vod: Vod) {
+        if (!currentSiteKey.equals(vod.site?.key)) {
+            SnackBar.postMsg(
+                "正在切换站源至 [${vod.site!!.name}]"
+            )
+        }
+        model.update { it.copy(detail = vod) }
     }
 }

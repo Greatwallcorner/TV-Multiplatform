@@ -32,6 +32,10 @@ data class Flag (
 
     }
 
+    fun isEmpty():Boolean{
+        return episodes.size == 0
+    }
+
     companion object{
         fun create(flag:String):Flag{
             val f = Flag()

@@ -23,17 +23,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
-import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
-import com.corner.catvodcore.config.api
 import com.corner.catvodcore.viewmodel.GlobalModel
-import com.corner.ui.decompose.SearchComponent
 import com.corner.ui.decompose.component.DefaultSearchComponentComponent
 import com.corner.ui.scene.RatioBtn
 import com.corner.ui.video.VideoItem
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 enum class SearchPageType {
     page,
@@ -42,7 +37,7 @@ enum class SearchPageType {
 
 @Composable
 fun SearchScene(component: DefaultSearchComponentComponent,onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
-    val model = component.models.subscribeAsState()
+    val model = component.model.subscribeAsState()
     var currentPage by remember { mutableStateOf(SearchPageType.page) }
     var keyword by remember { mutableStateOf("") }
     when(currentPage){
@@ -50,7 +45,7 @@ fun SearchScene(component: DefaultSearchComponentComponent,onClickItem: (Vod) ->
             keyword = s
             currentPage = SearchPageType.content
         })
-        SearchPageType.content -> SearchResult(model, keyword = keyword, onClickBack = { onClickBack() },
+        SearchPageType.content -> SearchResult(component, keyword = keyword, onClickBack = { onClickBack() },
             searching = model.value.isSearching.value){
             onClickItem(it)
         }
@@ -66,11 +61,12 @@ fun SearchScene(component: DefaultSearchComponentComponent,onClickItem: (Vod) ->
 //}
 
 @Composable
-private fun SearchResult(model:State<SearchComponent.Model>,
-                         keyword: String,
-                         onClickBack: () -> Unit,
-                         searching: Boolean,
-                         onClickItem:(Vod)->Unit) {
+private fun SearchResult(
+    component: DefaultSearchComponentComponent,
+    keyword: String,
+    onClickBack: () -> Unit,
+    searching: Boolean,
+    onClickItem:(Vod)->Unit) {
     var searchText by remember { mutableStateOf(keyword) }
     val result = remember { mutableStateOf(SiteViewModel.search) }
     var currentCollect by remember { mutableStateOf<Collect?>(SiteViewModel.search[0]) }
@@ -79,30 +75,9 @@ private fun SearchResult(model:State<SearchComponent.Model>,
     val adapter = rememberScrollbarAdapter(state)
 
     DisposableEffect(searchText) {
-        model.value.isSearching.value = true
-        model.value.cancelAndClearJobList()
-        SiteViewModel.clearSearch()
-        SiteViewModel.viewModelScope.launch {
-            SettingStore.addSearchHistory(keyword)
-            val searchableSites = api?.sites?.filter { it.searchable == 1 }
-            searchableSites?.forEach {
-                val job = model.value.searchScope.launch {
-                    SiteViewModel.searchContent(it, searchText, false)
-                }
-                job.invokeOnCompletion {
-                    currentVodList =
-                        SiteViewModel.search.find { it.isActivated().value }?.getList()?.toList()?.toMutableList()
-                }
-                model.value.jobList.add(job)
-            }
-            model.value.searchScope.coroutineContext[Job]?.children?.forEach { it.join() }
-            model.value.isSearching.value = false
-        }
-
+        component.search(searchText)
         onDispose {
-            SiteViewModel.clearSearch()
-            model.value.cancelAndClearJobList()
-            model.value.isSearching.value = false
+            component.clear()
         }
     }
     Box(modifier = Modifier.fillMaxSize()) {

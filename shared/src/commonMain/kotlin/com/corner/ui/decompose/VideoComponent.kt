@@ -12,6 +12,8 @@ interface VideoComponent {
 
     fun homeLoad()
 
+    fun loadMore()
+
     data class Model(
         var homeVodResult: MutableSet<Vod>? = null,
         var homeLoaded: Boolean = false,

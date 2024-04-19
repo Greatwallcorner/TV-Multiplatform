@@ -34,7 +34,7 @@ import com.corner.ui.scene.ExpandedText
 @Composable
 fun SearchPage(component: DefaultSearchComponentComponent, onClickBack: () -> Unit, onSearch: (String) -> Unit) {
     val focusRequester = remember { FocusRequester() }
-    val model = component.models.subscribeAsState()
+    val model = component.model.subscribeAsState()
 
     LaunchedEffect("focus") {
         focusRequester.requestFocus()
