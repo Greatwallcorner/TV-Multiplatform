@@ -14,6 +14,7 @@ import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy
 import ch.qos.logback.core.spi.ContextAwareBase
 import ch.qos.logback.core.util.FileSize
+import com.corner.bean.SettingStore
 import com.corner.catvodcore.util.Paths
 
 class TVLogConfigurator():ContextAwareBase(),Configurator {
@@ -22,9 +23,8 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
         println("log config")
         val ca = consoleAppender(context)
         val fa = fileAppender(context)
-        val rootLogger = context?.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-        rootLogger?.level = Level.DEBUG
-//        rootLogger?.level = Level.valueOf(getSettingItem("log") )
+        val rootLogger = context?.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
+        rootLogger?.level = Level.valueOf(SettingStore.getSettingItem("log") )
         rootLogger?.addAppender(ca)
         rootLogger?.addAppender(fa)
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY
@@ -33,7 +33,7 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
     private fun fileAppender(context: LoggerContext?): RollingFileAppender<ILoggingEvent> {
         val rf = RollingFileAppender<ILoggingEvent>()
         rf.context = context
-        rf.file = Paths.logPath() + "TV.log"
+        rf.file = Paths.logPath().resolve("TV.log").path
         rf.isAppend = true
         rf.isPrudent = true
         val triggeringPolicy = SizeBasedTriggeringPolicy<ILoggingEvent>()
@@ -62,7 +62,7 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
     }
 
     private fun consoleAppender(context: LoggerContext?): ConsoleAppender<ILoggingEvent> {
-        val ca = ConsoleAppender<ILoggingEvent>();
+        val ca = ConsoleAppender<ILoggingEvent>()
         ca.setContext(context)
         ca.setName("console")
         val encoder = LayoutWrappingEncoder<ILoggingEvent>()

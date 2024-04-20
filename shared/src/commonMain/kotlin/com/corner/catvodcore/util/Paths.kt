@@ -1,11 +1,25 @@
 package com.corner.catvodcore.util
 
+import com.corner.util.OperatingSystem
+import com.corner.util.UserDataDirProvider
 import java.io.File
 import java.nio.file.Path
 
 object Paths {
     private val runPath = System.getProperty("user.dir")
     private val classPath = System.getProperty("java.class.path")
+    private val ApplicationName = "TV-Multiplatform"
+
+    private val userDataDir = getUserDataDir()
+
+    private fun getUserDataDir() = run {
+        when (UserDataDirProvider.currentOs) {
+            OperatingSystem.Windows -> File(System.getenv("AppData"), "$ApplicationName/cache")
+            OperatingSystem.Linux -> File(System.getProperty("user.home"), ".cache/$ApplicationName")
+            OperatingSystem.MacOS -> File(System.getProperty("user.home"), "Library/Caches/$ApplicationName")
+            OperatingSystem.Unknown -> throw RuntimeException("未知操作系统")
+        }
+    }
 
     private fun File.check():File{
         if (!exists()) {
@@ -14,19 +28,24 @@ object Paths {
         return this
     }
 
-    fun root():String{
-        return runPath + "/data"
-    }
-    fun doh(): File {
-        return File(cache( "doh")).check()
+    fun root():File{
+        return File(runPath).resolve("data")
     }
 
-    private fun cache(path: String): String {
-        return root() +File.separator+ "cache" + File.separator + path
+    fun userDataRoot():File{
+        return userDataDir
+    }
+
+    fun doh(): File {
+        return cache( "doh").check()
+    }
+
+    private fun cache(path: String): File {
+        return root().resolve("cache").resolve(path)
     }
 
     fun db():String{
-        val path = File(root() + File.separator + "db").check().path.plus( File.separator + "db.db")
+        val path = userDataRoot().resolve("db").check().resolve("db.db")
         return "jdbc:sqlite:${path}"
     }
 
@@ -36,7 +55,7 @@ object Paths {
     }
 
     fun jar(): File {
-        return File(cache("jar")).check()
+        return cache("jar").check()
     }
 
     fun jar(fileName:String):File{
@@ -54,19 +73,19 @@ object Paths {
     }
 
     fun picCache(): File {
-        return File(cache("pic")).check()
+        return cache("pic").check()
     }
 
     fun setting(): Path {
-        val file = File(root()).check().resolve("setting.ini")
+        val file = userDataRoot().check().resolve("setting.ini")
         return file.toPath()
     }
 
     fun log(): File {
-        return File(root()).check().resolve("log.txt ")
+        return root().check().resolve("log.txt")
     }
 
-    fun logPath():String{
-        return root().plus("${File.separator}log")
+    fun logPath():File{
+        return root().resolve("log")
     }
 }

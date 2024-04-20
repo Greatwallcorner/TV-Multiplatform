@@ -177,6 +177,7 @@ fun DialogEdit(
                                 return@launch
                             }
                             SettingStore.setValue(SettingType.LOG, textFieldValue!!)
+                            SnackBar.postMsg("重启生效")
                         }
                     }
                 }.invokeOnCompletion {

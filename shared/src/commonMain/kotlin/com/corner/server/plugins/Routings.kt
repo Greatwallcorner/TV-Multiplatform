@@ -3,7 +3,7 @@ package com.corner.server.plugins
 import com.corner.server.logic.multiThreadDownload
 import com.corner.server.logic.proxy
 import com.corner.ui.scene.SnackBar
-import com.corner.util.Utils.toSingleValueMap
+import com.corner.util.toSingleValueMap
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
@@ -32,7 +32,7 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.MultiStatus, "消息不可为空")
                 return@get
             }
-            SnackBar.postMsg(msg!!);
+            SnackBar.postMsg(msg!!)
         }
 
         /**

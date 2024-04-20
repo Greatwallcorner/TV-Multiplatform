@@ -12,7 +12,7 @@ import com.corner.catvodcore.config.api
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.scene.SnackBar
-import com.corner.util.Utils.cancelAll
+import com.corner.util.cancelAll
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import org.apache.commons.lang3.StringUtils
