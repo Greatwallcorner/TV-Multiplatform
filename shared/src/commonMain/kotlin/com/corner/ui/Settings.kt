@@ -2,7 +2,12 @@ package com.corner.ui
 
 import AppTheme
 import SiteViewModel
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideIn
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -10,16 +15,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.Setting
@@ -32,9 +41,13 @@ import com.corner.init.initConfig
 import com.corner.ui.decompose.component.DefaultSettingComponent
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.Dialog
+import com.corner.ui.scene.HoverableText
 import com.corner.ui.scene.SnackBar
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jsoup.internal.StringUtil
+import java.awt.Desktop
+import java.net.URI
 import java.util.*
 
 @Composable
@@ -65,6 +78,7 @@ fun SettingItem(modifier: Modifier, label: String, value: String?, onClick: () -
 fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
     var showEditDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
     var currentChoose by remember { mutableStateOf<Setting?>(null) }
     DisposableEffect("setting") {
         component.sync()
@@ -73,9 +87,9 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
         }
     }
 
-    DisposableEffect(model.value.settingList){
+    DisposableEffect(model.value.settingList) {
         println("settingList 修改")
-        onDispose {  }
+        onDispose { }
     }
 
     Box(
@@ -90,6 +104,7 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
+//                IconButton(modifier = Modifier.align(Alignment.End), onClick = {showAboutDialog = true}){ Icon(Icons.Default.Info, "About", tint = MaterialTheme.colorScheme.onSecondary) }
             }
             LazyColumn {
                 items(model.value.settingList) {
@@ -102,6 +117,12 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                 }
             }
         }
+        Surface(Modifier.align(Alignment.BottomCenter).padding(bottom = 15.dp)) {
+            HoverableText("关于", style = MaterialTheme.typography.displayMedium) {
+                showAboutDialog = true
+            }
+        }
+        AboutDialog(Modifier.fillMaxSize(0.4f), showAboutDialog) { showAboutDialog = false }
         DialogEdit(showEditDialog, onClose = { showEditDialog = false }, currentChoose = currentChoose) {
             component.sync()
         }
@@ -188,6 +209,94 @@ fun DialogEdit(
                 Text("确认")
             }
         }
+    }
+}
+
+@Composable
+fun AboutDialog(modifier: Modifier, showAboutDialog: Boolean, onClose: () -> Unit) {
+    var visible by remember { mutableStateOf(false) }
+    Dialog(modifier, showAboutDialog,
+        onClose = {
+            visible = false
+            onClose()
+        }) {
+        LaunchedEffect(Unit) {
+            delay(500)
+            visible = true
+        }
+        Box(modifier.padding(20.dp).fillMaxSize()) {
+            Column(Modifier.fillMaxSize()) {
+                AnimatedVisibility(
+                    modifier = Modifier.fillMaxWidth(),
+                    visible = visible,
+                    enter = fadeIn() + slideIn(animationSpec = tween(800), initialOffset = {i -> IntOffset(0, -20) })
+                ) {
+                    Column {
+                        Image(
+                            painter = painterResource("avatar.png"),
+                            contentDescription = "avatar",
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.padding(8.dp)
+                                .size(100.dp)
+                                .align(Alignment.CenterHorizontally)
+                                .clip(RoundedCornerShape(50))
+                        )
+                        AboutItem("作者", Modifier.align(Alignment.CenterHorizontally)) {
+                            HoverableText("Greatwallcorner") {
+                                openBrowser("https://github.com/Greatwallcorner")
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.size(25.dp))
+                OutlinedButton(
+                    onClick = { openBrowser("https://t.me/tv_multiplatform") },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text("TG讨论群")
+                }
+            }
+            Row(Modifier.align(Alignment.BottomCenter).padding(vertical = 15.dp)) {
+                Icon(
+                    Icons.Default.Code,
+                    "source code",
+                    modifier = Modifier.padding(5.dp).align(Alignment.CenterVertically)
+                )
+                HoverableText("源代码") {
+                    openBrowser("https://github.com/Greatwallcorner/TV-Multiplatform")
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun previewAboutDialog() {
+    AppTheme {
+        AboutDialog(Modifier, true) {}
+    }
+}
+
+fun openBrowser(url: String) {
+    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+        Desktop.getDesktop().browse(URI(url))
+    }
+}
+
+@Composable
+fun AboutItem(title: String, modifier: Modifier, content: @Composable (Modifier) -> Unit) {
+    Row(modifier.padding(vertical = 5.dp, horizontal = 15.dp)) {
+        Text(
+            title,
+            style = MaterialTheme.typography.titleMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold
+            ),
+            modifier = Modifier.align(Alignment.CenterVertically).padding(end = 5.dp)
+        )
+        content(Modifier.align(Alignment.CenterVertically))
     }
 }
 
