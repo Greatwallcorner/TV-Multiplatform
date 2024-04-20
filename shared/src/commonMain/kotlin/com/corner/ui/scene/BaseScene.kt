@@ -1,13 +1,17 @@
 package com.corner.ui.scene
 
 import AppTheme
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,8 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.corner.catvodcore.enum.Menu
@@ -106,12 +113,16 @@ fun MenuItem(
  */
 @Composable
 fun Dialog(modifier: Modifier, showDialog: Boolean, onClose: () -> Unit, content: @Composable () -> Unit) {
-    if (showDialog) {
+    AnimatedVisibility(
+        visible = showDialog,
+        enter = scaleIn() + fadeIn(spring()),
+        exit = scaleOut() + fadeOut(spring())
+    ) {
         val interactionSource = remember { MutableInteractionSource() }
 
         Box(
             modifier = Modifier.fillMaxSize()
-                .background(Color.Black.copy(0.6f))
+//                .background(Color.Black.copy(0.6f))
                 .clickable(interactionSource = interactionSource, indication = null, onClick = {
                     onClose()
                 })
@@ -159,6 +170,29 @@ fun ToolTipText(text: String, textStyle: TextStyle) {
     }
 }
 
+
+@Composable
+fun HoverableText(text: String, style: TextStyle = TextStyle(), onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    val spanStyle = SpanStyle(
+        color = if (isHovered) Color.Red else MaterialTheme.colorScheme.primary,
+        textDecoration = if (isHovered) TextDecoration.Underline else TextDecoration.None
+    )
+
+    ClickableText(
+        text = AnnotatedString(text = text, spanStyle = spanStyle),
+        onClick = { offset ->
+            // Handle click event
+            onClick()
+        },
+        style = style,
+        modifier = Modifier
+            .padding(8.dp)
+            .background(Color.Transparent)
+            .hoverable(interactionSource, true)
+    )
+}
 
 @Preview
 @Composable

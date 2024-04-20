@@ -98,6 +98,7 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VideoScene(
     component: DefaultVideoComponent,
@@ -142,13 +143,15 @@ fun VideoScene(
     ) {
         Box(modifier = modifier.fillMaxSize().padding(it)) {
             if (model.value.homeVodResult?.isEmpty() == true) {
-                Text("这里什么都没有...")
-                Image(
-                    modifier = modifier.align(Alignment.Center),
-                    painter = painterResource("nothing.png"),
-                    contentDescription = "nothing here",
-                    contentScale = ContentScale.Crop
-                )
+                Column {
+                    Image(
+                        modifier = modifier.align(Alignment.CenterHorizontally),
+                        painter = painterResource("nothing.png"),
+                        contentDescription = "nothing here",
+                        contentScale = ContentScale.Crop
+                    )
+                    Text("这里什么都没有...", modifier.align(Alignment.CenterHorizontally))
+                }
             } else {
                 Column {
                     if (model.value.classList.isNotEmpty()) {
@@ -170,7 +173,7 @@ fun VideoScene(
                         userScrollEnabled = true
                     ) {
                         itemsIndexed(model.value.homeVodResult?.toList() ?: listOf()) { _, item ->
-                            VideoItem(Modifier, item, false) {
+                            VideoItem(Modifier.animateItemPlacement(), item, false) {
                                 if (item.isFolder()) {
                                     SiteViewModel.viewModelScope.launch {
 
