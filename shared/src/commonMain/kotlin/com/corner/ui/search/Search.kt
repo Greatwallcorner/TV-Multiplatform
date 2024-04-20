@@ -67,10 +67,12 @@ private fun SearchResult(
     onClickBack: () -> Unit,
     searching: Boolean,
     onClickItem:(Vod)->Unit) {
+    val model = component.model.subscribeAsState()
     var searchText by remember { mutableStateOf(keyword) }
     val result = remember { mutableStateOf(SiteViewModel.search) }
     var currentCollect by remember { mutableStateOf<Collect?>(SiteViewModel.search[0]) }
-    var currentVodList by remember { mutableStateOf(SiteViewModel.search[0].getList()) }
+    val currentVodList by rememberUpdatedState(model.value.currentVodList)
+
     val state = rememberLazyGridState()
     val adapter = rememberScrollbarAdapter(state)
 
@@ -123,7 +125,7 @@ private fun SearchResult(
                             text = item.getSite()?.name ?: "",
                             onClick = {
                                 currentCollect = item
-                                currentVodList = item.getList()
+                                component.onClickCollection(item)
                                 result.value.forEach { i ->
                                     i.setActivated(i.getSite()?.key == item.getSite()?.key)
                                 }
@@ -133,7 +135,7 @@ private fun SearchResult(
                     }
                 }
                 Box(modifier = Modifier.fillMaxSize()) {
-                    if (currentVodList?.isEmpty() == true) {
+                    if (currentVodList.isEmpty()) {
                         Image(
                             modifier = Modifier.align(Alignment.Center),
                             painter = painterResource("nothing.png"),
@@ -150,7 +152,7 @@ private fun SearchResult(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             userScrollEnabled = true
                         ) {
-                            itemsIndexed(currentVodList ?: listOf()) { _, item ->
+                            itemsIndexed(currentVodList) { _, item ->
                                 VideoItem(Modifier, item, true) {
                                     GlobalModel.chooseVod.value = it
                                     onClickItem(it)

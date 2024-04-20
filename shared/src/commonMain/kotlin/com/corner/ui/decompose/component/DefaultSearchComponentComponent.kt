@@ -7,6 +7,7 @@ import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.backhandler.BackHandlerOwner
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingStore.getHistoryList
+import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.config.api
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.SearchComponent
@@ -33,7 +34,7 @@ class DefaultSearchComponentComponent(componentContext: ComponentContext):Search
         SiteViewModel.clearSearch()
         SiteViewModel.viewModelScope.launch {
             SettingStore.addSearchHistory(searchText)
-            val searchableSites = api?.sites?.filter { it.searchable == 1 }
+            val searchableSites = api?.sites?.filter { it.searchable == 1 }?.shuffled()
             searchableSites?.forEach {
                 val job = model.value.searchScope.launch {
                     SiteViewModel.searchContent(it, searchText, false)
@@ -57,6 +58,11 @@ class DefaultSearchComponentComponent(componentContext: ComponentContext):Search
         SiteViewModel.clearSearch()
         model.value.cancelAndClearJobList()
         model.value.isSearching.value = false
+    }
+
+    override fun onClickCollection(item: Collect) {
+        model.update { it.copy(currentVodList = CopyOnWriteArrayList(item.getList())) }
+
     }
 
 }

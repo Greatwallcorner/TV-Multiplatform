@@ -8,7 +8,7 @@ import kotlin.math.max
 
 class Collect{
     private var activated = mutableStateOf(false)
-    private var list: MutableList<Vod>? = null
+    private var list: MutableList<Vod> = mutableListOf()
     private var site: Site? = null
     private var page = 0
 
@@ -21,7 +21,7 @@ class Collect{
         return site
     }
 
-    fun getList(): MutableList<Vod>? {
+    fun getList(): MutableList<Vod> {
         return list
     }
 
