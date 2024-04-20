@@ -118,7 +118,7 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
             }
         }
         Surface(Modifier.align(Alignment.BottomCenter).padding(bottom = 15.dp)) {
-            HoverableText("关于", style = MaterialTheme.typography.displayMedium) {
+            HoverableText("关于", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)) {
                 showAboutDialog = true
             }
         }
@@ -229,7 +229,7 @@ fun AboutDialog(modifier: Modifier, showAboutDialog: Boolean, onClose: () -> Uni
                 AnimatedVisibility(
                     modifier = Modifier.fillMaxWidth(),
                     visible = visible,
-                    enter = fadeIn() + slideIn(animationSpec = tween(800), initialOffset = {i -> IntOffset(0, -20) })
+                    enter = fadeIn() + slideIn(animationSpec = tween(800), initialOffset = { i -> IntOffset(0, -20) })
                 ) {
                     Column {
                         Image(
@@ -250,21 +250,24 @@ fun AboutDialog(modifier: Modifier, showAboutDialog: Boolean, onClose: () -> Uni
                 }
 
                 Spacer(modifier = Modifier.size(25.dp))
+            }
+            Column(Modifier.align(Alignment.BottomCenter)) {
                 OutlinedButton(
                     onClick = { openBrowser("https://t.me/tv_multiplatform") },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text("TG讨论群")
                 }
-            }
-            Row(Modifier.align(Alignment.BottomCenter).padding(vertical = 15.dp)) {
-                Icon(
-                    Icons.Default.Code,
-                    "source code",
-                    modifier = Modifier.padding(5.dp).align(Alignment.CenterVertically)
-                )
-                HoverableText("源代码") {
-                    openBrowser("https://github.com/Greatwallcorner/TV-Multiplatform")
+
+                Row(Modifier.align(Alignment.CenterHorizontally).padding(vertical = 15.dp)) {
+                    Icon(
+                        Icons.Default.Code,
+                        "source code",
+                        modifier = Modifier.padding(5.dp).align(Alignment.CenterVertically)
+                    )
+                    HoverableText("源代码") {
+                        openBrowser("https://github.com/Greatwallcorner/TV-Multiplatform")
+                    }
                 }
             }
         }
