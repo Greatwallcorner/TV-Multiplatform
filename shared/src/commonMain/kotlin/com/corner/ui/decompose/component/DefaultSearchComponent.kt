@@ -16,7 +16,8 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CopyOnWriteArrayList
 
-class DefaultSearchComponentComponent(componentContext: ComponentContext):SearchComponent, ComponentContext by componentContext, BackHandlerOwner {
+class DefaultSearchComponent(componentContext: ComponentContext):SearchComponent, ComponentContext by componentContext, BackHandlerOwner {
+    private var searchedText: String = ""
 
     private val log = LoggerFactory.getLogger("Search")
 
@@ -29,12 +30,18 @@ class DefaultSearchComponentComponent(componentContext: ComponentContext):Search
 
     override fun search(searchText:String) {
         log.info("开始搜索：{}", searchText)
-        model.value.isSearching.value = true
+        if(searchedText == searchText) {
+            log.debug("已经搜索过：{}，忽略", searchText)
+            return
+        }
+        searchedText = searchText
+        model.update { it.copy(isSearching = true) }
         model.value.cancelAndClearJobList()
         SiteViewModel.clearSearch()
         SiteViewModel.viewModelScope.launch {
             SettingStore.addSearchHistory(searchText)
             val searchableSites = api?.sites?.filter { it.searchable == 1 }?.shuffled()
+            log.info("站源：{}", searchableSites?.map { it.name })
             searchableSites?.forEach {
                 val job = model.value.searchScope.launch {
                     SiteViewModel.searchContent(it, searchText, false)
@@ -49,7 +56,7 @@ class DefaultSearchComponentComponent(componentContext: ComponentContext):Search
                 model.value.jobList.add(job)
             }
             model.value.searchScope.coroutineContext[Job]?.children?.forEach { it.join() }
-            model.value.isSearching.value = false
+            model.update { it.copy(isSearching = false) }
         }
     }
 
@@ -57,7 +64,7 @@ class DefaultSearchComponentComponent(componentContext: ComponentContext):Search
         log.info("清空工作区")
         SiteViewModel.clearSearch()
         model.value.cancelAndClearJobList()
-        model.value.isSearching.value = false
+        model.update { it.copy(isSearching = false) }
     }
 
     override fun onClickCollection(item: Collect) {

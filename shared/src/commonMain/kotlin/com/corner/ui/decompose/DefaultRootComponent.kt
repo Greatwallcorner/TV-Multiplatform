@@ -22,7 +22,6 @@ class DefaultRootComponent(componentContext: ComponentContext): RootComponent, C
     override val childStack: Value<ChildStack<*, RootComponent.Child>>
         get() = stack
 
-    private var chooseVod:Vod? = null
 
 //    private val dialogSlotNavigation = SlotNavigation<DialogConfig>()
 //
@@ -60,8 +59,9 @@ class DefaultRootComponent(componentContext: ComponentContext): RootComponent, C
 //        dialogSlotNavigation.activate(DialogConfig.HomeChooseDialog)
     }
 
-    override fun showDetail(vod: Vod) {
+    override fun showDetail(vod: Vod, fromSearch:Boolean) {
         GlobalModel.chooseVod.value = vod
+        GlobalModel.detailFromSearch = fromSearch
         navigation.bringToFront(Config.Detail)
     }
 
@@ -72,8 +72,8 @@ class DefaultRootComponent(componentContext: ComponentContext): RootComponent, C
     private fun child(config: Config, componentContext: ComponentContext): RootComponent.Child =
         when (config) {
             is Config.Video -> RootComponent.Child.VideoChild(DefaultVideoComponent(componentContext))
-            is Config.Search -> RootComponent.Child.SearchChild(DefaultSearchComponentComponent(componentContext))
-            is Config.History -> RootComponent.Child.HistoryChild(DefaultHistoryComponentComponent(componentContext))
+            is Config.Search -> RootComponent.Child.SearchChild(DefaultSearchPagesComponent(componentContext))
+            is Config.History -> RootComponent.Child.HistoryChild(DefaultHistoryComponent(componentContext))
             is Config.Setting -> RootComponent.Child.SettingChild(DefaultSettingComponent(componentContext))
             is Config.Detail -> RootComponent.Child.DetailChild(DefaultDetailComponent(componentContext))
         }
@@ -95,10 +95,4 @@ private sealed interface Config{
 
     @Serializable
     data object Detail:Config
-}
-
-sealed interface DialogConfig{
-    data object DetailDialog:DialogConfig
-
-    data object HomeChooseDialog:DialogConfig
 }

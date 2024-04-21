@@ -15,6 +15,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import cn.hutool.core.util.SystemPropsUtil
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.jetbrains.lifecycle.LifecycleController
@@ -37,6 +38,7 @@ private val log = LoggerFactory.getLogger("main")
 @OptIn(ExperimentalDecomposeApi::class)
 fun main(){
     launchErrorCatcher()
+    printSystemInfo()
     application {
         val lifecycle = LifecycleRegistry()
         val root = SwingUtil.runOnUiThread {
@@ -74,6 +76,25 @@ fun main(){
                 }
             }
         }
+    }
+}
+
+fun printSystemInfo() {
+    val s = StringBuilder("\n")
+    getSystemPropAndAppend("java.version", s)
+    getSystemPropAndAppend("java.home", s)
+    getSystemPropAndAppend("os.name", s)
+    getSystemPropAndAppend("os.arch", s)
+    getSystemPropAndAppend("os.version", s)
+    getSystemPropAndAppend("user.dir", s)
+    getSystemPropAndAppend("user.home", s)
+    log.info("系统信息：{}", s.toString())
+}
+
+private fun getSystemPropAndAppend(key:String, s:StringBuilder){
+    val v = SystemPropsUtil.get(key)
+    if(v.isNotBlank()){
+        s.append(key).append(":").append(v).append("\n")
     }
 }
 

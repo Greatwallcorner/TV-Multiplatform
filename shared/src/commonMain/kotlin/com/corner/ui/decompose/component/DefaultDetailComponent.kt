@@ -4,6 +4,7 @@ import SiteViewModel
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.update
+import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
 import com.corner.catvodcore.bean.Episode
@@ -37,31 +38,52 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     private val jobList = mutableListOf<Job>()
 
+    private var fromSearchLoadJob:Job = Job()
+
     override val model: MutableValue<DetailComponent.Model> = _model
+
+    init {
+        lifecycle.subscribe(object : Lifecycle.Callbacks {
+            override fun onStop() {
+                log.info("Detail onStop")
+                fromSearchLoadJob.cancel("on stop")
+                super.onStop()
+            }
+        })
+    }
 
 
     override fun load() {
         val chooseVod = getChooseVod()
         currentSiteKey.value = chooseVod.site?.key ?: ""
         SiteViewModel.viewModelScope.launch {
-            val dt = SiteViewModel.detailContent(chooseVod.site?.key ?: "", chooseVod.vodId)
-            if (dt == null || dt.detailIsEmpty()) {
-                quickSearch()
-            } else {
-                var detail = dt.list[0]
-                detail =
-                    detail.copy(subEpisode = detail.currentFlag?.episodes?.getPage(detail.currentTabIndex))
-                if (StringUtils.isNotBlank(getChooseVod().vodRemarks)) {
-                    for (it: Episode in detail.subEpisode ?: listOf()) {
-                        if (it.name.equals(getChooseVod().vodRemarks)) {
-                            it.activated = true
-                            break
+            if(GlobalModel.detailFromSearch){
+                val list = SiteViewModel.getSearchResultActive().getList()
+                model.update { it.copy(quickSearchResult = CopyOnWriteArrayList(list), detail = list.first()) }
+                fromSearchLoadJob = SiteViewModel.viewModelScope.launch {
+                    if(model.value.quickSearchResult.isNotEmpty()) loadDetail(model.value.quickSearchResult[0])
+                }
+            }else{
+                val dt = SiteViewModel.detailContent(chooseVod.site?.key ?: "", chooseVod.vodId)
+                if (dt == null || dt.detailIsEmpty()) {
+                    quickSearch()
+                } else {
+                    var detail = dt.list[0]
+                    detail =
+                        detail.copy(subEpisode = detail.currentFlag?.episodes?.getPage(detail.currentTabIndex))
+                    if (StringUtils.isNotBlank(getChooseVod().vodRemarks)) {
+                        for (it: Episode in detail.subEpisode ?: listOf()) {
+                            if (it.name.equals(getChooseVod().vodRemarks)) {
+                                it.activated = true
+                                break
+                            }
                         }
                     }
+                    detail.site = getChooseVod().site
+                    model.update { it.copy(detail = detail) }
                 }
-                detail.site = getChooseVod().site
-                model.update { it.copy(detail = detail) }
             }
+            //
         }
     }
 
@@ -124,7 +146,6 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             first.site = vod.site
             setDetail(first)
             launched = false
-//        searchScope.cancel("已找到可用站源${detail?.site?.name}")
             supervisor.cancelChildren()
             jobList.cancelAll().clear()
         }

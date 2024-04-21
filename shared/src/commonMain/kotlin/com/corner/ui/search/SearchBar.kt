@@ -1,7 +1,7 @@
 package com.corner.ui.search
 
 import SiteViewModel
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.*
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -85,18 +85,11 @@ fun SearchBar(
             }
         },
         shape = RoundedCornerShape(50),
-        placeholder = {
-//            Box{
-//                Text(
-//                    "请输入",
-//                    modifier = Modifier.align(Alignment.Center),
-////                    fontSize = TextUnit(12f, TextUnitType.Sp)
-//                )
-//            }
-        },
         value = searchText,
         leadingIcon = {
-            if (isSearching) {
+            AnimatedVisibility(visible = isSearching,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut()){
                 CircularProgressIndicator(
                     modifier = Modifier.fillMaxHeight(),
 //                    color = MaterialTheme.colors.secondary,

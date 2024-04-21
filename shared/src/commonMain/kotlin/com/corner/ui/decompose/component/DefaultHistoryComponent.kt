@@ -8,7 +8,7 @@ import com.corner.database.Db
 import com.corner.database.History
 import com.corner.ui.decompose.HistoryComponent
 
-class DefaultHistoryComponentComponent(componentContext: ComponentContext):HistoryComponent, ComponentContext by componentContext {
+class DefaultHistoryComponent(componentContext: ComponentContext):HistoryComponent, ComponentContext by componentContext {
     private val _model = MutableValue(HistoryComponent.Model(
         emptyList<History>().toMutableList()
     ))

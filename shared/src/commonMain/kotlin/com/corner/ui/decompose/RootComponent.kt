@@ -3,8 +3,8 @@ package com.corner.ui.decompose
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.value.Value
 import com.corner.catvod.enum.bean.Vod
-import com.corner.ui.decompose.component.DefaultHistoryComponentComponent
-import com.corner.ui.decompose.component.DefaultSearchComponentComponent
+import com.corner.ui.decompose.component.DefaultHistoryComponent
+import com.corner.ui.decompose.component.DefaultSearchPagesComponent
 import com.corner.ui.decompose.component.DefaultSettingComponent
 import com.corner.ui.decompose.component.DefaultVideoComponent
 
@@ -21,7 +21,7 @@ interface RootComponent{
 
     fun showChooseHomeDialog()
 
-    fun showDetail(vod: Vod)
+    fun showDetail(vod: Vod, fromSearch:Boolean = false)
 
 
     fun onClickBack()
@@ -30,9 +30,9 @@ interface RootComponent{
     sealed class Child{
         class VideoChild(val component:DefaultVideoComponent):Child()
 
-        class SearchChild(val component: DefaultSearchComponentComponent):Child()
+        class SearchChild(val component: DefaultSearchPagesComponent):Child()
 
-        class HistoryChild(val component: DefaultHistoryComponentComponent):Child()
+        class HistoryChild(val component: DefaultHistoryComponent):Child()
 
         class SettingChild(val component: DefaultSettingComponent):Child()
 

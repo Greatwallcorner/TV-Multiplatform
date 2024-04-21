@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.HotData
-import com.corner.ui.decompose.component.DefaultSearchComponentComponent
+import com.corner.ui.decompose.component.DefaultSearchPageComponent
 import com.corner.ui.scene.ExpandedText
 
 /**
@@ -32,7 +32,7 @@ import com.corner.ui.scene.ExpandedText
  *热门推荐
  */
 @Composable
-fun SearchPage(component: DefaultSearchComponentComponent, onClickBack: () -> Unit, onSearch: (String) -> Unit) {
+fun SearchPage(component: DefaultSearchPageComponent, onClickBack: () -> Unit, onSearch: (String) -> Unit) {
     val focusRequester = remember { FocusRequester() }
     val model = component.model.subscribeAsState()
 

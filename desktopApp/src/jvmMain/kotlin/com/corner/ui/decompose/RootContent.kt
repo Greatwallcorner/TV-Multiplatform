@@ -60,7 +60,7 @@ fun WindowScope.RootContent(component: RootComponent, modifier: Modifier = Modif
                             Menu.HISTORY -> component.onClickHistory()
                         }
                     }
-                    is RootComponent.Child.SearchChild -> SearchScene(child.component, {component.showDetail(it)}){component.onClickBack()}
+                    is RootComponent.Child.SearchChild -> SearchScene(child.component, {component.showDetail(it, true)}){component.onClickBack()}
                     is RootComponent.Child.HistoryChild -> HistoryScene(child.component, {component.showDetail(it)}){component.onClickBack()}
                     is RootComponent.Child.SettingChild -> SettingScene(child.component){component.onClickBack()}
                     is RootComponent.Child.DetailChild -> DetailScene(child.component){component.onClickBack()}

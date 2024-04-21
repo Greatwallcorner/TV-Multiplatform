@@ -83,7 +83,7 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.weight(0.3f)) {
                         AutoSizeImage(
-                            modifier = Modifier.clip(RoundedCornerShape(8.dp)),
+                            modifier = Modifier.clip(RoundedCornerShape(8.dp)).fillMaxHeight(0.4f),
                             url = detail?.vodPic!!,
                             contentDescription = detail?.vodName,
                             contentScale = ContentScale.Crop,

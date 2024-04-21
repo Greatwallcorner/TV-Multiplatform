@@ -30,7 +30,7 @@ import com.corner.catvod.enum.bean.Vod
 import com.corner.database.Db
 import com.corner.database.History
 import com.corner.database.repository.buildVod
-import com.corner.ui.decompose.component.DefaultHistoryComponentComponent
+import com.corner.ui.decompose.component.DefaultHistoryComponent
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
@@ -86,11 +86,9 @@ fun HistoryItem(
 }
 
 @Composable
-fun HistoryScene(component: DefaultHistoryComponentComponent, onClickItem:(Vod)->Unit, onClickBack: () -> Unit) {
+fun HistoryScene(component: DefaultHistoryComponent, onClickItem:(Vod)->Unit, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
     var chooseHistory by remember { mutableStateOf<History?>(null) }
-    var vod by remember { mutableStateOf<Vod?>(null) }
-    var showDetailDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         showProgress()
         SiteViewModel.viewModelScope.launch {

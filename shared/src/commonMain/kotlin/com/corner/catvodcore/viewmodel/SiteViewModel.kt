@@ -41,6 +41,10 @@ object SiteViewModel {
     private val supervisorJob = SupervisorJob()
     val viewModelScope = CoroutineScope(Dispatchers.Default + supervisorJob)
 
+    fun getSearchResultActive():Collect{
+        return search.filter { it.isActivated().value }.first()
+    }
+
     fun homeContent(): Result {
         val site: Site = GlobalModel.home.value
         result.value = Result()
@@ -260,11 +264,11 @@ object SiteViewModel {
         if(quick){
             quickSearch.add(Collect.create(result.list))
             // 同样的数据添加到全部
-            quickSearch.get(0).getList()?.addAll(result.list)
+            quickSearch.get(0).getList().addAll(result.list)
         }else{
             search.add(Collect.create(result.list))
             // 同样的数据添加到全部
-            search.get(0).getList()?.addAll(result.list)
+            search.get(0).getList().addAll(result.list)
         }
     }
 

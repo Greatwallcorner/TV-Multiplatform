@@ -21,11 +21,9 @@ sealed interface Cache{
 @Serializable
 class SearchHistoryCache:Cache{
 
-    private val maxSize:Int = 30;
+    private val maxSize:Int = 30
 
     private var searchHistoryList:MutableSet<String> = mutableSetOf()
-//    @Contextual
-//    private val searchHistoryList:ArrayDeque<String> = ArrayDeque<String>()
     override fun getName(): String {
         return "searchHistory"
     }
@@ -75,7 +73,7 @@ object SettingStore {
     }
 
     fun getSettingList(): MutableList<Setting> {
-        if (settingFile.list.isNullOrEmpty()) {
+        if (settingFile.list.isEmpty()) {
             initSetting()
         }
         return settingFile.list
@@ -130,7 +128,9 @@ object SettingStore {
     fun addSearchHistory(s: String){
         val cache = getCache(SettingType.SEARCHHISTORY.id)
         if(cache == null) settingFile.cache[SettingType.SEARCHHISTORY.id] = SearchHistoryCache()
-        getCache(SettingType.SEARCHHISTORY.id)!!.add(s)
-        write()
+        if(s.trim().isNotBlank()){
+            getCache(SettingType.SEARCHHISTORY.id)!!.add(s)
+            write()
+        }
     }
 }

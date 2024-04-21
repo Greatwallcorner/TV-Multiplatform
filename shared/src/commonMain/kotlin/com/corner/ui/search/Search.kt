@@ -22,11 +22,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.ExperimentalDecomposeApi
+import com.arkivanov.decompose.extensions.compose.jetbrains.pages.Pages
+import com.arkivanov.decompose.extensions.compose.jetbrains.pages.PagesScrollAnimation
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.viewmodel.GlobalModel
-import com.corner.ui.decompose.component.DefaultSearchComponentComponent
+import com.corner.ui.decompose.component.DefaultSearchComponent
+import com.corner.ui.decompose.component.DefaultSearchPageComponent
+import com.corner.ui.decompose.component.DefaultSearchPagesComponent
 import com.corner.ui.scene.RatioBtn
 import com.corner.ui.video.VideoItem
 
@@ -35,20 +40,30 @@ enum class SearchPageType {
     content
 }
 
+@OptIn(ExperimentalDecomposeApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun SearchScene(component: DefaultSearchComponentComponent,onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
+fun SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
-    var currentPage by remember { mutableStateOf(SearchPageType.page) }
-    var keyword by remember { mutableStateOf("") }
-    when(currentPage){
-        SearchPageType.page -> SearchPage(component, onClickBack = { onClickBack() }, onSearch = { s ->
-            keyword = s
-            currentPage = SearchPageType.content
-        })
-        SearchPageType.content -> SearchResult(component, keyword = keyword, onClickBack = { onClickBack() },
-            searching = model.value.isSearching.value){
-            onClickItem(it)
-        }
+
+    Pages(
+        component.pages,
+        onPageSelected = component::selectPage,
+        modifier = Modifier.fillMaxSize(),
+        scrollAnimation = PagesScrollAnimation.Default
+    ) { _, p ->
+            when (p) {
+                is DefaultSearchComponent -> SearchResult(
+                    p, keyword = model.value.keyword, onClickBack = { onClickBack()  },
+                ) {
+                    onClickItem(it)
+                }
+
+                is DefaultSearchPageComponent -> SearchPage(p, onClickBack = {
+                    onClickBack()
+                }, onSearch = { s ->
+                    component.onSearch(s)
+                })
+            }
     }
 }
 
@@ -62,11 +77,11 @@ fun SearchScene(component: DefaultSearchComponentComponent,onClickItem: (Vod) ->
 
 @Composable
 private fun SearchResult(
-    component: DefaultSearchComponentComponent,
+    component: DefaultSearchComponent,
     keyword: String,
     onClickBack: () -> Unit,
-    searching: Boolean,
-    onClickItem:(Vod)->Unit) {
+    onClickItem: (Vod) -> Unit
+) {
     val model = component.model.subscribeAsState()
     var searchText by remember { mutableStateOf(keyword) }
     val result = remember { mutableStateOf(SiteViewModel.search) }
@@ -79,7 +94,6 @@ private fun SearchResult(
     DisposableEffect(searchText) {
         component.search(searchText)
         onDispose {
-            component.clear()
         }
     }
     Box(modifier = Modifier.fillMaxSize()) {
@@ -93,7 +107,11 @@ private fun SearchResult(
                 IconButton(
                     modifier = Modifier.align(Alignment.CenterVertically)
                         .padding(start = 20.dp, end = 20.dp),
-                    onClick = { onClickBack() }
+                    onClick = {
+                        component.clear()
+                        onClickBack()
+                    }
+
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -107,7 +125,7 @@ private fun SearchResult(
                     keyword,
                     onSearch = { s ->
                         searchText = s
-                    }, searching
+                    }, model.value.isSearching
                 )
                 Spacer(Modifier.size(20.dp))
             }

@@ -9,5 +9,6 @@ import com.corner.catvod.enum.bean.Vod
 object GlobalModel {
     val hotList = MutableValue(listOf<HotData>())
     val chooseVod = mutableStateOf<Vod>(Vod())
+    var detailFromSearch = false
     val home = MutableValue<Site>(Site.get("",""))
 }
