@@ -12,6 +12,7 @@ import okhttp3.dnsoverhttps.DnsOverHttps
 import java.net.http.HttpClient
 import java.time.Duration
 import java.time.temporal.ChronoUnit
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class Http {
@@ -104,12 +105,18 @@ class Http {
             }
         }
 
-        fun newCall(api: String, headers: Headers, params: Map<String, String>): Call {
-            return client().newCall(
-                Request.Builder().url(api.toHttpUrl()).headers(headers).post(
-                    toBody(params)
-                ).build()
-            )
+        private fun buildUrl(url: String, params:Map<String, String>): HttpUrl {
+            val builder: HttpUrl.Builder = Objects.requireNonNull(url.toHttpUrlOrNull())!!.newBuilder()
+            for ((key, value) in params.entries)
+                builder.addQueryParameter(key, value)
+            return builder.build()
+        }
+
+        fun newCall(url: String, headers: Headers, params: Map<String, String>): Call {
+            return client().newCall(Request.Builder().url(buildUrl(url, params)).headers(headers).build())
+        }
+        fun newCall(url: String, headers: Headers, body: RequestBody): Call {
+            return client().newCall(Request.Builder().url(url.toHttpUrl()).headers(headers).post(body).build())
         }
 
         fun newCall(api: String, headers: Headers): Call {

@@ -78,6 +78,13 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
                     if (home.value.isEmpty()) return@launch
                     var list = SiteViewModel.homeContent().list.toMutableSet()
                     var classList = SiteViewModel.result.value.types.toMutableSet()
+                    if(home.value.categories.isNotEmpty()){
+                        val iterator = classList.iterator()
+                        while(iterator.hasNext()){
+                            val next = iterator.next()
+                            if(!home.value.categories.contains(next.typeName)) iterator.remove()
+                        }
+                    }
 
                     // 有首页内容
                     if (list.isNotEmpty()) {
@@ -109,11 +116,11 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
     }
 
     override fun loadMore() {
+        if (model.value.currentClass == null || model.value.currentClass?.typeId == "home") return
         showProgress()
         model.value.page += 1
         SiteViewModel.viewModelScope.launch {
             try {
-                if (model.value.currentClass == null || model.value.currentClass?.typeId == "home") return@launch
                 SiteViewModel.categoryContent(
                     GlobalModel.home.value.key,
                     model.value.currentClass?.typeId,

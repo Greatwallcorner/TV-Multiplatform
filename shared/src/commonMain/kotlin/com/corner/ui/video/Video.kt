@@ -5,6 +5,7 @@ import SiteViewModel
 import androidx.compose.animation.*
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,11 +26,14 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -67,7 +71,7 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
         shape = RoundedCornerShape(8.dp)
     ) {
         Box(modifier = modifier) {
-            AutoSizeImage(url = vod.vodPic!!,
+            AutoSizeImage(url = vod.vodPic ?: "",
                 modifier = Modifier.height(220.dp).width(200.dp),
                 contentDescription = vod.vodName,
                 contentScale = ContentScale.Crop,
@@ -111,15 +115,14 @@ fun VideoScene(
     val adapter = rememberScrollbarAdapter(state)
     val model = component.model.subscribeAsState()
 
-    val shouldLoadMore by remember {
+    val shouldLoadMore =
         derivedStateOf {
             val last = state.layoutInfo.visibleItemsInfo.lastOrNull()
             last == null || last.index >= state.layoutInfo.totalItemsCount - 1
         }
-    }
 
     DisposableEffect(shouldLoadMore) {
-        if (shouldLoadMore) {
+        if (shouldLoadMore.value) {
             component.loadMore()
         }
         onDispose {
@@ -207,7 +210,8 @@ fun VideoScene(
 @Composable
 fun FloatButton(component: DefaultVideoComponent) {
     val show = remember { derivedStateOf { GlobalModel.chooseVod.value.isFolder() } }
-    AnimatedVisibility(show.value,
+    AnimatedVisibility(
+        show.value,
         /*enter = slideInVertically(
         initialOffsetY = { fullHeight -> -fullHeight },
         animationSpec = tween(durationMillis = 150, easing = LinearOutSlowInEasing)
@@ -215,7 +219,8 @@ fun FloatButton(component: DefaultVideoComponent) {
         exit = slideOutVertically(
             targetOffsetY = { fullHeight -> -fullHeight },
             animationSpec = tween(durationMillis = 250, easing = FastOutLinearInEasing)
-        )*/){
+        )*/
+    ) {
 //        ElevatedButton()
     }
 }
@@ -309,41 +314,60 @@ fun previewImageItem() {
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ClassRow(model: State<VideoComponent.Model>, onCLick: (Type) -> Unit) {
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(5.dp),
-        contentPadding = PaddingValues(top = 5.dp, start = 5.dp, end = 5.dp),
-        userScrollEnabled = true
-    ) {
-        items(model.value.classList.toList()) {
-            RatioBtn(text = it.typeName, onClick = {
-                SiteViewModel.viewModelScope.launch {
-                    showProgress()
-                    try {
-                        for (type in model.value.classList) {
-                            type.selected = it.typeId == type.typeId
-                        }
-                        model.value.currentClass = it
-                        model.value.classList = model.value.classList.toSet().toMutableSet()
-                        if (it.typeId == "home") {
-                            SiteViewModel.homeContent()
-                        } else {
-                            SiteViewModel.categoryContent(
-                                GlobalModel.home.value.key,
-                                it.typeId,
-                                "1",
-                                true,
-                                HashMap()
-                            )
-                        }
-                    } finally {
-                        hideProgress()
+    val state = rememberLazyListState(0)
+    val scope = rememberCoroutineScope()
+    val visible = derivedStateOf { state.layoutInfo.visibleItemsInfo.size < model.value.classList.size }
+    Box(modifier = Modifier) {
+        LazyRow(
+            state = state,
+            modifier = Modifier
+                .fillMaxWidth()
+                .onPointerEvent(PointerEventType.Scroll) {
+                    scope.launch {
+                        state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
                     }
-                    onCLick(it)
-                }
-            }, it.selected)
+                },
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            contentPadding = PaddingValues(top = 5.dp, start = 5.dp, end = 5.dp, bottom = 5.dp),
+            userScrollEnabled = true
+        ) {
+            items(model.value.classList.toList()) {
+                RatioBtn(text = it.typeName, onClick = {
+                    SiteViewModel.viewModelScope.launch {
+                        showProgress()
+                        try {
+                            for (type in model.value.classList) {
+                                type.selected = it.typeId == type.typeId
+                            }
+                            model.value.currentClass = it
+                            model.value.classList = model.value.classList.toSet().toMutableSet()
+                            if (it.typeId == "home") {
+                                SiteViewModel.homeContent()
+                            } else {
+                                SiteViewModel.categoryContent(
+                                    GlobalModel.home.value.key,
+                                    it.typeId,
+                                    "1",
+                                    true,
+                                    HashMap()
+                                )
+                            }
+                        } finally {
+                            hideProgress()
+                        }
+                        onCLick(it)
+                    }
+                }, it.selected)
+            }
+        }
+        if (visible.value) {
+            HorizontalScrollbar(
+                rememberScrollbarAdapter(state), modifier = Modifier.align(Alignment.BottomCenter)
+                    .padding(top = 10.dp)
+            )
         }
     }
 }
@@ -365,14 +389,14 @@ fun ChooseHomeDialog(
     onClick: (Site) -> Unit
 ) {
     val model = component.model.subscribeAsState()
-    Box() {
-        Dialog(
-            Modifier
-                .wrapContentWidth(Alignment.CenterHorizontally)
-                .wrapContentHeight(Alignment.CenterVertically)
-                .defaultMinSize(minWidth = 100.dp)
-                .padding(20.dp), onClose = { onClose() }, showDialog = showDialog
-        ) {
+    Dialog(
+        Modifier
+            .wrapContentWidth(Alignment.CenterHorizontally)
+            .wrapContentHeight(Alignment.CenterVertically)
+            .defaultMinSize(minWidth = 100.dp)
+            .padding(20.dp), onClose = { onClose() }, showDialog = showDialog
+    ) {
+        Box() {
             val lazyListState = rememberLazyListState(0)
             LazyColumn(
                 modifier = Modifier.padding(20.dp).wrapContentHeight(Alignment.CenterVertically),

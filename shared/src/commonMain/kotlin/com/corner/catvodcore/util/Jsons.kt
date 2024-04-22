@@ -4,7 +4,11 @@ import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.*
 
-val Jsons = Json { ignoreUnknownKeys = true }
+val Jsons = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
+}
+
 
 object ToStringSerializer: JsonTransformingSerializer<String>(String.serializer()) {
     override fun transformDeserialize(element: JsonElement): JsonElement {

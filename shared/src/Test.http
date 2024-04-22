@@ -54,3 +54,45 @@ Content-Type: application/json
   "TRADE_ID":"6000000713222079"
 }
 
+#### 添加链接 https://dldir1.qq.com/qqfile/qq/PCQQ9.7.1/QQ9.7.1.28940.exe
+POST http://localhost:6800/jsonrpc
+Content-Type: application/json-rpc
+
+{
+  "jsonrpc": "2.0",
+  "id": "qwer",
+  "method": "aria2.addUri",
+  "params": [
+    [
+      "magnet:?xt=urn:btih:f7c7d03266c09ec76163eb3700a22705970e6457&dn=%e6%88%91%e4%bb%ac%e7%9a%84%e7%94%9f%e7%89%a9%e4%b8%96%e7%95%8c"
+    ]
+  ]
+}
+
+> {%
+    let s = response.body.toString()
+    console.log(s)
+%}
+
+####
+POST http://localhost:6800/jsonrpc
+Content-Type: application/json-rpc
+
+{
+  "jsonrpc": "2.0",
+  "id": "qwer",
+  "method": "aria2.addUri",
+  "params": [
+    [
+      "https://dldir1.qq.com/qqfile/qq/PCQQ9.7.1/QQ9.7.1.28940.exe"
+    ]
+  ]
+}
+
+> {%
+    let s = response.body.toString()
+    console.log(s)
+%}
+
+### 海外看
+POST https://haiwaikan.com/api.php/provide/vod

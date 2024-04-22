@@ -13,13 +13,13 @@ data class Site(
     var changeable: Int? = null,
     var playUrl: String? = null,
     var quickSearch: Int? = null,
-    var categories: List<String>? = null,
+    var categories: Set<String> = mutableSetOf(),
     @Serializable(ToStringSerializer::class)
     var ext: String= "",
     var style: Style? = null,
     var timeout: Int? = null,
     var jar:String? = null,
-    var header:Map<String,String>? = null
+    var header:Map<String,String> = mutableMapOf()
 ){
     companion object{
         fun get(key:String, name: String):Site{

@@ -84,7 +84,7 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                     Column(Modifier.weight(0.3f)) {
                         AutoSizeImage(
                             modifier = Modifier.clip(RoundedCornerShape(8.dp)).fillMaxHeight(0.4f),
-                            url = detail?.vodPic!!,
+                            url = detail?.vodPic ?: "",
                             contentDescription = detail?.vodName,
                             contentScale = ContentScale.Crop,
                             placeholderPainter = { painterResource("empty.png") },
@@ -211,32 +211,38 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                             val scrollState = rememberLazyListState(0)
                             val scrollBarAdapter = rememberScrollbarAdapter(scrollState)
                             if (epSize > 15) {
-                                LazyRow(
-                                    state = scrollState,
-                                    modifier = Modifier.padding(bottom = 2.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                                ) {
-                                    for (i in 0 until epSize step 15) {
-                                        item {
-                                            RatioBtn(
-                                                selected = detail?.currentTabIndex == (i / 15),
-                                                onClick = {
-                                                    detail?.currentTabIndex = i / 15
-                                                    val dt = detail?.copy(
-                                                        subEpisode = detail?.currentFlag?.episodes?.getPage(detail!!.currentTabIndex)
-                                                            ?.toMutableList()
-                                                    )
-                                                    component.model.update { it.copy(detail = dt) }
-                                                },
-                                                text = "${i + 1}-${i + 15}"
-                                            )
+                                Box(modifier = Modifier.padding(bottom = 2.dp)){
+                                    LazyRow(
+                                        state = scrollState,
+                                        modifier = Modifier.padding(bottom = 2.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                    ) {
+                                        for (i in 0 until epSize step 15) {
+                                            item {
+                                                RatioBtn(
+                                                    selected = detail?.currentTabIndex == (i / 15),
+                                                    onClick = {
+                                                        detail?.currentTabIndex = i / 15
+                                                        val dt = detail?.copy(
+                                                            subEpisode = detail?.currentFlag?.episodes?.getPage(detail!!.currentTabIndex)
+                                                                ?.toMutableList()
+                                                        )
+                                                        component.model.update { it.copy(detail = dt) }
+                                                    },
+                                                    text = "${i + 1}-${i + 15}"
+                                                )
+                                            }
                                         }
                                     }
+                                    HorizontalScrollbar(
+                                        adapter = scrollBarAdapter,
+                                        modifier = Modifier.padding(bottom = 5.dp).align(Alignment.BottomCenter)
+                                        ,style = defaultScrollbarStyle().copy(
+                                            unhoverColor = Color.Gray.copy(0.45F),
+                                            hoverColor = Color.DarkGray
+                                        )
+                                    )
                                 }
-                                HorizontalScrollbar(
-                                    adapter = scrollBarAdapter,
-                                    modifier = Modifier.padding(bottom = 5.dp)
-                                )
                             }
                             val videoLoading = remember { mutableStateOf(false) }
                             LazyVerticalGrid(

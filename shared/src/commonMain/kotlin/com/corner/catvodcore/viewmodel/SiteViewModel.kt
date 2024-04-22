@@ -23,7 +23,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.encodeToString
-import okhttp3.Headers.Companion.headersOf
 import okhttp3.Headers.Companion.toHeaders
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -41,7 +40,7 @@ object SiteViewModel {
     private val supervisorJob = SupervisorJob()
     val viewModelScope = CoroutineScope(Dispatchers.Default + supervisorJob)
 
-    fun getSearchResultActive():Collect{
+    fun getSearchResultActive(): Collect {
         return search.filter { it.isActivated().value }.first()
     }
 
@@ -71,19 +70,18 @@ object SiteViewModel {
                     SpiderDebug.log(homeContent)
                     result.value = Jsons.decodeFromString<Result>(homeContent).also { this.result.value = it }
                 }
-
                 else -> {
                     val homeContent: String =
-                        Http.newCall(site.api, site.header?.toHeaders() ?: headersOf()).execute().body.string()
+                        Http.newCall(site.api, site.header.toHeaders()).execute().body.string()
                     SpiderDebug.log(homeContent)
-                    result.value = fetchPic(site, Jsons.decodeFromString<Result>(homeContent)).also { result.value = it }
+                    fetchPic(site, Jsons.decodeFromString<Result>(homeContent)).also { result.value = it }
                 }
             }
         } catch (e: Exception) {
             log.error("home Content site:{}", site.name, e)
             return Result()
         }
-        result.value.list.forEach{it.site = site}
+        result.value.list.forEach { it.site = site }
         return result.value
     }
 
@@ -117,7 +115,7 @@ object SiteViewModel {
                 val detailContent = call(site, params, true)
                 SpiderDebug.log(detailContent)
                 val rst = Jsons.decodeFromString<Result>(detailContent)
-                if (!rst.list.isEmpty()) rst.list.get(0).setVodFlags()
+                if (rst.list.isNotEmpty()) rst.list[0].setVodFlags()
                 //            if (!rst.list.isEmpty()) checkThunder(rst.list.get(0).getVodFlags())
                 return rst.also { detail.value = it }
             }
@@ -138,8 +136,8 @@ object SiteViewModel {
                 setRecent(site)
                 val result = Jsons.decodeFromString<Result>(playerContent)
                 if (StringUtils.isNotBlank(result.flag)) result.flag = flag
-    //            result.setUrl(Source.get().fetch(result))
-    //            result.url.replace() = result.url.v()
+                //            result.setUrl(Source.get().fetch(result))
+                //            result.url.replace() = result.url.v()
                 result.header = site.header
                 result.key = key
                 return result
@@ -151,7 +149,7 @@ object SiteViewModel {
                 SpiderDebug.log(playerContent)
                 val result = Jsons.decodeFromString<Result>(playerContent)
                 if (StringUtils.isNotBlank(result.flag)) result.flag = flag
-    //            result.setUrl(Source.get().fetch(result))
+                //            result.setUrl(Source.get().fetch(result))
                 result.header = site.header
                 return result
             } /*else if (site.isEmpty() && key == "push_agent") {
@@ -165,7 +163,7 @@ object SiteViewModel {
                 var url: Url = Url().add(id)
                 val type: String? = Url(id).parameters.get("type")
                 if (type != null && type == "json") {
-                    val string = Http.newCall(id, site.header?.toHeaders() ?: headersOf()).execute().body.string()
+                    val string = Http.newCall(id, site.header.toHeaders()).execute().body.string()
                     if (StringUtils.isNotBlank(string)) {
                         url = Jsons.decodeFromString<Result>(string).url!!
                     }
@@ -175,12 +173,13 @@ object SiteViewModel {
                 result.flag = flag
                 result.header = site.header
                 result.playUrl = site.playUrl
-                result.parse = (if (/*Sniffer.isVideoFormat(url.v())*//* && */StringUtils.isBlank(result.playUrl)) 0 else 1)
-    //            result.setParse(if (Sniffer.isVideoFormat(url.v()) && result.getPlayUrl().isEmpty()) 0 else 1)
+                result.parse =
+                    (if (/*Sniffer.isVideoFormat(url.v())*//* && */StringUtils.isBlank(result.playUrl)) 0 else 1)
+                //            result.setParse(if (Sniffer.isVideoFormat(url.v()) && result.getPlayUrl().isEmpty()) 0 else 1)
                 return result
             }
         } catch (e: Exception) {
-            log.error("${site.name} player error:",e)
+            log.error("${site.name} player error:", e)
             return null
         }
     }
@@ -234,7 +233,7 @@ object SiteViewModel {
 
     fun categoryContent(key: String, tid: String?, page: String?, filter: Boolean, extend: HashMap<String?, String?>) {
         val site: Site = getSite(key) ?: return
-          try {
+        try {
             if (site.type == 3) {
                 val spider: Spider = getSpider(site)
                 val categoryContent = spider.categoryContent(tid, page, filter, extend)
@@ -243,7 +242,7 @@ object SiteViewModel {
                 result.value = Jsons.decodeFromString<Result>(categoryContent)
             } else {
                 val params = mutableMapOf<String, String>()
-                if (site.type == 1 && extend.isNotEmpty()) params.put("f",Jsons.encodeToString(extend))
+                if (site.type == 1 && extend.isNotEmpty()) params.put("f", Jsons.encodeToString(extend))
                 else if (site.type == 4) params.put("ext", Utils.base64(Jsons.encodeToString(extend)))
                 params.put("ac", if (site.type == 0) "videolist" else "detail")
                 params.put("t", tid ?: "")
@@ -261,11 +260,11 @@ object SiteViewModel {
     private fun post(site: Site, result: Result, quick: Boolean) {
         if (result.list.isEmpty()) return
         for (vod in result.list) vod.site = site
-        if(quick){
+        if (quick) {
             quickSearch.add(Collect.create(result.list))
             // 同样的数据添加到全部
             quickSearch.get(0).getList().addAll(result.list)
-        }else{
+        } else {
             search.add(Collect.create(result.list))
             // 同样的数据添加到全部
             search.get(0).getList().addAll(result.list)
@@ -285,11 +284,12 @@ object SiteViewModel {
 
 
 private fun call(site: Site, params: MutableMap<String, String>, limit: Boolean): String {
-    val call: okhttp3.Call = if (fetchExt(site, params, limit).length <= 1000) Http.newCall(
-        site.api,
-        site.header?.toHeaders() ?: headersOf(),
-        params
-    ) else Http.newCall(site.api, site.header?.toHeaders() ?: headersOf(), params)
+    val call: okhttp3.Call =
+        if (fetchExt(site, params, limit).length <= 1000) Http.newCall(
+            site.api,
+            site.header.toHeaders(),
+            params
+        ) else Http.newCall(site.api, site.header.toHeaders(), Http.toBody(params))
     return call.execute().body.string()
 }
 
@@ -297,26 +297,26 @@ private fun fetchExt(site: Site, params: MutableMap<String, String>, limit: Bool
     var extend: String = site.ext
     if (extend.startsWith("http")) extend = fetchExt(site)
     if (limit && extend.length > 1000) extend = extend.substring(0, 1000)
-    if (!extend.isEmpty()) params.put("extend", extend)
+    if (extend.isNotEmpty()) params["extend"] = extend
     return extend
 }
 
 private fun fetchExt(site: Site): String {
-    val res: okhttp3.Response = Http.newCall(site.ext, site.header?.toHeaders() ?: headersOf()).execute()
+    val res: okhttp3.Response = Http.newCall(site.ext, site.header.toHeaders()).execute()
     if (res.code != 200) return ""
     site.ext = res.body.string()
     return site.ext
 }
 
 private fun fetchPic(site: Site, result: Result): Result {
-    if (result.list.isEmpty() || StringUtils.isEmpty(result.list.get(0).vodPic)) return result
+    if (result.list.isEmpty() || StringUtils.isNotBlank((result.list[0].vodPic))) return result
     val ids = ArrayList<String>()
     for (item in result.list) ids.add(item.vodId)
     val params: MutableMap<String, String> = mutableMapOf()
-    params.put("ac", if (site.type == 0) "videolist" else "detail")
-    params.put("ids", StringUtils.join(ids, ","))
+    params["ac"] = if (site.type == 0) "videolist" else "detail"
+    params["ids"] = StringUtils.join(ids, ",")
     val response: String =
-        Http.newCall(site.api, site.header?.toHeaders() ?: headersOf(), params).execute().body.string()
+        Http.newCall(site.api, site.header.toHeaders(), params).execute().body.string()
     result.list.clear()
     result.list.addAll(Jsons.decodeFromString<Result>(response).list)
     return result
