@@ -5,44 +5,41 @@ import androidx.compose.ui.res.loadImageBitmap
 import com.seiko.imageloader.component.fetcher.FetchResult
 import com.seiko.imageloader.component.fetcher.Fetcher
 import com.seiko.imageloader.option.Options
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.util.*
-import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.serialization.json.jsonObject
+import okhttp3.Headers.Companion.toHeaders
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 
 class KtorHeaderUrlFetcher private constructor(
     private val httpUrl: String,
-    httpClient: () -> HttpClient,
+    httpClient: () -> OkHttpClient,
 ) : Fetcher {
 
     private val httpClient by lazy(httpClient)
 
     override suspend fun fetch(): FetchResult {
         val url = httpUrl.toString()
-        val response = httpClient.request {
-            headers {
-                if (url.contains("@Headers=")) {
-                    appendAll(StringValues.build {
-                        val elements = Jsons.parseToJsonElement(url.split("@Headers=")[1].split("@")[0])
-                        for (jsonElement in elements.jsonObject) {
-                            append(jsonElement.key, jsonElement.value.toString())
-                        }
-                    })
+        val headers = mutableMapOf<String, String>()
+            headers.run {
+            if (url.contains("@Headers=")) {
+                val elements = Jsons.parseToJsonElement(url.split("@Headers=")[1].split("@")[0])
+                for (jsonElement in elements.jsonObject) {
+                    put(jsonElement.key, jsonElement.value.toString())
                 }
-                if (url.contains("@Cookie=")) append(HttpHeaders.Cookie, url.split("@Cookie=")[1].split("@")[0])
-                if (url.contains("@Referer=")) append(HttpHeaders.Referrer, url.split("@Referer=")[1].split("@")[0])
-                if (url.contains("@User-Agent=")) append(HttpHeaders.UserAgent, url.split("@User-Agent=")[1].split("@")[0])
-
             }
-            url(url.split("@")[0])
+            if (url.contains("@Cookie=")) put(HttpHeaders.Cookie, url.split("@Cookie=")[1].split("@")[0])
+            if (url.contains("@Referer=")) put(HttpHeaders.Referrer, url.split("@Referer=")[1].split("@")[0])
+            if (url.contains("@User-Agent=")) put(HttpHeaders.UserAgent, url.split("@User-Agent=")[1].split("@")[0])
         }
-        if (response.status.isSuccess()) {
+
+
+        val reqeust = Request.Builder().url(url.split("@")[0]).headers(headers.toHeaders()).build()
+        val response = httpClient.newCall(reqeust).execute()
+        if (response.isSuccessful) {
             val ofSource = FetchResult.OfPainter(
-                painter = BitmapPainter(loadImageBitmap(response.bodyAsChannel().toInputStream()))
+                painter = BitmapPainter(loadImageBitmap(response.body.byteStream()))
             )
 //            val ofSource = FetchResult.OfSource(
 //                source = response.bodyAsChannel().toInputStream().source().buffer(),
@@ -52,11 +49,11 @@ class KtorHeaderUrlFetcher private constructor(
 //            )
             return ofSource
         }
-        throw RuntimeException("code:${response.status.value}, ${response.status.description}")
+        throw RuntimeException("code:${response.code}, ${HttpStatusCode.fromValue(response.code)}")
     }
 
     class Factory(
-        private val httpClient: () -> HttpClient,
+        private val httpClient: () -> OkHttpClient,
     ) : Fetcher.Factory {
         override fun create(data: Any, options: Options): Fetcher? {
             if (data is String) return KtorHeaderUrlFetcher(data, httpClient)
@@ -65,11 +62,11 @@ class KtorHeaderUrlFetcher private constructor(
     }
 
     companion object {
-        val defaultHttpEngineFactory: () -> HttpClient
-            get() = { KtorClient.client }
+        val defaultHttpEngineFactory: () -> OkHttpClient
+            get() = { Http.client() }
 
         val CustomUrlFetcher = Factory {
-            KtorClient.client
+            Http.client()
         }
     }
 }

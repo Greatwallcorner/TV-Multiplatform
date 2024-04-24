@@ -35,7 +35,7 @@ compose.desktop {
             packageVersion = "1.1.8"
             vendor = "TV Multiplatform"
 
-            modules("java.net.http", "java.sql", "jdk.unsupported")
+            modules("java.compiler", "java.instrument", "java.management", "java.naming", "java.net.http", "java.rmi", "java.security.jgss", "java.sql", "jdk.httpserver", "jdk.unsupported")
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
 //            app icons https://github.com/JetBrains/compose-multiplatform/tree/master/tutorials/Native_distributions_and_local_execution#app-icon
             windows {
