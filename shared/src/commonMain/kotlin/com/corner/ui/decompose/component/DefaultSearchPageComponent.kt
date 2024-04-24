@@ -14,7 +14,7 @@ class DefaultSearchPageComponent(componentContext:ComponentContext):SearchCompon
 
     override val model: MutableValue<SearchComponent.Model> = _model
 
-    override fun search(searchText: String) {
+    override fun search(searchText: String, isLoadMore: Boolean) {
     }
 
     override fun clear() {

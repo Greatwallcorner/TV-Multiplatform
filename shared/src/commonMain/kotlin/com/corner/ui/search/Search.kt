@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import com.arkivanov.decompose.extensions.compose.jetbrains.pages.PagesScrollAni
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
+import com.corner.catvodcore.config.api
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.component.DefaultSearchComponent
 import com.corner.ui.decompose.component.DefaultSearchPageComponent
@@ -51,19 +53,19 @@ fun SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Un
         modifier = Modifier.fillMaxSize(),
         scrollAnimation = PagesScrollAnimation.Default
     ) { _, p ->
-            when (p) {
-                is DefaultSearchComponent -> SearchResult(
-                    p, keyword = model.value.keyword, onClickBack = { onClickBack()  },
-                ) {
-                    onClickItem(it)
-                }
-
-                is DefaultSearchPageComponent -> SearchPage(p, onClickBack = {
-                    onClickBack()
-                }, onSearch = { s ->
-                    component.onSearch(s)
-                })
+        when (p) {
+            is DefaultSearchComponent -> SearchResult(
+                p, keyword = model.value.keyword, onClickBack = { onClickBack() },
+            ) {
+                onClickItem(it)
             }
+
+            is DefaultSearchPageComponent -> SearchPage(p, onClickBack = {
+                onClickBack()
+            }, onSearch = { s ->
+                component.onSearch(s)
+            })
+        }
     }
 }
 
@@ -91,8 +93,10 @@ private fun SearchResult(
     val state = rememberLazyGridState()
     val adapter = rememberScrollbarAdapter(state)
 
+    val showLoadMore = remember { derivedStateOf { model.value.searchCompleteSites.size < (api?.sites?.filter { it.searchable == 1 }?.size ?: 0) } }
+
     DisposableEffect(searchText) {
-        component.search(searchText)
+        component.search(searchText, false)
         onDispose {
         }
     }
@@ -131,26 +135,35 @@ private fun SearchResult(
             }
 //        Content
             Row {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(0.2f)
-                        .defaultMinSize(30.dp)
-                        .padding(horizontal = 8.dp)
-                        .background(Color.Gray.copy(0.4f)),
-                    verticalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    items(items = result.value) { item: Collect ->
-                        RatioBtn(
-                            text = item.getSite()?.name ?: "",
-                            onClick = {
-                                currentCollect = item
-                                component.onClickCollection(item)
-                                result.value.forEach { i ->
-                                    i.setActivated(i.getSite()?.key == item.getSite()?.key)
-                                }
-                            },
-                            item.isActivated().value,
-                        )
+                Box(Modifier.fillMaxWidth(0.2f).fillMaxHeight()) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .defaultMinSize(30.dp)
+                            .padding(horizontal = 8.dp)
+                            .background(Color.Gray.copy(0.4f)),
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        items(items = result.value) { item: Collect ->
+                            RatioBtn(
+                                text = item.getSite()?.name ?: "",
+                                onClick = {
+                                    currentCollect = item
+                                    component.onClickCollection(item)
+                                    result.value.forEach { i ->
+                                        i.setActivated(i.getSite()?.key == item.getSite()?.key)
+                                    }
+                                },
+                                item.isActivated().value,
+                            )
+                        }
                     }
+//                    if(showLoadMore.value){
+                        Surface(Modifier.align(Alignment.BottomCenter).padding(vertical = 10.dp, horizontal = 8.dp)) {
+                            RatioBtn(text = if(showLoadMore.value) "加载更多" else "没有更多", onClick = {
+                                component.search(searchText, true)
+                            }, false)
+                        }
+//                    }
                 }
                 Box(modifier = Modifier.fillMaxSize()) {
                     if (currentVodList.isEmpty()) {

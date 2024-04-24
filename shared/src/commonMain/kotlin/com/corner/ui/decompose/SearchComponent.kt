@@ -7,6 +7,7 @@ import com.corner.catvodcore.bean.Collect
 import com.corner.ui.search.SearchPageType
 import kotlinx.coroutines.*
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CopyOnWriteArraySet
 
 interface SearchComponent {
     val model: MutableValue<Model>
@@ -18,7 +19,7 @@ interface SearchComponent {
         var jobList: MutableList<Job> = mutableListOf<Job>(),
         var currentVodList:CopyOnWriteArrayList<Vod> = CopyOnWriteArrayList(),
         var currentPage:SearchPageType = SearchPageType.page,
-        var searchCompletion:Boolean = false
+        var searchCompleteSites:CopyOnWriteArraySet<String> = CopyOnWriteArraySet()
     ) {
         fun cancelAndClearJobList() {
             jobList.forEach { i -> i.cancel("search") }
@@ -56,8 +57,7 @@ interface SearchComponent {
 
     }
 
-    fun search(searchText:String)
-
+    fun search(searchText: String, isLoadMore: Boolean)
     fun clear()
     fun onClickCollection(item: Collect)
 }
