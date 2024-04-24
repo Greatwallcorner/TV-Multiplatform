@@ -32,7 +32,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Pkg)
             packageName = "TV"
-            packageVersion = "1.1.8"
+            packageVersion = "1.1.9"
             vendor = "TV Multiplatform"
 
             modules("java.compiler", "java.instrument", "java.management", "java.naming", "java.net.http", "java.rmi", "java.security.jgss", "java.sql", "jdk.httpserver", "jdk.unsupported")
