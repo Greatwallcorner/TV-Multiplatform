@@ -1,11 +1,11 @@
 package com.corner.server
 
-import com.corner.catvodcore.util.KtorClient
 import com.corner.server.plugins.configureRouting
-import io.ktor.client.engine.cio.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.callloging.*
+import org.slf4j.event.Level
 
 object KtorD {
 
@@ -42,7 +42,9 @@ object KtorD {
 }
 
 private fun Application.module() {
-
+    install(CallLogging){
+        level = Level.DEBUG
+    }
 //    install(ContentNegotiation){
 //        json(Json {
 //            isLenient = true

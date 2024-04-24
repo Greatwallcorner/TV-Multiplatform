@@ -64,7 +64,7 @@ fun main(){
             onCloseRequest = ::exitApplication, icon = painterResource("/TV-icon-s.png"), title = "TV",
             state = windowState,
             undecorated = true,
-            transparent = true
+            transparent = false
         ) {
             CompositionLocalProvider(
                 LocalImageLoader provides remember { generateImageLoader() },

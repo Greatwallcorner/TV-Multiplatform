@@ -66,6 +66,7 @@ kotlin {
                 implementation("io.ktor:ktor-server-swagger:$ktorVer")
                 implementation("io.ktor:ktor-client-core:$ktorVer")
                 implementation("io.ktor:ktor-client-cio:$ktorVer")
+                implementation("io.ktor:ktor-server-call-logging:$ktorVer")
 
                 // log
                 implementation("ch.qos.logback:logback-classic:$logbackVer")
