@@ -60,7 +60,7 @@ object SettingStore {
     private val defaultList = listOf(
         Setting("vod", "点播", ""),
         Setting("player", "外部播放器", ""),
-        Setting("log", "日志级别", Level.INFO.levelStr)
+        Setting("log", "日志级别", Level.DEBUG.levelStr)
     )
 
     private var settingFile = SettingFile(mutableListOf<Setting>(), mutableMapOf())

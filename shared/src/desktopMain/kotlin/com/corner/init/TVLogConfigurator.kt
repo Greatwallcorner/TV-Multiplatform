@@ -16,6 +16,10 @@ import ch.qos.logback.core.spi.ContextAwareBase
 import ch.qos.logback.core.util.FileSize
 import com.corner.bean.SettingStore
 import com.corner.catvodcore.util.Paths
+import org.slf4j.LoggerFactory
+import java.io.PrintStream
+
+private val log = LoggerFactory.getLogger("Console")
 
 class TVLogConfigurator():ContextAwareBase(),Configurator {
     override fun configure(context: LoggerContext?): ExecutionStatus {
@@ -25,10 +29,22 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
         val fa = fileAppender(context)
         val rootLogger = context?.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
         rootLogger?.level = Level.valueOf(SettingStore.getSettingItem("log") )
+        System.setOut(createMyPrintStream(System.out))
+        System.setErr(createMyPrintStream(System.err))
         rootLogger?.addAppender(ca)
         rootLogger?.addAppender(fa)
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY
     }
+
+    fun createMyPrintStream(printStream: PrintStream): PrintStream {
+        val myStream: PrintStream = object : PrintStream(printStream) {
+            override fun print(string: String) {
+                log.info(string)
+            }
+        }
+        return myStream
+    }
+
 
     private fun fileAppender(context: LoggerContext?): RollingFileAppender<ILoggingEvent> {
         val rf = RollingFileAppender<ILoggingEvent>()
