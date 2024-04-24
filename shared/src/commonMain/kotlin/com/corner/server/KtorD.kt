@@ -26,8 +26,8 @@ object KtorD {
                     callGroupSize = 15
                     shutdownGracePeriod = 2000
                     shutdownTimeout = 3000
-//                    responseWriteTimeoutSeconds = -1
-//                    requestReadTimeoutSeconds = 0
+                    responseWriteTimeoutSeconds = -1
+                    requestReadTimeoutSeconds = 0
                 })
                     .start(wait = false)
                 break
