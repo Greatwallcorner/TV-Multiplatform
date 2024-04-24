@@ -58,8 +58,8 @@ kotlin {
 
                 //ktor http server
                 implementation("io.ktor:ktor-server-core:$ktorVer")
-                implementation("io.ktor:ktor-server-tomcat:$ktorVer")
-//                implementation("io.ktor:ktor-server-netty:$ktorVer")
+//                implementation("io.ktor:ktor-server-tomcat:$ktorVer")
+                implementation("io.ktor:ktor-server-netty:$ktorVer")
 //                implementation("io.ktor:ktor-server-status-pages:$ktorVer")
                 implementation("io.ktor:ktor-server-default-headers:$ktorVer")
                 implementation("io.ktor:ktor-server-content-negotiation:$ktorVer")
