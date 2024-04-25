@@ -44,7 +44,7 @@ jobs:
       - name: compress
         run: cd ./desktopApp/build/compose/binaries/main-release/app/ && zip -q -r ./TV-linux-$GITHUB_REF_NAME.zip ./TV
       - name: move file
-        run: mv ./desktopApp/build/compose/binaries/main-release/deb/*.deb ./ && mv ./desktopApp/build/compose/binaries/main-release/app/*.zip
+        run: mv ./desktopApp/build/compose/binaries/main-release/deb/*.deb ./ && mv ./desktopApp/build/compose/binaries/main-release/app/*.zip ./
       - run: ls
       - uses: actions/upload-artifact@v4
         with:
