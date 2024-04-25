@@ -1,7 +1,6 @@
 package com.corner.init
 
 import com.corner.bean.Hot
-import com.corner.bean.SettingStore
 import com.corner.catvodcore.config.init
 import com.corner.catvodcore.config.parseConfig
 import com.corner.catvodcore.enum.ConfigType
@@ -26,6 +25,10 @@ class Init {
             } finally {
                 hideProgress()
             }
+        }
+
+        fun stop(){
+            KtorD.stop()
         }
 
 

@@ -39,6 +39,10 @@ object KtorD {
         println(server!!.resolvedConnectors().first().port)
     }
 
+    fun stop(){
+        server?.stop()
+    }
+
 }
 
 private fun Application.module() {

@@ -72,6 +72,7 @@ fun main(){
             ) {
                 RootContent(component = root, modifier =  Modifier.fillMaxSize(), windowState){
                     SettingStore.write()
+                    Init.stop()
                     exitApplication()
                 }
             }
