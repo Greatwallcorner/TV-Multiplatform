@@ -6,11 +6,13 @@ import cn.hutool.core.util.ZipUtil
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.catvodcore.bean.Result
+import com.corner.catvodcore.bean.v
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okio.Path.Companion.toPath
 import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.SystemUtils
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FilenameFilter
@@ -36,6 +38,13 @@ class Play {
 fun getProcessBuilder(result: Result?, title: String?): ProcessBuilder? {
     if (result == null) return null
     val playerPath = SettingStore.getSettingItem(SettingType.PLAYER.id)
+    if(SystemUtils.IS_OS_MAC){
+        return if(checkPlayer(playerPath)){
+         ProcessBuilder("open", "-a", playerPath, result.url?.v() ?: "")
+        }else{
+            ProcessBuilder("open", result.url?.v() ?: "")
+        }
+    }
     if(!checkPlayer(playerPath)) {
         log.info("未配置播放器 使用默认播放器")
         val path = getDefaultPlayerPath()

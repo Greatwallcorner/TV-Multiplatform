@@ -40,7 +40,7 @@ kotlin {
 
 //                // tool
                 api("com.google.guava:guava:31.1-jre")
-                api("cn.hutool:hutool-core:5.8.27")
+                api("cn.hutool:hutool-all:5.8.27")
 
                 //DI
                 api("io.insert-koin:koin-core:3.5.3")
