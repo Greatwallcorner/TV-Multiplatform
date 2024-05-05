@@ -20,6 +20,13 @@ object JarLoader {
     private val spiders: ConcurrentHashMap<String, Spider> by lazy { ConcurrentHashMap() }
 
     var recent:String? = null;
+
+    fun clear(){
+        loaders.clear()
+        methods.clear()
+        spiders.clear()
+    }
+
     fun loadJar(key: String, spider: String) {
         val texts = spider.split(Constant.md5Split)
 //        val md5 = if(texts.size<=1) "" else texts[1].trim()

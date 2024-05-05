@@ -112,17 +112,21 @@ fun MenuItem(
  * @param modifier 弹窗窗体的modifier
  */
 @Composable
-fun Dialog(modifier: Modifier, showDialog: Boolean, onClose: () -> Unit, content: @Composable () -> Unit) {
+fun Dialog(modifier: Modifier,
+           showDialog: Boolean,
+           onClose: () -> Unit,
+           enter: EnterTransition = scaleIn() + fadeIn(spring()),
+           exit: ExitTransition = scaleOut() + fadeOut(spring()),
+           content: @Composable () -> Unit) {
     AnimatedVisibility(
         visible = showDialog,
-        enter = scaleIn() + fadeIn(spring()),
-        exit = scaleOut() + fadeOut(spring())
+        enter = enter,
+        exit = exit
     ) {
         val interactionSource = remember { MutableInteractionSource() }
 
         Box(
             modifier = Modifier.fillMaxSize()
-//                .background(Color.Black.copy(0.6f))
                 .clickable(interactionSource = interactionSource, indication = null, onClick = {
                     onClose()
                 })

@@ -6,7 +6,7 @@ Accept: application/json
 GET http://localhost:9978/
 
 ###
-GET http://localhost:9978/proxy?do=ck&do=it
+GET http://localhost:9978/proxy?do=ck
 
 ###
 GET http://127.0.0.1:9978/proxy?do=ali&type=video&cate=open&shareId=5CNb1zzo7z9&fileId=6572dcc537aa2f73e51e499d9a14280cdcda9eaa
@@ -20,7 +20,7 @@ GET http://localhost:9978/test
 GET http://127.0.0.1:9978/proxy?do=ali&type=video&cate=open&shareId=y16XnvQgLq3&fileId=6347a7c232ce90959c634c5b83d93b0622577f21
 
 ### 提示消息
-GET https://127.0.0.1:9978/postMsg?msg=我是1112
+GET http://127.0.0.1:9978/postMsg?msg=我是1112
 
 ###
 POST http://cj.lziapi.com/api.php/provide/vod

@@ -3,14 +3,26 @@ package com.corner.catvodcore.bean
 import kotlinx.serialization.Serializable
 
 @Serializable
-class Filter {
-    private val key: String? = null
+data class Filter (
+    val key: String? = null,
 
-    private val name: String? = null
+    val name: String? = null,
 
-    private val init: String? = null
+    var init: String = "",
 
-    private val value: List<Value>? = null
+    val value: List<Value>? = null
+){
+    companion object{
+        val ALL = Filter("", "全部")
+    }
+}
+
+fun Filter.isEmpty():Boolean{
+    return value?.isEmpty() ?: true
+}
+
+fun List<Filter>.getFirstOrEmpty():Filter{
+    return if(this.isNotEmpty()) this[0] else Filter.ALL
 }
 
 // MutableMap<String, List<Filter>>

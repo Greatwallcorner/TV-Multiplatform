@@ -3,6 +3,7 @@ package com.corner.ui
 import SiteViewModel
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -18,10 +19,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -44,10 +48,11 @@ import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
+    val scope = rememberCoroutineScope()
 
     val detail by rememberUpdatedState(model.value.detail)
 
@@ -83,10 +88,12 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.weight(0.3f)) {
                         AutoSizeImage(
-                            modifier = Modifier.clip(RoundedCornerShape(8.dp)).fillMaxHeight(0.4f),
+                            modifier = Modifier.clip(RoundedCornerShape(8.dp))
+                                .fillMaxHeight(0.4f),
+//                                .height(180.dp).width(160.dp),
                             url = detail?.vodPic ?: "",
                             contentDescription = detail?.vodName,
-                            contentScale = ContentScale.Crop,
+                            contentScale = ContentScale.FillHeight,
                             placeholderPainter = { painterResource("empty.png") },
                             errorPainter = { painterResource("empty.png") }
                         )
@@ -166,27 +173,45 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         if (detail?.vodFlags?.isNotEmpty() == true) {
-                            LazyRow(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                                items(detail?.vodFlags?.toList() ?: listOf()) {
-                                    RatioBtn(it?.show ?: "", onClick = {
-
-                                        for (vodFlag in detail?.vodFlags ?: listOf()) {
-                                            if (it?.show == vodFlag?.show) {
-                                                it?.activated = true
-                                            } else {
-                                                vodFlag?.activated = false
-                                            }
+                            val state = rememberLazyListState(0)
+                            Box() {
+                                LazyRow(horizontalArrangement = Arrangement.spacedBy(5.dp),
+                                    state = state,
+                                    modifier = Modifier.padding(bottom = 10.dp)
+                                        .fillMaxWidth()
+                                    .onPointerEvent(PointerEventType.Scroll) {
+                                        scope.launch {
+//                                            if(it.changes.size == 0) return@launch
+                                            state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
                                         }
-                                        val dt = detail?.copy(
-                                            currentFlag = it,
-                                            subEpisode = it?.episodes?.getPage(detail!!.currentTabIndex)
-                                                ?.toMutableList()
-                                        )
-                                        component.model.update { it.copy(detail = dt) }
-                                    }, selected = it?.activated ?: false)
+                                    },) {
+                                    items(detail?.vodFlags?.toList() ?: listOf()) {
+                                        RatioBtn(it?.show ?: "", onClick = {
+
+                                            for (vodFlag in detail?.vodFlags ?: listOf()) {
+                                                if (it?.show == vodFlag?.show) {
+                                                    it?.activated = true
+                                                } else {
+                                                    vodFlag?.activated = false
+                                                }
+                                            }
+                                            val dt = detail?.copy(
+                                                currentFlag = it,
+                                                subEpisode = it?.episodes?.getPage(detail!!.currentTabIndex)
+                                                    ?.toMutableList()
+                                            )
+                                            component.model.update { it.copy(detail = dt) }
+                                        }, selected = it?.activated ?: false)
+                                    }
+                                }
+                                if(state.layoutInfo.visibleItemsInfo.size < (detail?.vodFlags?.size ?: 0)){
+                                    HorizontalScrollbar(rememberScrollbarAdapter(state),
+                                        style = defaultScrollbarStyle().copy(
+                                            unhoverColor = Color.Gray.copy(0.45F),
+                                            hoverColor = Color.DarkGray
+                                        ), modifier = Modifier.align(Alignment.BottomCenter))
                                 }
                             }
-
                             //
                             Spacer(modifier = Modifier.size(20.dp))
                             Row {

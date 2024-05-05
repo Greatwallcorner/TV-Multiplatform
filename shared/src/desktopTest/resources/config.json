@@ -12,6 +12,16 @@
       }
     },
     {
+      "key": "IkBot",
+      "name": "爱看|首页",
+      "type": 3,
+      "api": "csp_IkBot",
+      "searchable": 0,
+      "changeable": 0,
+      "ext": {
+      }
+    },
+    {
       "key": "haiwaikan",
       "name": "海外看",
       "type": 1,

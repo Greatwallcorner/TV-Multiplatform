@@ -17,6 +17,10 @@ data class Flag (
     @Transient
     var position: Int = 0
 ){
+
+    /**
+     * name$url#name1$url1
+     */
     fun createEpisode(url: String) {
         if(url.isBlank()) return
         val urls:List<String> = if(url.contains("#")) url.split("#") else listOf(url)

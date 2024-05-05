@@ -6,7 +6,9 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.backhandler.BackHandlerOwner
 import com.arkivanov.essenty.lifecycle.Lifecycle
+import com.corner.catvodcore.bean.Filter
 import com.corner.catvodcore.bean.Type
+import com.corner.catvodcore.bean.getFirstOrEmpty
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.VideoComponent
 import com.corner.ui.scene.hideProgress
@@ -17,6 +19,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, ComponentContext by componentContext, BackHandlerOwner {
 
@@ -30,9 +34,14 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
 
     private var promptJob: Job? = null
 
+    var isLoading = AtomicBoolean(false)
+
     init {
         GlobalModel.home.observe {
             homeLoad()
+        }
+        GlobalModel.clear.observe {
+            clear()
         }
         GlobalModel.hotList.observe {
             if(it.isEmpty()) return@observe
@@ -69,8 +78,18 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
         })
     }
 
+    override fun clear() {
+        _model.update { it.copy(homeVodResult = mutableSetOf(),
+            homeLoaded = false, classList = mutableSetOf(), filtersMap = mutableMapOf(),
+            currentClass = null, currentFilter = Filter.ALL,
+            page = AtomicInteger(0),isRunning = false, prompt = ""
+        ) }
+    }
+
     override fun homeLoad() {
         val home = GlobalModel.home
+        if(isLoading.get()) return
+        isLoading.set(true)
         SiteViewModel.viewModelScope.launch {
             showProgress()
             try {
@@ -78,6 +97,8 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
                     if (home.value.isEmpty()) return@launch
                     var list = SiteViewModel.homeContent().list.toMutableSet()
                     var classList = SiteViewModel.result.value.types.toMutableSet()
+                    val filtersMap = SiteViewModel.result.value.filters
+                    // 只保留site中配置的分类
                     if(home.value.categories.isNotEmpty()){
                         val iterator = classList.iterator()
                         while(iterator.hasNext()){
@@ -93,51 +114,96 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
                         if (classList.isEmpty()) return@launch
                         val types = classList.firstOrNull()
                         types?.selected = true
-                        SiteViewModel.categoryContent(
-                            home.value.key ,
-                            types?.typeId,
+                        val rst = SiteViewModel.categoryContent(
+                            home.value.key,
+                            types?.typeId ?: "",
                             _model.value.page.toString(),
-                            true,
+                            false,
                             HashMap()
                         )
-                        list = SiteViewModel.result.value.list.toMutableSet()
+                        if(!rst.isSuccess){
+                            return@launch
+                        }
+                        _model.value.page.addAndGet(1)
+                        list = rst.list.toMutableSet()
                     }
                     val currentClass = classList.firstOrNull()
                     _model.value.homeLoaded = true
-                    _model.update { it.copy(homeVodResult = list, currentClass = currentClass, classList = classList) }
+                    _model.update { it.copy(homeVodResult = list, currentClass = currentClass, classList = classList, filtersMap = filtersMap) }
                 }
             } catch (e: Exception) {
                 log.error("homeLoad", e)
             } finally {
-                hideProgress()
             }
+        }.invokeOnCompletion {
+            hideProgress()
+            isLoading.set(false)
         }
-        _model.value.page += 1
     }
 
     override fun loadMore() {
         if (model.value.currentClass == null || model.value.currentClass?.typeId == "home") return
+        if((model.value.currentClass?.failTime ?: 0) >= 2) return
         showProgress()
-        model.value.page += 1
+        if(isLoading.get()) return
+        isLoading.set(true)
         SiteViewModel.viewModelScope.launch {
             try {
-                SiteViewModel.categoryContent(
+                val extend = HashMap<String,String>()
+                extend[model.value.currentFilter.key ?: ""] = model.value.currentFilter.init
+                val rst = SiteViewModel.categoryContent(
                     GlobalModel.home.value.key,
-                    model.value.currentClass?.typeId,
+                    model.value.currentClass?.typeId ?: "",
                     model.value.page.toString(),
-                    true,
-                    HashMap()
+                    model.value.currentFilter.init.isNotBlank(),
+                    extend
                 )
-                val list = SiteViewModel.result.value.list
+                if(!rst.isSuccess || rst.list.isEmpty()){
+                    model.value.currentClass?.failTime?.plus(1)
+                    return@launch
+                }
+                model.value.page.addAndGet(1)
+                val list = rst.list
                 if (list.isNotEmpty()) {
-                    val vodList = model.value.homeVodResult?.toMutableList()
-                    vodList?.addAll(list)
-                    model.update { it.copy(homeVodResult = vodList?.toSet()?.toMutableSet()) }
+                    val vodList = model.value.homeVodResult.toMutableList()
+                    vodList.addAll(list)
+                    model.update { it.copy(homeVodResult = vodList.toSet().toMutableSet()) }
                 }
             } finally {
-                hideProgress()
             }
+        }.invokeOnCompletion {
+            isLoading.set(false)
+            hideProgress()
         }
+    }
+
+    override fun chooseCate(cate:String) {
+        if(isLoading.get()) return
+        isLoading.set(true)
+        SiteViewModel.viewModelScope.launch {
+            try {
+                model.value.page.set(1)
+                val extend = HashMap<String, String>()
+                extend[model.value.currentFilter.key ?: ""] = cate
+                val result = SiteViewModel.categoryContent(
+                    GlobalModel.home.value.key,
+                    cate,
+                    model.value.page.toString(),
+                    model.value.currentFilter.init.isNotBlank(),
+                    extend
+                )
+                model.update { it.copy(homeVodResult = result.list.toMutableSet()) }
+            } finally {
+
+            }
+        }.invokeOnCompletion {
+            isLoading.set(false)
+        }
+    }
+
+    fun getFilters(type:Type):Filter{
+        val filters = model.value.filtersMap[type.typeId] ?: return Filter.ALL
+        return filters.getFirstOrEmpty()
     }
 
     fun searchBarPrompt(){

@@ -29,7 +29,7 @@ class Suggest {
         fun get(str: String): List<String> {
             try {
                 val items = mutableListOf<String>()
-                for (item in objectFrom(str).data!!) items.add(item.name)
+                for (item in objectFrom(str).data?: listOf()) items.add(item.name)
                 return items
             } catch (e: Exception) {
                 return mutableListOf()

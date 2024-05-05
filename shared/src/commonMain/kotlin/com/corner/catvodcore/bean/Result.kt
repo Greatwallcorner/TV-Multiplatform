@@ -5,6 +5,7 @@ import com.corner.catvodcore.util.JsonStrToMapSerializer
 import com.corner.catvodcore.util.ToStringSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 class Result {
@@ -49,6 +50,13 @@ class Result {
 
     @Serializable(ToStringSerializer::class)
     val msg: String? = null
+
+    @Transient
+    var isSuccess:Boolean = true
+
+    constructor(isSuccess:Boolean = true){
+        this.isSuccess = isSuccess
+    }
 }
 
 fun Result.detailIsEmpty():Boolean{

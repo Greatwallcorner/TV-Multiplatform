@@ -21,10 +21,10 @@ open class Spider{
     }
 
     open fun categoryContent(
-        tid: String?,
-        pg: String?,
+        tid: String,
+        pg: String,
         filter: Boolean,
-        extend: HashMap<String?, String?>?
+        extend: HashMap<String, String>
     ): String {
         return "{}"
     }

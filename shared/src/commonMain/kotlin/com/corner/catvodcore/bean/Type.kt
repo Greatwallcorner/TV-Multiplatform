@@ -21,6 +21,9 @@ class Type {
     @Transient
     var selected:Boolean = false
 
+    @Transient
+    var failTime:Int =0
+
     companion object{
         fun home():Type{
             val type = Type("home", "推荐")
@@ -37,6 +40,7 @@ class Type {
 
         if (typeId != other.typeId) return false
         if (typeName != other.typeName) return false
+        if (failTime != other.failTime) return false
 
         return true
     }
@@ -44,6 +48,7 @@ class Type {
     override fun hashCode(): Int {
         var result = typeId.hashCode()
         result = 31 * result + typeName.hashCode()
+        result = 31 * result + failTime.hashCode()
         return result
     }
 }

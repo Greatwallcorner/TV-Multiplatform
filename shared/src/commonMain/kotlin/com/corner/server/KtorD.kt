@@ -5,8 +5,10 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.callloging.*
+import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
+private val log = LoggerFactory.getLogger("KtorD")
 object KtorD {
 
     var port: Int = -1;
@@ -17,6 +19,7 @@ object KtorD {
      * https://ktor.io/docs/configuration-file.html#predefined-properties
      */
     suspend fun init() {
+        log.info("KtorD init start")
         port = 9978
         do {
             try {
@@ -32,11 +35,12 @@ object KtorD {
                     .start(wait = false)
                 break
             } catch (e: Exception) {
+                log.error("start server e:", e)
                 ++port
                 server?.stop()
             }
         }while(port < 9999)
-        println(server!!.resolvedConnectors().first().port)
+        log.info("KtorD init end port:{}", server!!.resolvedConnectors().first().port)
     }
 
     fun stop(){

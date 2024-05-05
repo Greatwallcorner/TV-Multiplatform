@@ -57,7 +57,7 @@ object SiteViewModel {
                     val rst: Result = Jsons.decodeFromString<Result>(homeContent)
                     if ((rst.list.size) > 0) result.value = rst
                     val homeVideoContent = spider.homeVideoContent()
-                    SpiderDebug.log(homeVideoContent)
+                    SpiderDebug.log("homeContent: $homeVideoContent")
                     rst.list.addAll(Jsons.decodeFromString<Result>(homeContent).list)
                     result.value = rst.also { this.result.value = it }
                 }
@@ -79,7 +79,7 @@ object SiteViewModel {
             }
         } catch (e: Exception) {
             log.error("home Content site:{}", site.name, e)
-            return Result()
+            return Result(false)
         }
         result.value.list.forEach { it.site = site }
         return result.value
@@ -87,16 +87,17 @@ object SiteViewModel {
 
     fun detailContent(key: String, id: String): Result? {
         val site: Site = api?.sites?.find { it.key == key } ?: return null
+        var rst:Result = Result()
         try {
             if (site.type == 3) {
                 val spider: Spider = getSpider(site)
                 val detailContent = spider.detailContent(listOf(id))
                 SpiderDebug.log("detail:$detailContent")
                 setRecent(site)
-                val rst = Jsons.decodeFromString<Result>(detailContent)
+                rst = Jsons.decodeFromString<Result>(detailContent)
                 if (!rst.list.isEmpty()) rst.list.get(0).setVodFlags()
                 //            if (!rst.list.isEmpty()) checkThunder(rst.list.get(0).vodFlags())
-                return rst.also { detail.value = it }
+                detail.value = rst
             } else if (site.key.isEmpty() && site.name.isEmpty() && key == "push_agent") {
                 val vod = Vod()
                 vod.vodId = id
@@ -106,7 +107,7 @@ object SiteViewModel {
                 //            checkThunder(vod.getVodFlags())
                 val rs = Result()
                 rs.list = mutableListOf(vod)
-                return rs.also { detail.value = it }
+                detail.value = rs
             } else {
                 val params: MutableMap<String, String> =
                     mutableMapOf()
@@ -117,12 +118,14 @@ object SiteViewModel {
                 val rst = Jsons.decodeFromString<Result>(detailContent)
                 if (rst.list.isNotEmpty()) rst.list[0].setVodFlags()
                 //            if (!rst.list.isEmpty()) checkThunder(rst.list.get(0).getVodFlags())
-                return rst.also { detail.value = it }
+                detail.value = rst
             }
         } catch (e: Exception) {
             log.error("${site.name} detailContent 异常", e)
             return null
         }
+        rst.list.forEach { it.site = site }
+        return rst
     }
 
     fun playerContent(key: String, flag: String, id: String): Result? {
@@ -131,7 +134,7 @@ object SiteViewModel {
         try {
             if (site.type == 3) {
                 val spider: Spider = getSpider(site)
-                val playerContent = spider.playerContent(flag, id, api?.flags?.toList())
+                val playerContent = spider.playerContent(flag, id, api?.flags?.toList() ?: listOf())
                 SpiderDebug.log("player:$playerContent")
                 setRecent(site)
                 val result = Jsons.decodeFromString<Result>(playerContent)
@@ -231,9 +234,10 @@ object SiteViewModel {
         }
     }
 
-    fun categoryContent(key: String, tid: String?, page: String?, filter: Boolean, extend: HashMap<String?, String?>) {
-        val site: Site = getSite(key) ?: return
-        try {
+    fun categoryContent(key: String, tid: String, page: String, filter: Boolean, extend: HashMap<String, String>):Result{
+        log.info("categoryContent key:{} tid:{} page:{} filter:{} extend:{}", key, tid, page, filter, extend)
+        val site: Site = getSite(key) ?: return Result(false)
+         try {
             if (site.type == 3) {
                 val spider: Spider = getSpider(site)
                 val categoryContent = spider.categoryContent(tid, page, filter, extend)
@@ -244,16 +248,19 @@ object SiteViewModel {
                 val params = mutableMapOf<String, String>()
                 if (site.type == 1 && extend.isNotEmpty()) params.put("f", Jsons.encodeToString(extend))
                 else if (site.type == 4) params.put("ext", Utils.base64(Jsons.encodeToString(extend)))
-                params.put("ac", if (site.type == 0) "videolist" else "detail")
-                params.put("t", tid ?: "")
-                params.put("pg", page ?: "")
+                params["ac"] = if (site.type == 0) "videolist" else "detail"
+                params["t"] = tid
+                params["pg"] = page
                 val categoryContent = call(site, params, true)
                 SpiderDebug.log(categoryContent)
                 result.value = Jsons.decodeFromString<Result>(categoryContent)
             }
         } catch (e: Exception) {
             log.error("${site.name} category error", e)
+             result.value = Result(false)
         }
+        result.value.list.forEach{it.site = site}
+        return result.value
     }
 
 

@@ -3,6 +3,7 @@ package com.corner.ui.video
 import AppTheme
 import SiteViewModel
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.scrollBy
@@ -18,10 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowDropDown
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -47,13 +45,13 @@ import com.arkivanov.decompose.value.update
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Type
+import com.corner.catvodcore.bean.isEmpty
 import com.corner.catvodcore.config.api
 import com.corner.catvodcore.config.setHome
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
-import com.corner.ui.decompose.VideoComponent
 import com.corner.ui.decompose.component.DefaultVideoComponent
 import com.corner.ui.scene.Dialog
 import com.corner.ui.scene.RatioBtn
@@ -91,7 +89,7 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
                     .clip(RoundedCornerShape(3.dp))
                     .zIndex(999f)
                     .padding(5.dp),
-                text = if (showSite) vod.site?.name ?: "" else vod.vodRemarks!!,
+                text = if (showSite) vod.site?.name ?: "" else vod.vodRemarks ?: "",
                 fontWeight = FontWeight.Bold,
                 style = TextStyle(
                     color = Color.White,
@@ -115,18 +113,20 @@ fun VideoScene(
     val adapter = rememberScrollbarAdapter(state)
     val model = component.model.subscribeAsState()
 
-    val shouldLoadMore =
-        derivedStateOf {
-            val last = state.layoutInfo.visibleItemsInfo.lastOrNull()
-            last == null || last.index >= state.layoutInfo.totalItemsCount - 1
-        }
+    val isEmpty = derivedStateOf { model.value.homeVodResult.isEmpty() }
 
-    DisposableEffect(shouldLoadMore) {
-        if (shouldLoadMore.value) {
-            component.loadMore()
-        }
-        onDispose {
-        }
+    LaunchedEffect(state){
+        snapshotFlow { state.layoutInfo }
+            .collect{layoutInfo ->
+                val visibleItemsInfo = layoutInfo.visibleItemsInfo
+                if(visibleItemsInfo.isNotEmpty()){
+                    val lastVisibleItem = visibleItemsInfo.last()
+                    val isEnd = lastVisibleItem.index == layoutInfo.totalItemsCount - 1
+                    if(isEnd && (model.value.currentClass?.failTime ?: 0) < 2){
+                        component.loadMore()
+                    }
+                }
+            }
     }
 
     var showChooseHome by remember { mutableStateOf(false) }
@@ -140,32 +140,32 @@ fun VideoScene(
                 onClickSetting = { onClickSwitch(Menu.SETTING) },
                 onClickHistory = { onClickSwitch(Menu.HISTORY) })
         },
-//        floatingActionButton = {
-//            FloatButton(component)
-//        }
+        floatingActionButton = {
+            FloatButton(component)
+        }
     ) {
         Box(modifier = modifier.fillMaxSize().padding(it)) {
-            if (model.value.homeVodResult?.isEmpty() == true) {
-                Column {
-                    Image(
-                        modifier = modifier.align(Alignment.CenterHorizontally),
-                        painter = painterResource("nothing.png"),
-                        contentDescription = "nothing here",
-                        contentScale = ContentScale.Crop
-                    )
-                    Text("这里什么都没有...", modifier.align(Alignment.CenterHorizontally))
-                }
-            } else {
-                Column {
-                    if (model.value.classList.isNotEmpty()) {
-                        ClassRow(model) {
-                            component.model.update { it.copy(homeVodResult = SiteViewModel.result.value.list.toMutableSet()) }
-                            model.value.page = 1
-                            scope.launch {
-                                state.animateScrollToItem(0)
-                            }
+            Column {
+                if (model.value.classList.isNotEmpty()) {
+                    ClassRow(component) {
+                        component.model.update { it.copy(homeVodResult = SiteViewModel.result.value.list.toMutableSet()) }
+                        model.value.page.set(1)
+                        scope.launch {
+                            state.animateScrollToItem(0)
                         }
                     }
+                }
+                if (model.value.homeVodResult.isEmpty()) {
+                    Column(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
+                        Image(
+                            modifier = modifier.align(Alignment.CenterHorizontally),
+                            painter = painterResource("nothing.png"),
+                            contentDescription = "nothing here",
+                            contentScale = ContentScale.Crop
+                        )
+//                        Text("这里什么都没有...", modifier.align(Alignment.CenterHorizontally))
+                    }
+                } else {
                     LazyVerticalGrid(
                         modifier = modifier.padding(15.dp),
                         columns = GridCells.Adaptive(140.dp),
@@ -175,7 +175,7 @@ fun VideoScene(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         userScrollEnabled = true
                     ) {
-                        itemsIndexed(model.value.homeVodResult?.toList() ?: listOf()) { _, item ->
+                        itemsIndexed(model.value.homeVodResult.toList()) { _, item ->
                             VideoItem(Modifier.animateItemPlacement(), item, false) {
                                 if (item.isFolder()) {
                                     SiteViewModel.viewModelScope.launch {
@@ -199,6 +199,7 @@ fun VideoScene(
             )
             ChooseHomeDialog(component, showChooseHome, onClose = { showChooseHome = false }) {
                 showChooseHome = false
+                component.clear()
                 scope.launch {
                     state.animateScrollToItem(0)
                 }
@@ -209,19 +210,61 @@ fun VideoScene(
 
 @Composable
 fun FloatButton(component: DefaultVideoComponent) {
-    val show = remember { derivedStateOf { GlobalModel.chooseVod.value.isFolder() } }
+    val show = derivedStateOf { GlobalModel.chooseVod.value.isFolder() }
+    val model = component.model.subscribeAsState()
+    val showFilter = derivedStateOf { !model.value.currentFilter.isEmpty() }
+    var showDialog by remember { mutableStateOf(false) }
+    val dialogWidth = animateDpAsState(if (showDialog) 140.dp else 0.dp)
     AnimatedVisibility(
-        show.value,
-        /*enter = slideInVertically(
-        initialOffsetY = { fullHeight -> -fullHeight },
-        animationSpec = tween(durationMillis = 150, easing = LinearOutSlowInEasing)
-    ),
+        showFilter.value,
+        enter = slideInVertically(
+            initialOffsetY = { it },
+        ),
         exit = slideOutVertically(
-            targetOffsetY = { fullHeight -> -fullHeight },
-            animationSpec = tween(durationMillis = 250, easing = FastOutLinearInEasing)
-        )*/
+            targetOffsetY = { it },
+        ),
     ) {
-//        ElevatedButton()
+        Box(Modifier.fillMaxHeight(0.8f)
+            .fillMaxWidth(0.2f)
+            .padding(10.dp)
+        ) {
+            Surface(
+                Modifier.align(Alignment.BottomEnd)
+                    .background(Color.Transparent)
+                    .width(dialogWidth.value)
+                    .offset(y = (-70).dp),
+            ) {
+                Box(Modifier.background(Color.Transparent).padding(5.dp)) {
+                    val state = rememberLazyListState(0)
+                    LazyColumn(Modifier
+                        .background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(5.dp)),
+                        contentPadding = PaddingValues(5.dp),
+                        verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                        items(model.value.currentFilter.value ?: listOf()) {
+                            RatioBtn(it.n ?: "", onClick = {
+                                model.value.currentFilter.init = it.v ?: ""
+                                component.chooseCate(it.v ?: "")
+                            }, selected = it.v == model.value.currentFilter.init, loading = false)
+                        }
+                    }
+                    VerticalScrollbar(
+                        rememberScrollbarAdapter(state),
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        style = defaultScrollbarStyle().copy(
+                            unhoverColor = Color.Yellow,
+                            hoverColor = Color.DarkGray
+                        ))
+                }
+            }
+            ElevatedButton(
+                onClick = { showDialog = !showDialog },
+                modifier = Modifier.align(Alignment.BottomEnd).size(70.dp),
+                shape = RoundedCornerShape(50), contentPadding = PaddingValues(8.dp)
+            )
+            {
+                Icon(if (showDialog) Icons.Outlined.Close else Icons.Outlined.FilterAlt, "show filter dialog")
+            }
+        }
     }
 }
 
@@ -316,7 +359,8 @@ fun previewImageItem() {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun ClassRow(model: State<VideoComponent.Model>, onCLick: (Type) -> Unit) {
+fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
+    val model = component.model.subscribeAsState()
     val state = rememberLazyListState(0)
     val scope = rememberCoroutineScope()
     val visible = derivedStateOf { state.layoutInfo.visibleItemsInfo.size < model.value.classList.size }
@@ -334,33 +378,50 @@ fun ClassRow(model: State<VideoComponent.Model>, onCLick: (Type) -> Unit) {
             contentPadding = PaddingValues(top = 5.dp, start = 5.dp, end = 5.dp, bottom = 5.dp),
             userScrollEnabled = true
         ) {
-            items(model.value.classList.toList()) {
-                RatioBtn(text = it.typeName, onClick = {
+            items(model.value.classList.toList()) { type ->
+                RatioBtn(text = type.typeName, onClick = {
+                    if(component.isLoading.get()) return@RatioBtn
+                    component.isLoading.set(true)
                     SiteViewModel.viewModelScope.launch {
                         showProgress()
+//                        component.clear()
                         try {
-                            for (type in model.value.classList) {
-                                type.selected = it.typeId == type.typeId
+                            for (tp in model.value.classList) {
+                                tp.selected = type.typeId == tp.typeId
                             }
-                            model.value.currentClass = it
+                            model.value.currentClass = type
                             model.value.classList = model.value.classList.toSet().toMutableSet()
-                            if (it.typeId == "home") {
+                            val filterMap = SiteViewModel.result.value.filters
+                            if (filterMap.isNotEmpty()) {
+                                component.model.value.filtersMap = filterMap
+                                component.model.update {
+                                    it.copy(
+                                        currentFilter = component.getFilters(type)
+                                    )
+                                }
+                            }
+                            if (type.typeId == "home") {
                                 SiteViewModel.homeContent()
                             } else {
-                                SiteViewModel.categoryContent(
+                                val result = SiteViewModel.categoryContent(
                                     GlobalModel.home.value.key,
-                                    it.typeId,
+                                    type.typeId,
                                     "1",
-                                    true,
+                                    false,
                                     HashMap()
                                 )
+                                if (!result.isSuccess) {
+                                    model.value.currentClass?.failTime?.plus(1)
+                                }
                             }
                         } finally {
                             hideProgress()
                         }
-                        onCLick(it)
+                    }.invokeOnCompletion {
+                        onCLick(type)
+                        component.isLoading.set(false)
                     }
-                }, it.selected)
+                }, type.selected)
             }
         }
         if (visible.value) {

@@ -25,6 +25,7 @@ private val log = LoggerFactory.getLogger("apiConfig")
 
 
 fun parseConfig(cfg: Config, isJson: Boolean): Api? {
+    log.info("parseConfig start cfg:{} isJson:{}", cfg, isJson)
     val data = getData(if (isJson) cfg.json ?: "" else cfg.url!!, isJson) ?: throw RuntimeException("配置读取异常")
     if(StringUtils.isBlank(data)) {
         setHome(null)
@@ -41,6 +42,7 @@ fun parseConfig(cfg: Config, isJson: Boolean): Api? {
     }else{
         setHome(api?.sites?.first())
     }
+    log.info("parseConfig end")
     return apiConfig
 }
 

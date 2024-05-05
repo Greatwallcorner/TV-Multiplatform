@@ -2,8 +2,10 @@ package com.corner.ui.decompose
 
 import com.arkivanov.decompose.value.MutableValue
 import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Filter
 import com.corner.catvodcore.bean.Type
 import org.slf4j.Logger
+import java.util.concurrent.atomic.AtomicInteger
 
 interface VideoComponent {
     var log:Logger
@@ -14,12 +16,18 @@ interface VideoComponent {
 
     fun loadMore()
 
+    fun chooseCate(cate: String)
+
+    fun clear()
+
     data class Model(
-        var homeVodResult: MutableSet<Vod>? = null,
+        var homeVodResult: MutableSet<Vod> = mutableSetOf(),
         var homeLoaded: Boolean = false,
         var classList: MutableSet<Type> = mutableSetOf(),
+        var filtersMap: MutableMap<String, List<Filter>> = mutableMapOf(),
         var currentClass: Type? = null,
-        var page: Int = 1,
+        var currentFilter: Filter = Filter.ALL,
+        var page: AtomicInteger = AtomicInteger(1),
         var isRunning: Boolean = false,
         val prompt:String = ""
     ){
@@ -34,6 +42,8 @@ interface VideoComponent {
             if (homeLoaded != other.homeLoaded) return false
             if (classList != other.classList) return false
             if (currentClass != other.currentClass) return false
+            if (currentFilter != other.currentFilter) return false
+            if (filtersMap != other.filtersMap) return false
             if (page != other.page) return false
             if (isRunning != other.isRunning) return false
             if (prompt != other.prompt) return false
@@ -47,8 +57,10 @@ interface VideoComponent {
             result = 31 * result + homeLoaded.hashCode()
             result = 31 * result + classList.hashCode()
             classList.forEach{ result = 31 * result + it.hashCode()}
+            result = 31 * result + filtersMap.hashCode()
             result = 31 * result + (currentClass?.hashCode() ?: 0)
-            result = 31 * result + page
+            result = 31 * result + (currentClass?.hashCode() ?: 0)
+            result = 31 * result + page.hashCode()
             result = 31 * result + isRunning.hashCode()
             result = 31 * result + prompt.hashCode()
             return result

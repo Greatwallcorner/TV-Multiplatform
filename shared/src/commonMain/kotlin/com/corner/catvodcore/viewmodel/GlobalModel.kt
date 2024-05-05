@@ -11,4 +11,5 @@ object GlobalModel {
     val chooseVod = mutableStateOf<Vod>(Vod())
     var detailFromSearch = false
     val home = MutableValue<Site>(Site.get("",""))
+    val clear = MutableValue<Boolean>(false)
 }
