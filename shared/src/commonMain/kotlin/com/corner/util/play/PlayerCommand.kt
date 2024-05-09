@@ -17,11 +17,11 @@ interface PlayerCommand{
 //    fun add(s:String):String
 
     fun url(s:String):String{
-        return "\"$s\"";
+        return "\"$s\""
     }
 
     fun getProcessBuilder(result: Result, title: String, playerPath: String):ProcessBuilder{
-        return ProcessBuilder(playerPath, url(result.url?.v() ?: ""))
+        return ProcessBuilder(playerPath, url(result.url.v()))
     }
 
     fun buildHeaderStr(headers:Map<String, String>?):String{

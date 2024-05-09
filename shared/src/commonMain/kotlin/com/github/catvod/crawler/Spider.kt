@@ -5,7 +5,7 @@ import okhttp3.Dns
 import okhttp3.OkHttpClient
 
 open class Spider{
-    fun init() {
+    open fun init() {
     }
 
     open fun init(extend: String?) {

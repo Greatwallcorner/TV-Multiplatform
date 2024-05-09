@@ -38,7 +38,7 @@ class Result {
     val format: String? = null
 
     @Serializable(UrlSerializable::class)
-    var url: Url? = null
+    var url: Url = Url()
 
     var key: String? = null
 

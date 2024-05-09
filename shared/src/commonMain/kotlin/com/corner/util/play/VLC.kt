@@ -17,6 +17,6 @@ object VLC: PlayerCommand {
     }
 
     override fun getProcessBuilder(result: Result, title: String, playerPath: String): ProcessBuilder {
-        return ProcessBuilder(playerPath, title(title), /*"--playlist-tree",*/ url(result.url?.v() ?: ""))
+        return ProcessBuilder(playerPath, title(title), /*"--playlist-tree",*/ url(result.url.v()))
     }
 }

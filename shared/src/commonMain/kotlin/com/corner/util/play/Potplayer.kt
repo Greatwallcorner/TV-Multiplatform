@@ -39,7 +39,7 @@ object PotPlayer: PlayerCommand {
     override fun getProcessBuilder(result: Result, title: String, playerPath: String):ProcessBuilder{
         val processBuilder = ProcessBuilder(
             playerPath,
-            url(result.url?.v() ?: ""),
+            url(result.url.v()),
             currentProcess(),
             headers(result.header),
             title(title)

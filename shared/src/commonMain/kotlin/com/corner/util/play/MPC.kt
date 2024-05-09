@@ -17,6 +17,6 @@ object MPC: PlayerCommand {
     }
 
     override fun getProcessBuilder(result: Result, title: String, playerPath: String): ProcessBuilder {
-        return ProcessBuilder(playerPath, result.url?.v(), "/play")
+        return ProcessBuilder(playerPath, url(result.url.v()), "/play")
     }
 }
