@@ -1,9 +1,6 @@
 package com.corner.ui.scene
 
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
@@ -16,7 +13,9 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun BackRow(modifier: Modifier, onClickBack:()->Unit,content: @Composable ()->Unit){
-    Row(modifier = modifier/*.background(MaterialTheme.colorScheme.surface)*/.height(80.dp).fillMaxWidth().padding(start = 20.dp, end = 20.dp)) {
+    Row(modifier = modifier/*.background(MaterialTheme.colorScheme.surface)*/.height(80.dp).fillMaxWidth().padding(start = 20.dp, end = 20.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically) {
         IconButton(
             modifier = Modifier.align(Alignment.CenterVertically),
             onClick = { onClickBack() }

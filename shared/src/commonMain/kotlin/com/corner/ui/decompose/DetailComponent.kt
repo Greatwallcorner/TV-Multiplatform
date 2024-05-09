@@ -10,7 +10,8 @@ interface DetailComponent {
     data class Model(
         var siteKey:String = "",
         var detail:Vod? = null,
-        var quickSearchResult:CopyOnWriteArrayList<Vod> = CopyOnWriteArrayList()
+        var quickSearchResult:CopyOnWriteArrayList<Vod> = CopyOnWriteArrayList(),
+        var isQuickSearch: Boolean = false
     )
 
     fun load()

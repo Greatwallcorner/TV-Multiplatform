@@ -406,7 +406,7 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
                                 val result = SiteViewModel.categoryContent(
                                     GlobalModel.home.value.key,
                                     type.typeId,
-                                    "1",
+                                    model.value.page.getAndAdd(1).toString(),
                                     false,
                                     HashMap()
                                 )

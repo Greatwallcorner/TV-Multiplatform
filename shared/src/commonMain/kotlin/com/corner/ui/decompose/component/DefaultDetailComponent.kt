@@ -88,6 +88,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     }
 
     override fun quickSearch() {
+        model.update { it.copy(isQuickSearch = true) }
         searchScope.launch {
             val quickSearchSites = api?.sites?.filter { it.changeable == 1 }?.shuffled()
             log.debug("开始执行快搜 sites:{}", quickSearchSites?.map { it.name }.toString())
@@ -131,6 +132,8 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 model.update { it.copy(detail = GlobalModel.chooseVod.value) }
                 SnackBar.postMsg("暂无线路数据")
             }
+        }.invokeOnCompletion {
+            model.update { it.copy(isQuickSearch = false) }
         }
     }
 

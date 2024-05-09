@@ -14,9 +14,9 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Autorenew
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -74,12 +74,36 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                 component.clear()
                 onClickBack()
             }) {
-                Text(
-                    detail?.vodName ?: "",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(start = 50.dp)
-                )
+                Row(Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically){
+                    Row(horizontalArrangement = Arrangement.Start){
+                        Text(
+                            detail?.vodName ?: "",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.padding(start = 50.dp)
+                        )
+                    }
+
+                    Row(horizontalArrangement = Arrangement.End){
+                        IconButton(
+                            onClick = {
+                                SiteViewModel.viewModelScope.launch {
+                                    component.quickSearch()
+                                }
+                            },
+                            enabled = !model.value.isQuickSearch
+                        ) {
+                            if(model.value.isQuickSearch){
+                                LoadingIndicator(true)
+                            }else{
+                                Icon(Icons.Default.Autorenew, contentDescription = "renew", tint = MaterialTheme.colorScheme.onSecondaryContainer)
+                            }
+                        }
+                    }
+                }
+
             }
 
             if (model.value.detail == null) {
@@ -175,16 +199,18 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                         if (detail?.vodFlags?.isNotEmpty() == true) {
                             val state = rememberLazyListState(0)
                             Box() {
-                                LazyRow(horizontalArrangement = Arrangement.spacedBy(5.dp),
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp),
                                     state = state,
                                     modifier = Modifier.padding(bottom = 10.dp)
                                         .fillMaxWidth()
-                                    .onPointerEvent(PointerEventType.Scroll) {
-                                        scope.launch {
+                                        .onPointerEvent(PointerEventType.Scroll) {
+                                            scope.launch {
 //                                            if(it.changes.size == 0) return@launch
-                                            state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
-                                        }
-                                    },) {
+                                                state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
+                                            }
+                                        },
+                                ) {
                                     items(detail?.vodFlags?.toList() ?: listOf()) {
                                         RatioBtn(it?.show ?: "", onClick = {
 
@@ -204,12 +230,14 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                                         }, selected = it?.activated ?: false)
                                     }
                                 }
-                                if(state.layoutInfo.visibleItemsInfo.size < (detail?.vodFlags?.size ?: 0)){
-                                    HorizontalScrollbar(rememberScrollbarAdapter(state),
+                                if (state.layoutInfo.visibleItemsInfo.size < (detail?.vodFlags?.size ?: 0)) {
+                                    HorizontalScrollbar(
+                                        rememberScrollbarAdapter(state),
                                         style = defaultScrollbarStyle().copy(
                                             unhoverColor = Color.Gray.copy(0.45F),
                                             hoverColor = Color.DarkGray
-                                        ), modifier = Modifier.align(Alignment.BottomCenter))
+                                        ), modifier = Modifier.align(Alignment.BottomCenter)
+                                    )
                                 }
                             }
                             //
@@ -236,7 +264,7 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                             val scrollState = rememberLazyListState(0)
                             val scrollBarAdapter = rememberScrollbarAdapter(scrollState)
                             if (epSize > 15) {
-                                Box(modifier = Modifier.padding(bottom = 2.dp)){
+                                Box(modifier = Modifier.padding(bottom = 2.dp)) {
                                     LazyRow(
                                         state = scrollState,
                                         modifier = Modifier.padding(bottom = 2.dp),
@@ -261,8 +289,8 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                                     }
                                     HorizontalScrollbar(
                                         adapter = scrollBarAdapter,
-                                        modifier = Modifier.padding(bottom = 5.dp).align(Alignment.BottomCenter)
-                                        ,style = defaultScrollbarStyle().copy(
+                                        modifier = Modifier.padding(bottom = 5.dp).align(Alignment.BottomCenter),
+                                        style = defaultScrollbarStyle().copy(
                                             unhoverColor = Color.Gray.copy(0.45F),
                                             hoverColor = Color.DarkGray
                                         )

@@ -82,7 +82,7 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
         _model.update { it.copy(homeVodResult = mutableSetOf(),
             homeLoaded = false, classList = mutableSetOf(), filtersMap = mutableMapOf(),
             currentClass = null, currentFilter = Filter.ALL,
-            page = AtomicInteger(0),isRunning = false, prompt = ""
+            page = AtomicInteger(1),isRunning = false, prompt = ""
         ) }
     }
 
@@ -154,7 +154,7 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
                 val rst = SiteViewModel.categoryContent(
                     GlobalModel.home.value.key,
                     model.value.currentClass?.typeId ?: "",
-                    model.value.page.toString(),
+                    model.value.page.addAndGet(1).toString(),
                     model.value.currentFilter.init.isNotBlank(),
                     extend
                 )
@@ -162,7 +162,6 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
                     model.value.currentClass?.failTime?.plus(1)
                     return@launch
                 }
-                model.value.page.addAndGet(1)
                 val list = rst.list
                 if (list.isNotEmpty()) {
                     val vodList = model.value.homeVodResult.toMutableList()
