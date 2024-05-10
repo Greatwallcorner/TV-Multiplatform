@@ -53,10 +53,7 @@ import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
 import com.corner.ui.decompose.component.DefaultVideoComponent
-import com.corner.ui.scene.Dialog
-import com.corner.ui.scene.RatioBtn
-import com.corner.ui.scene.hideProgress
-import com.corner.ui.scene.showProgress
+import com.corner.ui.scene.*
 import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.launch
 
@@ -156,15 +153,7 @@ fun VideoScene(
                     }
                 }
                 if (model.value.homeVodResult.isEmpty()) {
-                    Column(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
-                        Image(
-                            modifier = modifier.align(Alignment.CenterHorizontally),
-                            painter = painterResource("nothing.png"),
-                            contentDescription = "nothing here",
-                            contentScale = ContentScale.Crop
-                        )
-//                        Text("这里什么都没有...", modifier.align(Alignment.CenterHorizontally))
-                    }
+                    emptyShow()
                 } else {
                     LazyVerticalGrid(
                         modifier = modifier.padding(15.dp),

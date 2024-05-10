@@ -37,10 +37,7 @@ import com.arkivanov.decompose.value.update
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
 import com.corner.database.Db
 import com.corner.ui.decompose.DetailComponent
-import com.corner.ui.scene.BackRow
-import com.corner.ui.scene.ExpandedText
-import com.corner.ui.scene.LoadingIndicator
-import com.corner.ui.scene.RatioBtn
+import com.corner.ui.scene.*
 import com.corner.ui.video.QuickSearchItem
 import com.corner.util.play.Play
 import com.seiko.imageloader.ui.AutoSizeImage
@@ -63,6 +60,15 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
         println("detail修改")
         onDispose {
         }
+    }
+
+    DisposableEffect(model.value.isQuickSearch){
+        if(model.value.isQuickSearch){
+            showProgress()
+        }else{
+            hideProgress()
+        }
+        onDispose {  }
     }
 
     Box(
@@ -95,19 +101,19 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                             },
                             enabled = !model.value.isQuickSearch
                         ) {
-                            if(model.value.isQuickSearch){
-                                LoadingIndicator(true)
-                            }else{
-                                Icon(Icons.Default.Autorenew, contentDescription = "renew", tint = MaterialTheme.colorScheme.onSecondaryContainer)
-                            }
+//                            if(model.value.isQuickSearch){
+//                                LoadingIndicator(true)
+//                            }else{
+//                                Icon(Icons.Default.Autorenew, contentDescription = "renew", tint = MaterialTheme.colorScheme.onSecondaryContainer)
+//                            }
+                            Icon(Icons.Default.Autorenew, contentDescription = "renew", tint = MaterialTheme.colorScheme.onSecondaryContainer)
                         }
                     }
                 }
-
             }
 
             if (model.value.detail == null) {
-                LoadingIndicator(true)
+                emptyShow()
             } else {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.weight(0.3f)) {

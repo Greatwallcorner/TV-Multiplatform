@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -71,6 +73,19 @@ fun LoadingIndicator(showProgress: Boolean) {
             )
 
         }
+    }
+}
+
+@Composable
+fun emptyShow(){
+    Column(Modifier.fillMaxWidth()/*.align(Alignment.CenterHorizontally)*/) {
+        Image(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            painter = painterResource("nothing.png"),
+            contentDescription = "nothing here",
+            contentScale = ContentScale.Crop
+        )
+//                        Text("这里什么都没有...", modifier.align(Alignment.CenterHorizontally))
     }
 }
 
