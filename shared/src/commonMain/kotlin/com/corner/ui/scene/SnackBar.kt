@@ -94,7 +94,8 @@ object SnackBar {
                 Snackbar(
                     modifier = Modifier.padding(top = 5.dp, start = 10.dp, end = 10.dp)
                         .height(60.dp)
-                        .width((35 * msg.value.length).dp)
+                        .wrapContentWidth()
+//                        .width((35 * msg.value.length).dp)
                         .align(Alignment.Center),
                     shape = RoundedCornerShape(25),
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -110,8 +111,7 @@ object SnackBar {
                         }
                     }
                 ) {
-
-                    Text(msg.value, modifier = Modifier.align(Alignment.Center), textAlign = TextAlign.Center)
+                    Text(msg.value, modifier = Modifier.align(Alignment.Center).fillMaxWidth(), textAlign = TextAlign.Center)
                 }
             }
         }
