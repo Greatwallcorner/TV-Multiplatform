@@ -101,7 +101,7 @@ object SnackBar {
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     action = {
-                        Box(modifier = Modifier.fillMaxHeight()) {
+                        Box(modifier = Modifier.fillMaxHeight().wrapContentWidth()) {
                             Icon(
                                 imageVector = Icons.Outlined.Close, contentDescription = "Close the SnackBar",
                                 modifier = Modifier.clickable(onClick = { msgList[index].value = "" })
