@@ -19,10 +19,10 @@ jobs:
       - run: ls && tree ./desktopApp /f
       - name: compress
         shell: pwsh
-        run: Compress-Archive -Path "./desktopApp/build/compose/binaries/main-release/app/TV" -DestinationPath ./TV-win-$Env:GITHUB_REF_NAME.zip
+        run: Compress-Archive -Path "./composeApp/build/compose/binaries/main-release/app/TV" -DestinationPath ./TV-win-$Env:GITHUB_REF_NAME.zip
       - name: move result to root
         shell: pwsh
-        run: Move-Item -Path "./desktopApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./desktopApp/build/compose/binaries/main-release/msi/*.msi" -Destination "./"
+        run: Move-Item -Path "./composeApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./composeApp/build/compose/binaries/main-release/msi/*.msi" -Destination "./"
       - run: ls
       - uses: actions/upload-artifact@v4
         with:
@@ -43,9 +43,9 @@ jobs:
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ls && tree
       - name: compress
-        run: cd ./desktopApp/build/compose/binaries/main-release/app/ && zip -q -r ./TV-linux-$GITHUB_REF_NAME.zip ./TV
+        run: cd ./composeApp/build/compose/binaries/main-release/app/TV && zip -q -r ./TV-linux-$GITHUB_REF_NAME.zip ./TV
       - name: move file
-        run: mv ./desktopApp/build/compose/binaries/main-release/deb/*.deb ./ && mv ./desktopApp/build/compose/binaries/main-release/app/*.zip ./
+        run: mv ./composeApp/build/compose/binaries/main-release/deb/*.deb ./ && mv ./composeApp/build/compose/binaries/main-release/app/*.zip ./
       - run: ls
       - uses: actions/upload-artifact@v4
         with:
@@ -67,9 +67,9 @@ jobs:
        - run: ./gradlew packageReleaseDistributionForCurrentOS
        - run: ls
        - name: compress
-         run: zip -q -r ./TV-$GITHUB_REF_NAME.zip ./desktopApp/build/compose/binaries/main-release/app/TV
+         run: zip -q -r ./TV-$GITHUB_REF_NAME.zip ./composeApp/build/compose/binaries/main-release/app/TV
        - name: move file
-         run: mv ./desktopApp/build/compose/binaries/main-release/pkg/*.pkg ./ && mv ./desktopApp/build/compose/binaries/main-release/pkg/*.pkg ./
+         run: mv ./composeApp/build/compose/binaries/main-release/pkg/*.pkg ./ && mv ./composeApp/build/compose/binaries/main-release/pkg/*.pkg ./
        - run: ls
        - uses: actions/upload-artifact@v4
          with:
