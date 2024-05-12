@@ -130,9 +130,9 @@ compose.desktop {
                 "jdk.httpserver",
                 "jdk.unsupported"
             )
-            val dir = project.layout.projectDirectory.dir("resources")
+            val dir = project.layout.projectDirectory.dir("/src/desktopMain/resources/res")
             println(dir)
-            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("/src/desktopMain/resources/res"))
 //            app icons https://github.com/JetBrains/compose-multiplatform/tree/master/tutorials/Native_distributions_and_local_execution#app-icon
             windows {
                 iconFile.set(project.file("/src/commonMain/composeResources/icon/icon-s.ico"))
