@@ -65,9 +65,9 @@ jobs:
        - run: ls
        - run: chmod +x ./gradlew && ./gradlew createReleaseDistributable
        - run: ./gradlew packageReleaseDistributionForCurrentOS
-       - run: ls
+       - run: ls && tree
        - name: compress
-         run: zip -q -r ./TV-$GITHUB_REF_NAME.zip ./composeApp/build/compose/binaries/main-release/app/TV
+         run: zip -q -r ./TV-$GITHUB_REF_NAME.zip ./composeApp/build/compose/binaries/main-release/app
        - name: move file
          run: mv ./composeApp/build/compose/binaries/main-release/pkg/*.pkg ./ && mv ./composeApp/build/compose/binaries/main-release/pkg/*.pkg ./
        - run: ls
