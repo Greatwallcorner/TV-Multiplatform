@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS `Site`
+(`key` TEXT NOT NULL, `name` TEXT, `searchable` INTEGER, `changeable` INTEGER, `recordable` INTEGER, PRIMARY KEY(`key`));
+
+find:
+SELECT * FROM
+Site
+WHERE key = ?;
