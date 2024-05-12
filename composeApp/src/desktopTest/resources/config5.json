@@ -1,0 +1,15 @@
+{
+  "spider": "file://E:\\Archives\\compose-mutiplatform-workspace\\My\\CatVodSpider\\jar\\spider.jar",
+  "sites": [
+    {
+      "key": "BD",
+      "name": "BD|首页",
+      "type": 3,
+      "api": "csp_BD",
+      "searchable": 1,
+      "changeable": 1,
+      "ext": {
+      }
+    }
+  ]
+}

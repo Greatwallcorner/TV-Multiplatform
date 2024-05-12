@@ -1,0 +1,6 @@
+sync: "F:\ProgramFiles\scoop\apps\potplayer\current\PotPlayerMini64.exe"
+    "F:\ProgramFiles\scoop\apps\vlc\current\vlc.exe"
+    "F:\ProgramFiles\scoop\apps\mpc-be\current\mpc-be64.exe"
+    "F:\ProgramFiles\scoop\apps\mpv\current\mpv.exe"
+
+home: "E:\Program File\Tools\Scoop\apps\potplayer\current\PotPlayerMini64.exe"
