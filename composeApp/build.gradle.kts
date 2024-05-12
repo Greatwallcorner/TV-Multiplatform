@@ -109,7 +109,7 @@ compose.desktop {
         buildTypes.release.proguard {
 //            obfuscate.set(true)
             isEnabled.set(true)
-            configurationFiles.from(project.file("/src/desktopMain/rules.pro"))
+            configurationFiles.from(project.file("src/desktopMain/rules.pro"))
         }
 
         jvmArgs("-Dfile.encoding=UTF-8")
