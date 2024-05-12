@@ -116,9 +116,9 @@ compose.desktop {
         jvmArgs("-Dfile.encoding=UTF-8")
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Pkg)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "TV"
-            packageVersion = "1.1.14"
+            packageVersion = "1.1.18"
             vendor = "TV Multiplatform"
 
             modules(

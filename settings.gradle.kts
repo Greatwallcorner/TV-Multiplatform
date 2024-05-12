@@ -10,6 +10,7 @@ pluginManagement {
                 includeGroupAndSubgroups("com.google")
             }
         }
+        maven("https://maven.hq.hydraulic.software")
         mavenCentral()
         gradlePluginPortal()
     }

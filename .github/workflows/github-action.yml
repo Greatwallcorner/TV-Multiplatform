@@ -43,7 +43,7 @@ jobs:
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ls && tree
       - name: compress
-        run: cd ./composeApp/build/compose/binaries/main-release/app/TV && zip -q -r ./TV-linux-$GITHUB_REF_NAME.zip ./TV
+        run: cd ./composeApp/build/compose/binaries/main-release/app && zip -q -r ./TV-linux-$GITHUB_REF_NAME.zip ./TV
       - name: move file
         run: mv ./composeApp/build/compose/binaries/main-release/deb/*.deb ./ && mv ./composeApp/build/compose/binaries/main-release/app/*.zip ./
       - run: ls
