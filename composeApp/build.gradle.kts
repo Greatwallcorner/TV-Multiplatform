@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     kotlin("plugin.serialization") version "1.9.20"
     id("app.cash.sqldelight") version "2.0.0"
+    id("dev.hydraulic.conveyor") version "1.10"
 //    id("io.ktor.plugin") version "2.3.7"
 }
 
@@ -137,18 +138,18 @@ compose.desktop {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("/src/desktopMain/resources/res"))
 //            app icons https://github.com/JetBrains/compose-multiplatform/tree/master/tutorials/Native_distributions_and_local_execution#app-icon
             windows {
-                iconFile.set(project.file("/src/commonMain/composeResources/icon/icon-s.ico"))
+                iconFile.set(project.file("src/commonMain/composeResources/icon/icon-s.ico"))
                 dirChooser = true
                 upgradeUuid = "161FA5A0-A30B-4568-9E84-B3CD637CC8FE"
             }
 
             linux {
-                iconFile.set(project.file("/src/commonMain/composeResources/icon/TV-icon-s.png"))
+                iconFile.set(project.file("src/commonMain/composeResources/icon/TV-icon-s.png"))
 
             }
 
             macOS {
-                iconFile.set(project.file("/src/commonMain/composeResources/icon/icon.icns"))
+                iconFile.set(project.file("src/commonMain/composeResources/icon/icon.icns"))
             }
 
         }
