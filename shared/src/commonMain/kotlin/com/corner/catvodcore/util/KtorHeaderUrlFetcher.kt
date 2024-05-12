@@ -10,6 +10,7 @@ import kotlinx.serialization.json.jsonObject
 import okhttp3.Headers.Companion.toHeaders
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 
 
 class KtorHeaderUrlFetcher private constructor(
@@ -35,21 +36,20 @@ class KtorHeaderUrlFetcher private constructor(
         }
 
 
-        val reqeust = Request.Builder().url(url.split("@")[0]).headers(headers.toHeaders()).build()
-        val response = httpClient.newCall(reqeust).execute()
-        if (response.isSuccessful) {
-            val ofSource = FetchResult.OfPainter(
-                painter = BitmapPainter(loadImageBitmap(response.body.byteStream()))
-            )
-//            val ofSource = FetchResult.OfSource(
-//                source = response.bodyAsChannel().toInputStream().source().buffer(),
-//                extra = extraData {
-//                    mimeType(response.contentType()?.toString())
-//                },
-//            )
-            return ofSource
+        val request = Request.Builder().url(url.split("@")[0]).headers(headers.toHeaders()).build()
+        var response:Response? = null
+        try {
+            response = httpClient.newCall(request).execute()
+            if (response.isSuccessful) {
+                val ofSource = FetchResult.OfPainter(
+                    painter = BitmapPainter(loadImageBitmap(response.body.byteStream()))
+                )
+                return ofSource
+            }
+        }finally {
+            response?.close()
         }
-        throw RuntimeException("code:${response.code}, ${HttpStatusCode.fromValue(response.code)}")
+        throw RuntimeException("code:${response?.code}, ${HttpStatusCode.fromValue(response?.code ?: 500)}")
     }
 
     class Factory(

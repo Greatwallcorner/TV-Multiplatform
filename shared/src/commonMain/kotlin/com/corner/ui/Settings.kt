@@ -98,12 +98,13 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
     ) {
         Column(Modifier.fillMaxSize()) {
             BackRow(Modifier, onClickBack = { onClickBack() }) {
-                Text(
-                    "设置",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically){
+                    Text(
+                        "设置",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                }
 //                IconButton(modifier = Modifier.align(Alignment.End), onClick = {showAboutDialog = true}){ Icon(Icons.Default.Info, "About", tint = MaterialTheme.colorScheme.onSecondary) }
             }
             LazyColumn {

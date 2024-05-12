@@ -1,11 +1,13 @@
 package com.corner.init
 
+import com.arkivanov.decompose.value.update
 import com.corner.bean.Hot
 import com.corner.catvodcore.config.api
 import com.corner.catvodcore.config.init
 import com.corner.catvodcore.config.parseConfig
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.loader.JarLoader
+import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
 import com.corner.database.appModule
 import com.corner.server.KtorD
@@ -52,6 +54,7 @@ fun initConfig() {
     log.info("initConfig start")
     JarLoader.clear()
     api = null
+    GlobalModel.clear.update {!it}
 
     val siteConfig = Db.Config.findOneByType(ConfigType.SITE.ordinal.toLong()) ?: return
     try {

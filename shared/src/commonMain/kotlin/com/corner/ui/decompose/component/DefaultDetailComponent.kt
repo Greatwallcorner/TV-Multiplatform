@@ -46,6 +46,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         lifecycle.subscribe(object : Lifecycle.Callbacks {
             override fun onStop() {
                 log.info("Detail onStop")
+                searchScope.cancel("on stop")
                 fromSearchLoadJob.cancel("on stop")
                 super.onStop()
             }
@@ -59,7 +60,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         SiteViewModel.viewModelScope.launch {
             if(GlobalModel.detailFromSearch){
                 val list = SiteViewModel.getSearchResultActive().getList()
-                model.update { it.copy(quickSearchResult = CopyOnWriteArrayList(list), detail = list.first()) }
+                model.update { it.copy(quickSearchResult = CopyOnWriteArrayList(list), detail = chooseVod) }
                 fromSearchLoadJob = SiteViewModel.viewModelScope.launch {
                     if(model.value.quickSearchResult.isNotEmpty()) loadDetail(model.value.quickSearchResult[0])
                 }
@@ -83,7 +84,6 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                     model.update { it.copy(detail = detail) }
                 }
             }
-            //
         }
     }
 
@@ -109,7 +109,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                     }
                     model.update {
                         val list = CopyOnWriteArrayList<Vod>()
-                        list.addAllAbsent(SiteViewModel.quickSearch.get(0).getList())
+                        list.addAllAbsent(SiteViewModel.quickSearch.value[0].getList())
                         it.copy(
                             quickSearchResult = list
                         )
@@ -174,6 +174,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         SiteViewModel.viewModelScope.launch {
             supervisor.cancel("退出详情页")
             delay(2000)
+            jobList.forEach{it.cancel("detail clear")}
             jobList.clear()
             model.update { it.copy(quickSearchResult = CopyOnWriteArrayList(), detail = null) }
             SiteViewModel.clearQuickSearch()
@@ -187,9 +188,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     override fun setDetail(vod: Vod) {
         if (!currentSiteKey.equals(vod.site?.key)) {
-            SnackBar.postMsg(
-                "正在切换站源至 [${vod.site!!.name}]"
-            )
+            SnackBar.postMsg("正在切换站源至 [${vod.site!!.name}]")
         }
         model.update { it.copy(detail = vod) }
     }

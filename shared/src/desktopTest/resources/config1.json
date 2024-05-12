@@ -26,7 +26,7 @@
       "name": "BD|首页",
       "type": 3,
       "api": "csp_BD",
-      "searchable": 0,
+      "searchable": 1,
       "changeable": 0,
       "ext": {
       }

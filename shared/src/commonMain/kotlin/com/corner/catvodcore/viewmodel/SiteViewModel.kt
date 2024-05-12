@@ -1,5 +1,4 @@
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
@@ -34,14 +33,14 @@ object SiteViewModel {
     val result: MutableState<Result> by lazy {  mutableStateOf(Result())}
     val detail: MutableState<Result> by lazy {  mutableStateOf(Result())}
     val player: MutableState<Result> by lazy {  mutableStateOf(Result())}
-    val search: MutableList<Collect> by mutableStateOf<CopyOnWriteArrayList<Collect>>(CopyOnWriteArrayList(listOf(Collect.all())))
-    val quickSearch: MutableList<Collect>by mutableStateOf<CopyOnWriteArrayList<Collect>>(CopyOnWriteArrayList(listOf(Collect.all())))
+    val search: MutableState<CopyOnWriteArrayList<Collect>> = mutableStateOf(CopyOnWriteArrayList(listOf(Collect.all())))
+    val quickSearch: MutableState<CopyOnWriteArrayList<Collect>> = mutableStateOf(CopyOnWriteArrayList(listOf(Collect.all())))
 
     private val supervisorJob = SupervisorJob()
     val viewModelScope = CoroutineScope(Dispatchers.Default + supervisorJob)
 
     fun getSearchResultActive(): Collect {
-        return search.filter { it.isActivated().value }.first()
+        return search.value.filter { it.isActivated().value }.first()
     }
 
     fun homeContent(): Result {
@@ -115,10 +114,10 @@ object SiteViewModel {
                 params.put("ids", id)
                 val detailContent = call(site, params, true)
                 SpiderDebug.log(detailContent)
-                val rst = Jsons.decodeFromString<Result>(detailContent)
-                if (rst.list.isNotEmpty()) rst.list[0].setVodFlags()
+                val rs = Jsons.decodeFromString<Result>(detailContent)
+                if (rs.list.isNotEmpty()) rs.list[0].setVodFlags()
                 //            if (!rst.list.isEmpty()) checkThunder(rst.list.get(0).getVodFlags())
-                detail.value = rst
+                detail.value = rs
             }
         } catch (e: Exception) {
             log.error("${site.name} detailContent 异常", e)
@@ -168,7 +167,7 @@ object SiteViewModel {
                 if (type != null && type == "json") {
                     val string = Http.newCall(id, site.header.toHeaders()).execute().body.string()
                     if (StringUtils.isNotBlank(string)) {
-                        url = Jsons.decodeFromString<Result>(string).url!!
+                        url = Jsons.decodeFromString<Result>(string).url
                     }
                 }
                 val result = Result()
@@ -268,24 +267,30 @@ object SiteViewModel {
         if (result.list.isEmpty()) return
         for (vod in result.list) vod.site = site
         if (quick) {
-            quickSearch.add(Collect.create(result.list))
+            quickSearch.value.add(Collect.create(result.list))
+            if(quickSearch.value.size == 0){
+                quickSearch.value.add(Collect.all())
+            }
             // 同样的数据添加到全部
-            quickSearch.get(0).getList().addAll(result.list)
+            quickSearch.value.get(0).getList().addAll(result.list)
         } else {
-            search.add(Collect.create(result.list))
+            search.value.add(Collect.create(result.list))
+            if(search.value.size == 0){
+                search.value.add(Collect.all())
+            }
             // 同样的数据添加到全部
-            search.get(0).getList().addAll(result.list)
+            search.value.get(0).getList().addAll(result.list)
         }
     }
 
     fun clearSearch() {
-        search.clear()
-        search.add(Collect.all())
+        search.value.clear()
+        search.value.add(Collect.all())
     }
 
     fun clearQuickSearch() {
-        quickSearch.clear()
-        quickSearch.add(Collect.all())
+        quickSearch.value.clear()
+        quickSearch.value.add(Collect.all())
     }
 }
 

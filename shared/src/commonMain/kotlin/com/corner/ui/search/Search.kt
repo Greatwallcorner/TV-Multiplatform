@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -30,7 +30,6 @@ import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.config.api
-import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.component.DefaultSearchComponent
 import com.corner.ui.decompose.component.DefaultSearchPageComponent
 import com.corner.ui.decompose.component.DefaultSearchPagesComponent
@@ -86,14 +85,18 @@ private fun SearchResult(
 ) {
     val model = component.model.subscribeAsState()
     var searchText by remember { mutableStateOf(keyword) }
-    val result = remember { mutableStateOf(SiteViewModel.search) }
-    var currentCollect by remember { mutableStateOf<Collect?>(SiteViewModel.search[0]) }
+    val result = SiteViewModel.search
+    var currentCollect by remember { mutableStateOf<Collect?>(SiteViewModel.search.value[0]) }
     val currentVodList by rememberUpdatedState(model.value.currentVodList)
 
     val state = rememberLazyGridState()
     val adapter = rememberScrollbarAdapter(state)
 
-    val showLoadMore = remember { derivedStateOf { model.value.searchCompleteSites.size < (api?.sites?.filter { it.searchable == 1 }?.size ?: 0) } }
+    val showLoadMore = remember {
+        derivedStateOf {
+            model.value.searchCompleteSites.size < (api?.sites?.filter { it.searchable == 1 }?.size ?: 0)
+        }
+    }
 
     DisposableEffect(searchText) {
         component.search(searchText, false)
@@ -143,7 +146,7 @@ private fun SearchResult(
                             .background(Color.Gray.copy(0.4f)),
                         verticalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
-                        items(items = result.value) { item: Collect ->
+                        items(items = result.value.toList()) { item: Collect ->
                             RatioBtn(
                                 text = item.getSite()?.name ?: "",
                                 onClick = {
@@ -157,16 +160,14 @@ private fun SearchResult(
                             )
                         }
                     }
-//                    if(showLoadMore.value){
-                        Surface(Modifier.align(Alignment.BottomCenter).padding(vertical = 10.dp, horizontal = 8.dp)) {
-                            RatioBtn(text = if(showLoadMore.value) "加载更多" else "没有更多", onClick = {
-                                component.search(searchText, true)
-                            }, false)
-                        }
-//                    }
+                    Surface(Modifier.align(Alignment.BottomCenter).padding(vertical = 10.dp, horizontal = 8.dp)) {
+                        RatioBtn(text = if (showLoadMore.value) "加载更多" else "没有更多", onClick = {
+                            component.search(searchText, true)
+                        }, false)
+                    }
                 }
                 Box(modifier = Modifier.fillMaxSize()) {
-                    if (currentVodList.isEmpty()) {
+                    if (currentVodList.value.isEmpty()) {
                         Image(
                             modifier = Modifier.align(Alignment.Center),
                             painter = painterResource("nothing.png"),
@@ -183,9 +184,8 @@ private fun SearchResult(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             userScrollEnabled = true
                         ) {
-                            itemsIndexed(currentVodList) { _, item ->
+                            items(items = currentVodList.value.toList()) { item ->
                                 VideoItem(Modifier, item, true) {
-                                    GlobalModel.chooseVod.value = it
                                     onClickItem(it)
                                 }
                             }

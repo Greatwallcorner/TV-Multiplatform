@@ -115,6 +115,7 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
             if (model.value.detail == null) {
                 emptyShow()
             } else {
+                val searchResultList = derivedStateOf { model.value.quickSearchResult.toList() }
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.weight(0.3f)) {
                         AutoSizeImage(
@@ -139,7 +140,7 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                                     verticalArrangement = Arrangement.spacedBy(5.dp),
                                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                                 ) {
-                                    items(model.value.quickSearchResult) {
+                                    items(searchResultList.value) {
                                         QuickSearchItem(it) {
                                             SiteViewModel.viewModelScope.launch {
                                                 component.loadDetail(it)

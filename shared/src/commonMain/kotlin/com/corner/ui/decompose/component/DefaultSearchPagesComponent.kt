@@ -5,7 +5,6 @@ import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.router.pages.*
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.decompose.value.update
 import com.corner.ui.decompose.SearchComponent
 import com.corner.ui.decompose.SearchPagesComponent
 import kotlinx.serialization.Serializable
@@ -38,7 +37,7 @@ class DefaultSearchPagesComponent(component: ComponentContext):SearchPagesCompon
 
 
     override fun onSearch(keyword: String) {
-        model.update { it.copy(keyword = keyword, isSearching = true) }
+        model.value.keyword = keyword
         navigation.selectNext(circular = true)
     }
     @Serializable

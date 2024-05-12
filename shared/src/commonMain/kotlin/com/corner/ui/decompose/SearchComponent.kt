@@ -1,12 +1,13 @@
 package com.corner.ui.decompose
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.value.MutableValue
 import com.corner.bean.HotData
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
 import com.corner.ui.search.SearchPageType
 import kotlinx.coroutines.*
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
 
 interface SearchComponent {
@@ -17,12 +18,12 @@ interface SearchComponent {
         val searchScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob()),
         var isSearching: Boolean = false,
         var jobList: MutableList<Job> = mutableListOf<Job>(),
-        var currentVodList:CopyOnWriteArrayList<Vod> = CopyOnWriteArrayList(),
+        var currentVodList:MutableState<MutableList<Vod>> = mutableStateOf(mutableListOf()),
         var currentPage:SearchPageType = SearchPageType.page,
         var searchCompleteSites:CopyOnWriteArraySet<String> = CopyOnWriteArraySet()
     ) {
-        fun cancelAndClearJobList() {
-            jobList.forEach { i -> i.cancel("search") }
+        fun cancelJobAndClear() {
+            jobList.forEach { i -> i.cancel("search clear") }
             jobList.clear()
         }
 
@@ -49,7 +50,7 @@ interface SearchComponent {
             result = 31 * result + searchScope.hashCode()
             result = 31 * result + isSearching.hashCode()
             result = 31 * result + jobList.hashCode()
-            currentVodList.forEach { result += 31 * it.hashCode() }
+            currentVodList.value.forEach { result += 31 * it.hashCode() }
             result = 31 * result + currentVodList.hashCode()
             result = 31 * result + currentPage.hashCode()
             return result

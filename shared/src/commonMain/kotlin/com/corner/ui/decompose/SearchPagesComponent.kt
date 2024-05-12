@@ -16,7 +16,7 @@ interface SearchPagesComponent {
     fun onSearch(keyword: String)
 
     data class Model(
-        val keyword:String,
+        var keyword:String,
         var isSearching:Boolean = false,
     )
 }

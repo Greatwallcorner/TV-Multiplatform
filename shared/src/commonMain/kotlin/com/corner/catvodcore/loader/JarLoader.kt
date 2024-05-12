@@ -25,6 +25,7 @@ object JarLoader {
         loaders.clear()
         methods.clear()
         spiders.clear()
+        recent = null
     }
 
     fun loadJar(key: String, spider: String) {

@@ -41,6 +41,7 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
             homeLoad()
         }
         GlobalModel.clear.observe {
+            log.debug("清空")
             clear()
         }
         GlobalModel.hotList.observe {
