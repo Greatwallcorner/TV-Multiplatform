@@ -117,7 +117,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Pkg)
             packageName = "TV"
-            packageVersion = "1.1.11"
+            packageVersion = "1.1.14"
             vendor = "TV Multiplatform"
 
             modules(
