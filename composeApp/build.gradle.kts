@@ -26,6 +26,7 @@ kotlin {
             val ktorVer = "2.3.8"
             val logbackVer = "1.3.14"
             val imageLoader = "1.7.4"
+            val hutoolVer = "5.8.27"
 //            val kotlinVersion = extra["kotlin.version"] as String
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -40,7 +41,8 @@ kotlin {
 
 //                // tool
             api("com.google.guava:guava:31.1-jre")
-            api("cn.hutool:hutool-all:5.8.27")
+            implementation("cn.hutool:hutool-core:$hutoolVer")
+            implementation("cn.hutool:hutool-http:$hutoolVer")
 
             //DI
             api("io.insert-koin:koin-core:3.5.3")
@@ -102,12 +104,12 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "com.corner.MainKt"
+        mainClass = "MainKt"
 
         buildTypes.release.proguard {
 //            obfuscate.set(true)
             isEnabled.set(true)
-            configurationFiles.from(project.file("rules.pro"))
+            configurationFiles.from(project.file("/src/desktopMain/rules.pro"))
         }
 
         jvmArgs("-Dfile.encoding=UTF-8")

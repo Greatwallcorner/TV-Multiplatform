@@ -33,7 +33,7 @@
 -keep class com.github.sardine.** {*;}
 -keep class io.ktor.** {*;}
 -keep class uk.co.caprica.vlcj.binding.support.component.** {*;}
--keep class com.corner.**{*;}
+#-keep class com.corner.**{*;}
 -keep class org.jupnp.** {*;}
 -keep class uk.co.caprica.vlcj.** {*;}
 -keep class org.slf4j.** {*;}
@@ -46,14 +46,14 @@
 -keep class com.github.catvod.** {*;}
 -keep class okio.** {*;}
 -keep class com.seiko.imageloader.** {*;}
-#-keep class com.typesafe.** {*;}
 -keep class kotlinx.html.** {*;}
 -keep class com.google.common.** {*;}
 -keep class org.jsoup.** {*;}
 -keep class app.cash.sqldelight.** {*;}
 -keep class com.arkivanov.decompose.** {*;}
--keep class cn.hutool.core.** {*;}
-
+-keep class MainKt {*;}
+-keep class com.corner.init.** {*;}
+-keep class com.corner.server.** {*;}
 
 -dontwarn org.jboss.marshalling.**
 -dontwarn org.conscrypt.**
@@ -81,5 +81,6 @@
 -dontwarn android.**
 -dontwarn org.openjsse.**
 -dontwarn org.jupnp.**
+-dontwarn cn.hutool.**
 -dontusemixedcaseclassnames
 -verbose
