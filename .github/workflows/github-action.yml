@@ -69,13 +69,12 @@ jobs:
        - name: compress
          run: zip -q -r ./TV-$GITHUB_REF_NAME.zip ./composeApp/build/compose/binaries/main-release/app
        - name: move file
-         run: mv ./composeApp/build/compose/binaries/main-release/pkg/*.pkg ./ && mv ./composeApp/build/compose/binaries/main-release/pkg/*.pkg ./
+         run: mv ./composeApp/build/compose/binaries/main-release/dmg/*.dmg ./
        - run: ls
        - uses: actions/upload-artifact@v4
          with:
            name: mac-file
            path: |
-             *.pkg
              *.dmg
              *.zip
   release:
