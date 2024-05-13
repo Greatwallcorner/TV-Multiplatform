@@ -27,9 +27,11 @@ import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.jetbrains.pages.Pages
 import com.arkivanov.decompose.extensions.compose.jetbrains.pages.PagesScrollAnimation
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.arkivanov.decompose.value.update
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.config.ApiConfig
+import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.component.DefaultSearchComponent
 import com.corner.ui.decompose.component.DefaultSearchPageComponent
 import com.corner.ui.decompose.component.DefaultSearchPagesComponent
@@ -54,7 +56,7 @@ fun SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Un
     ) { _, p ->
         when (p) {
             is DefaultSearchComponent -> SearchResult(
-                p, keyword = model.value.keyword, onClickBack = { onClickBack() },
+                p, onClickBack = { onClickBack() },
             ) {
                 onClickItem(it)
             }
@@ -79,12 +81,11 @@ fun SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Un
 @Composable
 private fun SearchResult(
     component: DefaultSearchComponent,
-    keyword: String,
     onClickBack: () -> Unit,
     onClickItem: (Vod) -> Unit
 ) {
     val model = component.model.subscribeAsState()
-    var searchText by remember { mutableStateOf(keyword) }
+    val searchText = GlobalModel.keyword.subscribeAsState()
     val result = SiteViewModel.search
     var currentCollect by remember { mutableStateOf<Collect?>(SiteViewModel.search.value[0]) }
     val currentVodList by rememberUpdatedState(model.value.currentVodList)
@@ -94,12 +95,12 @@ private fun SearchResult(
 
     val showLoadMore = remember {
         derivedStateOf {
-            model.value.searchCompleteSites.size < (ApiConfig.api.sites?.filter { it.searchable == 1 }?.size ?: 0)
+            model.value.searchCompleteSites.size < (ApiConfig.api.sites.filter { it.searchable == 1 }.size)
         }
     }
 
-    DisposableEffect(searchText) {
-        component.search(searchText, false)
+    DisposableEffect(searchText.value) {
+        component.search(searchText.value, false)
         onDispose {
         }
     }
@@ -129,9 +130,9 @@ private fun SearchResult(
                 SearchBar(
                     Modifier.align(Alignment.CenterVertically),
                     remember { FocusRequester() },
-                    keyword,
+                    searchText.value,
                     onSearch = { s ->
-                        searchText = s
+                        GlobalModel.keyword.update { s }
                     }, model.value.isSearching
                 )
                 Spacer(Modifier.size(20.dp))
@@ -162,7 +163,7 @@ private fun SearchResult(
                     }
                     Surface(Modifier.align(Alignment.BottomCenter).padding(vertical = 10.dp, horizontal = 8.dp)) {
                         RatioBtn(text = if (showLoadMore.value) "加载更多" else "没有更多", onClick = {
-                            component.search(searchText, true)
+                            component.search( searchText.value, true)
                         }, false)
                     }
                 }

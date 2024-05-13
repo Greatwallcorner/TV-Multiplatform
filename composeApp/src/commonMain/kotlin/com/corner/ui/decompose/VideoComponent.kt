@@ -53,7 +53,7 @@ interface VideoComponent {
 
         override fun hashCode(): Int {
             var result = 0
-            homeVodResult?.forEach{result = 31 * result + it.hashCode()}
+            homeVodResult.forEach{result = 31 * result + it.hashCode()}
             result = 31 * result + homeLoaded.hashCode()
             result = 31 * result + classList.hashCode()
             classList.forEach{ result = 31 * result + it.hashCode()}

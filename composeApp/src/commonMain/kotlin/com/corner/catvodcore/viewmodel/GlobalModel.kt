@@ -12,6 +12,7 @@ object GlobalModel {
     var detailFromSearch = false
     val home = MutableValue<Site>(Site.get("",""))
     val clear = MutableValue<Boolean>(false)
+    var keyword = MutableValue<String>("")
 
     fun clearHome(){
         home.value = Site.get("","")
