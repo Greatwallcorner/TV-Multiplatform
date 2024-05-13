@@ -13,6 +13,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 17
+          cache: 'gradle'
       - run: ls
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ./gradlew createReleaseDistributable
@@ -38,6 +39,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 17
+          cache: 'gradle'
       - run: ls
       - run: chmod +x ./gradlew && ./gradlew createReleaseDistributable
       - run: ./gradlew packageReleaseDistributionForCurrentOS
@@ -45,7 +47,7 @@ jobs:
       - name: compress
         run: cd ./composeApp/build/compose/binaries/main-release/app && zip -q -r ./TV-linux-$GITHUB_REF_NAME.zip ./TV
       - name: move file
-        run: mv ./composeApp/build/compose/binaries/main-release/deb/*.deb ./ && mv ./composeApp/build/compose/binaries/main-release/app/*.zip ./
+        run: mv ./composeApp/build/compose/binaries/main-release/deb/*.deb ./TV-linux-$GITHUB_REF_NAME.deb && mv ./composeApp/build/compose/binaries/main-release/app/*.zip ./
       - run: ls
       - uses: actions/upload-artifact@v4
         with:
@@ -62,14 +64,15 @@ jobs:
          with:
            distribution: 'temurin'
            java-version: 17
+           cache: 'gradle'
        - run: ls
        - run: chmod +x ./gradlew && ./gradlew createReleaseDistributable
        - run: ./gradlew packageReleaseDistributionForCurrentOS
        - run: ls
        - name: compress
-         run: zip -q -r ./TV-$GITHUB_REF_NAME.zip ./composeApp/build/compose/binaries/main-release/app
+         run: zip -q -r ./TV-mac-$GITHUB_REF_NAME.zip ./composeApp/build/compose/binaries/main-release/app
        - name: move file
-         run: mv ./composeApp/build/compose/binaries/main-release/dmg/*.dmg ./
+         run: mv ./composeApp/build/compose/binaries/main-release/dmg/*.dmg ./TV-mac-$GITHUB_REF_NAME.dmg
        - run: ls
        - uses: actions/upload-artifact@v4
          with:
