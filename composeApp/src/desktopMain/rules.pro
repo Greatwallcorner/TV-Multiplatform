@@ -55,6 +55,7 @@
 -keep class com.corner.init.** {*;}
 -keep class com.corner.server.** {*;}
 -keep class cn.hutool.** {*;}
+# -keep class cn.hutool.. {*;}
 
 -dontwarn org.jboss.marshalling.**
 -dontwarn org.conscrypt.**

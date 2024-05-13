@@ -42,8 +42,7 @@ kotlin {
 
 //                // tool
             api("com.google.guava:guava:31.1-jre")
-            implementation("cn.hutool:hutool-core:$hutoolVer")
-            implementation("cn.hutool:hutool-http:$hutoolVer")
+            implementation("cn.hutool:hutool-all:$hutoolVer")
 
             //DI
             api("io.insert-koin:koin-core:3.5.3")
