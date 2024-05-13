@@ -22,7 +22,8 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
-class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, ComponentContext by componentContext, BackHandlerOwner {
+class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent, ComponentContext by componentContext,
+    BackHandlerOwner {
 
     private val _log = LoggerFactory.getLogger("Video")
 
@@ -45,11 +46,11 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
             clear()
         }
         GlobalModel.hotList.observe {
-            if(it.isEmpty()) return@observe
+            if (it.isEmpty()) return@observe
             searchBarPrompt()
         }
 
-        lifecycle.subscribe(callbacks = object :Lifecycle.Callbacks{
+        lifecycle.subscribe(callbacks = object : Lifecycle.Callbacks {
             override fun onCreate() {
                 println("onCreate")
             }
@@ -80,17 +81,19 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
     }
 
     override fun clear() {
-        _model.update { it.copy(homeVodResult = mutableSetOf(),
-            homeLoaded = false, classList = mutableSetOf(), filtersMap = mutableMapOf(),
-            currentClass = null, currentFilter = Filter.ALL,
-            page = AtomicInteger(1),isRunning = false, prompt = ""
-        ) }
-        GlobalModel.clearHome()
+        _model.update {
+            it.copy(
+                homeVodResult = mutableSetOf(),
+                homeLoaded = false, classList = mutableSetOf(), filtersMap = mutableMapOf(),
+                currentClass = null, currentFilter = Filter.ALL,
+                page = AtomicInteger(1), isRunning = false, prompt = ""
+            )
+        }
     }
 
     override fun homeLoad() {
         val home = GlobalModel.home
-        if(isLoading.get()) return
+        if (isLoading.get()) return
         isLoading.set(true)
         SiteViewModel.viewModelScope.launch {
             showProgress()
@@ -101,11 +104,11 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
                     var classList = SiteViewModel.result.value.types.toMutableSet()
                     val filtersMap = SiteViewModel.result.value.filters
                     // 只保留site中配置的分类
-                    if(home.value.categories.isNotEmpty()){
+                    if (home.value.categories.isNotEmpty()) {
                         val iterator = classList.iterator()
-                        while(iterator.hasNext()){
+                        while (iterator.hasNext()) {
                             val next = iterator.next()
-                            if(!home.value.categories.contains(next.typeName)) iterator.remove()
+                            if (!home.value.categories.contains(next.typeName)) iterator.remove()
                         }
                     }
 
@@ -123,7 +126,7 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
                             false,
                             HashMap()
                         )
-                        if(!rst.isSuccess){
+                        if (!rst.isSuccess) {
                             return@launch
                         }
                         _model.value.page.addAndGet(1)
@@ -131,7 +134,14 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
                     }
                     val currentClass = classList.firstOrNull()
                     _model.value.homeLoaded = true
-                    _model.update { it.copy(homeVodResult = list, currentClass = currentClass, classList = classList, filtersMap = filtersMap) }
+                    _model.update {
+                        it.copy(
+                            homeVodResult = list,
+                            currentClass = currentClass,
+                            classList = classList,
+                            filtersMap = filtersMap
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 log.error("homeLoad", e)
@@ -145,13 +155,13 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
 
     override fun loadMore() {
         if (model.value.currentClass == null || model.value.currentClass?.typeId == "home") return
-        if((model.value.currentClass?.failTime ?: 0) >= 2) return
+        if ((model.value.currentClass?.failTime ?: 0) >= 2) return
         showProgress()
-        if(isLoading.get()) return
+        if (isLoading.get()) return
         isLoading.set(true)
         SiteViewModel.viewModelScope.launch {
             try {
-                val extend = HashMap<String,String>()
+                val extend = HashMap<String, String>()
                 extend[model.value.currentFilter.key ?: ""] = model.value.currentFilter.init
                 val rst = SiteViewModel.categoryContent(
                     GlobalModel.home.value.key,
@@ -160,16 +170,14 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
                     model.value.currentFilter.init.isNotBlank(),
                     extend
                 )
-                if(!rst.isSuccess || rst.list.isEmpty()){
+                if (!rst.isSuccess || rst.list.isEmpty()) {
                     model.value.currentClass?.failTime?.plus(1)
                     return@launch
                 }
                 val list = rst.list
-                if (list.isNotEmpty()) {
-                    val vodList = model.value.homeVodResult.toMutableList()
-                    vodList.addAll(list)
-                    model.update { it.copy(homeVodResult = vodList.toSet().toMutableSet()) }
-                }
+                val vodList = model.value.homeVodResult.toMutableList()
+                vodList.addAll(list)
+                model.update { it.copy(homeVodResult = vodList.toSet().toMutableSet()) }
             } finally {
             }
         }.invokeOnCompletion {
@@ -178,8 +186,8 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
         }
     }
 
-    override fun chooseCate(cate:String) {
-        if(isLoading.get()) return
+    override fun chooseCate(cate: String) {
+        if (isLoading.get()) return
         isLoading.set(true)
         SiteViewModel.viewModelScope.launch {
             try {
@@ -202,12 +210,12 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
         }
     }
 
-    fun getFilters(type:Type):Filter{
+    fun getFilters(type: Type): Filter {
         val filters = model.value.filtersMap[type.typeId] ?: return Filter.ALL
         return filters.getFirstOrEmpty()
     }
 
-    fun searchBarPrompt(){
+    fun searchBarPrompt() {
         promptJob = SiteViewModel.viewModelScope.launch {
             if (model.value.isRunning) return@launch
             model.update { it.copy(isRunning = true) }
