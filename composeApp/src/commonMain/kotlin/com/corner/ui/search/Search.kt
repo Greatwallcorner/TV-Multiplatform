@@ -29,7 +29,7 @@ import com.arkivanov.decompose.extensions.compose.jetbrains.pages.PagesScrollAni
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
-import com.corner.catvodcore.config.api
+import com.corner.catvodcore.config.ApiConfig
 import com.corner.ui.decompose.component.DefaultSearchComponent
 import com.corner.ui.decompose.component.DefaultSearchPageComponent
 import com.corner.ui.decompose.component.DefaultSearchPagesComponent
@@ -94,7 +94,7 @@ private fun SearchResult(
 
     val showLoadMore = remember {
         derivedStateOf {
-            model.value.searchCompleteSites.size < (api?.sites?.filter { it.searchable == 1 }?.size ?: 0)
+            model.value.searchCompleteSites.size < (ApiConfig.api.sites?.filter { it.searchable == 1 }?.size ?: 0)
         }
     }
 

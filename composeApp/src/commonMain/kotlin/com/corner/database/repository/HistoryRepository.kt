@@ -1,7 +1,7 @@
 package com.corner.database.repository
 
 import com.corner.catvod.enum.bean.Vod
-import com.corner.catvodcore.config.api
+import com.corner.catvodcore.config.ApiConfig
 import com.corner.database.Database
 import com.corner.database.Db
 import com.corner.database.History
@@ -32,7 +32,7 @@ class HistoryRepositoryImpl:HistoryRepository, KoinComponent{
     private val historyQueries = database.historyQueries
 
     private fun getHistoryKey(key:String, id:String, cId:String): String {
-        return key + Db.SYMBOL + id + Db.SYMBOL + api?.id
+        return key + Db.SYMBOL + id + Db.SYMBOL + ApiConfig.api.id
     }
 
     /**
@@ -57,7 +57,7 @@ class HistoryRepositoryImpl:HistoryRepository, KoinComponent{
     }
 
     override fun create(vod:Vod, flag:String, vodRemarks: String){
-        val historyKey = vod.site?.key + Db.SYMBOL + vod.vodId + Db.SYMBOL + api?.id
+        val historyKey = vod.site?.key + Db.SYMBOL + vod.vodId + Db.SYMBOL + ApiConfig.api.id
         val his = historyQueries.findByKey(historyKey).executeAsOneOrNull()
         if(his == null){
             save(historyKey,
@@ -66,7 +66,7 @@ class HistoryRepositoryImpl:HistoryRepository, KoinComponent{
                 flag,
                 vodRemarks,
                 vod.vodPlayUrl!!,
-                api?.cfg?.value?.id!!)
+                ApiConfig.api.cfg.value?.id!!)
         }else{
             historyQueries.updateSome(flag, vodRemarks, vod.vodPlayUrl, historyKey)
         }
@@ -88,7 +88,7 @@ class HistoryRepositoryImpl:HistoryRepository, KoinComponent{
     }
 
     override fun deleteAll(): Boolean {
-        val id = api?.cfg?.value?.id
+        val id = ApiConfig.api.cfg.value?.id
         if(id != null){
             historyQueries.deleteAll(id)
         }

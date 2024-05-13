@@ -9,7 +9,7 @@ import com.corner.catvod.enum.bean.Vod
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
 import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.detailIsEmpty
-import com.corner.catvodcore.config.api
+import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.scene.SnackBar
@@ -92,10 +92,10 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     override fun quickSearch() {
         model.update { it.copy(isQuickSearch = true) }
         searchScope.launch {
-            val quickSearchSites = api?.sites?.filter { it.changeable == 1 }?.shuffled()
-            log.debug("开始执行快搜 sites:{}", quickSearchSites?.map { it.name }.toString())
+            val quickSearchSites = ApiConfig.api.sites.filter { it.changeable == 1 }.shuffled()
+            log.debug("开始执行快搜 sites:{}", quickSearchSites.map { it.name }.toString())
             val semaphore = Semaphore(2)
-            quickSearchSites?.forEach {
+            quickSearchSites.forEach {
                 val job = launch() {
                     semaphore.acquire()
                     withTimeout(2500L) {

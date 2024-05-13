@@ -11,7 +11,7 @@ WHERE id = :id;
 
 save:
 INSERT INTO Config(type, time, url, json, name, home, parse)
-VALUES (?,?,?,?,?,?,?);
+VALUES (?,CURRENT_TIMESTAMP ,?,?,?,?,?);
 
 update:
 UPDATE `Config`

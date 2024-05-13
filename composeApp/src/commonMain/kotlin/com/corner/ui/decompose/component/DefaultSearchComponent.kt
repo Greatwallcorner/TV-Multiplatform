@@ -9,7 +9,7 @@ import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingStore.getHistoryList
 import com.corner.catvodcore.bean.Collect
-import com.corner.catvodcore.config.api
+import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.SearchComponent
 import kotlinx.coroutines.CancellationException
@@ -56,7 +56,7 @@ class DefaultSearchComponent(componentContext: ComponentContext) : SearchCompone
             log.debug("已经搜索过：{}，忽略", searchText)
             return
         }
-        if (model.value.searchCompleteSites.size == api?.sites?.size) {
+        if (model.value.searchCompleteSites.size == ApiConfig.api.sites.size) {
             log.info("所有站源已经搜索完毕")
             return
         }
@@ -68,10 +68,10 @@ class DefaultSearchComponent(componentContext: ComponentContext) : SearchCompone
         SiteViewModel.viewModelScope.launch {
             SettingStore.addSearchHistory(searchText)
             var searchableSites =
-                api?.sites?.filter { it.searchable == 1 && !model.value.searchCompleteSites.contains(it.key) }?.shuffled()
-            searchableSites = searchableSites?.subList(0, onceSearchSiteNum.coerceAtMost(searchableSites.size))
-            log.info("站源：{}", searchableSites?.map { it.name })
-            searchableSites?.forEach {
+                ApiConfig.api.sites.filter { it.searchable == 1 && !model.value.searchCompleteSites.contains(it.key) }.shuffled()
+            searchableSites = searchableSites.subList(0, onceSearchSiteNum.coerceAtMost(searchableSites.size))
+            log.info("站源：{}", searchableSites.map { it.name })
+            searchableSites.forEach {
                 val job = model.value.searchScope.launch {
                     model.value.searchCompleteSites.add(it.key)
                     SiteViewModel.searchContent(it, searchText, false)

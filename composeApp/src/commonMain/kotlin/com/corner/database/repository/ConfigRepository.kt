@@ -4,12 +4,10 @@ import com.corner.database.Config
 import com.corner.database.Database
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.util.*
 
 interface ConfigRepository {
     fun save(
         type: Long,
-        time: Date,
         url: String? = null,
         json: String? = null,
         name: String? = null,
@@ -33,14 +31,13 @@ class ConfigRepositoryImpl : ConfigRepository, KoinComponent {
     private val configQueries = database.configQueries
     override fun save(
         type: Long,
-        time: Date,
         url: String?,
         json: String?,
         name: String?,
         home: String?,
         parse: String?
     ) {
-        configQueries.save(type, time.time, url, json, name, home, parse)
+        configQueries.save(type, url, json, name, home, parse)
     }
 
     override fun find(url: String, type: Long): Config? {

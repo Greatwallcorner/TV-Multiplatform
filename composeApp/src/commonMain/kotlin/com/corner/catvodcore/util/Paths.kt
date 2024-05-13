@@ -1,7 +1,9 @@
 package com.corner.catvodcore.util
 
+import com.corner.ui.scene.SnackBar
 import com.corner.util.OperatingSystem
 import com.corner.util.UserDataDirProvider
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Path
 
@@ -9,6 +11,7 @@ object Paths {
     private val runPath = System.getProperty("user.dir")
     private val classPath = System.getProperty("java.class.path")
     private val ApplicationName = "TV-Multiplatform"
+    private val log = LoggerFactory.getLogger("Paths")
 
     private val userDataDir = getUserDataDir()
 
@@ -51,7 +54,11 @@ object Paths {
 
     fun local(jar: String): File {
         val file = File(jar.replace("file:/", "").replace("file:\\", ""))
-        return if(file.exists()) file else File(jar)
+        return if(file.exists()) file else {
+            log.info("jar文件不存在 $jar")
+            SnackBar.postMsg("本地Jar文件不存在")
+            File(jar)
+        }
     }
 
     fun jar(): File {

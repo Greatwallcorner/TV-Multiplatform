@@ -85,6 +85,7 @@ class DefaultVideoComponent(componentContext: ComponentContext):VideoComponent, 
             currentClass = null, currentFilter = Filter.ALL,
             page = AtomicInteger(1),isRunning = false, prompt = ""
         ) }
+        GlobalModel.clearHome()
     }
 
     override fun homeLoad() {

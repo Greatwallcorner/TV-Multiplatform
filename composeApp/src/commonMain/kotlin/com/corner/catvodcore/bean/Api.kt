@@ -10,18 +10,18 @@ import kotlinx.serialization.Transient
 @Serializable
 data class Api(
     val spider: String,
-    val sites: MutableSet<Site>?,
-    val lives: MutableSet<Live>? = null,
-    val parses: MutableSet<Parse>? = null,
-    val doh: MutableSet<Doh>? = null,
-    val rules: MutableSet<Rule>? = null,
-    val flags: MutableSet<String>? = null
+    val sites: MutableSet<Site> = mutableSetOf(),
+    val lives: MutableSet<Live> = mutableSetOf(),
+    val parses: MutableSet<Parse> = mutableSetOf(),
+    val doh: MutableSet<Doh> = mutableSetOf(),
+    val rules: MutableSet<Rule> = mutableSetOf(),
+    val flags: MutableSet<String> = mutableSetOf()
 ) {
     @Transient
-    var url: String? = null
+    var url: String? = ""
 
     @Transient
-    var data:String? = null
+    var data:String = ""
 
     @Transient
     var recent: String? = null

@@ -1,7 +1,7 @@
 package com.corner.catvodcore.loader
 
 import com.corner.catvodcore.Constant
-import com.corner.catvodcore.config.api
+import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Paths
 import com.corner.catvodcore.util.Urls
@@ -40,7 +40,7 @@ object JarLoader {
         } else if (jar.startsWith("http")) {
             load(key, download(jar))
         } else {
-             loadJar(key, Urls.convert(api!!.url!!, spider))
+             loadJar(key, Urls.convert(ApiConfig.api.url!!, spider))
         }
 
     }

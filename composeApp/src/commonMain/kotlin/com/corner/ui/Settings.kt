@@ -34,7 +34,7 @@ import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.Setting
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
-import com.corner.catvodcore.config.api
+import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.database.Db
 import com.corner.init.initConfig
@@ -48,7 +48,6 @@ import kotlinx.coroutines.launch
 import org.jsoup.internal.StringUtil
 import java.awt.Desktop
 import java.net.URI
-import java.util.*
 
 @Composable
 fun SettingItem(modifier: Modifier, label: String, value: String?, onClick: () -> Unit) {
@@ -178,14 +177,13 @@ fun DialogEdit(
                             if (config == null) {
                                 Db.Config.save(
                                     type = ConfigType.SITE.ordinal.toLong(),
-                                    time = Date(),
                                     url = textFieldValue
                                 )
                             } else {
                                 Db.Config.updateUrl(config.id, textFieldValue as String)
                             }
                             SettingStore.setValue(SettingType.VOD, textFieldValue!!)
-                            api?.cfg?.value = Db.Config.find(textFieldValue!!, ConfigType.SITE.ordinal.toLong())
+                            ApiConfig.api.cfg.value = Db.Config.find(textFieldValue!!, ConfigType.SITE.ordinal.toLong())
                             initConfig()
                         }
 

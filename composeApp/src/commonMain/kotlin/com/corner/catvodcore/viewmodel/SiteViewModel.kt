@@ -7,10 +7,7 @@ import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.Url
 import com.corner.catvodcore.bean.add
-import com.corner.catvodcore.config.api
-import com.corner.catvodcore.config.getSite
-import com.corner.catvodcore.config.getSpider
-import com.corner.catvodcore.config.setRecent
+import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Utils
@@ -49,10 +46,10 @@ object SiteViewModel {
         try {
             when (site.type) {
                 3 -> {
-                    val spider = getSpider(site)
+                    val spider = ApiConfig.getSpider(site)
                     val homeContent = spider.homeContent(true)
                     SpiderDebug.log("home:$homeContent")
-                    setRecent(site)
+                    ApiConfig.setRecent(site)
                     val rst: Result = Jsons.decodeFromString<Result>(homeContent)
                     if ((rst.list.size) > 0) result.value = rst
                     val homeVideoContent = spider.homeVideoContent()
@@ -85,14 +82,14 @@ object SiteViewModel {
     }
 
     fun detailContent(key: String, id: String): Result? {
-        val site: Site = api?.sites?.find { it.key == key } ?: return null
+        val site: Site = ApiConfig.api.sites.find { it.key == key } ?: return null
         var rst:Result = Result()
         try {
             if (site.type == 3) {
-                val spider: Spider = getSpider(site)
+                val spider: Spider = ApiConfig.getSpider(site)
                 val detailContent = spider.detailContent(listOf(id))
                 SpiderDebug.log("detail:$detailContent")
-                setRecent(site)
+                ApiConfig.setRecent(site)
                 rst = Jsons.decodeFromString<Result>(detailContent)
                 if (!rst.list.isEmpty()) rst.list.get(0).setVodFlags()
                 //            if (!rst.list.isEmpty()) checkThunder(rst.list.get(0).vodFlags())
@@ -129,13 +126,13 @@ object SiteViewModel {
 
     fun playerContent(key: String, flag: String, id: String): Result? {
 //        Source.get().stop()
-        val site: Site = getSite(key) ?: return null
+        val site: Site = ApiConfig.getSite(key) ?: return null
         try {
             if (site.type == 3) {
-                val spider: Spider = getSpider(site)
-                val playerContent = spider.playerContent(flag, id, api?.flags?.toList() ?: listOf())
+                val spider: Spider = ApiConfig.getSpider(site)
+                val playerContent = spider.playerContent(flag, id, ApiConfig.api.flags.toList())
                 SpiderDebug.log("player:$playerContent")
-                setRecent(site)
+                ApiConfig.setRecent(site)
                 val result = Jsons.decodeFromString<Result>(playerContent)
                 if (StringUtils.isNotBlank(result.flag)) result.flag = flag
                 //            result.setUrl(Source.get().fetch(result))
@@ -190,7 +187,7 @@ object SiteViewModel {
     fun searchContent(site: Site, keyword: String, quick: Boolean) {
         try {
             if (site.type == 3) {
-                val spider: Spider = getSpider(site)
+                val spider: Spider = ApiConfig.getSpider(site)
                 val searchContent = spider.searchContent(keyword, quick)
                 SpiderDebug.log(site.name + "," + searchContent)
                 val result = Jsons.decodeFromString<Result>(searchContent)
@@ -212,7 +209,7 @@ object SiteViewModel {
     fun searchContent(site: Site, keyword: String, page: String) {
         try {
             if (site.type == 3) {
-                val spider: Spider = getSpider(site)
+                val spider: Spider = ApiConfig.getSpider(site)
                 val searchContent = spider.searchContent(keyword, false, page)
                 SpiderDebug.log(site.name + "," + searchContent)
                 val rst = Jsons.decodeFromString<Result>(searchContent)
@@ -235,13 +232,13 @@ object SiteViewModel {
 
     fun categoryContent(key: String, tid: String, page: String, filter: Boolean, extend: HashMap<String, String>):Result{
         log.info("categoryContent key:{} tid:{} page:{} filter:{} extend:{}", key, tid, page, filter, extend)
-        val site: Site = getSite(key) ?: return Result(false)
+        val site: Site = ApiConfig.getSite(key) ?: return Result(false)
          try {
             if (site.type == 3) {
-                val spider: Spider = getSpider(site)
+                val spider: Spider = ApiConfig.getSpider(site)
                 val categoryContent = spider.categoryContent(tid, page, filter, extend)
                 SpiderDebug.log(categoryContent)
-                setRecent(site)
+                ApiConfig.setRecent(site)
                 result.value = Jsons.decodeFromString<Result>(categoryContent)
             } else {
                 val params = mutableMapOf<String, String>()

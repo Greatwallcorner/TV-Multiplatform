@@ -46,8 +46,7 @@ import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Type
 import com.corner.catvodcore.bean.isEmpty
-import com.corner.catvodcore.config.api
-import com.corner.catvodcore.config.setHome
+import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.GlobalModel
@@ -110,7 +109,7 @@ fun VideoScene(
     val adapter = rememberScrollbarAdapter(state)
     val model = component.model.subscribeAsState()
 
-    val isEmpty = derivedStateOf { model.value.homeVodResult.isEmpty() }
+//    val isEmpty = derivedStateOf { model.value.homeVodResult.isEmpty() }
 
     LaunchedEffect(state){
         snapshotFlow { state.layoutInfo }
@@ -452,13 +451,13 @@ fun ChooseHomeDialog(
                 modifier = Modifier.padding(20.dp).wrapContentHeight(Alignment.CenterVertically),
                 state = lazyListState
             ) {
-                items(items = api?.sites?.toList() ?: listOf()) { item ->
+                items(items = ApiConfig.api.sites.toList()) { item ->
                     OutlinedButton(modifier = Modifier.width(180.dp),
                         onClick = {
                             SiteViewModel.viewModelScope.launch {
-                                setHome(item)
+                                ApiConfig.setHome(item)
                                 model.value.homeLoaded = false
-                                Db.Config.setHome(api?.url, ConfigType.SITE.ordinal, item.key)
+                                Db.Config.setHome(ApiConfig.api.url, ConfigType.SITE.ordinal, item.key)
                             }
                             onClick(item)
                         }) {

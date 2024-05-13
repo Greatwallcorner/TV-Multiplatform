@@ -2,9 +2,8 @@ package com.corner.init
 
 import com.arkivanov.decompose.value.update
 import com.corner.bean.Hot
-import com.corner.catvodcore.config.api
+import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.config.init
-import com.corner.catvodcore.config.parseConfig
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.loader.JarLoader
 import com.corner.catvodcore.viewmodel.GlobalModel
@@ -53,14 +52,14 @@ expect fun initPlatformSpecify();
 fun initConfig() {
     log.info("initConfig start")
     JarLoader.clear()
-    api = null
+    ApiConfig.clear()
     GlobalModel.clear.update {!it}
 
     val siteConfig = Db.Config.findOneByType(ConfigType.SITE.ordinal.toLong()) ?: return
     try {
-        parseConfig(siteConfig, false)?.init()
+        ApiConfig.parseConfig(siteConfig, false).init()
     } catch (e: Exception) {
-        parseConfig(siteConfig, true)?.init()
+        ApiConfig.parseConfig(siteConfig, true).init()
     }
     log.info("initConfig end")
 }
