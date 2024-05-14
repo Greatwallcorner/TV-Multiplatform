@@ -65,7 +65,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 val list = SiteViewModel.getSearchResultActive().getList()
                 model.update { it.copy(quickSearchResult = CopyOnWriteArrayList(list), detail = chooseVod) }
                 fromSearchLoadJob = SiteViewModel.viewModelScope.launch {
-                    if(model.value.quickSearchResult.isNotEmpty()) loadDetail(model.value.quickSearchResult[0])
+                    if(model.value.quickSearchResult.isNotEmpty()) model.value.detail?.let { loadDetail(it) }
                 }
             }else{
                 val dt = SiteViewModel.detailContent(chooseVod.site?.key ?: "", chooseVod.vodId)
@@ -195,7 +195,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     }
 
     override fun setDetail(vod: Vod) {
-        if (!currentSiteKey.equals(vod.site?.key)) {
+        if (!currentSiteKey.value.equals(vod.site?.key)) {
             SnackBar.postMsg("正在切换站源至 [${vod.site!!.name}]")
         }
         model.update { it.copy(detail = vod) }
