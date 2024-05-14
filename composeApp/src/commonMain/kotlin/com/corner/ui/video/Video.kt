@@ -11,14 +11,12 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
@@ -27,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
@@ -53,7 +52,9 @@ import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
 import com.corner.ui.decompose.component.DefaultVideoComponent
 import com.corner.ui.scene.*
+import com.corner.util.isScrollingUp
 import com.seiko.imageloader.ui.AutoSizeImage
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -106,19 +107,18 @@ fun VideoScene(
 ) {
     val scope = rememberCoroutineScope()
     val state = rememberLazyGridState()
-    val adapter = rememberScrollbarAdapter(state)
     val model = component.model.subscribeAsState()
 
 //    val isEmpty = derivedStateOf { model.value.homeVodResult.isEmpty() }
 
-    LaunchedEffect(state){
+    LaunchedEffect(state) {
         snapshotFlow { state.layoutInfo }
-            .collect{layoutInfo ->
+            .collect { layoutInfo ->
                 val visibleItemsInfo = layoutInfo.visibleItemsInfo
-                if(visibleItemsInfo.isNotEmpty()){
+                if (visibleItemsInfo.isNotEmpty()) {
                     val lastVisibleItem = visibleItemsInfo.last()
                     val isEnd = lastVisibleItem.index == layoutInfo.totalItemsCount - 1
-                    if(isEnd && (model.value.currentClass?.failTime ?: 0) < 2){
+                    if (isEnd && (model.value.currentClass?.failTime ?: 0) < 2) {
                         component.loadMore()
                     }
                 }
@@ -137,7 +137,7 @@ fun VideoScene(
                 onClickHistory = { onClickSwitch(Menu.HISTORY) })
         },
         floatingActionButton = {
-            FloatButton(component)
+            FloatButton(component, state, scope)
         }
     ) {
         Box(modifier = modifier.fillMaxSize().padding(it)) {
@@ -154,37 +154,31 @@ fun VideoScene(
                 if (model.value.homeVodResult.isEmpty()) {
                     emptyShow()
                 } else {
-                    LazyVerticalGrid(
-                        modifier = modifier.padding(15.dp),
-                        columns = GridCells.Adaptive(140.dp),
-                        contentPadding = PaddingValues(5.dp),
-                        state = state,
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        userScrollEnabled = true
-                    ) {
-                        itemsIndexed(model.value.homeVodResult.toList()) { _, item ->
-                            VideoItem(Modifier.animateItemPlacement(), item, false) {
-                                if (item.isFolder()) {
-                                    SiteViewModel.viewModelScope.launch {
+                    Box {
+                        LazyVerticalGrid(
+                            modifier = modifier.padding(15.dp),/*.scrollable(state, orientation = Orientation.Vertical)*/
+                            columns = GridCells.Adaptive(140.dp),
+                            contentPadding = PaddingValues(5.dp),
+                            state = state,
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+//                        userScrollEnabled = true
+                        ) {
+                            itemsIndexed(model.value.homeVodResult.toList()) { _, item ->
+                                VideoItem(Modifier.animateItemPlacement(), item, false) {
+                                    if (item.isFolder()) {
+                                        SiteViewModel.viewModelScope.launch {
 
+                                        }
+                                    } else {
+                                        onClickItem(it)
                                     }
-                                } else {
-                                    onClickItem(it)
                                 }
                             }
                         }
                     }
                 }
             }
-            VerticalScrollbar(
-                adapter, modifier = Modifier.align(Alignment.CenterEnd)
-                    .padding(end = 10.dp),
-                style = defaultScrollbarStyle().copy(
-                    unhoverColor = Color.DarkGray.copy(0.3F),
-                    hoverColor = Color.DarkGray
-                )
-            )
             ChooseHomeDialog(component, showChooseHome, onClose = { showChooseHome = false }) {
                 showChooseHome = false
                 component.clear()
@@ -197,14 +191,14 @@ fun VideoScene(
 }
 
 @Composable
-fun FloatButton(component: DefaultVideoComponent) {
+fun FloatButton(component: DefaultVideoComponent, state: LazyGridState, scope:CoroutineScope) {
     val show = derivedStateOf { GlobalModel.chooseVod.value.isFolder() }
     val model = component.model.subscribeAsState()
-    val showFilter = derivedStateOf { !model.value.currentFilter.isEmpty() }
+    val showButton = derivedStateOf { !model.value.currentFilter.isEmpty() || state.firstVisibleItemIndex > 8 }
     var showDialog by remember { mutableStateOf(false) }
     val dialogWidth = animateDpAsState(if (showDialog) 140.dp else 0.dp)
     AnimatedVisibility(
-        showFilter.value,
+        showButton.value,
         enter = slideInVertically(
             initialOffsetY = { it },
         ),
@@ -212,9 +206,10 @@ fun FloatButton(component: DefaultVideoComponent) {
             targetOffsetY = { it },
         ),
     ) {
-        Box(Modifier.fillMaxHeight(0.8f)
-            .fillMaxWidth(0.2f)
-            .padding(10.dp)
+        Box(
+            Modifier.fillMaxHeight(0.8f)
+                .fillMaxWidth(0.2f)
+                .padding(10.dp)
         ) {
             Surface(
                 Modifier.align(Alignment.BottomEnd)
@@ -223,11 +218,13 @@ fun FloatButton(component: DefaultVideoComponent) {
                     .offset(y = (-70).dp),
             ) {
                 Box(Modifier.background(Color.Transparent).padding(5.dp)) {
-                    val state = rememberLazyListState(0)
-                    LazyColumn(Modifier
-                        .background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(5.dp)),
+                    val listState = rememberLazyListState(0)
+                    LazyColumn(
+                        Modifier
+                            .background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(5.dp)),
                         contentPadding = PaddingValues(5.dp),
-                        verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
                         items(model.value.currentFilter.value ?: listOf()) {
                             RatioBtn(it.n ?: "", onClick = {
                                 model.value.currentFilter.init = it.v ?: ""
@@ -236,21 +233,56 @@ fun FloatButton(component: DefaultVideoComponent) {
                         }
                     }
                     VerticalScrollbar(
-                        rememberScrollbarAdapter(state),
+                        rememberScrollbarAdapter(listState),
                         modifier = Modifier.align(Alignment.CenterEnd),
                         style = defaultScrollbarStyle().copy(
                             unhoverColor = Color.Yellow,
                             hoverColor = Color.DarkGray
-                        ))
+                        )
+                    )
                 }
             }
-            ElevatedButton(
-                onClick = { showDialog = !showDialog },
-                modifier = Modifier.align(Alignment.BottomEnd).size(70.dp),
-                shape = RoundedCornerShape(50), contentPadding = PaddingValues(8.dp)
-            )
-            {
-                Icon(if (showDialog) Icons.Outlined.Close else Icons.Outlined.FilterAlt, "show filter dialog")
+            Box(Modifier.align(Alignment.BottomEnd)) {
+                AnimatedContent(state.isScrollingUp(),
+                    contentAlignment = Alignment.BottomEnd,
+                    transitionSpec = { fadeIn() togetherWith fadeOut() }
+                ) {
+                    val modifier = Modifier.size(70.dp).shadow(5.dp)
+                    val shape = RoundedCornerShape(8.dp)
+                    val buttonColors = ButtonDefaults.buttonColors().copy(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    if (it) {
+                        if(model.value.currentFilter.isEmpty()) return@AnimatedContent
+                        ElevatedButton(
+                            onClick = { showDialog = !showDialog },
+                            modifier = modifier,
+                            colors = buttonColors,
+                            shape = shape, contentPadding = PaddingValues(8.dp)
+                        )
+                        {
+                            Icon(
+                                if (showDialog) Icons.Outlined.Close else Icons.Outlined.FilterAlt,
+                                "show filter dialog",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    } else {
+                        ElevatedButton(
+                            onClick = { scope.launch { state.animateScrollToItem(0) } },
+                            modifier = modifier,
+                            colors = buttonColors,
+                            shape = shape, contentPadding = PaddingValues(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.ArrowUpward,
+                                contentDescription = "Back to top",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -368,7 +400,7 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
         ) {
             items(model.value.classList.toList()) { type ->
                 RatioBtn(text = type.typeName, onClick = {
-                    if(component.isLoading.get()) return@RatioBtn
+                    if (component.isLoading.get()) return@RatioBtn
                     component.isLoading.set(true)
                     SiteViewModel.viewModelScope.launch {
                         showProgress()

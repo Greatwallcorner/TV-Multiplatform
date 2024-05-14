@@ -101,11 +101,6 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                             },
                             enabled = !model.value.isQuickSearch
                         ) {
-//                            if(model.value.isQuickSearch){
-//                                LoadingIndicator(true)
-//                            }else{
-//                                Icon(Icons.Default.Autorenew, contentDescription = "renew", tint = MaterialTheme.colorScheme.onSecondaryContainer)
-//                            }
                             Icon(Icons.Default.Autorenew, contentDescription = "renew", tint = MaterialTheme.colorScheme.onSecondaryContainer)
                         }
                     }

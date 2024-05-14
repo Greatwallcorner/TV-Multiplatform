@@ -1,5 +1,7 @@
 package com.corner.util
 
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.runtime.*
 import com.corner.catvod.enum.bean.Site
 import io.ktor.util.*
 import kotlinx.coroutines.Job
@@ -21,3 +23,23 @@ fun MutableList<Job>.cancelAll():MutableList<Job>{
 
 fun StringValues.toSingleValueMap(): Map<String, String> =
     entries().associateByTo(LinkedHashMap(), { it.key }, { it.value.toList()[0] })
+
+
+@Composable
+fun LazyGridState.isScrollingUp(): Boolean {
+    var previousIndex by remember(this) { mutableStateOf(firstVisibleItemIndex) }
+    var previousScrollOffset by remember(this) { mutableStateOf(firstVisibleItemScrollOffset) }
+
+    return remember(this) {
+        derivedStateOf {
+            if (previousIndex != firstVisibleItemIndex) {
+                previousIndex > firstVisibleItemIndex
+            } else {
+                previousScrollOffset >= firstVisibleItemScrollOffset
+            }.also {
+                previousIndex = firstVisibleItemIndex
+                previousScrollOffset = firstVisibleItemScrollOffset
+            }
+        }
+    }.value
+}
