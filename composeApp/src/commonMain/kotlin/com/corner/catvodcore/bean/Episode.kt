@@ -4,7 +4,17 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
 @Serializable
-class Episode {
+data class Episode(
+    @SerializedName("name")
+    var name: String? = null,
+    @SerializedName("desc")
+    val desc: String? = null,
+    @SerializedName("url")
+    var url: String? = null,
+    val number: Int = 0,
+    var activated: Boolean = false,
+    val selected: Boolean = false
+) {
     companion object {
         fun create(name: String, string: String): Episode {
             val episode = Episode()
@@ -13,17 +23,4 @@ class Episode {
             return episode
         }
     }
-
-    @SerializedName("name")
-    var name: String? = null
-
-    @SerializedName("desc")
-    val desc: String? = null
-
-    @SerializedName("url")
-    var url: String? = null
-
-    val number = 0
-    var activated = false
-    val selected = false
 }

@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - v*.*.*
+env:
+  tag: ${{ vars.GITHUB_REF_NAME != '' && vars.GITHUB_REF_NAME || vars.GITHUB_RUN_ID }}
 jobs:
   build-win:
     runs-on: windows-latest
@@ -20,7 +22,7 @@ jobs:
       - run: ls && tree ./desktopApp /f
       - name: compress
         shell: pwsh
-        run: Compress-Archive -Path "./composeApp/build/compose/binaries/main-release/app/TV" -DestinationPath ./TV-win-$Env:GITHUB_REF_NAME.zip
+        run: Compress-Archive -Path "./composeApp/build/compose/binaries/main-release/app/TV" -DestinationPath ./TV-win-$Env:tag.zip
       - name: move result to root
         shell: pwsh
         run: Move-Item -Path "./composeApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./composeApp/build/compose/binaries/main-release/msi/*.msi" -Destination "./"
@@ -45,9 +47,9 @@ jobs:
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ls && tree
       - name: compress
-        run: cd ./composeApp/build/compose/binaries/main-release/app && zip -q -r ./TV-linux-$GITHUB_REF_NAME.zip ./TV
+        run: cd ./composeApp/build/compose/binaries/main-release/app && zip -q -r ./TV-linux-$tag.zip ./TV
       - name: move file
-        run: mv ./composeApp/build/compose/binaries/main-release/deb/*.deb ./TV-linux-$GITHUB_REF_NAME.deb && mv ./composeApp/build/compose/binaries/main-release/app/*.zip ./
+        run: mv ./composeApp/build/compose/binaries/main-release/deb/*.deb ./TV-linux-$tag.deb && mv ./composeApp/build/compose/binaries/main-release/app/*.zip ./
       - run: ls
       - uses: actions/upload-artifact@v4
         with:
@@ -57,7 +59,7 @@ jobs:
             *.zip
             #            https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Signing_and_notarization_on_macOS/README.md
   build-mac:
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
        - uses: actions/checkout@v4
        - uses: actions/setup-java@v4
@@ -67,12 +69,12 @@ jobs:
            cache: 'gradle'
        - run: ls
        - run: chmod +x ./gradlew && ./gradlew createReleaseDistributable
-       - run: ./gradlew packageReleaseDistributionForCurrentOS
+       - run: ./gradlew notarizeReleaseDmg
        - run: ls
        - name: compress
-         run: zip -q -r ./TV-mac-$GITHUB_REF_NAME.zip ./composeApp/build/compose/binaries/main-release/app
+         run: zip -q -r ./TV-mac-$tag.zip ./composeApp/build/compose/binaries/main-release/app
        - name: move file
-         run: mv ./composeApp/build/compose/binaries/main-release/dmg/*.dmg ./TV-mac-$GITHUB_REF_NAME.dmg
+         run: mv ./composeApp/build/compose/binaries/main-release/dmg/*.dmg ./TV-mac-$tag.dmg
        - run: ls
        - uses: actions/upload-artifact@v4
          with:

@@ -162,7 +162,7 @@ fun Dialog(modifier: Modifier,
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ToolTipText(text: String, textStyle: TextStyle) {
+fun ToolTipText(text: String, textStyle: TextStyle, delayMills:Int = 600, modifier: Modifier = Modifier) {
     TooltipArea(
         tooltip = {
             // composable tooltip content
@@ -178,13 +178,14 @@ fun ToolTipText(text: String, textStyle: TextStyle) {
                 )
             }
         },
-        delayMillis = 600
+        delayMillis = delayMills
     ) {
         Text(
             text = text,
             maxLines = 1,
-            style = textStyle.copy(MaterialTheme.colorScheme.onSurface),
-            overflow = TextOverflow.Ellipsis
+            style = textStyle,
+            overflow = TextOverflow.Ellipsis,
+            modifier = modifier
         )
     }
 }

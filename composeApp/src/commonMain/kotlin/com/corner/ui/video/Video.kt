@@ -36,7 +36,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
@@ -72,14 +71,14 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
                 contentScale = ContentScale.Crop,
                 placeholderPainter = { painterResource("/icon/empty.png") },
                 errorPainter = { painterResource("/icon/empty.png") })
-            Text(
-                text = vod.vodName!!,
-                modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth().padding(0.dp, 10.dp),
-                color = MaterialTheme.colorScheme.onPrimaryContainer, maxLines = 1, softWrap = true,
-                overflow = TextOverflow.Ellipsis, style = TextStyle(textAlign = TextAlign.Center)
-            )
+            Box(Modifier.align(Alignment.BottomCenter)){
+                ToolTipText(
+                    text = vod.vodName!!,
+                    textStyle = TextStyle(color = MaterialTheme.colorScheme.onSecondaryContainer, textAlign = TextAlign.Center),
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))
+                        .fillMaxWidth().padding(0.dp, 10.dp))
+            }
             // 左上角
             Text(
                 modifier = Modifier
@@ -108,8 +107,6 @@ fun VideoScene(
     val scope = rememberCoroutineScope()
     val state = rememberLazyGridState()
     val model = component.model.subscribeAsState()
-
-//    val isEmpty = derivedStateOf { model.value.homeVodResult.isEmpty() }
 
     LaunchedEffect(state) {
         snapshotFlow { state.layoutInfo }

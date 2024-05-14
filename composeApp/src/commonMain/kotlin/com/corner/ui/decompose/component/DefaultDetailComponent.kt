@@ -7,6 +7,7 @@ import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
+import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
 import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.detailIsEmpty
 import com.corner.catvodcore.config.ApiConfig
@@ -40,7 +41,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     private val jobList = mutableListOf<Job>()
 
-    private var fromSearchLoadJob:Job = Job()
+    private var fromSearchLoadJob: Job = Job()
 
     override val model: MutableValue<DetailComponent.Model> = _model
 
@@ -51,6 +52,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 searchScope.cancel("on stop")
                 fromSearchLoadJob.cancel("on stop")
                 hideProgress()
+                clear()
                 super.onStop()
             }
         })
@@ -59,16 +61,19 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     override fun load() {
         val chooseVod = getChooseVod()
+        model.update { it.copy(detail = chooseVod) }
         currentSiteKey.value = chooseVod.site?.key ?: ""
         SiteViewModel.viewModelScope.launch {
-            if(GlobalModel.detailFromSearch){
+            if (GlobalModel.detailFromSearch) {
                 val list = SiteViewModel.getSearchResultActive().getList()
                 model.update { it.copy(quickSearchResult = CopyOnWriteArrayList(list), detail = chooseVod) }
                 fromSearchLoadJob = SiteViewModel.viewModelScope.launch {
-                    if(model.value.quickSearchResult.isNotEmpty()) model.value.detail?.let { loadDetail(it) }
+                    if (model.value.quickSearchResult.isNotEmpty()) model.value.detail?.let { loadDetail(it) }
                 }
-            }else{
+            } else {
+                model.update { it.copy(isLoading = true) }
                 val dt = SiteViewModel.detailContent(chooseVod.site?.key ?: "", chooseVod.vodId)
+                model.update { it.copy(isLoading = false) }
                 if (dt == null || dt.detailIsEmpty()) {
                     quickSearch()
                 } else {
@@ -91,7 +96,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     }
 
     override fun quickSearch() {
-        model.update { it.copy(isQuickSearch = true) }
+        model.update { it.copy(isLoading = true) }
         searchScope.launch {
             val quickSearchSites = ApiConfig.api.sites.filter { it.changeable == 1 }.shuffled()
             log.debug("开始执行快搜 sites:{}", quickSearchSites.map { it.name }.toString())
@@ -117,10 +122,11 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                             quickSearchResult = list
                         )
                     }
-                    if(it == null) log.debug("一个job执行完毕 result size:{}", model.value.quickSearchResult.size)
+                    if (it == null) log.debug("一个job执行完毕 result size:{}", model.value.quickSearchResult.size)
 
                     synchronized(lock) {
-                        if (model.value.quickSearchResult.isNotEmpty() && model.value.detail == null && !launched) {
+                        if (model.value.quickSearchResult.isNotEmpty() && (model.value.detail == null || model.value.detail!!.isEmpty()) && !launched) {
+                            log.info("开始加载 详情")
                             launched = true
                             loadDetail(model.value.quickSearchResult[0])
                         }
@@ -136,36 +142,45 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 SnackBar.postMsg("暂无线路数据")
             }
         }.invokeOnCompletion {
-            model.update { it.copy(isQuickSearch = false) }
+            model.update { it.copy(isLoading = false) }
         }
     }
 
     override fun loadDetail(vod: Vod) {
+        log.info("加载详情 <${vod.vodName}> <${vod.vodId}> site:<${vod.site}>")
         showProgress()
         try {
             val dt = SiteViewModel.detailContent(vod.site?.key!!, vod.vodId)
             if (dt == null || dt.detailIsEmpty()) {
+                log.info("请求详情为空 加载下一个")
                 nextSite(vod)
             } else {
                 var first = dt.list[0]
+                log.info("加载详情完成 $first")
                 first = first.copy(
                     subEpisode = first.vodFlags[0]?.episodes?.getPage(first.currentTabIndex)?.toMutableList()
                 )
                 first.site = vod.site
                 setDetail(first)
-                launched = false
                 supervisor.cancelChildren()
                 jobList.cancelAll().clear()
             }
         } finally {
+            launched = false
             hideProgress()
         }
     }
 
     override fun nextSite(lastVod: Vod?) {
-        if (model.value.quickSearchResult.isEmpty()) return
+        if (model.value.quickSearchResult.isEmpty()) {
+            log.warn("nextSite 快搜结果为空 返回")
+            return
+        }
         val list = model.value.quickSearchResult
-        if (lastVod != null) list.remove(lastVod)
+        if (lastVod != null) {
+            val remove = list.remove(lastVod)
+            log.debug("remove last vod result:$remove")
+        }
         model.update { it.copy(quickSearchResult = list) }
         if (model.value.quickSearchResult.isNotEmpty()) loadDetail(model.value.quickSearchResult[0])
     }
@@ -179,15 +194,11 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     }
 
     override fun clear() {
-        SiteViewModel.viewModelScope.launch {
-            supervisor.cancel("退出详情页")
-            delay(2000)
-            jobList.forEach{it.cancel("detail clear")}
-            jobList.clear()
-            model.update { it.copy(quickSearchResult = CopyOnWriteArrayList(), detail = null) }
-            SiteViewModel.clearQuickSearch()
-            launched = false
-        }
+        launched = false
+        jobList.forEach { it.cancel("detail clear") }
+        jobList.clear()
+        model.update { it.copy(quickSearchResult = CopyOnWriteArrayList(), detail = null) }
+        SiteViewModel.clearQuickSearch()
     }
 
     override fun getChooseVod(): Vod {

@@ -30,7 +30,7 @@ fun QuickSearchItem(vod:Vod, onClick:()->Unit){
         .padding(horizontal = 15.dp, vertical = 10.dp)){
         Column {
             ToolTipText(vod.vodName?:"",
-                TextStyle(fontWeight = FontWeight.Bold, fontSize = TextUnit(18f, TextUnitType.Sp)))
+                TextStyle(fontWeight = FontWeight.Bold, fontSize = TextUnit(18f, TextUnitType.Sp), color = MaterialTheme.colorScheme.onPrimaryContainer))
             Text(vod.site?.name ?: "", fontSize = TextUnit(15f, TextUnitType.Sp),color = MaterialTheme.colorScheme.onSecondaryContainer)
             ToolTipText(vod.vodRemarks ?: "", TextStyle(fontSize = TextUnit(15f, TextUnitType.Sp), color = MaterialTheme.colorScheme.onSecondaryContainer))
         }

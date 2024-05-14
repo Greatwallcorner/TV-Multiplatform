@@ -146,9 +146,9 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
             } catch (e: Exception) {
                 log.error("homeLoad", e)
             } finally {
+                hideProgress()
             }
         }.invokeOnCompletion {
-            hideProgress()
             isLoading.set(false)
         }
     }

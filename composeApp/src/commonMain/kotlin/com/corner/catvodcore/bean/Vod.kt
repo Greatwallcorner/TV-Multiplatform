@@ -40,6 +40,9 @@ data class Vod(
     var version: Int = 0
 ) {
     companion object {
+        fun Vod.isEmpty():Boolean{
+            return org.apache.commons.lang3.StringUtils.isBlank(vodId) || vodFlags.isEmpty()
+        }
         fun Vod.setCurrentFlag(idx: Int) {
             currentFlag = vodFlags[idx]
             currentFlag?.activated = true

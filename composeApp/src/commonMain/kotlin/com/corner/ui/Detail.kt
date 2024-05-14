@@ -62,13 +62,13 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
         }
     }
 
-    DisposableEffect(model.value.isQuickSearch){
-        if(model.value.isQuickSearch){
+    DisposableEffect(model.value.isLoading) {
+        if (model.value.isLoading) {
             showProgress()
-        }else{
+        } else {
             hideProgress()
         }
-        onDispose {  }
+        onDispose { }
     }
 
     Box(
@@ -77,13 +77,14 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
     ) {
         Column(Modifier.padding(8.dp)) {
             BackRow(Modifier, onClickBack = {
-                component.clear()
                 onClickBack()
             }) {
-                Row(Modifier.fillMaxWidth(),
+                Row(
+                    Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically){
-                    Row(horizontalArrangement = Arrangement.Start){
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(horizontalArrangement = Arrangement.Start) {
                         Text(
                             detail?.vodName ?: "",
                             style = MaterialTheme.typography.headlineMedium,
@@ -92,75 +93,78 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                         )
                     }
 
-                    Row(horizontalArrangement = Arrangement.End){
+                    Row(horizontalArrangement = Arrangement.End) {
                         IconButton(
                             onClick = {
-                                SiteViewModel.viewModelScope.launch {
+                                scope.launch {
+                                    component.clear()
                                     component.quickSearch()
+                                    SnackBar.postMsg("重新加载")
                                 }
                             },
-                            enabled = !model.value.isQuickSearch
+                            enabled = !model.value.isLoading
                         ) {
-                            Icon(Icons.Default.Autorenew, contentDescription = "renew", tint = MaterialTheme.colorScheme.onSecondaryContainer)
+                            Icon(
+                                Icons.Default.Autorenew,
+                                contentDescription = "renew",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
                         }
                     }
                 }
             }
-
-            if (model.value.detail == null) {
-                emptyShow()
-            } else {
-                val searchResultList = derivedStateOf { model.value.quickSearchResult.toList() }
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.weight(0.3f)) {
-                        AutoSizeImage(
-                            modifier = Modifier.clip(RoundedCornerShape(8.dp))
-                                .fillMaxHeight(0.4f),
+            val searchResultList = derivedStateOf { model.value.quickSearchResult.toList() }
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(0.3f)) {
+                    AutoSizeImage(
+                        modifier = Modifier.clip(RoundedCornerShape(8.dp))
+                            .fillMaxHeight(0.4f),
 //                                .height(180.dp).width(160.dp),
-                            url = detail?.vodPic ?: "",
-                            contentDescription = detail?.vodName,
-                            contentScale = ContentScale.FillHeight,
-                            placeholderPainter = { painterResource("/icon/empty.png") },
-                            errorPainter = { painterResource("/icon/empty.png") }
-                        )
-                        if (model.value.quickSearchResult.isNotEmpty()) {
-                            Spacer(Modifier.size(20.dp))
-                            val quickState = rememberLazyGridState()
-                            val adapter = rememberScrollbarAdapter(quickState)
-                            Box {
-                                LazyVerticalGrid(
-                                    modifier = Modifier.padding(end = 10.dp),
-                                    columns = GridCells.Fixed(2),
-                                    state = quickState,
-                                    verticalArrangement = Arrangement.spacedBy(5.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                                ) {
-                                    items(searchResultList.value) {
-                                        QuickSearchItem(it) {
-                                            SiteViewModel.viewModelScope.launch {
-                                                component.loadDetail(it)
-                                            }
+                        url = detail?.vodPic ?: "",
+                        contentDescription = detail?.vodName,
+                        contentScale = ContentScale.FillHeight,
+                        placeholderPainter = { painterResource("/icon/empty.png") },
+                        errorPainter = { painterResource("/icon/empty.png") }
+                    )
+                    if (model.value.quickSearchResult.isNotEmpty()) {
+                        Spacer(Modifier.size(20.dp))
+                        val quickState = rememberLazyGridState()
+                        val adapter = rememberScrollbarAdapter(quickState)
+                        Box {
+                            LazyVerticalGrid(
+                                modifier = Modifier.padding(end = 10.dp),
+                                columns = GridCells.Fixed(2),
+                                state = quickState,
+                                verticalArrangement = Arrangement.spacedBy(5.dp),
+                                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                            ) {
+                                items(searchResultList.value) {
+                                    QuickSearchItem(it) {
+                                        SiteViewModel.viewModelScope.launch {
+                                            component.loadDetail(it)
                                         }
                                     }
                                 }
-                                VerticalScrollbar(
-                                    modifier = Modifier.align(Alignment.CenterEnd),
-                                    adapter = adapter, style = defaultScrollbarStyle().copy(
-                                        unhoverColor = Color.Gray.copy(0.45F),
-                                        hoverColor = Color.DarkGray
-                                    )
-                                )
                             }
+                            VerticalScrollbar(
+                                modifier = Modifier.align(Alignment.CenterEnd),
+                                adapter = adapter, style = defaultScrollbarStyle().copy(
+                                    unhoverColor = Color.Gray.copy(0.45F),
+                                    hoverColor = Color.DarkGray
+                                )
+                            )
                         }
                     }
-                    val rememberScrollState = rememberScrollState(0)
+                }
+                val rememberScrollState = rememberScrollState(0)
+                if (model.value.detail == null) {
+                    emptyShow()
+                } else {
                     Column(
                         modifier = Modifier.padding(start = 10.dp)
                             .scrollable(state = rememberScrollState, orientation = Orientation.Vertical)
                             .weight(0.8f)
                     ) {
-//                        ToolTipText(detail?.vodName ?: "无", MaterialTheme.typography.headlineMedium)
-//                        Spacer(modifier = Modifier.size(10.dp))
                         Row {
                             if (detail?.site?.name?.isNotBlank() == true) {
                                 Text("站源: " + detail?.site?.name, color = MaterialTheme.colorScheme.onSurface)

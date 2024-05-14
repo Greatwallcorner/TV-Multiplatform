@@ -11,7 +11,7 @@ interface DetailComponent {
         var siteKey:String = "",
         var detail:Vod? = null,
         var quickSearchResult:CopyOnWriteArrayList<Vod> = CopyOnWriteArrayList(),
-        var isQuickSearch: Boolean = false
+        var isLoading: Boolean = false
     )
 
     fun load()
