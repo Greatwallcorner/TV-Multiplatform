@@ -64,6 +64,7 @@ fun main(){
             undecorated = true,
             transparent = false
         ) {
+            window.minimumSize = Dimension(800, 600)
             CompositionLocalProvider(
                 LocalImageLoader provides remember { generateImageLoader() },
                 LocalContextMenuRepresentation provides remember { contextMenuRepresentation }

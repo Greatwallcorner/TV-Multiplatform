@@ -50,6 +50,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 log.info("Detail onStop")
                 searchScope.cancel("on stop")
                 fromSearchLoadJob.cancel("on stop")
+                hideProgress()
                 super.onStop()
             }
         })
@@ -148,7 +149,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             } else {
                 var first = dt.list[0]
                 first = first.copy(
-                    subEpisode = first.vodFlags.get(0)?.episodes?.getPage(first.currentTabIndex)?.toMutableList()
+                    subEpisode = first.vodFlags[0]?.episodes?.getPage(first.currentTabIndex)?.toMutableList()
                 )
                 first.site = vod.site
                 setDetail(first)

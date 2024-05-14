@@ -46,8 +46,6 @@ enum class SearchPageType {
 @OptIn(ExperimentalDecomposeApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
-    val model = component.model.subscribeAsState()
-
     Pages(
         component.pages,
         onPageSelected = component::selectPage,

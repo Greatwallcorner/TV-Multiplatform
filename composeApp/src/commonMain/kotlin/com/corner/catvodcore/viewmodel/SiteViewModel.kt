@@ -37,7 +37,7 @@ object SiteViewModel {
     val viewModelScope = CoroutineScope(Dispatchers.Default + supervisorJob)
 
     fun getSearchResultActive(): Collect {
-        return search.value.filter { it.isActivated().value }.first()
+        return search.value.first { it.isActivated().value }
     }
 
     fun homeContent(): Result {
