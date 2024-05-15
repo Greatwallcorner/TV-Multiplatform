@@ -55,7 +55,11 @@
 -keep class com.corner.init.** {*;}
 -keep class com.corner.server.** {*;}
 -keep class cn.hutool.** {*;}
--keep class androidx.compose.** {*;}
+# -keep class androidx.compose.** {*;}
+-keep class androidx.compose.foundation.** {*;}
+-keep class androidx.compose.material3.** {*;}
+-keep class androidx.compose.ui.** {*;}
+-keep class androidx.compose.runtime.** {*;}
 
 -dontwarn org.jboss.marshalling.**
 -dontwarn org.conscrypt.**
