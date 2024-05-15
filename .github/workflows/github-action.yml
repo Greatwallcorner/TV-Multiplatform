@@ -91,7 +91,6 @@ jobs:
       - run: ls && tree
       - name: Release
         uses: softprops/action-gh-release@v2
-        tag_name: $tag
         with:
           files: |
             **/*.zip
@@ -99,5 +98,6 @@ jobs:
             **/*.pkg
             **/*.dmg
             **/*.msi
+          tag_name: $tag
     permissions:
       contents: write
