@@ -5,7 +5,7 @@ on:
     tags:
       - v*.*.*
 env:
-  tag: ${{ vars.GITHUB_REF_NAME != '' && vars.GITHUB_REF_NAME || vars.GITHUB_RUN_ID }}
+  tag: ${{ github.ref_name != '' && github.ref_name || github.run_id }}
 jobs:
   build-win:
     runs-on: windows-latest
@@ -91,6 +91,7 @@ jobs:
       - run: ls && tree
       - name: Release
         uses: softprops/action-gh-release@v2
+        tag_name: $tag
         with:
           files: |
             **/*.zip
