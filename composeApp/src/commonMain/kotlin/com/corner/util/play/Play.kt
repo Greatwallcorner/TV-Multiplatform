@@ -7,6 +7,7 @@ import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.v
+import com.corner.util.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -88,6 +89,32 @@ fun getDefaultPlayerPath():String {
     }
     return destDir.resolve(exeList[0]).path
 }
+
+/**
+ * @param name dest dir name
+ * @param exePattern 匹配exe可执行文件的regx "mpc-hc\\X*.exe"
+ */
+fun findAndExtract(dirName:String, exePattern:String): String? {
+    val resourcesDir = File(System.getProperty(Constants.resPathKey))
+    var exeList = resourcesDir.resolve(dirName).list(FilenameFilter { _, name -> name.lowercase().matches(Regex(exePattern)) })
+    if(exeList != null && exeList.isNotEmpty()) return resourcesDir.resolve(dirName).resolve(exeList[0]).path
+
+    val list = resourcesDir.list(FilenameFilter { _, name -> name.lowercase().matches(Regex(exePattern)) })
+    if(list == null || list.isEmpty()) {
+        log.error("没有找到压缩包")
+        return ""
+    }
+    val destDir = resourcesDir.resolve(dirName)
+    log.info("解压压缩包 $list")
+
+    ZipUtil.unzip(resourcesDir.resolve(list[0]), destDir.path.toPath().toFile())
+    exeList = destDir.list(FilenameFilter { _, name -> name.lowercase().matches(Regex(exePattern)) })
+    if(exeList == null || exeList.isEmpty()) {
+        log.error("没有找到播放器exe")
+        return ""
+    }
+    return exeList.first()
+ }
 
 private fun checkPlayer(playerPath:String):Boolean{
 //    if(StringUtils.isBlank(playerPath)){
