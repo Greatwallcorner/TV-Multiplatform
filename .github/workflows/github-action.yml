@@ -69,7 +69,7 @@ jobs:
            cache: 'gradle'
        - run: ls
        - run: chmod +x ./gradlew && ./gradlew createReleaseDistributable
-       - run: ./gradlew notarizeReleaseDmg
+       - run: ./gradlew packageReleaseDistributionForCurrentOS
        - run: ls
        - name: compress
          run: zip -q -r ./TV-mac-$tag.zip ./composeApp/build/compose/binaries/main-release/app
