@@ -98,6 +98,6 @@ jobs:
             **/*.pkg
             **/*.dmg
             **/*.msi
-          tag_name: $tag
+          tag_name: ${{env.tag}}
     permissions:
       contents: write
