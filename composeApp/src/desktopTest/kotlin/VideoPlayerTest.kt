@@ -6,8 +6,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.singleWindowApplication
-import com.corner.ui.VideoPlayer
-import com.corner.ui.rememberVideoPlayerState
+import com.corner.ui.player.VideoPlayer
+import com.corner.ui.player.rememberVideoPlayerState
 import java.awt.Dimension
 
 const val VIDEO_URL = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"

@@ -39,3 +39,6 @@
 
 # 讨论群
 [TG](https://t.me/tv_multiplatform)
+
+# 引用
+player: https://github.com/numq/jetpack-compose-desktop-media-player

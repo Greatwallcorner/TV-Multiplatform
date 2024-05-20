@@ -81,7 +81,7 @@ fun emptyShow(){
     Column(Modifier.fillMaxWidth()/*.align(Alignment.CenterHorizontally)*/) {
         Image(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            painter = painterResource("/icon/nothing.png"),
+            painter = painterResource("/pic/nothing.png"),
             contentDescription = "/icon/nothing here",
             contentScale = ContentScale.Crop
         )

@@ -123,8 +123,8 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                         url = detail?.vodPic ?: "",
                         contentDescription = detail?.vodName,
                         contentScale = ContentScale.FillHeight,
-                        placeholderPainter = { painterResource("/icon/empty.png") },
-                        errorPainter = { painterResource("/icon/empty.png") }
+                        placeholderPainter = { painterResource("/pic/empty.png") },
+                        errorPainter = { painterResource("/pic/empty.png") }
                     )
                     if (model.value.quickSearchResult.isNotEmpty()) {
                         Spacer(Modifier.size(20.dp))

@@ -18,8 +18,9 @@ import com.arkivanov.decompose.extensions.compose.jetbrains.stack.Children
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.fade
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.stackAnimation
 import com.corner.catvodcore.enum.Menu
+import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.ControlBar
-import com.corner.ui.DetailScene
+import com.corner.ui.DetailScene2
 import com.corner.ui.HistoryScene
 import com.corner.ui.SettingScene
 import com.corner.ui.scene.LoadingIndicator
@@ -40,13 +41,15 @@ fun WindowScope.RootContent(component: RootComponent, modifier: Modifier = Modif
                 ambientColor = Color.DarkGray, spotColor = Color.DarkGray
             )
         ) {
-            WindowDraggableArea {
-                ControlBar(onClickMinimize = { state.isMinimized = !state.isMinimized },
-                    onClickMaximize = {
-                        state.placement =
-                            if (WindowPlacement.Maximized == state.placement) WindowPlacement.Floating else WindowPlacement.Maximized
-                    },
-                    onClickClose = { onClose() })
+            if(!GlobalModel.videoFullScreen.value){
+                WindowDraggableArea {
+                    ControlBar(onClickMinimize = { state.isMinimized = !state.isMinimized },
+                        onClickMaximize = {
+                            state.placement =
+                                if (WindowPlacement.Maximized == state.placement) WindowPlacement.Floating else WindowPlacement.Maximized
+                        },
+                        onClickClose = { onClose() })
+                }
             }
             Children(stack = component.childStack, modifier = modifier, animation = stackAnimation(fade())){
                 when (val child = it.instance) {
@@ -61,7 +64,7 @@ fun WindowScope.RootContent(component: RootComponent, modifier: Modifier = Modif
                     is RootComponent.Child.SearchChild -> SearchScene(child.component, {component.showDetail(it, true)}){component.onClickBack()}
                     is RootComponent.Child.HistoryChild -> HistoryScene(child.component, {component.showDetail(it)}){component.onClickBack()}
                     is RootComponent.Child.SettingChild -> SettingScene(child.component){component.onClickBack()}
-                    is RootComponent.Child.DetailChild -> DetailScene(child.component){component.onClickBack()}
+                    is RootComponent.Child.DetailChild -> DetailScene2(child.component){component.onClickBack()}
                 }
 
                 SnackBar.SnackBarList()

@@ -232,7 +232,7 @@ fun AboutDialog(modifier: Modifier, showAboutDialog: Boolean, onClose: () -> Uni
                 ) {
                     Column {
                         Image(
-                            painter = painterResource("/icon/avatar.png"),
+                            painter = painterResource("/pic/avatar.png"),
                             contentDescription = "avatar",
                             contentScale = ContentScale.Fit,
                             modifier = Modifier.padding(8.dp)

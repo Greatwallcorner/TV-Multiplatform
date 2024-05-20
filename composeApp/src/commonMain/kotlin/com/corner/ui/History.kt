@@ -60,8 +60,8 @@ fun HistoryItem(
                     modifier = Modifier.height(220.dp),
                     contentDescription = history.vodName,
                     contentScale = ContentScale.Crop,
-                    placeholderPainter = { painterResource("/icon/empty.png") },
-                    errorPainter = { painterResource("/icon/empty.png") })
+                    placeholderPainter = { painterResource("/pic/empty.png") },
+                    errorPainter = { painterResource("/pic/empty.png") })
                 Text(
                     text = history.vodName!!,
                     modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)).align(Alignment.BottomCenter)

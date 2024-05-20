@@ -69,8 +69,8 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
                 modifier = Modifier.height(220.dp).width(200.dp),
                 contentDescription = vod.vodName,
                 contentScale = ContentScale.Crop,
-                placeholderPainter = { painterResource("/icon/empty.png") },
-                errorPainter = { painterResource("/icon/empty.png") })
+                placeholderPainter = { painterResource("/pic/empty.png") },
+                errorPainter = { painterResource("/pic/empty.png") })
             Box(Modifier.align(Alignment.BottomCenter)){
                 ToolTipText(
                     text = vod.vodName!!,

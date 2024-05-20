@@ -1,30 +1,16 @@
-import com.corner.bean.Hot
-import com.github.catvod.bean.Doh
-import com.google.common.collect.Lists
 import com.corner.catvodcore.bean.Result
-import com.corner.catvodcore.loader.JarLoader
-import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.KtorClient
 import com.corner.catvodcore.util.Urls
-import com.corner.init.Init
 import com.corner.server.KtorD
-import com.github.catvod.crawler.Spider
-import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToJsonElement
-import java.io.File
-import java.io.FileInputStream
 import java.net.URL
-import java.net.URLClassLoader
 import java.util.*
 import kotlin.test.Test
 
@@ -35,26 +21,6 @@ class commonTest {
     private val fileUrl = "file://" + commonTest::class.java.getResource("/config.json").file
 
     //    private val fileUrl = "file://E:/Archives/compose-mutiplatform-workspace/0821.json"
-    @Test
-    fun parseConfigTest() {
-        Http.setDoh(Doh.defaultDoh()[1])
-//        parseConfig(fileUrl, false).init()
-        val spider = JarLoader.getSpider("", "csp_Wogg", "{\n" +
-                "        \"token\": \"影視天下第一\",\n" +
-                "        \"filter\": \"https://fm.t4tv.hz.cz/json/wogg.json\"\n" +
-                "      }", "./jar/fan.txt;md5;364c0f012e73a8801a69900fc25ae9c1")
-//        println(Spider.safeDns())
-        val homeContent = spider?.homeContent(false)
-//        val homeVideoContent = spider?.homeContent(filter = false)
-        val detailContent = spider?.detailContent(listOf("/index.php/voddetail/82368.html"))
-        val playerContent = spider?.playerContent(
-            "轉存原畫#01",
-            "5CNb1zzo7z9+6572dcc537aa2f73e51e499d9a14280cdcda9eaa",
-            Lists.newArrayList()
-        )
-
-        println()
-    }
     @Test
     fun exceptionTest(){
         val e = Exception("test")
@@ -101,17 +67,17 @@ class commonTest {
      */
     @Test
     fun classLoaderTest() {
-        val urlClassLoader =
-            URLClassLoader(
-                arrayOf(
-                    File("F:\\sync\\compose-mutiplatform-workspace\\CatVodSpider\\CatVodSpider\\build\\libs\\CatVodSpider-1.0-SNAPSHOT.jar").toURI()
-                        .toURL()
-                ), commonTest::class.java.classLoader
-            )
-        println(commonTest::class.java.classLoader)
-        val loadClass: Spider = urlClassLoader.loadClass("com.github.catvod.spider.Wogg").getDeclaredConstructor().newInstance() as Spider
-
-        loadClass.init()
+//        val urlClassLoader =
+//            URLClassLoader(
+//                arrayOf(
+//                    File("F:\\sync\\compose-mutiplatform-workspace\\CatVodSpider\\CatVodSpider\\build\\libs\\CatVodSpider-1.0-SNAPSHOT.jar").toURI()
+//                        .toURL()
+//                ), commonTest::class.java.classLoader
+//            )
+//        println(commonTest::class.java.classLoader)
+//        val loadClass: Spider = urlClassLoader.loadClass("com.github.catvod.spider.Wogg").getDeclaredConstructor().newInstance() as Spider
+//
+//        loadClass.init()
 
 //        val exists =
 //            File("F:\\sync\\compose-mutiplatform-workspace\\TV-Multiplatform\\shared\\src\\desktopTest\\resources\\7638addc233624a31deb7c569a6bcbc5.jar").exists()
@@ -134,12 +100,6 @@ class commonTest {
         }
     }
 
-    @org.junit.Test
-    fun jsonTest() {
-        val t = Jsons.decodeFromStream<Result>(FileInputStream("E:\\Archives\\compose-mutiplatform-workspace\\TV-Multiplatform\\shared\\src\\desktopTest\\resources\\homeContent.json"))
-        println(t)
-    }
-
     @Test
     fun playerTest(){
         val string = Jsons.decodeFromString<Result>(
@@ -159,15 +119,6 @@ class commonTest {
     fun headerTest(){
         var s = "{\"User-Agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36\",\"Referer\":\"https://www.aliyundrive.com/\"}"
         val encodeToJsonElement = Jsons.encodeToJsonElement(s)
-    }
-
-    @Test
-    fun fileTest(){
-        val file =
-            File("file:\\E:\\Archives\\compose-mutiplatform-workspace\\CatVodSpider\\CatVodSpider\\build\\libs\\CatVodSpider-1.0-SNAPSHOT.jar")
-
-        println(file.exists())
-
     }
 
     @Test
@@ -200,5 +151,6 @@ class commonTest {
         )
         println(convert)
     }
+
 }
 

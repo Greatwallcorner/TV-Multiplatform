@@ -9,10 +9,14 @@ import com.corner.catvod.enum.bean.Vod
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
 import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
 import com.corner.catvodcore.bean.Episode
+import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.detailIsEmpty
+import com.corner.catvodcore.bean.v
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.DetailComponent
+import com.corner.ui.player.PlayerController
+import com.corner.ui.player.vlcj.VlcjController
 import com.corner.ui.scene.SnackBar
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
@@ -43,10 +47,15 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     private var fromSearchLoadJob: Job = Job()
 
+    override var playerController: PlayerController? = null
+
     override val model: MutableValue<DetailComponent.Model> = _model
 
     init {
         lifecycle.subscribe(object : Lifecycle.Callbacks {
+            override fun onCreate() {
+                playerController = VlcjController()
+            }
             override fun onStop() {
                 log.info("Detail onStop")
                 searchScope.cancel("on stop")
@@ -54,8 +63,13 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 hideProgress()
                 clear()
                 super.onStop()
+                playerController?.dispose()
             }
         })
+
+        model.observe {
+
+        }
     }
 
 
@@ -185,14 +199,6 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         if (model.value.quickSearchResult.isNotEmpty()) loadDetail(model.value.quickSearchResult[0])
     }
 
-    fun buildVodList(): List<Vod> {
-        val list = mutableListOf<Vod>()
-        for (i in 0 until 30) {
-            list.add(Vod(vodId = "$i", vodName = "name$i", vodRemarks = "remark$i"))
-        }
-        return list
-    }
-
     override fun clear() {
         launched = false
         jobList.forEach { it.cancel("detail clear") }
@@ -210,5 +216,14 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             SnackBar.postMsg("正在切换站源至 [${vod.site!!.name}]")
         }
         model.update { it.copy(detail = vod) }
+//        startPlay()
     }
+
+    override fun play(result: Result?) {
+        model.update { it.copy(currentPlayUrl = result?.url?.v() ?: "") }
+    }
+
+//    private fun startPlay() {
+//        model.value.detail?.currentFlag?.episodes.first().
+//    }
 }
