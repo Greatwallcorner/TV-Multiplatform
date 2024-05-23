@@ -1,4 +1,4 @@
-package player
+package com.corner.ui.player
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.*
@@ -12,19 +12,21 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import com.corner.ui.player.PlayerController
+import com.corner.ui.decompose.DetailComponent
 import com.corner.util.formatTimestamp
 import kotlin.math.roundToLong
 
 @Composable
-fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController) {
+fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController, component: DetailComponent) {
 
     val state by controller.state.collectAsState()
 
@@ -39,24 +41,29 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController)
             value = animatedTimestamp,
             onValueChange = { controller.seekTo(it.roundToLong()) },
             valueRange = 0f..state.duration.toFloat(),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 1.dp),
+            modifier = Modifier.fillMaxWidth().height(15.dp).padding(horizontal = 4.dp, vertical = 1.dp),
             colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.secondary, disabledActiveTrackColor = MaterialTheme.colorScheme.tertiary)
         )
         Row(
-            Modifier.fillMaxWidth(),
+            Modifier.fillMaxWidth().height(40.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+//            OutlinedButton(onClick = {
+//
+//            }){
+//                Text("线路:${component.model.value.}", color = MaterialTheme.colorScheme.primary)
+//            }
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                 Text("${state.timestamp.formatTimestamp()} / ${state.duration.formatTimestamp()}", color = MaterialTheme.colorScheme.onBackground)
             }
             if (state.isPlaying) {
                 IconButton(controller::pause) {
-                    Icon(Icons.Rounded.Pause, "pause media", tint = MaterialTheme.colorScheme.secondary)
+                    Icon(Icons.Rounded.Pause, "pause media", tint = MaterialTheme.colorScheme.primary)
                 }
             } else {
                 IconButton(controller::play) {
-                    Icon(Icons.Rounded.PlayArrow, "play media", tint = MaterialTheme.colorScheme.secondary)
+                    Icon(Icons.Rounded.PlayArrow, "play media", tint = MaterialTheme.colorScheme.primary)
                 }
             }
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
@@ -65,13 +72,13 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController)
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (state.isMuted || state.volume == 0f) IconButton(controller::toggleSound) {
-                        Icon(Icons.AutoMirrored.Rounded. VolumeOff, "volume off", tint = MaterialTheme.colorScheme.secondary)
+                        Icon(Icons.AutoMirrored.Rounded.VolumeOff, "volume off", tint = MaterialTheme.colorScheme.primary)
                     }
                     else {
                         if (state.volume < .5f) IconButton(controller::toggleSound) {
-                            Icon(Icons.AutoMirrored.Rounded.VolumeDown, "volume low", tint = MaterialTheme.colorScheme.secondary)
+                            Icon(Icons.AutoMirrored.Rounded.VolumeDown, "volume low", tint = MaterialTheme.colorScheme.primary)
                         } else IconButton(controller::toggleSound) {
-                            Icon(Icons.AutoMirrored.Rounded.VolumeUp, "volume high", tint = MaterialTheme.colorScheme.secondary)
+                            Icon(Icons.AutoMirrored.Rounded.VolumeUp, "volume high", tint = MaterialTheme.colorScheme.primary )
                         }
                     }
                     Slider(
@@ -80,9 +87,9 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController)
                         modifier = Modifier.width(128.dp),
                         colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.secondary, disabledActiveTrackColor = MaterialTheme.colorScheme.tertiary)
                     )
-                    Speed(initialValue = 1F, Modifier) { controller.speed(it ?: 1F) }
+                    Speed(initialValue = 1F, Modifier.width(80.dp)) { controller.speed(it ?: 1F) }
                     IconButton({controller.toggleFullscreen()}){
-                        Icon(Icons.Default.Fullscreen, contentDescription = "fullScreen/UnFullScreen", tint = MaterialTheme.colorScheme.secondary)
+                        Icon(Icons.Default.Fullscreen, contentDescription = "fullScreen/UnFullScreen", tint = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
@@ -101,17 +108,16 @@ fun Speed(
 ) {
     var input by remember { mutableStateOf(initialValue.toString()) }
     OutlinedTextField(
-        colors = TextFieldDefaults.colors(focusedTextColor = MaterialTheme.colorScheme.primary, unfocusedContainerColor = MaterialTheme.colorScheme.background),
         value = input,
         modifier = modifier,
         singleLine = true,
-        textStyle = TextStyle.Default.copy(color = MaterialTheme.colorScheme.onBackground, background = MaterialTheme.colorScheme.background),
+        textStyle = TextStyle.Default.copy(color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center, fontSize = TextUnit(13f, TextUnitType.Sp)),
         leadingIcon = {
             Icon(
                 painter = painterResource("pic/speed.svg"),
                 contentDescription = "Speed",
-                modifier = Modifier.size(28.dp),
-                tint = MaterialTheme.colorScheme.secondary
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.primary
             )
         },
         onValueChange = {

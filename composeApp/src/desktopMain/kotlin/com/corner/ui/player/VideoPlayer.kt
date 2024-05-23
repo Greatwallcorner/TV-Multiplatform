@@ -1,14 +1,23 @@
-package com.rjuszczyk.compose
+package com.corner.ui.player
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
+import com.corner.ui.player.vlcj.VlcjController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.apache.commons.lang3.StringUtils
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ImageInfo
@@ -24,11 +33,12 @@ import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32Buffe
 import java.nio.ByteBuffer
 
 
+@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 actual fun VideoPlayer(
     mrl: String,
 //    videoInfo: VideoInfo,
-    state: VideoPlayerState,
+    state: VlcjController,
     modifier: Modifier,
 ) {
     val exifRotation = remember(mrl) {
@@ -40,11 +50,44 @@ actual fun VideoPlayer(
 
 
     if(mediaPlayerRead) {
+        val interactionSource = remember { MutableInteractionSource() }
         imageBitmap?.let {
             androidx.compose.foundation.Image(
                 bitmap = it,
                 contentDescription = "Video",
                 modifier = modifier.background(Color.Black)
+                    .combinedClickable(enabled = true,
+                        onDoubleClick = {
+                        state.togglePlayStatus()
+                    },
+                        interactionSource = interactionSource,
+                        indication = null
+                    ){
+                        // onClick
+                    }
+                    .onPointerEvent(PointerEventType.Scroll){e->
+                        val y = e.changes.first().scrollDelta.y
+                        if (y < 0) {
+                            state.volumeUp()
+                        } else {
+                            state.volumeDown()
+                        }
+                    }
+                    .onKeyEvent { k->
+                        when(k.key){
+                            Key.DirectionRight -> {
+                                if(k.type == KeyEventType.KeyDown){
+                                    state.fastForward()
+                                }else if(k.type == KeyEventType.KeyUp){
+                                    state.stopForward()
+                                }
+                            }
+                            Key.Spacebar -> if(k.type == KeyEventType.KeyDown) state.togglePlayStatus()
+                            Key.DirectionUp -> if(k.type == KeyEventType.KeyDown) state.volumeUp()
+                            Key.DirectionDown -> if(k.type == KeyEventType.KeyDown) state.volumeDown()
+                        }
+                        true
+                    }
 //                    .let { m ->
 //                        if(exifRotation % 180 == 0) {
 //                            m.rotate(exifRotation.toFloat())
@@ -55,10 +98,10 @@ actual fun VideoPlayer(
 
             )
         } ?: run {
-            Box(modifier = modifier.background(Color.Gray))
+            Box(modifier = modifier.background(Color.Black))
         }
     } else {
-        Box(modifier = modifier.background(Color.Gray))
+        Box(modifier = modifier.background(Color.Black))
     }
 
     val mediaPlayer = remember(mrl) {
@@ -122,13 +165,15 @@ actual fun VideoPlayer(
             removeRotation(mrl)
         }
 
-        mediaPlayer.media().play(mrl)
+        if(StringUtils.isNotBlank(mrl)){
+            mediaPlayer.media().play(mrl)
+        }
+        mediaPlayer.events().addMediaPlayerEventListener(state.stateListener)
 
         mediaPlayer.events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
 
             override fun timeChanged(mediaPlayer: MediaPlayer?, newTime: Long) {
                 super.timeChanged(mediaPlayer, newTime)
-                println("timeChanged $newTime")
             }
 
             override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
@@ -137,9 +182,9 @@ actual fun VideoPlayer(
                 println("mediaPlayerReady ${mediaPlayer.video().videoDimension().width} ${mediaPlayer.video().videoDimension().height}")
 
                 mediaPlayer.submit {
-                    mediaPlayer.audio().mute()
+//                    mediaPlayer.audio().mute()
                     //mediaPlayer.controls().setTime(1L)
-                    mediaPlayer.controls().pause()
+//                    mediaPlayer.controls().pause()
                     coroutineScope.launch {
                         delay(100)
                         mediaPlayerRead = true
@@ -150,14 +195,16 @@ actual fun VideoPlayer(
                 if(exifRotation != 0) {
                     setRotation(mrl, exifRotation)
                 }
-                println("mediaPlayerRe")
+                println("mediaPlayerReady")
             }
+
         })
     }
 
     DisposableEffect(key1 = mrl, effect = {
         this.onDispose {
-            mediaPlayer.release()
+//            mediaPlayer.release()
+            state.dispose()
         }
     })
 }

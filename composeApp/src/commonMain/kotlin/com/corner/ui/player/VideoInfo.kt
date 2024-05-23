@@ -1,4 +1,4 @@
-package com.rjuszczyk.compose
+package com.corner.ui.player
 
 //data class VideoInfo(
 //    val videoHeight: Int,

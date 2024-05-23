@@ -2,9 +2,7 @@ package com.corner.ui
 
 import SiteViewModel
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -162,7 +160,7 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                 } else {
                     Column(
                         modifier = Modifier.padding(start = 10.dp)
-                            .scrollable(state = rememberScrollState, orientation = Orientation.Vertical)
+//                            .scrollable(state = rememberScrollState, orientation = Orientation.Vertical)
                             .weight(0.8f)
                     ) {
                         Row {
@@ -339,7 +337,6 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                                                 val dt = detail?.copy(
                                                     subEpisode = detail?.currentFlag?.episodes?.getPage(detail!!.currentTabIndex)
                                                         ?.toMutableList()?.toList()?.toMutableList(),
-                                                    version = (detail!!.version++)
                                                 )
                                                 component.model.update { it.copy(detail = dt) }
                                                 val result = SiteViewModel.playerContent(

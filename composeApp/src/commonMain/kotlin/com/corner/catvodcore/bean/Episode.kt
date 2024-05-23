@@ -6,11 +6,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Episode(
     @SerializedName("name")
-    var name: String? = null,
+    var name: String = "",
     @SerializedName("desc")
     val desc: String? = null,
     @SerializedName("url")
-    var url: String? = null,
+    var url: String = "",
     val number: Int = 0,
     var activated: Boolean = false,
     val selected: Boolean = false

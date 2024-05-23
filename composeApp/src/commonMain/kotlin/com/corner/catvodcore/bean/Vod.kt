@@ -36,8 +36,6 @@ data class Vod(
     var subEpisode: MutableList<Episode>? = mutableListOf(),
     @Transient
     var currentTabIndex: Int = 0,
-    @Transient
-    var version: Int = 0
 ) {
     companion object {
         fun Vod.isEmpty():Boolean{

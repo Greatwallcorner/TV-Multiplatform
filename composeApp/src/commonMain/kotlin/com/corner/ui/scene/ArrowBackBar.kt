@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun BackRow(modifier: Modifier, onClickBack:()->Unit,content: @Composable ()->Unit){
-    Row(modifier = modifier/*.background(MaterialTheme.colorScheme.surface)*/.height(80.dp).fillMaxWidth().padding(start = 20.dp, end = 20.dp),
+    Row(modifier = modifier/*.background(MaterialTheme.colorScheme.surface)*/.height(60.dp).fillMaxWidth().padding(start = 20.dp, end = 20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
         IconButton(

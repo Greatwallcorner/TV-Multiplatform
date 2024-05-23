@@ -15,11 +15,11 @@ import com.corner.catvodcore.bean.v
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.DetailComponent
-import com.corner.ui.player.PlayerController
 import com.corner.ui.player.vlcj.VlcjController
 import com.corner.ui.scene.SnackBar
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
+import com.corner.util.Constants
 import com.corner.util.cancelAll
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
@@ -47,23 +47,25 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     private var fromSearchLoadJob: Job = Job()
 
-    override var playerController: PlayerController? = null
-
     override val model: MutableValue<DetailComponent.Model> = _model
+
+    override var controller: VlcjController? = null
 
     init {
         lifecycle.subscribe(object : Lifecycle.Callbacks {
-            override fun onCreate() {
-                playerController = VlcjController()
-            }
             override fun onStop() {
                 log.info("Detail onStop")
+                super.onStop()
+            }
+
+            override fun onDestroy() {
+                super.onDestroy()
+                log.info("Detail onDestroy")
                 searchScope.cancel("on stop")
                 fromSearchLoadJob.cancel("on stop")
                 hideProgress()
                 clear()
-                super.onStop()
-                playerController?.dispose()
+                controller?.dispose()
             }
         })
 
@@ -223,6 +225,61 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         model.update { it.copy(currentPlayUrl = result?.url?.v() ?: "") }
     }
 
+    override fun startPlay() {
+        log.info("start play")
+        if(controller?.state?.value?.isPlaying == true) {
+            log.info("视频播放中 返回")
+            return
+        }
+        if (model.value.detail != null && model.value.detail?.isEmpty() != true) {
+            val detail = model.value.detail
+            detail?.subEpisode?.apply {
+                val ep = first()
+                playEp(detail, ep)
+            }
+        }
+    }
+
+    private fun playEp(detail: Vod, ep: Episode) {
+        val result = SiteViewModel.playerContent(
+            detail.site?.key ?: "",
+            detail.currentFlag?.flag ?: "",
+            ep.url
+        )
+        model.update { it.copy(currentPlayUrl = result?.url?.v() ?: "") }
+        detail.subEpisode?.parallelStream()?.forEach {
+            if (it == ep) {
+                it.activated = true
+            } else {
+                it.activated = false
+            }
+        }
+        SnackBar.postMsg("开始播放: ${ep.name}")
+    }
+
+    override fun nextEP() {
+        log.info("下一集")
+        var detail = model.value.detail
+        var nextIndex = 0
+        var currentIndex = 0
+        val currentEp = detail?.subEpisode?.find { it.activated }
+        if (currentEp != null) {
+            currentIndex = detail?.subEpisode?.indexOf(currentEp)!!
+            nextIndex = currentIndex++
+        }
+        if (currentIndex >= Constants.EpSize - 1) {
+            log.info("当前分组播放完毕 下一个分组")
+            detail =
+                detail?.copy(subEpisode = detail.currentFlag?.episodes?.getPage(++detail.currentTabIndex))
+            nextIndex = 0
+            model.update { it.copy(detail = detail) }
+        }
+        detail?.subEpisode?.get(nextIndex)?.let {
+            playEp(detail, it)
+        }
+//        val currentIndex = detail?.subEpisode?.indexOf(currentEp) ?: 0
+
+    }
 //    private fun startPlay() {
 //        model.value.detail?.currentFlag?.episodes.first().
 //    }

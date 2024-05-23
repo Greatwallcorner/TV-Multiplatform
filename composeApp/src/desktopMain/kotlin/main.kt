@@ -2,10 +2,12 @@ import androidx.compose.foundation.DarkDefaultContextMenuRepresentation
 import androidx.compose.foundation.LightDefaultContextMenuRepresentation
 import androidx.compose.foundation.LocalContextMenuRepresentation
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
@@ -16,13 +18,14 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.jetbrains.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.corner.bean.SettingStore
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.init.Init
 import com.corner.init.generateImageLoader
-import com.corner.ui.Player
 import com.corner.ui.SwingUtil
 import com.corner.ui.Util
 import com.corner.ui.decompose.DefaultRootComponent
+import com.corner.ui.decompose.RootContent
 import com.seiko.imageloader.LocalImageLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -71,15 +74,15 @@ fun main() {
                 LocalImageLoader provides remember { generateImageLoader() },
                 LocalContextMenuRepresentation provides remember { contextMenuRepresentation }
             ) {
-                AppTheme {
-                    Player()
-                }
-//                RootContent(component = root, modifier = Modifier.fillMaxSize(), windowState) {
-//                    window.isVisible = false
-//                    SettingStore.write()
-//                    Init.stop()
-//                    exitApplication()
+//                AppTheme {
+//                    Player()
 //                }
+                RootContent(component = root, modifier = Modifier.fillMaxSize(), windowState) {
+                    window.isVisible = false
+                    SettingStore.write()
+                    Init.stop()
+                    exitApplication()
+                }
             }
         }
 
