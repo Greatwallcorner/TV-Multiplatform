@@ -91,7 +91,7 @@ object SiteViewModel {
                 SpiderDebug.log("detail:$detailContent")
                 ApiConfig.setRecent(site)
                 rst = Jsons.decodeFromString<Result>(detailContent)
-                if (!rst.list.isEmpty()) rst.list.get(0).setVodFlags()
+                if (rst.list.isNotEmpty()) rst.list.get(0).setVodFlags()
                 //            if (!rst.list.isEmpty()) checkThunder(rst.list.get(0).vodFlags())
                 detail.value = rst
             } else if (site.key.isEmpty() && site.name.isEmpty() && key == "push_agent") {
@@ -121,6 +121,7 @@ object SiteViewModel {
             return null
         }
         rst.list.forEach { it.site = site }
+//        rst.list.sortBy { it.vodName }
         return rst
     }
 

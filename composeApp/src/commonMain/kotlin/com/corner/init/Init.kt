@@ -10,6 +10,7 @@ import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
 import com.corner.database.appModule
 import com.corner.server.KtorD
+import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
 import org.koin.core.context.startKoin
@@ -28,6 +29,7 @@ class Init {
                 initConfig()
                 initPlatformSpecify()
                 Hot.getHotList()
+                VlcJInit.init()
             } finally {
                 hideProgress()
             }

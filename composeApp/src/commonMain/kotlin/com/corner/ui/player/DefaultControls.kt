@@ -1,7 +1,9 @@
 package com.corner.ui.player
 
+import AppTheme
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeDown
@@ -10,30 +12,37 @@ import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.value.update
+import com.corner.catvodcore.util.Utils
 import com.corner.ui.decompose.DetailComponent
+import com.corner.ui.player.vlcj.VlcjFrameController
 import com.corner.util.formatTimestamp
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToLong
 
 @Composable
-fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController, component: DetailComponent) {
+fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameController, component: DetailComponent) {
 
     val state by controller.state.collectAsState()
 
     val animatedTimestamp by animateFloatAsState(state.timestamp.toFloat())
 
     Column(
-        modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        modifier.padding(horizontal = 8.dp, vertical = 1.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center
     ) {
@@ -41,21 +50,26 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController,
             value = animatedTimestamp,
             onValueChange = { controller.seekTo(it.roundToLong()) },
             valueRange = 0f..state.duration.toFloat(),
-            modifier = Modifier.fillMaxWidth().height(15.dp).padding(horizontal = 4.dp, vertical = 1.dp),
+            modifier = Modifier.fillMaxWidth().height(15.dp).padding(horizontal = 4.dp, vertical = 5.dp),
             colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.secondary, disabledActiveTrackColor = MaterialTheme.colorScheme.tertiary)
         )
         Row(
-            Modifier.fillMaxWidth().height(40.dp),
+            Modifier.fillMaxWidth().height(45.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-//            OutlinedButton(onClick = {
-//
-//            }){
-//                Text("线路:${component.model.value.}", color = MaterialTheme.colorScheme.primary)
-//            }
+            TextButtonTransparent(if(state.opening == -1L) "片头" else Utils.formatMilliseconds(state.opening)){
+                controller.updateOpening(component.model.value.detail)
+            }
+            TextButtonTransparent(if(state.ending == -1L) "片尾" else Utils.formatMilliseconds(state.ending)){
+                controller.updateEnding(component.model.value.detail)
+            }
+
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-                Text("${state.timestamp.formatTimestamp()} / ${state.duration.formatTimestamp()}", color = MaterialTheme.colorScheme.onBackground)
+                Text("${state.timestamp.formatTimestamp()} / ${state.duration.formatTimestamp()}",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.Bold,
+                )
             }
             if (state.isPlaying) {
                 IconButton(controller::pause) {
@@ -87,13 +101,47 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController,
                         modifier = Modifier.width(128.dp),
                         colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.secondary, disabledActiveTrackColor = MaterialTheme.colorScheme.tertiary)
                     )
-                    Speed(initialValue = 1F, Modifier.width(80.dp)) { controller.speed(it ?: 1F) }
+                    Spacer(Modifier.size(5.dp))
+                    Speed(initialValue = state.speed, Modifier.width(85.dp).height(45.dp)) { controller.speed(it ?: 1F) }
                     IconButton({controller.toggleFullscreen()}){
                         Icon(Icons.Default.Fullscreen, contentDescription = "fullScreen/UnFullScreen", tint = MaterialTheme.colorScheme.primary)
                     }
+                    TextButtonTransparent("选集"){
+                        component.model.update { it.copy(showEpChooserDialog = !component.model.value.showEpChooserDialog) }
+                        println("选集")
+                    }
+//                    androidx.compose.material3.TextButton(onClick = {
+//                        component.model.update { it.copy(showEpChooserDialog = !component.model.value.showEpChooserDialog) }
+//                        println("选集")
+//                    },
+//                        shape = RoundedCornerShape(50),
+//                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent,
+//                            contentColor = MaterialTheme.colorScheme.primary)
+//                    ){
+//                        Text("选集", color = MaterialTheme.colorScheme.primary, fontSize = TextUnit(12f, TextUnitType.Sp))
+//                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun TextButtonTransparent(text:String, onClick:()->Unit){
+    androidx.compose.material3.TextButton(onClick = onClick,
+        shape = RoundedCornerShape(50),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.primary)
+    ){
+        Text(text, color = MaterialTheme.colorScheme.primary, fontSize = TextUnit(12f, TextUnitType.Sp))
+    }
+}
+
+@Preview
+@Composable
+fun previewControlBar(){
+    AppTheme {
+//        DefaultControls(Modifier, VlcjFrameController(), null)
     }
 }
 
@@ -109,14 +157,16 @@ fun Speed(
     var input by remember { mutableStateOf(initialValue.toString()) }
     OutlinedTextField(
         value = input,
-        modifier = modifier,
+
+        modifier = modifier.padding(0.dp),
         singleLine = true,
-        textStyle = TextStyle.Default.copy(color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center, fontSize = TextUnit(13f, TextUnitType.Sp)),
+        textStyle = TextStyle.Default.copy(color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center,
+            fontSize = TextUnit(12f, TextUnitType.Sp)),
         leadingIcon = {
             Icon(
                 painter = painterResource("pic/speed.svg"),
                 contentDescription = "Speed",
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(18.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
         },
@@ -131,4 +181,10 @@ fun Speed(
             onChange(input.toFloatOrNull())
         },
     )
+}
+
+@androidx.compose.desktop.ui.tooling.preview.Preview
+@Composable
+fun previewSpeed(){
+    Speed(1f, Modifier.width(85.dp).height(45.dp), onChange = {})
 }

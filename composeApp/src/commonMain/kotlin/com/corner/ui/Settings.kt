@@ -186,11 +186,9 @@ fun DialogEdit(
                             ApiConfig.api.cfg.value = Db.Config.find(textFieldValue!!, ConfigType.SITE.ordinal.toLong())
                             initConfig()
                         }
-
                         "player" -> {
                             SettingStore.setValue(SettingType.PLAYER, textFieldValue!!)
                         }
-
                         "log" -> {
                             if (textFieldValue == null || textFieldValue == "") {
                                 SnackBar.postMsg("不可为空")

@@ -4,13 +4,14 @@ import com.arkivanov.decompose.value.MutableValue
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Result
 import com.corner.ui.player.vlcj.VlcjController
+import com.corner.ui.player.vlcj.VlcjFrameController
 import java.util.concurrent.CopyOnWriteArrayList
 
 interface DetailComponent {
 
     val model: MutableValue<Model>
 
-    var controller:VlcjController?
+    var controller:VlcjFrameController?
 
     data class Model(
         var siteKey:String = "",
@@ -18,6 +19,7 @@ interface DetailComponent {
         var quickSearchResult:CopyOnWriteArrayList<Vod> = CopyOnWriteArrayList(),
         var isLoading: Boolean = false,
         var currentPlayUrl:String = "",
+        var showEpChooserDialog:Boolean = false
     )
 
     fun load()

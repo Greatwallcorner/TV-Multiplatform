@@ -22,6 +22,17 @@
       }
     },
     {
+      "key": "Liangzi",
+      "name": "量子影视",
+      "type": 3,
+      "api": "csp_Liangzi",
+      "searchable": "1",
+      "filterable": "0",
+      "changeable": 0,
+      "ext": {
+      }
+    },
+    {
       "key": "BD",
       "name": "BD|首页",
       "type": 3,

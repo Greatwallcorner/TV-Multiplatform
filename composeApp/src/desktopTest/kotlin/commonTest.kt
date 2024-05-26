@@ -28,6 +28,13 @@ class commonTest {
     }
 
     @Test
+    fun computeTest(){
+        var a = 1
+        a.plus(1)
+        println(a)
+    }
+
+    @Test
     fun splitTest() {
         val s = "$$$$$$"
         val split = s.split("\\$\\$\\$".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()

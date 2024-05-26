@@ -6,6 +6,7 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.corner.catvod.enum.bean.Vod
+import com.corner.catvod.enum.bean.Vod.Companion.getEpisode
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
 import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
 import com.corner.catvodcore.bean.Episode
@@ -13,9 +14,11 @@ import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.detailIsEmpty
 import com.corner.catvodcore.bean.v
 import com.corner.catvodcore.config.ApiConfig
+import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.database.Db
 import com.corner.ui.decompose.DetailComponent
-import com.corner.ui.player.vlcj.VlcjController
+import com.corner.ui.player.vlcj.VlcjFrameController
 import com.corner.ui.scene.SnackBar
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
@@ -49,7 +52,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     override val model: MutableValue<DetailComponent.Model> = _model
 
-    override var controller: VlcjController? = null
+    override var controller: VlcjFrameController? = null
 
     init {
         lifecycle.subscribe(object : Lifecycle.Callbacks {
@@ -59,8 +62,12 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             }
 
             override fun onDestroy() {
-                super.onDestroy()
                 log.info("Detail onDestroy")
+                super.onDestroy()
+                val ep = model.value.detail?.getEpisode()
+                Db.History.updateSome(model.value.detail?.currentFlag?.flag!!, ep?.name!!, ep.url,
+                    controller?.state?.value?.timestamp!!, controller?.state?.value?.speed!!,
+                    Utils.getHistoryKey(model.value.detail?.site?.key!!, model.value.detail?.vodId!!))
                 searchScope.cancel("on stop")
                 fromSearchLoadJob.cancel("on stop")
                 hideProgress()
@@ -73,7 +80,6 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
         }
     }
-
 
     override fun load() {
         val chooseVod = getChooseVod()
@@ -205,7 +211,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         launched = false
         jobList.forEach { it.cancel("detail clear") }
         jobList.clear()
-        model.update { it.copy(quickSearchResult = CopyOnWriteArrayList(), detail = null) }
+        model.update { it.copy(quickSearchResult = CopyOnWriteArrayList(), detail = null, showEpChooserDialog = false) }
         SiteViewModel.clearQuickSearch()
     }
 
@@ -227,14 +233,25 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     override fun startPlay() {
         log.info("start play")
-        if(controller?.state?.value?.isPlaying == true) {
-            log.info("视频播放中 返回")
-            return
-        }
         if (model.value.detail != null && model.value.detail?.isEmpty() != true) {
+            if(controller?.isPlaying() == true) {
+                log.info("视频播放中 返回")
+                return
+            }
             val detail = model.value.detail
-            detail?.subEpisode?.apply {
-                val ep = first()
+            var findEp: Episode? = null
+            if(detail == null || detail.isEmpty()) return
+            val history = Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId))
+            if(history == null) Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!)
+            else{
+                controller?.setControllerHistory(history)
+                controller?.setStartEnd(history.opening ?: -1, history.ending ?: -1)
+
+                findEp = detail.findAndSetEpByName(history)
+                model.update { it.copy(detail = detail) }
+            }
+            detail.subEpisode?.apply {
+                val ep = findEp ?: first()
                 playEp(detail, ep)
             }
         }
@@ -248,11 +265,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         )
         model.update { it.copy(currentPlayUrl = result?.url?.v() ?: "") }
         detail.subEpisode?.parallelStream()?.forEach {
-            if (it == ep) {
-                it.activated = true
-            } else {
-                it.activated = false
-            }
+            it.activated = it == ep
         }
         SnackBar.postMsg("开始播放: ${ep.name}")
     }

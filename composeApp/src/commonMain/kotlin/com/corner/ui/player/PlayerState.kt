@@ -8,4 +8,6 @@ data class PlayerState(
     val timestamp: Long = 0L,
     val duration: Long = 0L,
     val speed: Float = 1F,
+    var opening:Long = -1,
+    val ending:Long = -1
 )

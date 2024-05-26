@@ -171,7 +171,7 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
                     extend
                 )
                 if (!rst.isSuccess || rst.list.isEmpty()) {
-                    model.value.currentClass?.failTime?.plus(1)
+                    model.value.currentClass?.failTime = model.value.currentClass?.failTime!! + 1
                     return@launch
                 }
                 val list = rst.list

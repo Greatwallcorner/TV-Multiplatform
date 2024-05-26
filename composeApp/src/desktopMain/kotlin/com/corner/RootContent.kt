@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -17,6 +18,7 @@ import androidx.compose.ui.window.WindowState
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.Children
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.fade
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.stackAnimation
+import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.ControlBar
@@ -32,16 +34,14 @@ import com.corner.ui.video.VideoScene
 
 @Composable
 fun WindowScope.RootContent(component: RootComponent, modifier: Modifier = Modifier, state:WindowState, onClose:()->Unit) {
+    val isFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
+    val borderStroke = derivedStateOf { BorderStroke(if(isFullScreen.value) 0.dp else 1.dp, Color(59, 59, 60)) }
     AppTheme(useDarkTheme = true) {
         Column(
-            modifier = Modifier.fillMaxSize()/*.clip(RoundedCornerShape(12.dp))*/.border(
-                border = BorderStroke(1.dp, Color(59, 59, 60)), // firefox的边框灰色
-            ).shadow(
-                5.dp,
-                ambientColor = Color.DarkGray, spotColor = Color.DarkGray
-            )
+            modifier = Modifier.fillMaxSize().border(
+                border = borderStroke.value), // firefox的边框灰色
         ) {
-            if(!GlobalModel.videoFullScreen.value){
+            if(!isFullScreen.value){
                 WindowDraggableArea {
                     ControlBar(onClickMinimize = { state.isMinimized = !state.isMinimized },
                         onClickMaximize = {

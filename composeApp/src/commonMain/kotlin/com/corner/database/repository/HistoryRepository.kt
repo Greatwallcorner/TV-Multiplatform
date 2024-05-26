@@ -25,15 +25,15 @@ interface HistoryRepository {
     fun deleteBatch(ids:List<String>): Boolean
 
     fun deleteAll():Boolean
+    fun findHistory(historyKey: String): History?
+    fun updateOpeningEnding(opening: Long, ending: Long, key: String)
+
+    fun updateSome(flag:String, vodRemarks:String, playUrl:String, position:Long, speed:Float, historyKey:String)
 }
 
 class HistoryRepositoryImpl:HistoryRepository, KoinComponent{
     private val database: Database by inject()
     private val historyQueries = database.historyQueries
-
-    private fun getHistoryKey(key:String, id:String, cId:String): String {
-        return key + Db.SYMBOL + id + Db.SYMBOL + ApiConfig.api.id
-    }
 
     /**
      * key = KEY@@@ID@@@CID
@@ -57,7 +57,7 @@ class HistoryRepositoryImpl:HistoryRepository, KoinComponent{
     }
 
     override fun create(vod:Vod, flag:String, vodRemarks: String){
-        val historyKey = vod.site?.key + Db.SYMBOL + vod.vodId + Db.SYMBOL + ApiConfig.api.id
+        val historyKey = vod.site?.key + Db.SYMBOL + vod.vodId + Db.SYMBOL + ApiConfig.api.cfg.value?.id!!
         val his = historyQueries.findByKey(historyKey).executeAsOneOrNull()
         if(his == null){
             save(historyKey,
@@ -67,9 +67,9 @@ class HistoryRepositoryImpl:HistoryRepository, KoinComponent{
                 vodRemarks,
                 vod.vodPlayUrl!!,
                 ApiConfig.api.cfg.value?.id!!)
-        }else{
-            historyQueries.updateSome(flag, vodRemarks, vod.vodPlayUrl, historyKey)
-        }
+        }/*else{
+            historyQueries.updateSome(flag, vodRemarks, vod.vodPlayUrl,  historyKey)
+        }*/
     }
 
     override fun findAll(cId: Long?): List<History> {
@@ -95,6 +95,18 @@ class HistoryRepositoryImpl:HistoryRepository, KoinComponent{
         return true
     }
 
+    override fun findHistory(historyKey: String): History? {
+        return historyQueries.findByKey(historyKey).executeAsOneOrNull()
+    }
+
+    override fun updateOpeningEnding(opening: Long, ending: Long, key: String) {
+        historyQueries.updateOpeningEnding(opening = opening, ending = ending, key)
+    }
+
+    override fun updateSome(flag: String, vodRemarks: String, playUrl: String, position: Long,speed:Float, historyKey: String) {
+        historyQueries.updateSome(flag, vodRemarks, playUrl, position,speed.toDouble(), historyKey)
+    }
+
 }
 
 
@@ -109,6 +121,7 @@ fun History.buildVod():Vod{
     vod.vodId = keySplit[1]
     vod.vodPic = vodPic
     vod.vodRemarks = vodRemarks
+    vod.site = ApiConfig.getSite(keySplit[0])
     return vod
 }
 

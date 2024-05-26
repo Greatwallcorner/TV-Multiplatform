@@ -3,6 +3,7 @@ package com.corner.ui.decompose
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.value.Value
 import com.corner.catvod.enum.bean.Vod
+import com.corner.database.History
 import com.corner.ui.decompose.component.DefaultHistoryComponent
 import com.corner.ui.decompose.component.DefaultSearchPagesComponent
 import com.corner.ui.decompose.component.DefaultSettingComponent
@@ -25,7 +26,6 @@ interface RootComponent{
 
 
     fun onClickBack()
-
 
     sealed class Child{
         class VideoChild(val component:DefaultVideoComponent):Child()

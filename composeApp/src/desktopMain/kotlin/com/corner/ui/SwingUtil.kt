@@ -1,8 +1,10 @@
 package com.corner.ui
 
+import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.Point
 import java.awt.Toolkit
+import java.awt.image.BufferedImage
 import javax.swing.SwingUtilities
 
 object SwingUtil {
@@ -22,6 +24,12 @@ object SwingUtil {
 
     fun dp2px(dp: Int): Int {
         return dp * resolution / 160
+    }
+
+    fun hideCursor(): Cursor {
+        val toolkit = Toolkit.getDefaultToolkit()
+        val image = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
+        return  toolkit.createCustomCursor(image, Point(0, 0), "InvisibleCursor")
     }
 
     /**

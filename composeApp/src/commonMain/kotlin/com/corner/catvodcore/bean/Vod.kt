@@ -2,6 +2,9 @@ package com.corner.catvod.enum.bean
 
 import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.Flag
+import com.corner.catvodcore.util.Utils
+import com.corner.database.History
+import com.corner.util.Constants
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -38,6 +41,10 @@ data class Vod(
     var currentTabIndex: Int = 0,
 ) {
     companion object {
+
+        fun Vod.getEpisode():Episode?{
+            return subEpisode?.find { it.activated }
+        }
         fun Vod.isEmpty():Boolean{
             return org.apache.commons.lang3.StringUtils.isBlank(vodId) || vodFlags.isEmpty()
         }
@@ -72,8 +79,8 @@ data class Vod(
 
         fun List<Episode>.getPage(index: Int): MutableList<Episode> {
             val list = this.subList(
-                index * 15,
-                if (index * 15 + 15 > size) size else index * 15 + 15
+                index * Constants.EpSize,
+                if (index * Constants.EpSize + Constants.EpSize > size) size else index * Constants.EpSize + Constants.EpSize
             ).toMutableList()
             return list
         }
@@ -81,6 +88,22 @@ data class Vod(
 
     fun isFolder():Boolean{
         return VodTag.Folder.called == vodTag
+    }
+
+    fun findAndSetEpByName(history: History): Episode? {
+        if (vodRemarks != null) {
+            currentFlag = vodFlags.find { it?.flag == history.vodFlag }
+            val episode = currentFlag?.find(history.vodRemarks!!, true)
+            if(episode != null){
+                episode.activated = true
+                val indexOf = currentFlag?.episodes?.indexOf(episode)
+                // 32 15 16
+                val i = (indexOf?.plus(1))!! / Constants.EpSize
+                subEpisode = currentFlag?.episodes?.getPage(i)!!
+            }
+            return episode
+        }
+        return null
     }
 }
 

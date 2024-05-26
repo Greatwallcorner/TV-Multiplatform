@@ -1,6 +1,7 @@
 package com.corner.ui
 
 import SiteViewModel
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
@@ -31,9 +34,9 @@ import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.arkivanov.decompose.value.update
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
-import com.corner.database.Db
+import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.DetailComponent
-import com.corner.ui.player.vlcj.VlcjController
+import com.corner.ui.player.vlcj.VlcjFrameController
 import com.corner.ui.scene.*
 import com.corner.ui.video.QuickSearchItem
 import com.corner.util.Constants
@@ -41,7 +44,7 @@ import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
@@ -49,7 +52,12 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
 
     val detail by rememberUpdatedState(model.value.detail)
 
-    val controller = remember { VlcjController(component) }
+    val controller = remember { VlcjFrameController() }
+
+    val isFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
+
+    val videoHeight = derivedStateOf { if (isFullScreen.value) 1f else 0.6f }
+    val videoWidth = derivedStateOf { if (isFullScreen.value) 1f else 0.7f }
 
 
     LaunchedEffect("detail") {
@@ -72,15 +80,13 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
         onDispose { }
     }
 
+    val focus = remember { FocusRequester() }
     Box(
         modifier = Modifier.fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-//        val isFullScreen = derivedStateOf{controller.state.value.isFullScreen}
-        if (false) {
-            Player(model.value.currentPlayUrl, controller, Modifier.fillMaxSize(), component)
-        } else {
-            Column(Modifier.padding(8.dp)) {
+        Column(Modifier) {
+            if (!isFullScreen.value) {
                 BackRow(Modifier, onClickBack = {
                     onClickBack()
                 }) {
@@ -118,18 +124,36 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
                         }
                     }
                 }
-                val mrl = derivedStateOf { model.value.currentPlayUrl }
-                Row(
-                    modifier = Modifier.fillMaxHeight(0.6f).padding(5.dp),
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    Player(mrl.value, controller, Modifier.fillMaxWidth(0.7f).weight(0.7f), component)
+            }
+            val mrl = derivedStateOf { model.value.currentPlayUrl }
+            DisposableEffect(mrl.value){
+                if(StringUtils.isNotBlank(mrl.value)){
+                    
+                }
+
+                onDispose {  }
+            }
+            Row(
+                modifier = Modifier.fillMaxHeight(videoHeight.value),
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Player(mrl.value, controller, Modifier.fillMaxWidth(videoWidth.value)
+                    .focusRequester(focus)
+                    .onPointerEvent(PointerEventType.Enter){
+                        focus.requestFocus()
+                    }, component, focusRequester = focus)
+                AnimatedVisibility(!isFullScreen.value, modifier = Modifier.fillMaxSize()) {
                     EpChooser(
-                        component, Modifier.fillMaxWidth(0.3f).fillMaxHeight().weight(0.3f)
-                            .background(MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(8.dp))
+                        component, Modifier.fillMaxSize()
+                            .background(
+                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
+                                shape = RoundedCornerShape(4.dp)
+                            )
                             .padding(horizontal = 5.dp)
                     )
                 }
+            }
+            AnimatedVisibility(!isFullScreen.value) {
                 val searchResultList = derivedStateOf { model.value.quickSearchResult.toList() }
                 Box(Modifier) {
                     Row(modifier = Modifier.fillMaxWidth()) {
@@ -140,10 +164,6 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
                         Column(
                             modifier = Modifier.padding(start = 10.dp)
                                 .fillMaxSize()
-                                .background(
-                                    MaterialTheme.colorScheme.surfaceContainer,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
                         ) {
                             if (model.value.detail == null) {
                                 emptyShow()
@@ -152,7 +172,7 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
                             }
                             // 线路
                             Spacer(modifier = Modifier.size(15.dp))
-                            Row {
+                            Row(Modifier.padding(start = 10.dp)) {
                                 Text(
                                     "线路",
                                     fontSize = TextUnit(25F, TextUnitType.Sp),
@@ -213,6 +233,23 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
                 }
             }
         }
+        val showEpChooserDialog = derivedStateOf { isFullScreen.value && model.value.showEpChooserDialog }
+        Dialog(Modifier.align(Alignment.CenterEnd)
+            .fillMaxWidth(0.3f)
+            .fillMaxHeight(0.8f)
+            .padding(end = 20.dp),
+            showDialog = showEpChooserDialog.value,
+            onClose = {component.model.update { it.copy(showEpChooserDialog = false) }}){
+            EpChooser(
+                component, Modifier.fillMaxSize()
+                    .background(
+                        MaterialTheme.colorScheme.surfaceContainerLow,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 5.dp)
+            )
+        }
+
     }
 
 }
@@ -410,11 +447,11 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                             )
                             component.play(result)
 //                                                Play.start(result, it.name ?: detail?.vodName)
-                            Db.History.create(
-                                detail.value!!,
-                                detail.value?.currentFlag?.flag!!,
-                                it.name
-                            )
+//                            Db.History.create(
+//                                detail.value!!,
+//                                detail.value?.currentFlag?.flag!!,
+//                                it.name
+//                            )
                         }.invokeOnCompletion {
                             videoLoading.value = false
                         }

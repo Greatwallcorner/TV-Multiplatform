@@ -7,6 +7,7 @@ import com.arkivanov.decompose.value.MutableValue
 import com.corner.bean.HotData
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
+import com.corner.ui.scene.SnackBar
 
 object GlobalModel {
     var windowState:WindowState? = null
@@ -24,10 +25,11 @@ object GlobalModel {
 
     fun toggleVideoFullScreen(){
         videoFullScreen.value = !videoFullScreen.value
+        if(videoFullScreen.value) SnackBar.postMsg("进入全屏 [ESC]退出全屏")
         toggleWindowFullScreen()
     }
 
-    fun toggleWindowFullScreen(){
+    private fun toggleWindowFullScreen(){
         if(windowState?.placement == WindowPlacement.Fullscreen){
             windowState?.placement = WindowPlacement.Floating
         }else{
