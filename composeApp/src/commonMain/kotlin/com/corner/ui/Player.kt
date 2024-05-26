@@ -76,27 +76,10 @@ fun Player(
     val showCursor = remember { mutableStateOf(true) }
     DisposableEffect(mrl) {
         focusRequester.requestFocus()
-        controller.load(mrl)
+        scope.launch {
+            controller.load(mrl)
+        }
 
-//        scope.launch {
-//            val detail = component.model.value.detail
-//            if(detail == null || detail.isEmpty()) return@launch
-////            val history = Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId))
-////            if(history == null) Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!)
-////            else{
-////                controller.setStartEnd(history.opening ?: -1, history.ending ?: -1)
-////            }
-////
-////            if(detail == null || detail.isEmpty()) return
-//            val history = Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId))
-//            if(history == null) Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!)
-//            else{
-//                controller.setStartEnd(history.opening ?: -1, history.ending ?: -1)
-//                controller.seekTo(history.position ?: 0)
-//            }
-//            val findEp = detail.findAndSetEpByName(history?.vodRemarks)
-//
-//        }
         GlobalModel.videoFullScreen.observe {
             try {
                 var time = 1

@@ -65,7 +65,9 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
         component.load()
     }
     DisposableEffect(model.value.detail) {
-        component.startPlay()
+        scope.launch {
+            component.startPlay()
+        }
         println("detail修改")
         onDispose {
         }
