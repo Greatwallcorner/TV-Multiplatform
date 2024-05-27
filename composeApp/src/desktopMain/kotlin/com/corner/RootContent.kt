@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPlacement
@@ -35,12 +35,14 @@ import com.corner.ui.video.VideoScene
 @Composable
 fun WindowScope.RootContent(component: RootComponent, modifier: Modifier = Modifier, state:WindowState, onClose:()->Unit) {
     val isFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
-    val borderStroke = derivedStateOf { BorderStroke(if(isFullScreen.value) 0.dp else 1.dp, Color(59, 59, 60)) }
+//    val borderStroke = derivedStateOf { BorderStroke(if(isFullScreen.value) 0.dp else 1.dp, Color(59, 59, 60)) }
+    LaunchedEffect(isFullScreen.value){
+        println("fullscreen修改")
+    }
+    val borderStroke = derivedStateOf { if(isFullScreen.value) BorderStroke(0.dp, Color.Transparent) else BorderStroke(1.dp, Color.Yellow) }
     AppTheme(useDarkTheme = true) {
         Column(
-            modifier = Modifier.fillMaxSize().border(
-                border = borderStroke.value), // firefox的边框灰色
-        ) {
+            modifier = Modifier.fillMaxSize().border(border = borderStroke.value)) {
             if(!isFullScreen.value){
                 WindowDraggableArea {
                     ControlBar(onClickMinimize = { state.isMinimized = !state.isMinimized },

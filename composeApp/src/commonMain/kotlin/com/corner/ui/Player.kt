@@ -28,10 +28,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
-import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalModel
-import com.corner.database.Db
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.DefaultControls
 import com.corner.ui.player.frame.FrameContainer
@@ -71,13 +68,22 @@ fun Player(
     var mousePosition by remember { mutableStateOf(Offset.Zero) }
     val showTip = rememberUpdatedState(controller.showTip)
     val tip = rememberUpdatedState(controller.tip)
+    var updateHistoryJob:Job? = remember { null }
 
-//    val isFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
     val showCursor = remember { mutableStateOf(true) }
     DisposableEffect(mrl) {
         focusRequester.requestFocus()
         scope.launch {
             controller.load(mrl)
+        }
+        if(updateHistoryJob == null){
+            updateHistoryJob = scope.launch {
+                component.updateHistory()
+                while (true){
+                    delay(1000)
+                    component.updateHistory()
+                }
+            }
         }
 
         GlobalModel.videoFullScreen.observe {
@@ -99,6 +105,8 @@ fun Player(
             }
         }
         onDispose {
+            updateHistoryJob?.cancel()
+            updateHistoryJob = null
         }
     }
     Box(modifier.onPointerEvent(PointerEventType.Move) {

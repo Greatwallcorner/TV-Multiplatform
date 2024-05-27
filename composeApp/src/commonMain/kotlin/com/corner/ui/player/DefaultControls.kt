@@ -99,6 +99,7 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameControll
                         value = state.volume,
                         onValueChange = controller::setVolume,
                         modifier = Modifier.width(128.dp),
+                        valueRange = 0f..150f,
                         colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.secondary, disabledActiveTrackColor = MaterialTheme.colorScheme.tertiary)
                     )
                     Spacer(Modifier.size(5.dp))

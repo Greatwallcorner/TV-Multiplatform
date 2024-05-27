@@ -60,25 +60,14 @@ class VlcjController() : PlayerController {
         defferredEffects.clear()
     }
 
-//    init {
-//        addSearchPath(
-//            RuntimeUtil.getLibVlcLibraryName(),
-//            Paths.get(System.getProperty("user.dir"), "lib", "libvlc.dll").pathString
-//        )
-//        NativeDiscovery().discover()
-//    }
-
     val stateListener = object : MediaPlayerEventAdapter() {
         override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
             log.info("播放器初始化完成")
             playerReady = true
             _state.update { it.copy(duration = mediaPlayer.status().length()) }
             scope.launch {
-                delay(1000)
                 catch {
                     mediaPlayer.audio().setVolume(50)
-//                    seekTo(history?.position ?: 0L)
-//                    speed(history?.speed?.toFloat() ?: 1f)
                 }
             }
         }

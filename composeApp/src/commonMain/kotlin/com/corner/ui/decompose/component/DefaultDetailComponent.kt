@@ -58,27 +58,38 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         lifecycle.subscribe(object : Lifecycle.Callbacks {
             override fun onStop() {
                 log.info("Detail onStop")
+                updateHistory()
                 super.onStop()
             }
 
             override fun onDestroy() {
                 log.info("Detail onDestroy")
                 super.onDestroy()
-                val ep = model.value.detail?.getEpisode()
-                Db.History.updateSome(model.value.detail?.currentFlag?.flag!!, ep?.name!!, ep.url,
-                    controller?.state?.value?.timestamp!!, controller?.state?.value?.speed!!,
-                    Utils.getHistoryKey(model.value.detail?.site?.key!!, model.value.detail?.vodId!!))
+                updateHistory()
                 searchScope.cancel("on stop")
                 fromSearchLoadJob.cancel("on stop")
                 hideProgress()
                 clear()
                 controller?.dispose()
             }
+
+            override fun onPause() {
+                updateHistory()
+            }
         })
 
         model.observe {
 
         }
+    }
+
+    override fun updateHistory(){
+        val dt = model.value.detail
+        val ep = dt?.getEpisode()
+        if(dt == null || dt.isEmpty()) return
+        Db.History.updateSome(model.value.detail?.currentFlag?.flag!!, ep?.name!!, ep.url,
+            controller?.state?.value?.timestamp!!, controller?.state?.value?.speed!!,
+            Utils.getHistoryKey(model.value.detail?.site?.key!!, model.value.detail?.vodId!!))
     }
 
     override fun load() {

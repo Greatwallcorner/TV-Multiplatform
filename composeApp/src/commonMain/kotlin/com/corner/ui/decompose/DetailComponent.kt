@@ -3,7 +3,6 @@ package com.corner.ui.decompose
 import com.arkivanov.decompose.value.MutableValue
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Result
-import com.corner.ui.player.vlcj.VlcjController
 import com.corner.ui.player.vlcj.VlcjFrameController
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -38,4 +37,5 @@ interface DetailComponent {
     fun play(result: Result?)
     fun startPlay()
     fun nextEP()
+    fun updateHistory()
 }

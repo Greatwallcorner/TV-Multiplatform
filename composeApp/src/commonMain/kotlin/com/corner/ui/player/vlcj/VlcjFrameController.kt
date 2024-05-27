@@ -3,8 +3,6 @@ package com.corner.ui.player.vlcj
 import com.corner.database.History
 import com.corner.ui.player.PlayerController
 import com.corner.ui.player.frame.FrameRenderer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormat
@@ -17,8 +15,6 @@ import java.nio.ByteBuffer
 class VlcjFrameController constructor(
     private val controller: VlcjController = VlcjController(),
 ) : FrameRenderer, PlayerController by controller {
-
-    private val scope = CoroutineScope(Dispatchers.Default)
 
     private fun getPixels(buffer: ByteBuffer, width: Int, height: Int) = runCatching {
         buffer.rewind()
