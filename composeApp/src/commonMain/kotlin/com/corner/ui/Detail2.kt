@@ -434,6 +434,9 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                         SiteViewModel.viewModelScope.launch {
                             for (i in detail.value?.currentFlag?.episodes ?: listOf()) {
                                 i.activated = (i.name == it.name)
+                                if(i.activated){
+                                    component.model.update { it.copy(currentEp = i) }
+                                }
                             }
                             val dt = detail.value?.copy(
                                 subEpisode = detail.value?.currentFlag?.episodes?.getPage(

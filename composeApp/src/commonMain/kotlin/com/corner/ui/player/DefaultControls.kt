@@ -99,7 +99,7 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameControll
                         value = state.volume,
                         onValueChange = controller::setVolume,
                         modifier = Modifier.width(128.dp),
-                        valueRange = 0f..150f,
+                        valueRange = 0f..1.5f,
                         colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.secondary, disabledActiveTrackColor = MaterialTheme.colorScheme.tertiary)
                     )
                     Spacer(Modifier.size(5.dp))
@@ -111,16 +111,6 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameControll
                         component.model.update { it.copy(showEpChooserDialog = !component.model.value.showEpChooserDialog) }
                         println("选集")
                     }
-//                    androidx.compose.material3.TextButton(onClick = {
-//                        component.model.update { it.copy(showEpChooserDialog = !component.model.value.showEpChooserDialog) }
-//                        println("选集")
-//                    },
-//                        shape = RoundedCornerShape(50),
-//                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent,
-//                            contentColor = MaterialTheme.colorScheme.primary)
-//                    ){
-//                        Text("选集", color = MaterialTheme.colorScheme.primary, fontSize = TextUnit(12f, TextUnitType.Sp))
-//                    }
                 }
             }
         }

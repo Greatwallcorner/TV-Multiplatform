@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
+import uk.co.caprica.vlcj.player.base.State
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -81,10 +82,12 @@ class VlcjController() : PlayerController {
         }
 
         override fun stopped(mediaPlayer: MediaPlayer) {
+            println("stopped")
             _state.update { it.copy(isPlaying = false) }
         }
 
         override fun finished(mediaPlayer: MediaPlayer) {
+            println("finished")
             _state.update { it.copy(isPlaying = false) }
 //            component.nextEP()
         }
@@ -135,7 +138,16 @@ class VlcjController() : PlayerController {
     override fun play() = catch {
         log.debug("play")
         showTips("播放")
-        player?.controls()?.play()
+        if(player?.status()?.state() == State.ENDED || player?.status()?.state() == State.ERROR){
+            val mrl = player?.media()?.info()?.mrl()
+            if(StringUtils.isNotBlank(mrl)){
+                load(mrl!!)
+            }else{
+                log.error("视频播放完毕或者播放错误， 重新加载时 url为空")
+            }
+        }else{
+            player?.controls()?.play()
+        }
     }
 
     override fun play(url: String) = catch {
@@ -178,8 +190,8 @@ class VlcjController() : PlayerController {
     }
 
     override fun setVolume(value: Float) = catch {
-        showTips("音量：$value")
         player?.audio()?.setVolume((value * 100).toInt().coerceIn(0..150))
+        showTips("音量：${player?.audio()?.volume()}")
     }
 
     private val volumeStep = 5

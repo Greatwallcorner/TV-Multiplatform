@@ -72,11 +72,9 @@ class VlcjFrameController constructor(
     override fun load(url: String):PlayerController {
         controller.load(url)
         controller.player?.videoSurface()?.set(surface)
-//        seekTo(history?.position ?: 0L)
         speed(controller.history?.speed?.toFloat() ?: 1f)
         controller.play()
         controller.player?.controls()?.setTime(controller.history?.position ?: 0L)
-//        controller.player?.controls()?.skipPosition(controller.history?.position?.toFloat() ?: 0F)
         return controller
     }
 

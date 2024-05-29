@@ -235,7 +235,6 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             SnackBar.postMsg("正在切换站源至 [${vod.site!!.name}]")
         }
         model.update { it.copy(detail = vod) }
-//        startPlay()
     }
 
     override fun play(result: Result?) {
@@ -252,9 +251,12 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             val detail = model.value.detail
             var findEp: Episode? = null
             if(detail == null || detail.isEmpty()) return
-            val history = Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId))
+            var history = Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId))
             if(history == null) Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!)
             else{
+                if(!model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null){
+                    history = history.copy(position = 0L)
+                }
                 controller?.setControllerHistory(history)
                 controller?.setStartEnd(history.opening ?: -1, history.ending ?: -1)
 
@@ -274,7 +276,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             detail.currentFlag?.flag ?: "",
             ep.url
         )
-        model.update { it.copy(currentPlayUrl = result?.url?.v() ?: "") }
+        model.update { it.copy(currentPlayUrl = result?.url?.v() ?: "", currentEp = ep) }
         detail.subEpisode?.parallelStream()?.forEach {
             it.activated = it == ep
         }
@@ -287,6 +289,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         var nextIndex = 0
         var currentIndex = 0
         val currentEp = detail?.subEpisode?.find { it.activated }
+        controller?.history = controller?.history?.copy(position = 0L)
         if (currentEp != null) {
             currentIndex = detail?.subEpisode?.indexOf(currentEp)!!
             nextIndex = currentIndex++

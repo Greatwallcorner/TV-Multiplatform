@@ -2,6 +2,7 @@ package com.corner.ui.decompose
 
 import com.arkivanov.decompose.value.MutableValue
 import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.Result
 import com.corner.ui.player.vlcj.VlcjFrameController
 import java.util.concurrent.CopyOnWriteArrayList
@@ -18,6 +19,7 @@ interface DetailComponent {
         var quickSearchResult:CopyOnWriteArrayList<Vod> = CopyOnWriteArrayList(),
         var isLoading: Boolean = false,
         var currentPlayUrl:String = "",
+        var currentEp: Episode? = null,
         var showEpChooserDialog:Boolean = false
     )
 
