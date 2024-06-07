@@ -4,9 +4,7 @@ import com.corner.server.plugins.configureRouting
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.plugins.callloging.*
 import org.slf4j.LoggerFactory
-import org.slf4j.event.Level
 
 private val log = LoggerFactory.getLogger("KtorD")
 object KtorD {
@@ -50,9 +48,9 @@ object KtorD {
 }
 
 private fun Application.module() {
-    install(CallLogging){
-        level = Level.DEBUG
-    }
+//    install(CallLogging){
+//        level = Level.DEBUG
+//    }
 //    install(ContentNegotiation){
 //        json(Json {
 //            isLenient = true
