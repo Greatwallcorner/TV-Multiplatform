@@ -13,6 +13,7 @@
 #-keep class com.sun.activation.** {*;}
 #-keep class org.graalvm.nativeimage.** {*;}
 -keep class com.sun.jna.** {*;}
+-keep class javax.swing.** {*;}
 
 #tls 1.3
 #-keep class org.osgi.** {*;}
