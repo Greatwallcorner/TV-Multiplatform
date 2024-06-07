@@ -36,6 +36,7 @@ import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.enum.ConfigType
+import com.corner.catvodcore.util.Paths
 import com.corner.database.Db
 import com.corner.init.initConfig
 import com.corner.ui.decompose.component.DefaultSettingComponent
@@ -96,14 +97,19 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column(Modifier.fillMaxSize()) {
-            BackRow(Modifier, onClickBack = { onClickBack() }) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically){
+            BackRow(Modifier.align(Alignment.Start), onClickBack = { onClickBack() }) {
+                Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
                     Text(
                         "设置",
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.align(Alignment.CenterVertically)
                     )
+                    OutlinedButton(onClick = {Desktop.getDesktop().open(Paths.userDataRoot())}, modifier = Modifier.align(Alignment.CenterVertically)){
+                        Text("打开用户数据目录")
+                    }
                 }
+
 //                IconButton(modifier = Modifier.align(Alignment.End), onClick = {showAboutDialog = true}){ Icon(Icons.Default.Info, "About", tint = MaterialTheme.colorScheme.onSecondary) }
             }
             LazyColumn {
@@ -169,6 +175,24 @@ fun SettingStore.getPlayerSetting(): List<Any> {
     val settingItem = SettingStore.getSettingItem(SettingType.PLAYER.id)
     val split = settingItem.split("#")
     return if(split.size == 1) listOf(false, settingItem) else listOf(split[0].toBoolean(), split[1])
+}
+
+@Composable
+fun SettingItemTemplate(title: String, content: @Composable ()->Unit){
+    Row(
+        Modifier
+            .clickable {
+            }.shadow(3.dp)
+            .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp))
+            .padding(start = 20.dp, end = 20.dp)
+    ) {
+        Text(
+            "播放器",
+            modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp).align(Alignment.CenterVertically),
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        content()
+    }
 }
 
 @Composable
