@@ -2,7 +2,6 @@ package com.corner.catvod.enum.bean
 
 import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.Flag
-import com.corner.catvodcore.util.Utils
 import com.corner.database.History
 import com.corner.util.Constants
 import kotlinx.serialization.SerialName
@@ -91,19 +90,29 @@ data class Vod(
     }
 
     fun findAndSetEpByName(history: History): Episode? {
-        if (vodRemarks != null) {
+        if (history.vodRemarks.isNullOrBlank()) return null
             currentFlag = vodFlags.find { it?.flag == history.vodFlag }
-            val episode = currentFlag?.find(history.vodRemarks!!, true)
+            val episode = currentFlag?.find(history.vodRemarks, true)
             if(episode != null){
                 episode.activated = true
                 val indexOf = currentFlag?.episodes?.indexOf(episode)
                 // 32 15 16
-                val i = (indexOf?.plus(1))!! / Constants.EpSize
-                subEpisode = currentFlag?.episodes?.getPage(i)!!
+                currentTabIndex = (indexOf?.plus(1))!! / Constants.EpSize
+                subEpisode = currentFlag?.episodes?.getPage(currentTabIndex)!!
             }
             return episode
+    }
+
+    fun nextFlag():Flag?{
+        val find = vodFlags.find { it?.activated ?: false }
+        val indexOf = vodFlags.indexOf(find)
+        if(indexOf + 1 >= vodFlags.size) return null
+        val flag = vodFlags[indexOf + 1]
+        vodFlags.forEach{
+            it?.activated = flag?.flag == it?.flag
         }
-        return null
+//        flag.episodes.indexOf()
+        return flag
     }
 }
 

@@ -46,4 +46,14 @@ object PotPlayer: PlayerCommand {
         )
         return processBuilder.redirectOutput(Paths.log())
     }
+
+    override fun getProcessBuilder(url: String, title: String, playerPath: String): ProcessBuilder {
+        val processBuilder = ProcessBuilder(
+            playerPath,
+            url(url),
+            currentProcess(),
+            title(title)
+        )
+        return processBuilder.redirectOutput(Paths.log())
+    }
 }

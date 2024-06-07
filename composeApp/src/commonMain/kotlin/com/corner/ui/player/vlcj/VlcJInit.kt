@@ -1,6 +1,6 @@
 package com.corner.ui.player.vlcj
 
-import androidx.compose.ui.unit.Constraints
+import com.corner.ui.scene.SnackBar
 import com.corner.util.Constants
 import com.sun.jna.NativeLibrary
 import org.apache.commons.lang3.StringUtils
@@ -18,10 +18,11 @@ class VlcJInit {
                     RuntimeUtil.getLibVlcLibraryName(),
                     Paths.get(resourcePath, "lib", "libvlc.dll").pathString
                 )
-                NativeDiscovery().discover()
             }else{
                 println("VlcJInit 未找到${Constants.resPathKey}环境变量")
             }
+            val discover = NativeDiscovery().discover()
+            if(!discover) SnackBar.postMsg("未找到VLC组件， 请安装VLC或者配置vlc可执行文件位置")
         }
     }
 }

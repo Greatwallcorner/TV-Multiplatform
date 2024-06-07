@@ -2,6 +2,7 @@ package com.corner.ui.player
 
 import com.corner.catvod.enum.bean.Vod
 import com.corner.database.History
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
@@ -12,7 +13,7 @@ interface PlayerController {
     var showTip: Boolean
     var tip: String
 
-    var history:History?
+    var history:MutableStateFlow<History?>
 
     fun load(url: String): PlayerController
 

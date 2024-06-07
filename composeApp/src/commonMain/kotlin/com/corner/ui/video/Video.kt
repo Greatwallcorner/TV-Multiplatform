@@ -149,7 +149,7 @@ fun VideoScene(
                     }
                 }
                 if (model.value.homeVodResult.isEmpty()) {
-                    emptyShow()
+                    emptyShow(onRefresh = {component.homeLoad()})
                 } else {
                     Box {
                         LazyVerticalGrid(

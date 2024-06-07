@@ -4,9 +4,9 @@ import MPC
 import PotPlayer
 import cn.hutool.core.util.ZipUtil
 import com.corner.bean.SettingStore
-import com.corner.bean.SettingType
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.v
+import com.corner.ui.getPlayerSetting
 import com.corner.util.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +28,11 @@ class Play {
                 getProcessBuilder(result, title)?.start()
             }
         }
+        fun start(url: String, title: String?){
+            CoroutineScope(Dispatchers.IO).launch{
+                getProcessBuilder(url, title)?.start()
+            }
+        }
     }
 }
 
@@ -38,23 +43,15 @@ class Play {
  */
 fun getProcessBuilder(result: Result?, title: String?): ProcessBuilder? {
     if (result == null) return null
-    val playerPath = SettingStore.getSettingItem(SettingType.PLAYER.id)
+    val playerPath = SettingStore.getPlayerSetting()[1] as String
     if(SystemUtils.IS_OS_MAC){
         return if(checkPlayer(playerPath)){
-         ProcessBuilder("open", "-a", playerPath, result.url?.v() ?: "")
+         ProcessBuilder("open", "-a", playerPath, result.url.v())
         }else{
-            ProcessBuilder("open", result.url?.v() ?: "")
+            ProcessBuilder("open", result.url.v())
         }
     }
-    if(!checkPlayer(playerPath)) {
-        log.info("未配置播放器 使用默认播放器")
-        val path = getDefaultPlayerPath()
-        log.info("默认播放器路径:{}", path)
-        if(path.isBlank()){
-            return null
-        }
-        return MPC.getProcessBuilder(result, title ?: "TV", path)
-    }
+//    i
     val compare = File(playerPath).name.lowercase(Locale.getDefault())
     if(compare.contains("potplayer")){
         return PotPlayer.getProcessBuilder(result,title ?: "TV", playerPath)
@@ -65,6 +62,29 @@ fun getProcessBuilder(result: Result?, title: String?): ProcessBuilder? {
         return MPC.getProcessBuilder(result, title ?: "TV", playerPath)
     }
     return Default.getProcessBuilder(result, title ?: "TV", playerPath)
+}
+
+fun getProcessBuilder(url:String, title: String?): ProcessBuilder? {
+    if (StringUtils.isBlank(url)) return null
+    val playerPath = SettingStore.getPlayerSetting()[1] as String
+    if(SystemUtils.IS_OS_MAC){
+        return if(checkPlayer(playerPath)){
+            ProcessBuilder("open", "-a", playerPath, url)
+        }else{
+            ProcessBuilder("open", url)
+        }
+    }
+//    i
+    val compare = File(playerPath).name.lowercase(Locale.getDefault())
+    if(compare.contains("potplayer")){
+        return PotPlayer.getProcessBuilder(url,title ?: "TV", playerPath)
+    }else if(compare.contains("vlc")){
+        return VLC.getProcessBuilder(url, title ?: "TV", playerPath)
+    }
+    else if(compare.contains("mpc-be")){
+        return MPC.getProcessBuilder(url, title ?: "TV", playerPath)
+    }
+    return Default.getProcessBuilder(url, title ?: "TV", playerPath)
 }
 
 fun getDefaultPlayerPath():String {

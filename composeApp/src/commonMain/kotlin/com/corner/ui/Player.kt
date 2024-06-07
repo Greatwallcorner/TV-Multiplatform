@@ -18,16 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.DefaultControls
@@ -36,6 +34,7 @@ import com.corner.ui.player.vlcj.VlcjFrameController
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.awt.Cursor
 import java.awt.Point
@@ -68,28 +67,14 @@ fun Player(
     var mousePosition by remember { mutableStateOf(Offset.Zero) }
     val showTip = rememberUpdatedState(controller.showTip)
     val tip = rememberUpdatedState(controller.tip)
-    var updateHistoryJob:Job? = remember { null }
+    val videoFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
 
-    val showCursor = remember { mutableStateOf(true) }
-    DisposableEffect(mrl) {
-        focusRequester.requestFocus()
-        scope.launch {
-            controller.load(mrl)
-        }
-        if(updateHistoryJob == null){
-            updateHistoryJob = scope.launch {
-                component.updateHistory()
-                while (true){
-                    delay(1000)
-                    component.updateHistory()
-                }
-            }
-        }
-
-        GlobalModel.videoFullScreen.observe {
-            try {
+    DisposableEffect(videoFullScreen.value, showControllerBar.value){
+        try {
+            keepScreenOnJob?.cancel()
+            if(videoFullScreen.value && !showControllerBar.value){
                 var time = 1
-                if (it) {
+                if (videoFullScreen.value) {
                     keepScreenOnJob = Timer("keepScreenOn")
                     keepScreenOnJob?.scheduleAtFixedRate(timerTask {
                         val robot = Robot()
@@ -100,13 +85,23 @@ fun Player(
                 } else {
                     keepScreenOnJob?.cancel()
                 }
-            } catch (e: Exception) {
-                log.error("keep screen on timer err:",e)
+            }
+        } catch (e: Exception) {
+            log.error("keep screen on timer err:",e)
+        }
+        onDispose {
+            keepScreenOnJob?.cancel()
+        }
+    }
+
+    val showCursor = remember { mutableStateOf(true) }
+    DisposableEffect(mrl) {
+        scope.launch {
+            if(StringUtils.isNotBlank(mrl)){
+                controller.load(mrl)
             }
         }
         onDispose {
-            updateHistoryJob?.cancel()
-            updateHistoryJob = null
         }
     }
     Box(modifier.onPointerEvent(PointerEventType.Move) {
@@ -128,19 +123,11 @@ fun Player(
             showCursor.value = false
         }
     }.onClick{
-        showControllerBar.value = false
+        showControllerBar.value = !showControllerBar.value
     }.onPointerEvent(PointerEventType.Enter) {
         focusRequester.requestFocus()
-    }.onKeyEvent {
-        focusRequester.requestFocus()
-        true
-    }.onSizeChanged {
-        controller.playerSize = it.width to it.height
     }.pointerHoverIcon(PointerIcon(if (!showCursor.value) createEmptyCursor() else Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)))) {
-        FrameContainer(Modifier.fillMaxSize(), controller, controller.size.collectAsState(null).value?.run {
-            IntSize(first, second)
-        } ?: IntSize.Zero,
-            controller.bytes.collectAsState(null).value)
+        FrameContainer(Modifier.fillMaxSize(), controller)
         AnimatedVisibility(
             showControllerBar.value,
             modifier = Modifier.align(Alignment.BottomEnd),
@@ -174,7 +161,16 @@ fun Player(
 private fun createEmptyCursor(): Cursor {
     return Toolkit.getDefaultToolkit().createCustomCursor(
         BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB),
-        Point(0, 0),
+        Point(1, 1),
         "Empty Cursor"
     )
+}
+
+enum class PlayState{
+    INIT,
+    LOADING,
+    PLAYING,
+    REFRESH,
+    CHANGEEP,
+
 }

@@ -29,7 +29,7 @@ data class Episode(
     }
 
     fun rule1(name: String?): Boolean {
-        return name.equals(name, ignoreCase = true)
+        return this.name.equals(name, ignoreCase = true)
     }
 
     fun rule2(number: Int): Boolean {
@@ -37,10 +37,10 @@ data class Episode(
     }
 
     fun rule3(name: String): Boolean {
-        return name.lowercase(Locale.getDefault()).contains(name.lowercase(Locale.getDefault()))
+        return this.name.lowercase(Locale.getDefault()).contains(name.lowercase(Locale.getDefault()))
     }
 
     fun rule4(name: String): Boolean {
-        return name.lowercase(Locale.getDefault()).contains(name.lowercase(Locale.getDefault()))
+        return this.name.lowercase(Locale.getDefault()).contains(name.lowercase(Locale.getDefault()))
     }
 }

@@ -5,6 +5,7 @@ import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
 import com.corner.database.History
+import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.PlayerController
 import com.corner.ui.player.PlayerState
 import com.corner.ui.scene.SnackBar
@@ -26,7 +27,7 @@ import kotlin.time.DurationUnit
 
 private val log = LoggerFactory.getLogger("PlayerController")
 
-class VlcjController() : PlayerController {
+class VlcjController(val component: DetailComponent) : PlayerController {
     var player: EmbeddedMediaPlayer? = null
         private set
     private val defferredEffects = mutableListOf<(MediaPlayer) -> Unit>()
@@ -38,9 +39,9 @@ class VlcjController() : PlayerController {
 
     override var showTip = false
     override var tip = ""
-    override var history: History? = null
+    override var history: MutableStateFlow<History?> = MutableStateFlow(null)
     private var tipJob: Job? = null
-    private var scope = CoroutineScope(Dispatchers.Default)
+    var scope = CoroutineScope(Dispatchers.Default)
 
     internal val factory by lazy { MediaPlayerFactory() }
 
@@ -61,16 +62,17 @@ class VlcjController() : PlayerController {
         defferredEffects.clear()
     }
 
-    val stateListener = object : MediaPlayerEventAdapter() {
+    val stateListener = object : MediaPlayerEventAdapter()  {
         override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
             log.info("播放器初始化完成")
             playerReady = true
             _state.update { it.copy(duration = mediaPlayer.status().length()) }
             scope.launch {
                 catch {
-                    mediaPlayer.audio().setVolume(50)
+                    mediaPlayer.audio().setVolume(70)
                 }
             }
+            play()
         }
 
         override fun playing(mediaPlayer: MediaPlayer) {
@@ -89,7 +91,16 @@ class VlcjController() : PlayerController {
         override fun finished(mediaPlayer: MediaPlayer) {
             println("finished")
             _state.update { it.copy(isPlaying = false) }
-//            component.nextEP()
+            scope.launch {
+                try {
+                    if (checkEnd(mediaPlayer)) {
+                        return@launch
+                    }
+                    component.nextEP()
+                } catch (e: Exception) {
+                    log.error("finished error", e)
+                }
+            }
         }
 
         override fun muted(mediaPlayer: MediaPlayer, muted: Boolean) {
@@ -101,13 +112,44 @@ class VlcjController() : PlayerController {
         }
 
         override fun timeChanged(mediaPlayer: MediaPlayer, newTime: Long) {
+            scope.launch {
+                if(history.value == null) {
+                    println("histiry is null")
+                    return@launch
+                }
+                if(history.value?.ending != null && history.value?.ending != -1L && history.value?.ending!! <= newTime) component.nextEP()
+                if((newTime/1000 % 25).toInt() == 0) history.emit(history.value?.copy(position = newTime))
+            }
             _state.update { it.copy(timestamp = newTime) }
         }
 
         override fun error(mediaPlayer: MediaPlayer?) {
             log.error("播放错误: ${mediaPlayer?.media()?.info()?.mrl()}")
-            SnackBar.postMsg("播放错误")
+            scope.launch {
+                try {
+                    if (checkEnd(mediaPlayer)) {
+                        return@launch
+                    }
+                    SnackBar.postMsg("播放错误")
+                } catch (e: Exception) {
+                    log.error("error ", e)
+                }
+            }
             super.error(mediaPlayer)
+        }
+
+        private fun checkEnd(mediaPlayer: MediaPlayer?): Boolean {
+            try {
+                val len = mediaPlayer?.status()?.length() ?: 0
+                if (len <= 0 || mediaPlayer?.status()?.time() != len) {
+                    component.nextFlag()
+                    return true
+                }
+                return false
+            } catch (e: Exception) {
+                log.error("checkEnd error:", e)
+                return false
+            }
         }
     }
 
@@ -130,22 +172,26 @@ class VlcjController() : PlayerController {
                 events().addMediaPlayerEventListener(stateListener)
                 media().prepare(url)
                 video().setScale(1.0f)
+
             }
         }
         return this
     }
 
-    override fun play() = catch {
-        log.debug("play")
-        showTips("播放")
-        if(player?.status()?.state() == State.ENDED || player?.status()?.state() == State.ERROR){
-            val mrl = player?.media()?.info()?.mrl()
-            if(StringUtils.isNotBlank(mrl)){
-                load(mrl!!)
-            }else{
-                log.error("视频播放完毕或者播放错误， 重新加载时 url为空")
+    private val stateList = listOf(State.ENDED, State.ERROR)
+    override fun play() {
+        catch {
+            log.debug("play")
+            showTips("播放")
+            if (stateList.contains(player?.status()?.state())) {
+                val mrl = player?.media()?.info()?.mrl()
+                if (StringUtils.isNotBlank(mrl)) {
+                    load(mrl!!)
+                    component.syncHistory()
+                } else {
+                    log.error("视频播放完毕或者播放错误， 重新加载时 url为空")
+                }
             }
-        }else{
             player?.controls()?.play()
         }
     }

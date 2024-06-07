@@ -115,6 +115,41 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                         currentChoose = it
                     }
                 }
+                item {
+                    Row(
+                        Modifier
+                            .clickable {
+                            }.shadow(3.dp)
+                            .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp))
+                            .padding(start = 20.dp, end = 20.dp)
+                    ) {
+                        Text(
+                            "播放器",
+                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp).align(Alignment.CenterVertically),
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        val playerSetting = derivedStateOf {
+                            SettingStore.getPlayerSetting()
+                        }
+                        Switch(playerSetting.value[0] as Boolean, onCheckedChange = {
+                            SettingStore.setValue(SettingType.PLAYER, "$it#${playerSetting.value[1]}")
+                            if(it) SnackBar.postMsg("使用内置播放器") else SnackBar.postMsg("使用外部播放器 请配置播放器路径")
+                            component.sync()
+                        }, Modifier.width(100.dp).padding(end = 20.dp).align(Alignment.CenterVertically),
+                            thumbContent = {
+                                Box(Modifier.size(80.dp)){
+                                    Text(if(playerSetting.value[0] as Boolean) "内置" else "外置", Modifier.fillMaxSize().align(Alignment.Center) )
+                                }
+                            })
+                        // 只有外部播放器时展示
+                        if(!(playerSetting.value[0] as Boolean)){
+                            TextField(value = playerSetting.value[1] as String, onValueChange = {
+                                SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value[0]}#$it")
+                                component.sync()
+                            }, maxLines = 1, enabled = true, modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth().align(Alignment.CenterVertically))
+                        }
+                    }
+                }
             }
         }
         Surface(Modifier.align(Alignment.BottomCenter).padding(bottom = 15.dp)) {
@@ -128,6 +163,12 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
         }
     }
 
+}
+
+fun SettingStore.getPlayerSetting(): List<Any> {
+    val settingItem = SettingStore.getSettingItem(SettingType.PLAYER.id)
+    val split = settingItem.split("#")
+    return if(split.size == 1) listOf(false, settingItem) else listOf(split[0].toBoolean(), split[1])
 }
 
 @Composable

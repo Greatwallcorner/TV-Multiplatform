@@ -25,9 +25,10 @@ class CustomDirectoryDiscovery:DiscoveryDirectoryProvider {
 
     override fun directories(): Array<String> {
         val arrayOf = mutableListOf<String>(vlcPath ?: "")
-        val playerPath = SettingStore.getSettingItem(SettingType.PLAYER.id)
-        if(StringUtils.isNotBlank(playerPath)){
-            arrayOf.add(File(playerPath).parent)
+        val playerPath = SettingStore.getSettingItem(SettingType.PLAYER.id).split("#")
+        if(playerPath.size > 1 && StringUtils.isNotBlank(playerPath[1])){
+            if(!File(playerPath[1]).exists()) return arrayOf.toTypedArray()
+            arrayOf.add(File(playerPath[1]).parent)
         }
         return arrayOf.toTypedArray()
     }

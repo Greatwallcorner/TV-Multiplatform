@@ -6,7 +6,6 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.corner.catvod.enum.bean.Vod
-import com.corner.catvod.enum.bean.Vod.Companion.getEpisode
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
 import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
 import com.corner.catvodcore.bean.Episode
@@ -17,6 +16,7 @@ import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
+import com.corner.database.History
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.vlcj.VlcjFrameController
 import com.corner.ui.scene.SnackBar
@@ -36,6 +36,8 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     private var supervisor = SupervisorJob()
     private val searchScope = CoroutineScope(Dispatchers.Default + supervisor)
+
+    private val scope = CoroutineScope(Dispatchers.Default)
 
     private val log = LoggerFactory.getLogger("Detail")
 
@@ -58,38 +60,47 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         lifecycle.subscribe(object : Lifecycle.Callbacks {
             override fun onStop() {
                 log.info("Detail onStop")
-                updateHistory()
+                updateHistory(controller?.history?.value)
                 super.onStop()
             }
 
             override fun onDestroy() {
                 log.info("Detail onDestroy")
                 super.onDestroy()
-                updateHistory()
                 searchScope.cancel("on stop")
                 fromSearchLoadJob.cancel("on stop")
                 hideProgress()
                 clear()
                 controller?.dispose()
             }
-
-            override fun onPause() {
-                updateHistory()
-            }
         })
 
-        model.observe {
-
-        }
+//        scope.launch {
+//            controller?.history?.collect {
+//                updateHistory(it)
+//            }
+//        }
     }
 
-    override fun updateHistory(){
-        val dt = model.value.detail
-        val ep = dt?.getEpisode()
-        if(dt == null || dt.isEmpty()) return
-        Db.History.updateSome(model.value.detail?.currentFlag?.flag!!, ep?.name!!, ep.url,
-            controller?.state?.value?.timestamp!!, controller?.state?.value?.speed!!,
-            Utils.getHistoryKey(model.value.detail?.site?.key!!, model.value.detail?.vodId!!))
+    override fun updateHistory(it:History?) {
+        if (it != null) {
+            Db.History.updateSome(
+                it.vodFlag ?: "",
+                it.vodRemarks ?: "",
+                it.episodeUrl ?: "",
+                it.position ?: -1,
+                it.speed?.toFloat() ?: 1f,
+                Utils.getHistoryKey(model.value.detail?.site?.key!!, model.value.detail?.vodId!!)
+            )
+        }
+//        val dt = model.value.detail
+//        val ep = dt?.getEpisode()
+//        if (dt == null || dt.isEmpty()) return
+//        Db.History.updateSome(
+//            model.value.detail?.currentFlag?.flag ?: "", ep?.name ?: "", ep?.url ?: "",
+//            controller?.state?.value?.timestamp!!, controller?.state?.value?.speed!!,
+//            Utils.getHistoryKey(model.value.detail?.site?.key!!, model.value.detail?.vodId!!)
+//        )
     }
 
     override fun load() {
@@ -115,7 +126,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                         detail.copy(subEpisode = detail.currentFlag?.episodes?.getPage(detail.currentTabIndex))
                     if (StringUtils.isNotBlank(getChooseVod().vodRemarks)) {
                         for (it: Episode in detail.subEpisode ?: listOf()) {
-                            if (it.name.equals(getChooseVod().vodRemarks)) {
+                            if (it.name == getChooseVod().vodRemarks) {
                                 it.activated = true
                                 break
                             }
@@ -123,6 +134,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                     }
                     detail.site = getChooseVod().site
                     model.update { it.copy(detail = detail) }
+                    startPlay()
                 }
             }
         }
@@ -238,23 +250,29 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     }
 
     override fun play(result: Result?) {
-        model.update { it.copy(currentPlayUrl = result?.url?.v() ?: "") }
+        //获取到的播放结果为空 尝试下一个线路
+        if (result == null) {
+            nextFlag()
+            return
+        }
+        model.update { it.copy(currentPlayUrl = result.url.v()) }
     }
 
     override fun startPlay() {
-        log.info("start play")
-        if (model.value.detail != null && model.value.detail?.isEmpty() != true) {
-            if(controller?.isPlaying() == true) {
+        if (model.value.detail != null && model.value.detail?.isEmpty() == false) {
+            if (controller?.isPlaying() == true && !model.value.shouldPlay) {
                 log.info("视频播放中 返回")
                 return
             }
+            model.value.shouldPlay = false
+            log.info("start play")
             val detail = model.value.detail
             var findEp: Episode? = null
-            if(detail == null || detail.isEmpty()) return
+            if (detail == null || detail.isEmpty()) return
             var history = Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId))
-            if(history == null) Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!)
-            else{
-                if(!model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null){
+            if (history == null) Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!)
+            else {
+                if (model.value.currentEp != null && !model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null) {
                     history = history.copy(position = 0L)
                 }
                 controller?.setControllerHistory(history)
@@ -276,7 +294,12 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             detail.currentFlag?.flag ?: "",
             ep.url
         )
-        model.update { it.copy(currentPlayUrl = result?.url?.v() ?: "", currentEp = ep) }
+        if (result == null) {
+            nextFlag()
+            return
+        }
+        controller?.doWithHistory { it.copy(episodeUrl = ep.url) }
+        model.update { it.copy(currentPlayUrl = result.url.v(), currentEp = ep) }
         detail.subEpisode?.parallelStream()?.forEach {
             it.activated = it == ep
         }
@@ -289,7 +312,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         var nextIndex = 0
         var currentIndex = 0
         val currentEp = detail?.subEpisode?.find { it.activated }
-        controller?.history = controller?.history?.copy(position = 0L)
+        controller?.doWithHistory { it.copy(position = 0) }
         if (currentEp != null) {
             currentIndex = detail?.subEpisode?.indexOf(currentEp)!!
             nextIndex = currentIndex++
@@ -304,10 +327,34 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         detail?.subEpisode?.get(nextIndex)?.let {
             playEp(detail, it)
         }
-//        val currentIndex = detail?.subEpisode?.indexOf(currentEp) ?: 0
-
     }
-//    private fun startPlay() {
-//        model.value.detail?.currentFlag?.episodes.first().
-//    }
+
+    override fun nextFlag() {
+        log.info("nextFlag")
+        model.value.detail?.currentFlag = model.value.detail?.nextFlag()
+        if (model.value.detail?.currentFlag == null) {
+            model.value.detail?.vodId = "" // 清空id 快搜就会重新加载详情
+            quickSearch()
+            return
+        }
+        SnackBar.postMsg("切换至线路[${model.value.detail?.currentFlag?.flag}]")
+        controller?.doWithHistory { it.copy(vodFlag = model.value.detail?.currentFlag?.flag) }
+        model.update { it.copy(detail = model.value.detail) }
+    }
+
+    override fun syncHistory() {
+        val detail = model.value.detail ?: return
+        var history = Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId))
+        if (history == null) Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!)
+        else {
+            if (!model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null) {
+                history = history.copy(position = 0L)
+            }
+            controller?.setControllerHistory(history)
+            controller?.setStartEnd(history.opening ?: -1, history.ending ?: -1)
+
+            val findEp = detail.findAndSetEpByName(history)
+            model.update { it.copy(detail = detail, currentEp = findEp, currentPlayUrl = findEp?.url ?: "") }
+        }
+    }
 }

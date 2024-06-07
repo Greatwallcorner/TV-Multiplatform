@@ -24,6 +24,10 @@ interface PlayerCommand{
         return ProcessBuilder(playerPath, url(result.url.v()))
     }
 
+    fun getProcessBuilder(url: String, title: String, playerPath: String):ProcessBuilder{
+        return ProcessBuilder(playerPath, url(url))
+    }
+
     fun buildHeaderStr(headers:Map<String, String>?):String{
         if(headers.isNullOrEmpty()) return ""
         val header = ""
