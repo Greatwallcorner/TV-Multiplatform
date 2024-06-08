@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Path
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.v
 import com.corner.catvodcore.util.Paths
+import org.apache.commons.lang3.SystemUtils
 
 interface PlayerCommand{
 //    fun currentProcess(): String
@@ -19,7 +20,7 @@ interface PlayerCommand{
 //    fun add(s:String):String
 
     fun url(s:String):String{
-        return "\"$s\""
+        return if(SystemUtils.IS_OS_WINDOWS) "\"$s\"" else s
     }
 
     fun getProcessBuilder(result: Result, title: String, playerPath: String):ProcessBuilder{
