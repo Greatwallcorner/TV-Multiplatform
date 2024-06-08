@@ -38,6 +38,7 @@ import com.arkivanov.decompose.value.update
 import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
+import com.corner.catvodcore.bean.v
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.vlcj.VlcjFrameController
@@ -144,10 +145,11 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
                         }, component, focusRequester = focus
                     )
                 } else {
-                    LaunchedEffect(mrl.value){
-                        println("play 外部播放器开始播放：${mrl.value}")
-                        Play.start(mrl.value, "")
-                    }
+//                    DisposableEffect(mrl.value){
+//                        println("play 外部播放器开始播放：${mrl.value}")
+//                        Play.start(mrl.value, model.value.currentEp?.name ?: "")
+//                        onDispose {  }
+//                    }
                     Box(Modifier
                         .fillMaxWidth(videoWidth.value)
                         .fillMaxHeight()
@@ -477,7 +479,12 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                                 detail.value?.currentFlag?.flag ?: "",
                                 it.url
                             )
-                            component.play(result)
+                            val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
+                            if(internalPlayer){
+                                component.play(result)
+                            }else{
+                                Play.start(result?.url?.v() ?: "", model.value.currentEp?.name)
+                            }
 //                                                Play.start(result, it.name ?: detail?.vodName)
                         }.invokeOnCompletion {
                             videoLoading.value = false
