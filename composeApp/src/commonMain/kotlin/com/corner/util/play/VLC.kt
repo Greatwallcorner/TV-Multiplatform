@@ -2,6 +2,7 @@ package com.corner.util.play
 
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.v
+import com.corner.catvodcore.util.Paths
 
 object VLC: PlayerCommand {
     override fun title(title: String): String {
@@ -17,10 +18,10 @@ object VLC: PlayerCommand {
     }
 
     override fun getProcessBuilder(result: Result, title: String, playerPath: String): ProcessBuilder {
-        return ProcessBuilder(playerPath, title(title), /*"--playlist-tree",*/ url(result.url.v()))
+        return ProcessBuilder(playerPath, title(title), /*"--playlist-tree",*/ url(result.url.v())).redirectOutput(Paths.playerLog())
     }
 
     override fun getProcessBuilder(url: String, title: String, playerPath: String): ProcessBuilder {
-        return ProcessBuilder(playerPath, title(title), /*"--playlist-tree",*/ url)
+        return ProcessBuilder(playerPath, title(title), /*"--playlist-tree",*/ url).redirectOutput(Paths.playerLog())
     }
 }

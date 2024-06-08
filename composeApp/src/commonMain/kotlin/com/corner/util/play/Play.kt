@@ -6,6 +6,7 @@ import cn.hutool.core.util.ZipUtil
 import com.corner.bean.SettingStore
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.v
+import com.corner.catvodcore.util.Paths
 import com.corner.ui.getPlayerSetting
 import com.corner.util.Constants
 import kotlinx.coroutines.CoroutineScope
@@ -46,9 +47,9 @@ fun getProcessBuilder(result: Result?, title: String?): ProcessBuilder? {
     val playerPath = SettingStore.getPlayerSetting()[1] as String
     if(SystemUtils.IS_OS_MAC){
         return if(checkPlayer(playerPath)){
-         ProcessBuilder("open", "-a", playerPath, result.url.v())
+         ProcessBuilder("open", "-a", playerPath, result.url.v()).redirectOutput(Paths.playerLog())
         }else{
-            ProcessBuilder("open", result.url.v())
+            ProcessBuilder("open", result.url.v()).redirectOutput(Paths.playerLog())
         }
     }
 //    i

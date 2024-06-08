@@ -1,7 +1,9 @@
 package com.corner.util.play
 
+import androidx.compose.ui.graphics.Path
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.v
+import com.corner.catvodcore.util.Paths
 
 interface PlayerCommand{
 //    fun currentProcess(): String
@@ -21,11 +23,11 @@ interface PlayerCommand{
     }
 
     fun getProcessBuilder(result: Result, title: String, playerPath: String):ProcessBuilder{
-        return ProcessBuilder(playerPath, url(result.url.v()))
+        return ProcessBuilder(playerPath, url(result.url.v())).redirectOutput(Paths.playerLog())
     }
 
     fun getProcessBuilder(url: String, title: String, playerPath: String):ProcessBuilder{
-        return ProcessBuilder(playerPath, url(url))
+        return ProcessBuilder(playerPath, url(url)).redirectOutput(Paths.playerLog())
     }
 
     fun buildHeaderStr(headers:Map<String, String>?):String{

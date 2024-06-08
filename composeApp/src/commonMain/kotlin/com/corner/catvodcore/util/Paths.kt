@@ -88,8 +88,8 @@ object Paths {
         return file.toPath()
     }
 
-    fun log(): File {
-        return root().check().resolve("log.txt")
+    fun playerLog(): File {
+        return root().check().resolve("playerLog.txt")
     }
 
     fun logPath():File{
