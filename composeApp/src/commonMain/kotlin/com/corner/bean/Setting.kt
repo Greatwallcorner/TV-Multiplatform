@@ -23,20 +23,23 @@ class SearchHistoryCache:Cache{
 
     private val maxSize:Int = 30
 
-    private var searchHistoryList:MutableSet<String> = mutableSetOf()
+    private var searchHistoryList:LinkedHashSet<String> = linkedSetOf()
     override fun getName(): String {
         return "searchHistory"
     }
 
     override fun add(t:String) {
         if(searchHistoryList.size >= maxSize){
-            searchHistoryList = searchHistoryList.drop(1).toMutableSet()
+            val list:LinkedHashSet<String> = linkedSetOf()
+            list.addAll(searchHistoryList.drop(1))
+            searchHistoryList = list
         }
+        searchHistoryList.remove(t)
         searchHistoryList.add(t)
     }
 
-    fun getSearchList():Set<String>{
-        return searchHistoryList
+    fun getSearchList():List<String>{
+        return searchHistoryList.reversed()
     }
 
 }
@@ -120,7 +123,7 @@ object SettingStore {
         }
         val cache = getCache(SettingType.SEARCHHISTORY.id)
         if (cache != null) {
-            return (cache as SearchHistoryCache).getSearchList()
+            return (cache as SearchHistoryCache).getSearchList().toSet()
         }
         return setOf()
     }

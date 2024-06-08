@@ -145,7 +145,7 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
                     )
                 } else {
                     LaunchedEffect(mrl.value){
-                        println("play 外部播放器开始播放")
+                        println("play 外部播放器开始播放：${mrl.value}")
                         Play.start(mrl.value, "")
                     }
                     Box(Modifier
@@ -460,6 +460,7 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                                         if (model.currentEp?.name != it.name) {
                                             component.controller?.doWithHistory { it.copy(position = 0L) }
                                         }
+                                        component.controller?.doWithHistory { it.copy(episodeUrl = i.url, vodRemarks = i.name) }
                                         model.copy(currentEp = i)
                                     }
                                 }

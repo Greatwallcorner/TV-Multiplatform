@@ -268,6 +268,8 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 return
             }
             model.value.shouldPlay = false
+//            val internalPlayer: Boolean = SettingStore.getPlayerSetting()[0] as Boolean
+//            if(!internalPlayer) return // 如果使用外部播放器直接返回
             log.info("start play")
             val detail = model.value.detail
             var findEp: Episode? = null
@@ -314,7 +316,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         detail.subEpisode?.parallelStream()?.forEach {
             it.activated = it == ep
         }
-        SnackBar.postMsg("开始播放: ${ep.name}")
+        SnackBar.postMsg(if(internalPlayer) "开始播放" else "上次播放" + ": ${ep.name}")
     }
 
     override fun nextEP() {

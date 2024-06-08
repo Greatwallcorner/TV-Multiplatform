@@ -1,12 +1,16 @@
 package com.corner.catvodcore.util
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.*
 
+@OptIn(ExperimentalSerializationApi::class)
 val Jsons = Json {
     ignoreUnknownKeys = true
     isLenient = true
+    prettyPrint = true
+    prettyPrintIndent = "   "
 }
 
 
