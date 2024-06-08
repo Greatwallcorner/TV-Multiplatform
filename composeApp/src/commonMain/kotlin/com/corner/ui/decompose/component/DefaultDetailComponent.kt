@@ -5,6 +5,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.Lifecycle
+import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
 import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
@@ -18,6 +19,7 @@ import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
 import com.corner.database.History
 import com.corner.ui.decompose.DetailComponent
+import com.corner.ui.getPlayerSetting
 import com.corner.ui.player.vlcj.VlcjFrameController
 import com.corner.ui.scene.SnackBar
 import com.corner.ui.scene.hideProgress
@@ -247,6 +249,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             SnackBar.postMsg("正在切换站源至 [${vod.site!!.name}]")
         }
         model.update { it.copy(detail = vod) }
+        startPlay()
     }
 
     override fun play(result: Result?) {
@@ -275,11 +278,16 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 if (model.value.currentEp != null && !model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null) {
                     history = history.copy(position = 0L)
                 }
-                controller?.setControllerHistory(history)
                 controller?.setStartEnd(history.opening ?: -1, history.ending ?: -1)
 
                 findEp = detail.findAndSetEpByName(history)
                 model.update { it.copy(detail = detail) }
+            }
+            val findHistory = Db.History.findHistory(
+                Utils.getHistoryKey(detail.site?.key!!, detail.vodId)
+            )
+            if(findHistory != null){
+                controller?.setControllerHistory(findHistory)
             }
             detail.subEpisode?.apply {
                 val ep = findEp ?: first()
@@ -299,7 +307,10 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             return
         }
         controller?.doWithHistory { it.copy(episodeUrl = ep.url) }
-        model.update { it.copy(currentPlayUrl = result.url.v(), currentEp = ep) }
+        val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
+        if(internalPlayer){
+            model.update { it.copy(currentPlayUrl = result.url.v(), currentEp = ep) }
+        }
         detail.subEpisode?.parallelStream()?.forEach {
             it.activated = it == ep
         }

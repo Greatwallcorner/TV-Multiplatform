@@ -151,7 +151,7 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
                     Box(Modifier
                         .fillMaxWidth(videoWidth.value)
                         .fillMaxHeight()
-                        .background(MaterialTheme.colorScheme.secondary)){
+                        .background(Color.Black)){
                         Text(
                             "使用外部播放器",
                             modifier = Modifier.align(Alignment.Center).focusRequester(focus),

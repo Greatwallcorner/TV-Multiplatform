@@ -111,6 +111,7 @@ class VlcjFrameController constructor(
 
     fun doWithHistory(func: (History) -> History) {
         runBlocking {
+            if(controller.history.value == null) return@runBlocking
             controller.history.emit(func(controller.history.value!!))
         }
     }
