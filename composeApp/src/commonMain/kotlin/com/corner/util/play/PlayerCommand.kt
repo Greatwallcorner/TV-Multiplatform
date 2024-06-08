@@ -23,7 +23,7 @@ interface PlayerCommand{
     }
 
     fun getProcessBuilder(result: Result, title: String, playerPath: String):ProcessBuilder{
-        return ProcessBuilder(playerPath, url(result.url.v())).redirectOutput(Paths.playerLog())
+        return ProcessBuilder(playerPath, result.url.v()).redirectOutput(Paths.playerLog())
     }
 
     fun getProcessBuilder(url: String, title: String, playerPath: String):ProcessBuilder{
