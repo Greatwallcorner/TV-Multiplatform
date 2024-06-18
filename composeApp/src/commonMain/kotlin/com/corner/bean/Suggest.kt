@@ -3,11 +3,16 @@ package com.corner.bean
 import com.corner.catvodcore.util.Jsons
 import kotlinx.serialization.Serializable
 
+@Serializable
+data class Data (
+    val name: String = ""
+)
+
 
 @Serializable
-class Suggest {
+data class Suggest(
     var data: List<Data>? = null
-
+){
     fun isEmpty(): Boolean {
         return data.isNullOrEmpty()
     }
@@ -15,27 +20,6 @@ class Suggest {
     fun clear(){
         data = null
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Suggest
-
-        return data == other.data
-    }
-
-    override fun hashCode(): Int {
-        var result = 0
-        data?.forEach { result = 31 * result + it.hashCode() }
-        return result
-    }
-
-
-    @Serializable
-    data class Data (
-        val name: String = ""
-    )
 
     companion object {
         fun objectFrom(str: String): Suggest {

@@ -420,10 +420,11 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
                             if (type.typeId == "home") {
                                 SiteViewModel.homeContent()
                             } else {
+                                model.value.page.set(1)
                                 val result = SiteViewModel.categoryContent(
                                     GlobalModel.home.value.key,
                                     type.typeId,
-                                    model.value.page.getAndAdd(1).toString(),
+                                    model.value.page.get().toString(),
                                     false,
                                     HashMap()
                                 )
