@@ -1,20 +1,21 @@
 package com.corner.ui.player.vlcj
 
 import com.corner.catvod.enum.bean.Vod
-import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalModel
-import com.corner.database.Db
 import com.corner.database.History
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.PlayerController
 import com.corner.ui.player.PlayerState
 import com.corner.ui.scene.SnackBar
 import com.corner.util.catch
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
@@ -62,7 +63,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         defferredEffects.clear()
     }
 
-    val stateListener = object : MediaPlayerEventAdapter()  {
+    val stateListener = object : MediaPlayerEventAdapter() {
         override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
             log.info("播放器初始化完成")
             playerReady = true
@@ -113,12 +114,12 @@ class VlcjController(val component: DetailComponent) : PlayerController {
 
         override fun timeChanged(mediaPlayer: MediaPlayer, newTime: Long) {
             scope.launch {
-                if(history.value == null) {
+                if (history.value == null) {
                     println("histiry is null")
                     return@launch
                 }
-                if(history.value?.ending != null && history.value?.ending != -1L && history.value?.ending!! <= newTime) component.nextEP()
-                if((newTime/1000 % 25).toInt() == 0) history.emit(history.value?.copy(position = newTime))
+                if (history.value?.ending != null && history.value?.ending != -1L && history.value?.ending!! <= newTime) component.nextEP()
+                if ((newTime / 1000 % 25).toInt() == 0) history.emit(history.value?.copy(position = newTime))
             }
             _state.update { it.copy(timestamp = newTime) }
         }
@@ -141,7 +142,8 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         private fun checkEnd(mediaPlayer: MediaPlayer?): Boolean {
             try {
                 val len = mediaPlayer?.status()?.length() ?: 0
-                if (len <= 0 || mediaPlayer?.status()?.time() != len) {
+                println("playable" + mediaPlayer?.status()?.isPlayable)
+                if (len <= 0 /*|| mediaPlayer?.status()?.time() != len*/ || mediaPlayer?.status()?.isPlayable == false) {
                     component.nextFlag()
                     return true
                 }
@@ -210,11 +212,11 @@ class VlcjController(val component: DetailComponent) : PlayerController {
     private fun showTips(text: String) {
         tip = text
         showTip = true
-        tipJob?.cancel()
-        tipJob = scope.launch {
-            delay(1500)
-            showTip = false
-        }
+//        tipJob?.cancel()
+//        tipJob = scope.launch {
+//            delay(1500)
+//            showTip = false
+//        }
     }
 
     override fun stop() = catch {
@@ -317,12 +319,13 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         } else {
             _state.update { it.copy(ending = -1) }
         }
+        history.update { it?.copy(ending = player?.status()?.time() ?: -1) }
         scope.launch {
-            Db.History.updateOpeningEnding(
-                _state.value.opening,
-                _state.value.ending,
-                Utils.getHistoryKey(detail?.site?.key!!, detail.vodId)
-            )
+//            Db.History.updateOpeningEnding(
+//                _state.value.opening,
+//                _state.value.ending,
+//                Utils.getHistoryKey(detail?.site?.key!!, detail.vodId)
+//            )
         }
     }
 
@@ -332,12 +335,13 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         } else {
             _state.update { it.copy(opening = -1) }
         }
+        history.update { it?.copy(opening = player?.status()?.time() ?: -1) }
         scope.launch {
-            Db.History.updateOpeningEnding(
-                _state.value.opening,
-                _state.value.ending,
-                Utils.getHistoryKey(detail?.site?.key!!, detail.vodId)
-            )
+//            Db.History.updateOpeningEnding(
+//                _state.value.opening,
+//                _state.value.ending,
+//                Utils.getHistoryKey(detail?.site?.key!!, detail.vodId)
+//            )
         }
     }
 

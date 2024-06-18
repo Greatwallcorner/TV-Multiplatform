@@ -22,6 +22,14 @@
       }
     },
     {
+      "key": "NN",
+      "name": "泥泥|首页",
+      "type": 3,
+      "api": "csp_NiNi",
+      "searchable": 1,
+      "changeable": 1
+    },
+    {
       "key": "ng",
       "name": "南瓜",
       "type": 3,

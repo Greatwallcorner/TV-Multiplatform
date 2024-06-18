@@ -328,7 +328,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         controller?.doWithHistory { it.copy(position = 0) }
         if (currentEp != null) {
             currentIndex = detail?.subEpisode?.indexOf(currentEp)!!
-            nextIndex = currentIndex++
+            nextIndex = currentIndex+1
         }
         if (currentIndex >= Constants.EpSize - 1) {
             log.info("当前分组播放完毕 下一个分组")
@@ -352,6 +352,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         }
         SnackBar.postMsg("切换至线路[${model.value.detail?.currentFlag?.flag}]")
         controller?.doWithHistory { it.copy(vodFlag = model.value.detail?.currentFlag?.flag) }
+        GlobalModel.chooseVod.value = model.value.detail!!
         model.update { it.copy(detail = model.value.detail) }
     }
 

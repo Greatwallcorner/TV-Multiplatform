@@ -22,12 +22,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -84,6 +85,10 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
     SideEffect {
         focus.requestFocus()
     }
+
+    LaunchedEffect(isFullScreen.value){
+        focus.requestFocus()
+    }
     Box(
         modifier = Modifier.fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
@@ -136,20 +141,17 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
                 val internalPlayer = derivedStateOf {
                     SettingStore.getPlayerSetting()[0] as Boolean
                 }
+                val local = LocalFocusManager.current
                 if (internalPlayer.value) {
                     Player(mrl.value, controller, Modifier.fillMaxWidth(videoWidth.value)
                         .focusRequester(focus)
-                        .focusTarget()
-                        .onPointerEvent(PointerEventType.Enter) {
+                        .focusable()
+                        .onPointerEvent(PointerEventType.Move) {
+                            local.moveFocus(FocusDirection.Next)
                             focus.requestFocus()
                         }, component, focusRequester = focus
                     )
                 } else {
-//                    DisposableEffect(mrl.value){
-//                        println("play 外部播放器开始播放：${mrl.value}")
-//                        Play.start(mrl.value, model.value.currentEp?.name ?: "")
-//                        onDispose {  }
-//                    }
                     Box(Modifier
                         .fillMaxWidth(videoWidth.value)
                         .fillMaxHeight()

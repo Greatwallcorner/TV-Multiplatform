@@ -69,6 +69,11 @@ fun Player(
     val tip = rememberUpdatedState(controller.tip)
     val videoFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
 
+    LaunchedEffect(tip.value){
+        delay(1500)
+        controller.showTip = false
+    }
+
     DisposableEffect(videoFullScreen.value, showControllerBar.value){
         try {
             keepScreenOnJob?.cancel()
