@@ -3,7 +3,7 @@ on:
   push:
     branches: [pre-release]
 env:
-  tag: ${{ github.ref_name != '' && github.ref_name || github.run_id }}
+  tag: ${{ github.run_id }}
 jobs:
   build-win:
     runs-on: windows-latest
