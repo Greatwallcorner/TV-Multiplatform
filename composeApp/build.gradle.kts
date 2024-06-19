@@ -148,7 +148,7 @@ compose.desktop {
             }
 
             macOS {
-                iconFile.set(project.file("rc/commonMain/resources/pic/icon.icns"))
+                iconFile.set(project.file("src/commonMain/resources/pic/icon.icns"))
             }
 
         }
