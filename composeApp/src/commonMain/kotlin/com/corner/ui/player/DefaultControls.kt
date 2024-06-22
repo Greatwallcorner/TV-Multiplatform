@@ -50,7 +50,7 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameControll
             value = animatedTimestamp,
             onValueChange = { controller.seekTo(it.roundToLong()) },
             valueRange = 0f..state.duration.toFloat(),
-            modifier = Modifier.fillMaxWidth().height(15.dp).padding(start = 4.dp, end = 4.dp, top = 5.dp, bottom = 10.dp),
+            modifier = Modifier.fillMaxWidth().height(15.dp).padding(start = 4.dp, end = 4.dp, top = 8.dp, bottom = 20.dp),
             colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.secondary, disabledActiveTrackColor = MaterialTheme.colorScheme.tertiary)
         )
         Row(

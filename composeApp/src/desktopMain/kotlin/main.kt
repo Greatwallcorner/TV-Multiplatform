@@ -72,9 +72,6 @@ fun main() {
             transparent = false,
 
         ) {
-            GlobalModel.videoFullScreen.observe {
-                window.isAlwaysOnTop = it
-            }
 
             window.minimumSize = Dimension(800, 600)
             CompositionLocalProvider(

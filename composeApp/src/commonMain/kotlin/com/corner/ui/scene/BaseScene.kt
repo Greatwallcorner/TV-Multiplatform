@@ -79,13 +79,13 @@ fun LoadingIndicator(showProgress: Boolean) {
 }
 
 @Composable
-fun emptyShow(onRefresh: (() -> Unit)? = null) {
-    Column(Modifier.fillMaxWidth()/*.align(Alignment.CenterHorizontally)*/) {
+fun emptyShow(modifier: Modifier = Modifier, onRefresh: (() -> Unit)? = null) {
+    Column(modifier.fillMaxWidth()/*.align(Alignment.CenterHorizontally)*/) {
         Image(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             painter = painterResource("/pic/nothing.png"),
             contentDescription = "/icon/nothing here",
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Fit
         )
         onRefresh?.let {
             Spacer(Modifier.size(20.dp))

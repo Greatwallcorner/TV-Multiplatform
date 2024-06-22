@@ -1,5 +1,7 @@
 package com.corner.ui.player.vlcj
 
+import com.corner.bean.PlayerStateCache
+import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.History
@@ -8,14 +10,11 @@ import com.corner.ui.player.PlayerController
 import com.corner.ui.player.PlayerState
 import com.corner.ui.scene.SnackBar
 import com.corner.util.catch
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
@@ -38,11 +37,10 @@ class VlcjController(val component: DetailComponent) : PlayerController {
     private var currentSpeed = 1.0F
     private var playerReady = false
 
-    override var showTip = false
-    override var tip = ""
+    override var showTip = MutableStateFlow(false)
+    override var tip = MutableStateFlow("")
     override var history: MutableStateFlow<History?> = MutableStateFlow(null)
-    private var tipJob: Job? = null
-    var scope = CoroutineScope(Dispatchers.Default)
+    var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     internal val factory by lazy { MediaPlayerFactory() }
 
@@ -68,11 +66,6 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             log.info("播放器初始化完成")
             playerReady = true
             _state.update { it.copy(duration = mediaPlayer.status().length()) }
-            scope.launch {
-                catch {
-                    mediaPlayer.audio().setVolume(70)
-                }
-            }
             play()
         }
 
@@ -109,6 +102,16 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         }
 
         override fun volumeChanged(mediaPlayer: MediaPlayer, volume: Float) {
+            if (volume > 0f) {
+                SettingStore.doWithCache {
+                    var state = it["playerState"]
+                    if (state == null) {
+                        state = PlayerStateCache()
+                        it["playerState"] = state
+                    }
+                    (state as PlayerStateCache).add("volume", volume.toString())
+                }
+            }
             _state.update { it.copy(volume = volume) }
         }
 
@@ -143,10 +146,10 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             try {
                 val len = mediaPlayer?.status()?.length() ?: 0
                 println("playable" + mediaPlayer?.status()?.isPlayable)
-                if (len <= 0 /*|| mediaPlayer?.status()?.time() != len*/ || mediaPlayer?.status()?.isPlayable == false) {
-                    component.nextFlag()
-                    return true
-                }
+//                if (len <= 0 /*|| mediaPlayer?.status()?.time() != len*/ || mediaPlayer?.status()?.isPlayable == false) {
+//                    component.nextFlag()
+//                    return true
+//                }
                 return false
             } catch (e: Exception) {
                 log.error("checkEnd error:", e)
@@ -210,11 +213,13 @@ class VlcjController(val component: DetailComponent) : PlayerController {
     }
 
     private fun showTips(text: String) {
-        tip = text
-        showTip = true
+        runBlocking {
+            tip.emit(text)
+            showTip.emit(true)
+        }
 //        tipJob?.cancel()
 //        tipJob = scope.launch {
-//            delay(1500)
+//            delay(1000)
 //            showTip = false
 //        }
     }
@@ -272,7 +277,10 @@ class VlcjController(val component: DetailComponent) : PlayerController {
     }
 
     override fun toggleFullscreen() = catch {
-        GlobalModel.toggleVideoFullScreen()
+        val videoFullScreen = GlobalModel.toggleVideoFullScreen()
+        runBlocking {
+            if(videoFullScreen) showTips("[ESC]退出全屏")
+        }
     }
 
     override fun togglePlayStatus() {
@@ -314,34 +322,26 @@ class VlcjController(val component: DetailComponent) : PlayerController {
     }
 
     override fun updateEnding(detail: Vod?) {
-        if (_state.value.ending == -1L) {
-            _state.update { it.copy(ending = player?.status()?.time() ?: -1) }
-        } else {
-            _state.update { it.copy(ending = -1) }
-        }
+        _state.update { it.copy(ending = player?.status()?.time() ?: -1) }
+//        if (_state.value.ending == -1L) {
+//        } else {
+//            _state.update { it.copy(ending = -1) }
+//        }
         history.update { it?.copy(ending = player?.status()?.time() ?: -1) }
-        scope.launch {
-//            Db.History.updateOpeningEnding(
-//                _state.value.opening,
-//                _state.value.ending,
-//                Utils.getHistoryKey(detail?.site?.key!!, detail.vodId)
-//            )
-        }
     }
 
     override fun updateOpening(detail: Vod?) {
-        if (_state.value.opening == -1L) {
-            _state.update { it.copy(opening = player?.status()?.time() ?: -1) }
-        } else {
-            _state.update { it.copy(opening = -1) }
-        }
+        _state.update { it.copy(opening = player?.status()?.time() ?: -1) }
+//        if (_state.value.opening == -1L) {
+//        } else {
+//            _state.update { it.copy(opening = -1) }
+//        }
         history.update { it?.copy(opening = player?.status()?.time() ?: -1) }
-        scope.launch {
-//            Db.History.updateOpeningEnding(
-//                _state.value.opening,
-//                _state.value.ending,
-//                Utils.getHistoryKey(detail?.site?.key!!, detail.vodId)
-//            )
+    }
+
+    override fun doWithPlayState(func: (MutableStateFlow<PlayerState>) -> Unit) {
+        runBlocking {
+            func(_state)
         }
     }
 

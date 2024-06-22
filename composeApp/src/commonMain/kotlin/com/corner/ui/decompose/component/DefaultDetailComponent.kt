@@ -39,8 +39,6 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     private var supervisor = SupervisorJob()
     private val searchScope = CoroutineScope(Dispatchers.Default + supervisor)
 
-    private val scope = CoroutineScope(Dispatchers.Default)
-
     private val log = LoggerFactory.getLogger("Detail")
 
     private val lock = Any()
@@ -92,17 +90,11 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 it.episodeUrl ?: "",
                 it.position ?: -1,
                 it.speed?.toFloat() ?: 1f,
+                it.opening ?: -1L,
+                it.ending ?: -1L,
                 Utils.getHistoryKey(model.value.detail?.site?.key!!, model.value.detail?.vodId!!)
             )
         }
-//        val dt = model.value.detail
-//        val ep = dt?.getEpisode()
-//        if (dt == null || dt.isEmpty()) return
-//        Db.History.updateSome(
-//            model.value.detail?.currentFlag?.flag ?: "", ep?.name ?: "", ep?.url ?: "",
-//            controller?.state?.value?.timestamp!!, controller?.state?.value?.speed!!,
-//            Utils.getHistoryKey(model.value.detail?.site?.key!!, model.value.detail?.vodId!!)
-//        )
     }
 
     override fun load() {
@@ -298,7 +290,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         }
     }
 
-    private fun playEp(detail: Vod, ep: Episode) {
+     override fun playEp(detail: Vod, ep: Episode) {
         val result = SiteViewModel.playerContent(
             detail.site?.key ?: "",
             detail.currentFlag?.flag ?: "",

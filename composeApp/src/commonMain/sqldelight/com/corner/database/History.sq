@@ -20,7 +20,7 @@ WHERE key = ?;
 
 
 updateSome:
-UPDATE History SET vodFlag = ?, vodRemarks = ?, episodeUrl = ?,position = ?,speed = ?, createTime = CURRENT_TIMESTAMP
+UPDATE History SET vodFlag = ?, vodRemarks = ?, episodeUrl = ?,position = ?,speed = ?,opening = ?, ending = ?, createTime = CURRENT_TIMESTAMP
 WHERE key = ?;
 
 getAll:

@@ -45,6 +45,27 @@ class SearchHistoryCache:Cache{
 }
 
 @Serializable
+class PlayerStateCache:Cache{
+    private val map:MutableMap<String, String> = mutableMapOf();
+    override fun getName(): String {
+        return "playerState"
+    }
+
+    override fun add(t: String) {
+
+    }
+
+    fun add(key:String, value: String){
+        map.put(key,value)
+    }
+
+    fun get(key: String):String?{
+        return map.get(key)
+    }
+
+}
+
+@Serializable
 data class SettingFile(val list: MutableList<Setting>, val cache: MutableMap<String, Cache>)
 
 enum class EditType {
@@ -62,7 +83,6 @@ enum class SettingType(val id: String) {
 object SettingStore {
     private val defaultList = listOf(
         Setting("vod", "点播", ""),
-        Setting("player", "外部播放器", ""),
         Setting("log", "日志级别", Level.DEBUG.levelStr)
     )
 
@@ -91,8 +111,9 @@ object SettingStore {
         write()
     }
     
-    fun setCache(name:String, value: String){
-        settingFile.cache[name]?.add(value)
+    fun doWithCache(func:(MutableMap<String, Cache>) -> Unit){
+        func(settingFile.cache)
+        write()
     }
 
     fun getCache(name:String): Cache? {

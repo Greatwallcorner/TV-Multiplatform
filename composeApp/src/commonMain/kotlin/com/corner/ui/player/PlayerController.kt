@@ -10,8 +10,8 @@ import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
 interface PlayerController {
     val state: StateFlow<PlayerState>
 
-    var showTip: Boolean
-    var tip: String
+    var showTip: MutableStateFlow<Boolean>
+    var tip: MutableStateFlow<String>
 
     var history:MutableStateFlow<History?>
 
@@ -51,4 +51,5 @@ interface PlayerController {
 
     fun updateEnding(detail: Vod?)
     fun setStartEnding(opening: Long, ending: Long)
+    fun doWithPlayState(func: (MutableStateFlow<PlayerState>) -> Unit)
 }

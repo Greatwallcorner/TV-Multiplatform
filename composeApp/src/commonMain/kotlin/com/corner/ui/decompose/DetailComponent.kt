@@ -41,6 +41,7 @@ interface DetailComponent {
     fun play(result: Result?)
     fun startPlay()
     fun nextEP()
+    fun playEp(detail: Vod, ep: Episode)
     fun updateHistory(it:History?)
     fun nextFlag()
     fun syncHistory()

@@ -3,6 +3,7 @@ package com.corner.ui
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -16,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -26,6 +29,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.corner.bean.PlayerStateCache
+import com.corner.bean.SettingStore
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.DefaultControls
@@ -33,6 +38,7 @@ import com.corner.ui.player.frame.FrameContainer
 import com.corner.ui.player.vlcj.VlcjFrameController
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -65,13 +71,16 @@ fun Player(
     val cursorJob = remember { mutableStateOf<Job?>(null) }
     var keepScreenOnJob: Timer? = remember { null }
     var mousePosition by remember { mutableStateOf(Offset.Zero) }
-    val showTip = rememberUpdatedState(controller.showTip)
-    val tip = rememberUpdatedState(controller.tip)
+    val showTip = controller.showTip.collectAsState()
+    val tip = controller.tip.collectAsState()
     val videoFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
 
-    LaunchedEffect(tip.value){
-        delay(1500)
-        controller.showTip = false
+    LaunchedEffect(Unit){
+        val volume = SettingStore.getCache("playerState")
+        if(volume != null){
+            val v = (volume as PlayerStateCache).get("volume")?.toFloat()
+            controller.doWithPlayState { it.update { it.copy(volume = v ?: .8f) }}
+        }
     }
 
     DisposableEffect(videoFullScreen.value, showControllerBar.value){
@@ -129,10 +138,8 @@ fun Player(
         }
     }.onClick{
         showControllerBar.value = !showControllerBar.value
-    }.onPointerEvent(PointerEventType.Enter) {
-        focusRequester.requestFocus()
     }.pointerHoverIcon(PointerIcon(if (!showCursor.value) createEmptyCursor() else Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)))) {
-        FrameContainer(Modifier.fillMaxSize(), controller)
+        FrameContainer(Modifier.fillMaxSize().focusTarget().focusable().focusRequester(focusRequester), controller)
         AnimatedVisibility(
             showControllerBar.value,
             modifier = Modifier.align(Alignment.BottomEnd),
@@ -145,9 +152,12 @@ fun Player(
                     .align(Alignment.BottomEnd), controller, component
             )
         }
-        val showTipBool =
-            derivedStateOf { GlobalModel.videoFullScreen.value && showTip.value && tip.value.isNotBlank() }
-        AnimatedVisibility(showTipBool.value) {
+        LaunchedEffect(tip.value){
+            delay(1500)
+            controller.tip.emit("")
+            controller.showTip.emit(false)
+        }
+        AnimatedVisibility(showTip.value) {
             Surface(
                 Modifier.padding(start = 10.dp, top = 10.dp),
                 color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f)

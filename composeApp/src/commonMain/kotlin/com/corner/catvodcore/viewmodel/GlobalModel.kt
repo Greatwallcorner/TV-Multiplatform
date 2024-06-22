@@ -23,10 +23,10 @@ object GlobalModel {
         home.value = Site.get("","")
     }
 
-    fun toggleVideoFullScreen(){
-        videoFullScreen.value = !videoFullScreen.value
-        if(videoFullScreen.value) SnackBar.postMsg("进入全屏 [ESC]退出全屏")
+    fun toggleVideoFullScreen():Boolean{
         toggleWindowFullScreen()
+        videoFullScreen.value = !videoFullScreen.value
+        return videoFullScreen.value
     }
 
     private fun toggleWindowFullScreen(){

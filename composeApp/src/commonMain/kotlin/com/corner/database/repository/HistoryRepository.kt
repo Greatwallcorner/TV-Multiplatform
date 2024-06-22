@@ -28,7 +28,7 @@ interface HistoryRepository {
     fun findHistory(historyKey: String): History?
     fun updateOpeningEnding(opening: Long, ending: Long, key: String)
 
-    fun updateSome(flag:String, vodRemarks:String, playUrl:String, position:Long, speed:Float, historyKey:String)
+    fun updateSome(flag:String, vodRemarks:String, playUrl:String, position:Long, speed:Float,opening: Long, ending: Long, historyKey:String)
 }
 
 class HistoryRepositoryImpl:HistoryRepository, KoinComponent{
@@ -103,8 +103,8 @@ class HistoryRepositoryImpl:HistoryRepository, KoinComponent{
         historyQueries.updateOpeningEnding(opening = opening, ending = ending, key)
     }
 
-    override fun updateSome(flag: String, vodRemarks: String, playUrl: String, position: Long,speed:Float, historyKey: String) {
-        historyQueries.updateSome(flag, vodRemarks, playUrl, position,speed.toDouble(), historyKey)
+    override fun updateSome(flag: String, vodRemarks: String, playUrl: String, position: Long,speed:Float, opening: Long, ending: Long, historyKey: String) {
+        historyQueries.updateSome(flag, vodRemarks, playUrl, position,speed.toDouble(),opening, ending, historyKey)
     }
 
 }

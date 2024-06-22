@@ -22,13 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -82,9 +80,6 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
     }
 
     val focus = remember { FocusRequester() }
-    SideEffect {
-        focus.requestFocus()
-    }
 
     LaunchedEffect(isFullScreen.value){
         focus.requestFocus()
@@ -141,15 +136,13 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
                 val internalPlayer = derivedStateOf {
                     SettingStore.getPlayerSetting()[0] as Boolean
                 }
-                val local = LocalFocusManager.current
                 if (internalPlayer.value) {
-                    Player(mrl.value, controller, Modifier.fillMaxWidth(videoWidth.value)
-                        .focusRequester(focus)
-                        .focusable()
-                        .onPointerEvent(PointerEventType.Move) {
-                            local.moveFocus(FocusDirection.Next)
-                            focus.requestFocus()
-                        }, component, focusRequester = focus
+                    SideEffect {
+                        focus.requestFocus()
+                    }
+                    Player(mrl.value, controller, Modifier.fillMaxWidth(videoWidth.value).focusable(),
+                        component,
+                        focusRequester = focus
                     )
                 } else {
                     Box(Modifier
@@ -228,15 +221,21 @@ fun DetailScene2(component: DetailComponent, onClickBack: () -> Unit) {
                                                                 vodFlag?.activated = false
                                                             }
                                                         }
-                                                        val dt = detail?.copy(
+                                                        var dt = detail?.copy(
                                                             currentFlag = it,
                                                             subEpisode = it?.episodes?.getPage(detail!!.currentTabIndex)
                                                                 ?.toMutableList()
                                                         )
+                                                        val history = controller.history.value
+                                                        if(history != null){
+                                                            val findEp =
+                                                                detail?.findAndSetEpByName(controller.history.value!!)
+                                                            if(findEp != null) component.playEp(dt!!, findEp)
+                                                        }
                                                         component.model.update { model ->
                                                             model.copy(
                                                                 detail = dt,
-                                                                shouldPlay = true
+                                                                shouldPlay = true,
                                                             )
                                                         }
                                                     }
