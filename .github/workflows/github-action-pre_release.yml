@@ -113,7 +113,7 @@ jobs:
 
             📦仓库: ${{ github.repository }}
           button: true
-          button_name: 👀查看更改👀
+          button_name: 👀下载👀
           button_url: https://github.com/${{ github.repository }}/releases/tag/${{env.tag}}
           is_notify: true
           is_preview: true
