@@ -15,15 +15,15 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - run: ls
-      - run: ./gradlew packageReleaseDistributionForCurrentOS
+#      - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ./gradlew createReleaseDistributable
       - run: ls && tree ./desktopApp /f
       - name: compress
         shell: pwsh
         run: Compress-Archive -Path "./composeApp/build/compose/binaries/main-release/app/TV" -DestinationPath ./TV-win-$Env:tag.zip
-      - name: move result to root
-        shell: pwsh
-        run: Move-Item -Path "./composeApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./composeApp/build/compose/binaries/main-release/msi/*.msi" -Destination "./"
+#      - name: move result to root
+#        shell: pwsh
+#        run: Move-Item -Path "./composeApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./composeApp/build/compose/binaries/main-release/msi/*.msi" -Destination "./"
       - run: ls
       - uses: actions/upload-artifact@v4
         with:
@@ -100,3 +100,20 @@ jobs:
           prerelease: true
     permissions:
       contents: write
+  sendMsg:
+    name: sendMsg
+    runs-on: ubuntu-latest
+    steps:
+      - uses: colutius/Telegram-Msg@main
+        with:
+          token: ${{ secrets.TG_TOKEN }}
+          chatid: ${{ secrets.TG_GROUP_ID }}
+          message: |
+            👇新的预发布👇
+
+            📦仓库: ${{ github.repository }}
+          button: true
+          button_name: 👀查看更改👀
+          button_url: https://github.com/${{ github.repository }}/releases/tag/${{env.tag}}
+          is_notify: true
+          is_preview: true
