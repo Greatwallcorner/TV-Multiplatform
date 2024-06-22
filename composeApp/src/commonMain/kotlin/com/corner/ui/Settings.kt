@@ -40,6 +40,7 @@ import com.corner.catvodcore.util.Paths
 import com.corner.database.Db
 import com.corner.init.initConfig
 import com.corner.ui.decompose.component.DefaultSettingComponent
+import com.corner.ui.decompose.component.getSetting
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.Dialog
 import com.corner.ui.scene.HoverableText
@@ -51,22 +52,22 @@ import java.awt.Desktop
 import java.net.URI
 
 @Composable
-fun SettingItem(modifier: Modifier, label: String, value: String?, onClick: () -> Unit) {
+fun SettingItem(modifier: Modifier, setting: Setting, onClick: (Setting) -> Unit) {
     Row(
         modifier
             .clickable {
-                onClick()
+                onClick(setting)
             }.shadow(3.dp)
             .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp))
             .padding(start = 20.dp, end = 20.dp)
     ) {
         Text(
-            label,
+            setting.label,
             modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp),
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-            text = if (StringUtil.isBlank(value)) "无" else value ?: "",
+            text = if (StringUtil.isBlank(setting.value)) "无" else setting.value ?: "",
             modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp)
                 .weight(0.5f),
             color = MaterialTheme.colorScheme.onBackground
@@ -113,10 +114,24 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
 //                IconButton(modifier = Modifier.align(Alignment.End), onClick = {showAboutDialog = true}){ Icon(Icons.Default.Info, "About", tint = MaterialTheme.colorScheme.onSecondary) }
             }
             LazyColumn {
-                items(model.value.settingList) {
-                    SettingItem(
-                        Modifier, it.label, it.value
-                    ) {
+//                items(model.value.settingList) {
+//                    SettingItem(
+//                        Modifier, it.label, it.value
+//                    ) {
+//                        showEditDialog = true
+//                        currentChoose = it
+//                    }
+//                }
+                item {
+                    val setting = model.value.settingList.getSetting(SettingType.VOD)
+                    SettingItem(Modifier, setting!!){
+                        showEditDialog = true
+                        currentChoose = it
+                    }
+                }
+                item {
+                    val setting = model.value.settingList.getSetting(SettingType.LOG)
+                    SettingItem(Modifier, setting!!){
                         showEditDialog = true
                         currentChoose = it
                     }
