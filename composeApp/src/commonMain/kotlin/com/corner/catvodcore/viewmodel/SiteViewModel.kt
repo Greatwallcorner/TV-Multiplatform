@@ -54,7 +54,7 @@ object SiteViewModel {
                     if ((rst.list.size) > 0) result.value = rst
                     val homeVideoContent = spider.homeVideoContent()
                     SpiderDebug.log("homeContent: $homeVideoContent")
-                    rst.list.addAll(Jsons.decodeFromString<Result>(homeContent).list)
+                    rst.list.addAll(Jsons.decodeFromString<Result>(homeVideoContent).list)
                     result.value = rst.also { this.result.value = it }
                 }
 
