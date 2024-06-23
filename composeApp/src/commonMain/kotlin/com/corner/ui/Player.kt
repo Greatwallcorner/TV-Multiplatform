@@ -1,17 +1,14 @@
 package com.corner.ui
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.onClick
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -25,6 +22,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
@@ -34,8 +32,10 @@ import com.corner.bean.SettingStore
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.DefaultControls
+import com.corner.ui.player.PlayerState
 import com.corner.ui.player.frame.FrameContainer
 import com.corner.ui.player.vlcj.VlcjFrameController
+import com.corner.ui.scene.Dialog
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -74,6 +74,7 @@ fun Player(
     val showTip = controller.showTip.collectAsState()
     val tip = controller.tip.collectAsState()
     val videoFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
+    val showMediaInfoDialog = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit){
         val volume = SettingStore.getCache("playerState")
@@ -136,10 +137,22 @@ fun Player(
             delay(3000)
             showCursor.value = false
         }
-    }.onClick{
-        showControllerBar.value = !showControllerBar.value
     }.pointerHoverIcon(PointerIcon(if (!showCursor.value) createEmptyCursor() else Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)))) {
-        FrameContainer(Modifier.fillMaxSize().focusTarget().focusable().focusRequester(focusRequester), controller)
+        FrameContainer(Modifier.fillMaxSize().focusTarget().focusable().focusRequester(focusRequester), controller){
+            showControllerBar.value = !showControllerBar.value
+        }
+        AnimatedVisibility(showControllerBar.value,
+            modifier = Modifier.align(Alignment.TopEnd),
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut()){
+            Row (Modifier.height(40.dp).fillMaxWidth(), horizontalArrangement = Arrangement.End){
+                IconButton(onClick = {
+                    showMediaInfoDialog.value = true
+                }){
+                    Icon(Icons.Default.Info, contentDescription = "media info", tint = MaterialTheme.colorScheme.primary)
+                }
+            }
+        }
         AnimatedVisibility(
             showControllerBar.value,
             modifier = Modifier.align(Alignment.BottomEnd),
@@ -170,8 +183,41 @@ fun Player(
                 )
             }
         }
+        MediaInfoDialog(Modifier.fillMaxWidth(0.5f).fillMaxHeight(0.4f), controller.state.value, showMediaInfoDialog.value){
+            showMediaInfoDialog.value = false
+        }
     }
 }
+
+@Composable
+fun MediaInfoDialog(modifier: Modifier, playerState: PlayerState, show:Boolean, onClose:()->Unit){
+    val mediaInfo = rememberUpdatedState(playerState.mediaInfo)
+    Dialog(modifier, showDialog = show, onClose = onClose){
+        val scrollbar = rememberLazyListState(0)
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(30.dp), modifier = Modifier.padding(30.dp), state = scrollbar,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            item {
+                SelectionContainer {
+                    Text(text = AnnotatedString(mediaInfo.value?.url ?: ""))
+                }
+            }
+            item {
+                Text("${mediaInfo.value?.width ?: ""} * ${mediaInfo.value?.height ?: ""}")
+            }
+        }
+        VerticalScrollbar(rememberScrollbarAdapter(scrollbar))
+    }
+}
+
+//@Preview
+//@Composable
+//fun previewMediaInfoDialog(){
+//    AppTheme {
+//        MediaInfoDialog(Modifier.fillMaxSize(), MediaInfo(800, 1200, "http://xxxxxx.com/dddd"), true){
+//
+//        }
+//    }
+//}
 
 private fun createEmptyCursor(): Cursor {
     return Toolkit.getDefaultToolkit().createCustomCursor(
@@ -179,13 +225,4 @@ private fun createEmptyCursor(): Cursor {
         Point(1, 1),
         "Empty Cursor"
     )
-}
-
-enum class PlayState{
-    INIT,
-    LOADING,
-    PLAYING,
-    REFRESH,
-    CHANGEEP,
-
 }

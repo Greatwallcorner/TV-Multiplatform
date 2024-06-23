@@ -8,10 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.isTypedEvent
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -30,8 +27,9 @@ import uk.co.caprica.vlcj.player.base.State
 fun FrameContainer(
     modifier: Modifier = Modifier,
     controller: VlcjFrameController,
+    onClick:()->Unit
 ) {
-    val playerState = rememberUpdatedState(controller.getPlayer()?.status()?.state())
+    val playerState = controller.state.collectAsState()
     val bitmap by remember { controller.imageBitmapState }
     val interactionSource = remember { MutableInteractionSource() }
     Box(modifier = modifier.background(Color.Black)
@@ -44,6 +42,7 @@ fun FrameContainer(
             indication = null
         ) {
             // onClick
+            onClick()
         }
         .onPointerEvent(PointerEventType.Scroll) { e ->
             val y = e.changes.first().scrollDelta.y
@@ -86,16 +85,15 @@ fun FrameContainer(
             }
         }else{
             Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-                when (playerState.value?.name ?: "") {
-                    State.BUFFERING.name ->
-                            androidx.compose.material3.CircularProgressIndicator(Modifier.align(Alignment.Center))
-                    else ->
-                        Image(
-                            modifier = Modifier.align(Alignment.Center),
-                            painter = painterResource("/pic/TV-icon-x.png"),
-                            contentDescription = "nothing here",
-                            contentScale = ContentScale.Crop
-                        )
+                if(playerState.value.isBuffering){
+                    androidx.compose.material3.CircularProgressIndicator(Modifier.align(Alignment.Center))
+                }else {
+                    Image(
+                        modifier = Modifier.align(Alignment.Center),
+                        painter = painterResource("/pic/TV-icon-x.png"),
+                        contentDescription = "nothing here",
+                        contentScale = ContentScale.Crop
+                    )
                 }
             }
         }

@@ -6,6 +6,7 @@ import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.History
 import com.corner.ui.decompose.DetailComponent
+import com.corner.ui.player.MediaInfo
 import com.corner.ui.player.PlayerController
 import com.corner.ui.player.PlayerState
 import com.corner.ui.scene.SnackBar
@@ -41,8 +42,19 @@ class VlcjController(val component: DetailComponent) : PlayerController {
     override var tip = MutableStateFlow("")
     override var history: MutableStateFlow<History?> = MutableStateFlow(null)
     var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val vlcjArgs = listOf(
+        "--no-video-title-show",           // 禁用视频标题显示
+        "--no-snapshot-preview",           // 禁用快照预览
+        "--no-autoscale",                  // 禁用自动缩放
+        "--no-disable-screensaver",        // 禁用屏保
+        "--avcodec-fast",                  // 使用快速解码模式
+        "--network-caching=3000",          // 设置网络缓存为 3000ms
+        "--file-caching=3000",             // 设置文件缓存为 3000ms
+        "--live-caching=3000",             // 设置直播缓存为 3000ms
+        "--sout-mux-caching=3000"          // 设置输出缓存为 3000ms
+    )
 
-    internal val factory by lazy { MediaPlayerFactory() }
+    internal val factory by lazy { MediaPlayerFactory(vlcjArgs) }
 
     override fun doWithMediaPlayer(block: (MediaPlayer) -> Unit) {
         player?.let {
@@ -68,6 +80,23 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             _state.update { it.copy(duration = mediaPlayer.status().length()) }
             play()
         }
+
+        override fun videoOutput(mediaPlayer: MediaPlayer?, newCount: Int) {
+
+            val trackInfo = mediaPlayer?.media()?.info()?.videoTracks()?.first()
+            if(trackInfo != null){
+                _state.update { it.copy(mediaInfo = MediaInfo(url = mediaPlayer.media()?.info()?.mrl() ?: "", height = trackInfo.height(), width = trackInfo.width())) }
+            }
+        }
+
+        override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
+            _state.update { it.copy(isBuffering = newCache != 100F) }
+        }
+
+        override fun opening(mediaPlayer: MediaPlayer?) {
+            _state.update { it.copy(isBuffering = true) }
+        }
+
 
         override fun playing(mediaPlayer: MediaPlayer) {
             _state.update { it.copy(isPlaying = true) }
@@ -217,11 +246,6 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             tip.emit(text)
             showTip.emit(true)
         }
-//        tipJob?.cancel()
-//        tipJob = scope.launch {
-//            delay(1000)
-//            showTip = false
-//        }
     }
 
     override fun stop() = catch {
@@ -279,7 +303,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
     override fun toggleFullscreen() = catch {
         val videoFullScreen = GlobalModel.toggleVideoFullScreen()
         runBlocking {
-            if(videoFullScreen) showTips("[ESC]退出全屏")
+            if (videoFullScreen) showTips("[ESC]退出全屏")
         }
     }
 

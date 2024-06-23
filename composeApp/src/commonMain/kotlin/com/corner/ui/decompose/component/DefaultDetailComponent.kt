@@ -308,7 +308,9 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         detail.subEpisode?.parallelStream()?.forEach {
             it.activated = it == ep
         }
-        SnackBar.postMsg(if(internalPlayer) "开始播放" else "上次播放" + ": ${ep.name}")
+         if(!internalPlayer){
+             SnackBar.postMsg("上次播放" + ": ${ep.name}")
+         }
     }
 
     override fun nextEP() {
