@@ -34,7 +34,7 @@ object SiteViewModel {
     val quickSearch: MutableState<CopyOnWriteArrayList<Collect>> = mutableStateOf(CopyOnWriteArrayList(listOf(Collect.all())))
 
     private val supervisorJob = SupervisorJob()
-    val viewModelScope = CoroutineScope(Dispatchers.Default + supervisorJob)
+    val viewModelScope = CoroutineScope(Dispatchers.IO + supervisorJob)
 
     fun getSearchResultActive(): Collect {
         return search.value.first { it.isActivated().value }

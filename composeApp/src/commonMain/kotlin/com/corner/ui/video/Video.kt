@@ -1,6 +1,5 @@
 package com.corner.ui.video
 
-import AppTheme
 import SiteViewModel
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
@@ -161,7 +160,7 @@ fun VideoScene(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
 //                        userScrollEnabled = true
                         ) {
-                            itemsIndexed(model.value.homeVodResult.toList()) { _, item ->
+                            itemsIndexed(model.value.homeVodResult.toTypedArray(), key = {_,item -> item.vodId}) { _, item ->
                                 VideoItem(Modifier.animateItemPlacement(), item, false) {
                                     if (item.isFolder()) {
                                         SiteViewModel.viewModelScope.launch {
@@ -454,10 +453,10 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
 @Composable
 @Preview
 fun previewClassRow() {
-    AppTheme {
-        val list = listOf(Type("1", "ABC"), Type("2", "CDR"), Type("3", "ddr"))
-//        ClassRow(list.toMutableSet()) {}
-    }
+//    AppTheme {
+//        val list = listOf(Type("1", "ABC"), Type("2", "CDR"), Type("3", "ddr"))
+////        ClassRow(list.toMutableSet()) {}
+//    }
 }
 
 @Composable

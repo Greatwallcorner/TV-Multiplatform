@@ -175,9 +175,8 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
                     return@launch
                 }
                 val list = rst.list
-                val vodList = model.value.homeVodResult.toMutableList()
-                vodList.addAll(list)
-                model.update { it.copy(homeVodResult = vodList.toSet().toMutableSet()) }
+                model.value.homeVodResult.addAll(list)
+                model.update { it.copy(homeVodResult = model.value.homeVodResult) }
             } finally {
             }
         }.invokeOnCompletion {
