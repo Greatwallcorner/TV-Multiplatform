@@ -106,6 +106,7 @@ fun VideoScene(
     val scope = rememberCoroutineScope()
     val state = rememberLazyGridState()
     val model = component.model.subscribeAsState()
+    val list = derivedStateOf { component.model.value.homeVodResult.toTypedArray() }
 
     LaunchedEffect(state) {
         snapshotFlow { state.layoutInfo }
@@ -138,7 +139,8 @@ fun VideoScene(
     ) {
         Box(modifier = modifier.fillMaxSize().padding(it)) {
             Column {
-                if (model.value.classList.isNotEmpty()) {
+                val classIsEmpty = derivedStateOf { model.value.classList.isNotEmpty() }
+                if (classIsEmpty.value) {
                     ClassRow(component) {
                         component.model.update { it.copy(homeVodResult = SiteViewModel.result.value.list.toMutableSet()) }
                         model.value.page.set(1)
@@ -147,7 +149,8 @@ fun VideoScene(
                         }
                     }
                 }
-                if (model.value.homeVodResult.isEmpty()) {
+                val listEmpty = derivedStateOf { model.value.homeVodResult.isEmpty() }
+                if (listEmpty.value) {
                     emptyShow(onRefresh = {component.homeLoad()})
                 } else {
                     Box {
@@ -160,7 +163,7 @@ fun VideoScene(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
 //                        userScrollEnabled = true
                         ) {
-                            itemsIndexed(model.value.homeVodResult.toTypedArray(), key = {_,item -> item.vodId}) { _, item ->
+                            itemsIndexed(list.value, key = {_,item -> item.vodId + item.vodName}) { _, item ->
                                 VideoItem(Modifier.animateItemPlacement(), item, false) {
                                     if (item.isFolder()) {
                                         SiteViewModel.viewModelScope.launch {
