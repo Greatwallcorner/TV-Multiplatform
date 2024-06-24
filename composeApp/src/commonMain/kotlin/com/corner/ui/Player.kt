@@ -194,18 +194,24 @@ fun MediaInfoDialog(modifier: Modifier, playerState: PlayerState, show:Boolean, 
     val mediaInfo = rememberUpdatedState(playerState.mediaInfo)
     Dialog(modifier, showDialog = show, onClose = onClose){
         val scrollbar = rememberLazyListState(0)
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(30.dp), modifier = Modifier.padding(30.dp), state = scrollbar,
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            item {
-                SelectionContainer {
-                    Text(text = AnnotatedString(mediaInfo.value?.url ?: ""))
+        Box{
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(30.dp), modifier = Modifier.padding(30.dp), state = scrollbar,
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                item {
+                    SelectionContainer {
+                        Text(text = AnnotatedString(mediaInfo.value?.url ?: ""))
+                    }
+                    Spacer(Modifier.size(40.dp))
+                    Text("${mediaInfo.value?.width ?: ""} * ${mediaInfo.value?.height ?: ""}")
                 }
             }
-            item {
-                Text("${mediaInfo.value?.width ?: ""} * ${mediaInfo.value?.height ?: ""}")
-            }
+            VerticalScrollbar(rememberScrollbarAdapter(scrollbar),
+                modifier = Modifier.align(Alignment.CenterEnd).padding(vertical = 5.dp, horizontal = 8.dp),
+                style = defaultScrollbarStyle().copy(
+                    unhoverColor = Color.Gray.copy(0.45F),
+                    hoverColor = Color.DarkGray
+                ))
         }
-        VerticalScrollbar(rememberScrollbarAdapter(scrollbar))
     }
 }
 
