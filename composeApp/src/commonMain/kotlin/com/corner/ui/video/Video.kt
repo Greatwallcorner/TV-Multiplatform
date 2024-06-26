@@ -258,7 +258,8 @@ fun FloatButton(component: DefaultVideoComponent, state: LazyGridState, scope:Co
                             onClick = { showDialog = !showDialog },
                             modifier = modifier,
                             colors = buttonColors,
-                            shape = shape, contentPadding = PaddingValues(8.dp)
+                            shape = shape,
+                            contentPadding = PaddingValues(8.dp)
                         )
                         {
                             Icon(
@@ -397,7 +398,8 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
             contentPadding = PaddingValues(top = 5.dp, start = 5.dp, end = 5.dp, bottom = 5.dp),
             userScrollEnabled = true
         ) {
-            items(model.value.classList.toList()) { type ->
+            val list = derivedStateOf { model.value.classList.toList() }
+            items(list.value) { type ->
                 RatioBtn(text = type.typeName, onClick = {
                     if (component.isLoading.get()) return@RatioBtn
                     component.isLoading.set(true)
@@ -410,9 +412,8 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
                             }
                             model.value.currentClass = type
                             model.value.classList = model.value.classList.toSet().toMutableSet()
-                            val filterMap = SiteViewModel.result.value.filters
+                            val filterMap = model.value.filtersMap
                             if (filterMap.isNotEmpty()) {
-                                component.model.value.filtersMap = filterMap
                                 component.model.update {
                                     it.copy(
                                         currentFilter = component.getFilters(type)

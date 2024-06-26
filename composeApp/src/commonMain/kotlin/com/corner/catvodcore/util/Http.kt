@@ -1,5 +1,6 @@
 package com.corner.catvodcore.util
 
+import com.corner.util.SSLSocketClient
 import com.github.catvod.bean.Doh
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -10,10 +11,14 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.dnsoverhttps.DnsOverHttps
 import java.net.http.HttpClient
+import java.security.KeyStore
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.*
 
 class Http {
     companion object {
@@ -21,10 +26,59 @@ class Http {
         private var client: OkHttpClient? = null
         private var selector: ProxySelect? = null
         private val defaultHeaders: Headers = Headers.Builder().build()
+
+        //获取这个SSLSocketFactory
+        fun getSSLSocketFactory(): SSLSocketFactory {
+            try {
+                val sslContext = SSLContext.getInstance("SSL")
+                sslContext.init(null, getTrustManager(), SecureRandom())
+                return sslContext.socketFactory
+            } catch (e: Exception) {
+                throw RuntimeException(e)
+            }
+        }
+
+        //获取TrustManager
+        private fun getTrustManager(): Array<TrustManager> {
+            return arrayOf(object : X509TrustManager {
+                override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {
+                }
+
+                override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {
+                }
+
+                override fun getAcceptedIssuers(): Array<X509Certificate> {
+                    return arrayOf()
+                }
+            }
+            )
+        }
+
+        //获取HostnameVerifier
+        fun getHostnameVerifier(): HostnameVerifier {
+            return HostnameVerifier { s: String?, sslSession: SSLSession? -> true }
+        }
+
+        fun getX509TrustManager(): X509TrustManager? {
+            var trustManager: X509TrustManager? = null
+            try {
+                val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+                trustManagerFactory.init(null as KeyStore?)
+                val trustManagers = trustManagerFactory.trustManagers
+                check(!(trustManagers.size != 1 || trustManagers[0] !is X509TrustManager)) { "Unexpected default trust managers:" + trustManagers.contentToString() }
+                trustManager = trustManagers[0] as X509TrustManager
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            return trustManager
+        }
         private val builder: OkHttpClient.Builder
             get() = OkHttpClient().newBuilder().connectTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(10, TimeUnit.SECONDS).writeTimeout(10, TimeUnit.SECONDS)
                 .followRedirects(true)
+                .sslSocketFactory(getSSLSocketFactory(), getX509TrustManager()!!)
+                .hostnameVerifier((getHostnameVerifier()))
                 .dns(dns())
 
 

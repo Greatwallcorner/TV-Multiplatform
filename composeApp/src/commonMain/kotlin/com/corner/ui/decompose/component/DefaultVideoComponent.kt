@@ -211,6 +211,7 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
 
     fun getFilters(type: Type): Filter {
         val filters = model.value.filtersMap[type.typeId] ?: return Filter.ALL
+        // todo 这里可有多个Filter 需要修改页面 可以显示多个Filter
         return filters.getFirstOrEmpty()
     }
 
