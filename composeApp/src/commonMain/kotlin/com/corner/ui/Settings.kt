@@ -21,14 +21,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.Setting
 import com.corner.bean.SettingStore
@@ -116,30 +126,32 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                         Text("打开用户数据目录")
                     }
                 }
-
-//                IconButton(modifier = Modifier.align(Alignment.End), onClick = {showAboutDialog = true}){ Icon(Icons.Default.Info, "About", tint = MaterialTheme.colorScheme.onSecondary) }
             }
-            LazyColumn(contentPadding = PaddingValues(8.dp)) {
-//                items(model.value.settingList) {
-//                    SettingItem(
-//                        Modifier, it.label, it.value
-//                    ) {
-//                        showEditDialog = true
-//                        currentChoose = it
-//                    }
-//                }
+            LazyColumn(contentPadding = PaddingValues(8.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 item {
-                    val setting = model.value.settingList.getSetting(SettingType.VOD)
-                    SettingItem(Modifier, setting!!) {
-                        showEditDialog = true
-                        currentChoose = it
+                    val setting = remember { model.value.settingList.getSetting(SettingType.VOD) }
+                    SettingItemTemplate(setting?.label!!) {
+                        Box(Modifier.fillMaxSize()) {
+                            TextField(
+                                value = setting.value ?: "",
+                                onValueChange = {
+                                    SettingStore.setValue(SettingType.PLAYER, it)
+                                    component.sync()
+                                },
+                                maxLines = 1,
+                                enabled = true,
+                                modifier = Modifier.fillMaxHeight(0.6f).fillMaxWidth().align(Alignment.Center)
+                            )
+                        }
                     }
                 }
                 item {
-                    val setting = model.value.settingList.getSetting(SettingType.LOG)
-                    SettingItem(Modifier, setting!!) {
-                        showEditDialog = true
-                        currentChoose = it
+                    SettingItemTemplate("日志"){
+                        LogButtonList(Modifier){
+                            SettingStore.setValue(SettingType.LOG, it)
+                            component.sync()
+                            SnackBar.postMsg("重启生效")
+                        }
                     }
                 }
                 item {
@@ -188,13 +200,15 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                     }
                 }
                 item {
-                    Box(Modifier.fillMaxSize().padding(top = 10.dp)){
-                        ElevatedButton(onClick = {
-                            SettingStore.reset()
-                            component.sync()
-                            SnackBar.postMsg("重置设置 重启生效")
-                        }, Modifier.fillMaxWidth(0.8f)
-                            .align(Alignment.Center)) {
+                    Box(Modifier.fillMaxSize().padding(top = 10.dp)) {
+                        ElevatedButton(
+                            onClick = {
+                                SettingStore.reset()
+                                component.sync()
+                                SnackBar.postMsg("重置设置 重启生效")
+                            }, Modifier.fillMaxWidth(0.8f)
+                                .align(Alignment.Center)
+                        ) {
                             Text("重置")
                         }
                     }
@@ -223,18 +237,125 @@ fun SettingStore.getPlayerSetting(): List<Any> {
 @Composable
 fun SettingItemTemplate(title: String, content: @Composable () -> Unit) {
     Row(
-        Modifier
-            .clickable {
-            }.shadow(3.dp)
+        Modifier.shadow(3.dp)
             .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp))
-            .padding(start = 20.dp, end = 20.dp)
+            .padding(start = 20.dp, end = 20.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            "播放器",
+            title,
             modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp).align(Alignment.CenterVertically),
             color = MaterialTheme.colorScheme.onBackground
         )
         content()
+    }
+}
+
+private val logLevel = listOf("INFO", "DEBUG")
+@Composable
+fun LogButtonList(modifier: Modifier, onClick: (String) -> Unit) {
+    val current = derivedStateOf { SettingStore.getSettingItem(SettingType.LOG.id) }
+    Box(
+        Modifier.padding(horizontal = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row {
+            logLevel.forEachIndexed { i,t ->
+                if(i == 0){
+                    SideButton(current.value == t, text = t, type = SideButtonType.LEFT){
+                        onClick(it)
+                    }
+                }else if(i == logLevel.size - 1){
+                    SideButton(current.value == t, text = t, type = SideButtonType.RIGHT){
+                        onClick(it)
+
+                    }
+                }else{
+                    SideButton(current.value == t, text = t){
+                        onClick(it)
+                    }
+                }
+            }
+        }
+    }
+}
+
+enum class SideButtonType{
+    LEFT,MID,RIGHT
+}
+
+@Composable
+fun SideButton(
+    choosed: Boolean,
+    buttonColors: ButtonColors = ButtonDefaults.buttonColors().copy(disabledContainerColor = MaterialTheme.colorScheme.background),
+    type: SideButtonType = SideButtonType.MID,
+    text: String,
+    onClick: (String) -> Unit
+) {
+    val textColor = if(choosed) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
+    Text(text = text, modifier = Modifier.clickable { onClick(text) }
+        .defaultMinSize(50.dp)
+        .drawWithCache {
+//            val width = size.width * 1.1f
+//            val height = size.height * 1.1f
+            val width = size.width
+            val height = size.height
+            val color = if (choosed) buttonColors.containerColor else buttonColors.disabledContainerColor
+
+            onDrawBehind {
+                val rectOffset = when(type){
+                    SideButtonType.LEFT -> Offset(height / 2, 0f)
+                    SideButtonType.MID -> Offset.Zero
+                    SideButtonType.RIGHT -> Offset.Zero
+                }
+                if (type == SideButtonType.LEFT) {
+                    drawCircle(
+                        color = color,
+                        radius = height / 2,
+                        center = Offset(height / 2, height / 2),
+                        style = Fill
+                    )
+                }
+                val rectSize = Size(width - height / 2, height)
+                drawRect(
+                    color = color,
+                    topLeft = rectOffset,
+                    size = rectSize,
+                    style = Fill,
+                )
+                if (type == SideButtonType.RIGHT) {
+                    drawCircle(
+                        color = color,
+                        radius = height / 2,
+                        center = Offset(size.width - height / 2, height / 2),
+                        style = Fill
+                    )
+                }
+            }
+        }, textAlign = TextAlign.Center, color = textColor)
+}
+
+@Preview
+@Composable
+fun previewSideButton() {
+    AppTheme {
+        Row(Modifier.fillMaxSize()) {
+            LogButtonList(Modifier){}
+//            SideButton(true, text = "test12312", type = SideButtonType.LEFT) {}
+//
+//            SideButton(false, text = "test1j计划熊㩐动甮的", type = SideButtonType.RIGHT) {}
+        }
+//        Column(Modifier.fillMaxSize()) {
+//            SideButton(Color.Blue, false, "test1") {}
+//        }
+    }
+}
+
+@Preview
+@Composable
+fun previewLogButtonList() {
+    AppTheme {
+        LogButtonList(Modifier){}
     }
 }
 
@@ -293,19 +414,6 @@ fun DialogEdit(
                             SettingStore.setValue(SettingType.VOD, textFieldValue!!)
                             ApiConfig.api.cfg.value = Db.Config.find(textFieldValue!!, ConfigType.SITE.ordinal.toLong())
                             initConfig()
-                        }
-
-                        "player" -> {
-                            SettingStore.setValue(SettingType.PLAYER, textFieldValue!!)
-                        }
-
-                        "log" -> {
-                            if (textFieldValue == null || textFieldValue == "") {
-                                SnackBar.postMsg("不可为空")
-                                return@launch
-                            }
-                            SettingStore.setValue(SettingType.LOG, textFieldValue!!)
-                            SnackBar.postMsg("重启生效")
                         }
                     }
                 }.invokeOnCompletion {
