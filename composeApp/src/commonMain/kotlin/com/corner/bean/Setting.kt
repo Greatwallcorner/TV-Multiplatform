@@ -83,7 +83,8 @@ enum class SettingType(val id: String) {
 object SettingStore {
     private val defaultList = listOf(
         Setting("vod", "点播", ""),
-        Setting("log", "日志级别", Level.DEBUG.levelStr)
+        Setting("log", "日志级别", Level.DEBUG.levelStr),
+        Setting("player", "播放器", "false#")
     )
 
     private var settingFile = SettingFile(mutableListOf<Setting>(), mutableMapOf())
@@ -100,6 +101,12 @@ object SettingStore {
             initSetting()
         }
         return settingFile.list
+    }
+
+    fun reset(){
+        settingFile = SettingFile(mutableListOf(), mutableMapOf())
+        write()
+        initSetting()
     }
 
     fun write() {

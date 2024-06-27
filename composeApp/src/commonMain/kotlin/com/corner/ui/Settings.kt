@@ -13,7 +13,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
@@ -99,21 +98,28 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
     ) {
         Column(Modifier.fillMaxSize()) {
             BackRow(Modifier.align(Alignment.Start), onClickBack = { onClickBack() }) {
-                Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
+                Row(
+                    Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         "设置",
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.align(Alignment.CenterVertically)
                     )
-                    OutlinedButton(onClick = {Desktop.getDesktop().open(Paths.userDataRoot())}, modifier = Modifier.align(Alignment.CenterVertically)){
+                    OutlinedButton(
+                        onClick = { Desktop.getDesktop().open(Paths.userDataRoot()) },
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    ) {
                         Text("打开用户数据目录")
                     }
                 }
 
 //                IconButton(modifier = Modifier.align(Alignment.End), onClick = {showAboutDialog = true}){ Icon(Icons.Default.Info, "About", tint = MaterialTheme.colorScheme.onSecondary) }
             }
-            LazyColumn {
+            LazyColumn(contentPadding = PaddingValues(8.dp)) {
 //                items(model.value.settingList) {
 //                    SettingItem(
 //                        Modifier, it.label, it.value
@@ -124,14 +130,14 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
 //                }
                 item {
                     val setting = model.value.settingList.getSetting(SettingType.VOD)
-                    SettingItem(Modifier, setting!!){
+                    SettingItem(Modifier, setting!!) {
                         showEditDialog = true
                         currentChoose = it
                     }
                 }
                 item {
                     val setting = model.value.settingList.getSetting(SettingType.LOG)
-                    SettingItem(Modifier, setting!!){
+                    SettingItem(Modifier, setting!!) {
                         showEditDialog = true
                         currentChoose = it
                     }
@@ -146,7 +152,8 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                     ) {
                         Text(
                             "播放器",
-                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp).align(Alignment.CenterVertically),
+                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp)
+                                .align(Alignment.CenterVertically),
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         val playerSetting = derivedStateOf {
@@ -154,20 +161,41 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                         }
                         Switch(playerSetting.value[0] as Boolean, onCheckedChange = {
                             SettingStore.setValue(SettingType.PLAYER, "$it#${playerSetting.value[1]}")
-                            if(it) SnackBar.postMsg("使用内置播放器") else SnackBar.postMsg("使用外部播放器 请配置播放器路径")
+                            if (it) SnackBar.postMsg("使用内置播放器") else SnackBar.postMsg("使用外部播放器 请配置播放器路径")
                             component.sync()
                         }, Modifier.width(100.dp).padding(end = 20.dp).align(Alignment.CenterVertically),
                             thumbContent = {
-                                Box(Modifier.size(80.dp)){
-                                    Text(if(playerSetting.value[0] as Boolean) "内置" else "外置", Modifier.fillMaxSize().align(Alignment.Center) )
+                                Box(Modifier.size(80.dp)) {
+                                    Text(
+                                        if (playerSetting.value[0] as Boolean) "内置" else "外置",
+                                        Modifier.fillMaxSize().align(Alignment.Center)
+                                    )
                                 }
                             })
                         // 只有外部播放器时展示
-                        if(!(playerSetting.value[0] as Boolean)){
-                            TextField(value = playerSetting.value[1] as String, onValueChange = {
-                                SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value[0]}#$it")
-                                component.sync()
-                            }, maxLines = 1, enabled = true, modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth().align(Alignment.CenterVertically))
+                        if (!(playerSetting.value[0] as Boolean)) {
+                            TextField(
+                                value = playerSetting.value[1] as String,
+                                onValueChange = {
+                                    SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value[0]}#$it")
+                                    component.sync()
+                                },
+                                maxLines = 1,
+                                enabled = true,
+                                modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth().align(Alignment.CenterVertically)
+                            )
+                        }
+                    }
+                }
+                item {
+                    Box(Modifier.fillMaxSize().padding(top = 10.dp)){
+                        ElevatedButton(onClick = {
+                            SettingStore.reset()
+                            component.sync()
+                            SnackBar.postMsg("重置设置 重启生效")
+                        }, Modifier.fillMaxWidth(0.8f)
+                            .align(Alignment.Center)) {
+                            Text("重置")
                         }
                     }
                 }
@@ -189,11 +217,11 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
 fun SettingStore.getPlayerSetting(): List<Any> {
     val settingItem = SettingStore.getSettingItem(SettingType.PLAYER.id)
     val split = settingItem.split("#")
-    return if(split.size == 1) listOf(false, settingItem) else listOf(split[0].toBoolean(), split[1])
+    return if (split.size == 1) listOf(false, settingItem) else listOf(split[0].toBoolean(), split[1])
 }
 
 @Composable
-fun SettingItemTemplate(title: String, content: @Composable ()->Unit){
+fun SettingItemTemplate(title: String, content: @Composable () -> Unit) {
     Row(
         Modifier
             .clickable {
@@ -266,9 +294,11 @@ fun DialogEdit(
                             ApiConfig.api.cfg.value = Db.Config.find(textFieldValue!!, ConfigType.SITE.ordinal.toLong())
                             initConfig()
                         }
+
                         "player" -> {
                             SettingStore.setValue(SettingType.PLAYER, textFieldValue!!)
                         }
+
                         "log" -> {
                             if (textFieldValue == null || textFieldValue == "") {
                                 SnackBar.postMsg("不可为空")

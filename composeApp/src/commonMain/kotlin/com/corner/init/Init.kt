@@ -2,6 +2,8 @@ package com.corner.init
 
 import com.arkivanov.decompose.value.update
 import com.corner.bean.Hot
+import com.corner.bean.SettingStore
+import com.corner.bean.SettingType
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.config.init
 import com.corner.catvodcore.enum.ConfigType
@@ -13,6 +15,7 @@ import com.corner.server.KtorD
 import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
+import org.apache.commons.lang3.StringUtils
 import org.koin.core.context.startKoin
 import org.slf4j.LoggerFactory
 
@@ -57,6 +60,9 @@ fun initConfig() {
     ApiConfig.clear()
     GlobalModel.clear.update {!it}
 
+    val vod = SettingStore.getSettingItem(SettingType.VOD.id)
+    if(StringUtils.isBlank(vod)) return
+    // todo 清空点播设置后 仍然可以在数据库中查询到旧的配置
     val siteConfig = Db.Config.findOneByType(ConfigType.SITE.ordinal.toLong()) ?: return
     try {
         ApiConfig.parseConfig(siteConfig, false).init()
