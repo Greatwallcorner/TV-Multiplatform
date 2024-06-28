@@ -43,6 +43,9 @@ getAll:
 SELECT * FROM
 Config;
 
+deleteById:
+DELETE FROM Config WHERE id = ?;
+
 
 
 

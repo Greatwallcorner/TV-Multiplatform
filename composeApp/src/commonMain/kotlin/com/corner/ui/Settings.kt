@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -131,10 +132,11 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                     val focusRequester = remember { FocusRequester() }
                     val isExpand = remember { mutableStateOf(false) }
                     val setting = remember { model.value.settingList.getSetting(SettingType.VOD) }
-                    var vodConfigList = listOf<String?>()
-                    LaunchedEffect(isExpand.value){
-                        val list:List<Config> = Db.Config.getAll()
-                        vodConfigList = list.filter { it.url?.isNotBlank() ?: false }.map { it.url }.toList()
+                    val vodConfigList = remember { mutableStateListOf<Config?>(null) }
+                    LaunchedEffect(isExpand.value) {
+                        val list: List<Config> = Db.Config.getAll()
+                        vodConfigList.clear()
+                        vodConfigList.addAll(list)
                     }
                     SettingItemTemplate(setting?.label!!) {
                         Box(Modifier.fillMaxSize()) {
@@ -154,19 +156,32 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                                         isExpand.value = it.isFocused
                                     }
                             )
-                            DropdownMenu(isExpand.value, {isExpand.value = false}, modifier = Modifier.fillMaxWidth(0.8f)){
-                                vodConfigList.forEach{
-                                    DropdownMenuItem(modifier = Modifier.fillMaxWidth(), text = { Text(it ?: "") }, onClick = {
-                                        setConfig(it)
-                                    })
+                            DropdownMenu(
+                                isExpand.value,
+                                { isExpand.value = false },
+                                modifier = Modifier.fillMaxWidth(0.8f)
+                            ) {
+                                vodConfigList.forEach {
+                                    DropdownMenuItem(modifier = Modifier.fillMaxWidth(),
+                                        text = { Text(it?.url ?: "") },
+                                        onClick = {
+                                            setConfig(it?.url)
+                                        }, trailingIcon = {
+                                            IconButton(onClick = {
+                                                Db.Config.deleteById(it?.id)
+                                                vodConfigList.remove(it)
+                                            }){
+                                                Icon(Icons.Default.Close, "delete the config")
+                                            }
+                                        })
                                 }
                             }
                         }
                     }
                 }
                 item {
-                    SettingItemTemplate("日志"){
-                        LogButtonList(Modifier){
+                    SettingItemTemplate("日志") {
+                        LogButtonList(Modifier) {
                             SettingStore.setValue(SettingType.LOG, it)
                             component.sync()
                             SnackBar.postMsg("重启生效")
@@ -271,6 +286,7 @@ fun SettingItemTemplate(title: String, content: @Composable () -> Unit) {
 }
 
 private val logLevel = listOf("INFO", "DEBUG")
+
 @Composable
 fun LogButtonList(modifier: Modifier, onClick: (String) -> Unit) {
     val current = derivedStateOf { SettingStore.getSettingItem(SettingType.LOG.id) }
@@ -279,18 +295,18 @@ fun LogButtonList(modifier: Modifier, onClick: (String) -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Row {
-            logLevel.forEachIndexed { i,t ->
-                if(i == 0){
-                    SideButton(current.value == t, text = t, type = SideButtonType.LEFT){
+            logLevel.forEachIndexed { i, t ->
+                if (i == 0) {
+                    SideButton(current.value == t, text = t, type = SideButtonType.LEFT) {
                         onClick(it)
                     }
-                }else if(i == logLevel.size - 1){
-                    SideButton(current.value == t, text = t, type = SideButtonType.RIGHT){
+                } else if (i == logLevel.size - 1) {
+                    SideButton(current.value == t, text = t, type = SideButtonType.RIGHT) {
                         onClick(it)
 
                     }
-                }else{
-                    SideButton(current.value == t, text = t){
+                } else {
+                    SideButton(current.value == t, text = t) {
                         onClick(it)
                     }
                 }
@@ -299,19 +315,20 @@ fun LogButtonList(modifier: Modifier, onClick: (String) -> Unit) {
     }
 }
 
-enum class SideButtonType{
-    LEFT,MID,RIGHT
+enum class SideButtonType {
+    LEFT, MID, RIGHT
 }
 
 @Composable
 fun SideButton(
     choosed: Boolean,
-    buttonColors: ButtonColors = ButtonDefaults.buttonColors().copy(disabledContainerColor = MaterialTheme.colorScheme.background),
+    buttonColors: ButtonColors = ButtonDefaults.buttonColors()
+        .copy(disabledContainerColor = MaterialTheme.colorScheme.background),
     type: SideButtonType = SideButtonType.MID,
     text: String,
     onClick: (String) -> Unit
 ) {
-    val textColor = if(choosed) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
+    val textColor = if (choosed) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
     Text(text = text, modifier = Modifier.clickable { onClick(text) }
         .defaultMinSize(50.dp)
         .drawWithCache {
@@ -322,7 +339,7 @@ fun SideButton(
             val color = if (choosed) buttonColors.containerColor else buttonColors.disabledContainerColor
 
             onDrawBehind {
-                val rectOffset = when(type){
+                val rectOffset = when (type) {
                     SideButtonType.LEFT -> Offset(height / 2, 0f)
                     SideButtonType.MID -> Offset.Zero
                     SideButtonType.RIGHT -> Offset.Zero
@@ -359,7 +376,7 @@ fun SideButton(
 fun previewSideButton() {
     AppTheme {
         Row(Modifier.fillMaxSize()) {
-            LogButtonList(Modifier){}
+            LogButtonList(Modifier) {}
 //            SideButton(true, text = "test12312", type = SideButtonType.LEFT) {}
 //
 //            SideButton(false, text = "test1j计划熊㩐动甮的", type = SideButtonType.RIGHT) {}
@@ -374,11 +391,11 @@ fun previewSideButton() {
 @Composable
 fun previewLogButtonList() {
     AppTheme {
-        LogButtonList(Modifier){}
+        LogButtonList(Modifier) {}
     }
 }
 
-fun setConfig(textFieldValue: String?){
+fun setConfig(textFieldValue: String?) {
     if (textFieldValue == null || textFieldValue == "") {
         SnackBar.postMsg("不可为空")
         return
