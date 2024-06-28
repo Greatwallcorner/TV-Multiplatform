@@ -24,6 +24,7 @@ interface ConfigRepository {
     fun updateSome( id:Int, json: String? = null, home: String? = null, parse: String? = null)
     fun updateUrl(id: Long, textFieldValue: String)
     fun setHome(url: String?, type: Int, key: String)
+    fun getAll(): List<Config>
 }
 
 class ConfigRepositoryImpl : ConfigRepository, KoinComponent {
@@ -70,6 +71,10 @@ class ConfigRepositoryImpl : ConfigRepository, KoinComponent {
 
     override fun setHome(url: String?, type: Int, key: String) {
         configQueries.setHome(key, type.toLong(), url)
+    }
+
+    override fun getAll(): List<Config> {
+        return configQueries.getAll().executeAsList()
     }
 
 }

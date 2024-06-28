@@ -1,6 +1,5 @@
 package com.corner.catvodcore.util
 
-import com.corner.util.SSLSocketClient
 import com.github.catvod.bean.Doh
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -74,8 +73,8 @@ class Http {
             return trustManager
         }
         private val builder: OkHttpClient.Builder
-            get() = OkHttpClient().newBuilder().connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(10, TimeUnit.SECONDS).writeTimeout(10, TimeUnit.SECONDS)
+            get() = OkHttpClient().newBuilder().connectTimeout(3, TimeUnit.SECONDS)
+                .readTimeout(3, TimeUnit.SECONDS).writeTimeout(3, TimeUnit.SECONDS)
                 .followRedirects(true)
                 .sslSocketFactory(getSSLSocketFactory(), getX509TrustManager()!!)
                 .hostnameVerifier((getHostnameVerifier()))

@@ -19,26 +19,23 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.Setting
 import com.corner.bean.SettingStore
@@ -46,6 +43,7 @@ import com.corner.bean.SettingType
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.util.Paths
+import com.corner.database.Config
 import com.corner.database.Db
 import com.corner.init.initConfig
 import com.corner.ui.decompose.component.DefaultSettingComponent
@@ -84,6 +82,7 @@ fun SettingItem(modifier: Modifier, setting: Setting, onClick: (Setting) -> Unit
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
@@ -129,19 +128,39 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
             }
             LazyColumn(contentPadding = PaddingValues(8.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 item {
+                    val focusRequester = remember { FocusRequester() }
+                    val isExpand = remember { mutableStateOf(false) }
                     val setting = remember { model.value.settingList.getSetting(SettingType.VOD) }
+                    var vodConfigList = listOf<String?>()
+                    LaunchedEffect(isExpand.value){
+                        val list:List<Config> = Db.Config.getAll()
+                        vodConfigList = list.filter { it.url?.isNotBlank() ?: false }.map { it.url }.toList()
+                    }
                     SettingItemTemplate(setting?.label!!) {
                         Box(Modifier.fillMaxSize()) {
                             TextField(
                                 value = setting.value ?: "",
                                 onValueChange = {
-                                    SettingStore.setValue(SettingType.PLAYER, it)
+                                    SettingStore.setValue(SettingType.VOD, it)
                                     component.sync()
                                 },
                                 maxLines = 1,
                                 enabled = true,
-                                modifier = Modifier.fillMaxHeight(0.6f).fillMaxWidth().align(Alignment.Center)
+                                modifier = Modifier.focusRequester(focusRequester)
+                                    .fillMaxHeight(0.6f)
+                                    .fillMaxWidth()
+                                    .align(Alignment.Center)
+                                    .onFocusEvent {
+                                        isExpand.value = it.isFocused
+                                    }
                             )
+                            DropdownMenu(isExpand.value, {isExpand.value = false}, modifier = Modifier.fillMaxWidth(0.8f)){
+                                vodConfigList.forEach{
+                                    DropdownMenuItem(modifier = Modifier.fillMaxWidth(), text = { Text(it ?: "") }, onClick = {
+                                        setConfig(it)
+                                    })
+                                }
+                            }
                         }
                     }
                 }
@@ -359,6 +378,25 @@ fun previewLogButtonList() {
     }
 }
 
+fun setConfig(textFieldValue: String?){
+    if (textFieldValue == null || textFieldValue == "") {
+        SnackBar.postMsg("不可为空")
+        return
+    }
+    val config = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
+    if (config == null) {
+        Db.Config.save(
+            type = ConfigType.SITE.ordinal.toLong(),
+            url = textFieldValue
+        )
+    } else {
+        Db.Config.updateUrl(config.id, textFieldValue)
+    }
+    SettingStore.setValue(SettingType.VOD, textFieldValue)
+    ApiConfig.api.cfg.value = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
+    initConfig()
+}
+
 @Composable
 fun DialogEdit(
     showEditDialog: Boolean,
@@ -398,22 +436,7 @@ fun DialogEdit(
                 SiteViewModel.viewModelScope.launch {
                     when (currentChoose!!.id) {
                         "vod" -> {
-                            if (textFieldValue == null || textFieldValue == "") {
-                                SnackBar.postMsg("不可为空")
-                                return@launch
-                            }
-                            val config = Db.Config.find(textFieldValue!!, ConfigType.SITE.ordinal.toLong())
-                            if (config == null) {
-                                Db.Config.save(
-                                    type = ConfigType.SITE.ordinal.toLong(),
-                                    url = textFieldValue
-                                )
-                            } else {
-                                Db.Config.updateUrl(config.id, textFieldValue as String)
-                            }
-                            SettingStore.setValue(SettingType.VOD, textFieldValue!!)
-                            ApiConfig.api.cfg.value = Db.Config.find(textFieldValue!!, ConfigType.SITE.ordinal.toLong())
-                            initConfig()
+                            setConfig(textFieldValue)
                         }
                     }
                 }.invokeOnCompletion {

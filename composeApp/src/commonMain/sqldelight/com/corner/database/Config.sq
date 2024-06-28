@@ -39,5 +39,10 @@ SELECT * FROM
 Config
 WHERE type = ? AND url = ?;
 
+getAll:
+SELECT * FROM
+Config;
+
+
 
 
