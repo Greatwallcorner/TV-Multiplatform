@@ -89,7 +89,6 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
     var showEditDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
-    var currentChoose by remember { mutableStateOf<Setting?>(null) }
     DisposableEffect("setting") {
         component.sync()
         onDispose {
@@ -166,9 +165,12 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                                         text = { Text(it?.url ?: "") },
                                         onClick = {
                                             setConfig(it?.url)
+                                            isExpand.value = false
                                         }, trailingIcon = {
                                             IconButton(onClick = {
-                                                Db.Config.deleteById(it?.id)
+                                                SiteViewModel.viewModelScope.launch {
+                                                    Db.Config.deleteById(it?.id)
+                                                }
                                                 vodConfigList.remove(it)
                                             }){
                                                 Icon(Icons.Default.Close, "delete the config")
@@ -255,9 +257,9 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
             }
         }
         AboutDialog(Modifier.fillMaxSize(0.4f), showAboutDialog) { showAboutDialog = false }
-        DialogEdit(showEditDialog, onClose = { showEditDialog = false }, currentChoose = currentChoose) {
-            component.sync()
-        }
+//        DialogEdit(showEditDialog, onClose = { showEditDialog = false }, currentChoose = currentChoose) {
+//            component.sync()
+//        }
     }
 
 }
@@ -396,22 +398,24 @@ fun previewLogButtonList() {
 }
 
 fun setConfig(textFieldValue: String?) {
-    if (textFieldValue == null || textFieldValue == "") {
-        SnackBar.postMsg("不可为空")
-        return
+    SiteViewModel.viewModelScope.launch {
+        if (textFieldValue == null || textFieldValue == "") {
+            SnackBar.postMsg("不可为空")
+            return@launch
+        }
+        val config = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
+        if (config == null) {
+            Db.Config.save(
+                type = ConfigType.SITE.ordinal.toLong(),
+                url = textFieldValue
+            )
+        } else {
+            Db.Config.updateUrl(config.id, textFieldValue)
+        }
+        SettingStore.setValue(SettingType.VOD, textFieldValue)
+        ApiConfig.api.cfg.value = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
+        initConfig()
     }
-    val config = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
-    if (config == null) {
-        Db.Config.save(
-            type = ConfigType.SITE.ordinal.toLong(),
-            url = textFieldValue
-        )
-    } else {
-        Db.Config.updateUrl(config.id, textFieldValue)
-    }
-    SettingStore.setValue(SettingType.VOD, textFieldValue)
-    ApiConfig.api.cfg.value = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
-    initConfig()
 }
 
 @Composable

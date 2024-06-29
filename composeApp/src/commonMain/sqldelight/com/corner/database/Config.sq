@@ -41,7 +41,8 @@ WHERE type = ? AND url = ?;
 
 getAll:
 SELECT * FROM
-Config;
+Config
+ORDER BY time DESC;
 
 deleteById:
 DELETE FROM Config WHERE id = ?;
