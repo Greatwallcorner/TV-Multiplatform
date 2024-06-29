@@ -24,7 +24,7 @@ kotlin {
         val desktopMain by getting
 
         commonMain.dependencies {
-            val ktorVer = "2.3.8"
+            val ktorVer = "2.3.12"
             val logbackVer = "1.3.14"
             val imageLoader = "1.8.1"
             val hutoolVer = "5.8.27"
@@ -66,7 +66,7 @@ kotlin {
             implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVer")
             implementation("io.ktor:ktor-server-swagger:$ktorVer")
             implementation("io.ktor:ktor-client-core:$ktorVer")
-            implementation("io.ktor:ktor-client-cio:$ktorVer")
+            implementation("io.ktor:ktor-client-okhttp:$ktorVer")
 //            implementation("io.ktor:ktor-server-call-logging:$ktorVer")
 
             // log
