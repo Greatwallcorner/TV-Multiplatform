@@ -1,6 +1,7 @@
 package com.corner.catvodcore.util
 
 import com.github.catvod.bean.Doh
+import kotlinx.coroutines.delay
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.*
@@ -16,6 +17,7 @@ import java.security.cert.X509Certificate
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
 
@@ -73,14 +75,24 @@ class Http {
             return trustManager
         }
         private val builder: OkHttpClient.Builder
-            get() = OkHttpClient().newBuilder().connectTimeout(3, TimeUnit.SECONDS)
-                .readTimeout(3, TimeUnit.SECONDS).writeTimeout(3, TimeUnit.SECONDS)
-                .followRedirects(true)
-                .sslSocketFactory(getSSLSocketFactory(), getX509TrustManager()!!)
-                .hostnameVerifier((getHostnameVerifier()))
-                .callTimeout(Duration.of(3, ChronoUnit.SECONDS))
-                .dispatcher(Dispatcher())
-                .dns(dns())
+            get(){
+                val dispatcher = Dispatcher()
+//                val threadPoolExecutor = dispatcher.executorService as ThreadPoolExecutor
+//                dispatcher.executorService.submit{
+//                    while(true){
+//                        Thread.sleep(1000)
+//                        println(threadPoolExecutor)
+//                    }
+//                }
+                return OkHttpClient().newBuilder().connectTimeout(3, TimeUnit.SECONDS)
+                    .readTimeout(3, TimeUnit.SECONDS).writeTimeout(3, TimeUnit.SECONDS)
+                    .followRedirects(true)
+                    .sslSocketFactory(getSSLSocketFactory(), getX509TrustManager()!!)
+                    .hostnameVerifier((getHostnameVerifier()))
+                    .callTimeout(Duration.of(3, ChronoUnit.SECONDS))
+                    .dispatcher(dispatcher)
+                    .dns(dns())
+            }
 
 
         fun dns(): Dns {

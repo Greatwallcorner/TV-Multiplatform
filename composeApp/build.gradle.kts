@@ -76,7 +76,7 @@ kotlin {
             // optional - Moko Resources Decoder
 //                api("io.github.qdsfdhvh:image-loader-extension-moko-resources:$imageLoader")
 
-            api(project.dependencies.platform("com.squareup.okhttp3:okhttp-bom:5.0.0-alpha.12"))
+            api(project.dependencies.platform("com.squareup.okhttp3:okhttp-bom:5.0.0-alpha.14"))
             api("com.squareup.okhttp3:okhttp")
             api("com.squareup.okhttp3:okhttp-dnsoverhttps")
 
