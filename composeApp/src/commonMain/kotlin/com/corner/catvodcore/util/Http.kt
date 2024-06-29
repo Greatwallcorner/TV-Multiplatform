@@ -78,6 +78,8 @@ class Http {
                 .followRedirects(true)
                 .sslSocketFactory(getSSLSocketFactory(), getX509TrustManager()!!)
                 .hostnameVerifier((getHostnameVerifier()))
+                .callTimeout(Duration.of(3, ChronoUnit.SECONDS))
+                .dispatcher(Dispatcher())
                 .dns(dns())
 
 

@@ -23,7 +23,7 @@ class KtorHeaderUrlFetcher private constructor(
     override suspend fun fetch(): FetchResult {
         val url = httpUrl.toString()
         val headers = mutableMapOf<String, String>()
-            headers.run {
+        headers.run {
             if (url.contains("@Headers=")) {
                 val elements = Jsons.parseToJsonElement(url.split("@Headers=")[1].split("@")[0])
                 for (jsonElement in elements.jsonObject) {
@@ -37,7 +37,7 @@ class KtorHeaderUrlFetcher private constructor(
 
 
         val request = Request.Builder().url(url.split("@")[0]).headers(headers.toHeaders()).build()
-        var response:Response? = null
+        var response: Response? = null
         try {
             response = httpClient.newCall(request).execute()
             if (response.isSuccessful) {
