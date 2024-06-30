@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS `Keep` (`key` TEXT NOT NULL, `siteName` TEXT, `vodName` TEXT, `vodPic` TEXT, `createTime` INTEGER NOT NULL, `type` INTEGER NOT NULL, `cid` INTEGER NOT NULL, PRIMARY KEY(`key`));
+
+getAll:
+SELECT * FROM Keep
+WHERE cid = ? ORDER BY createTime DESC;
+
+
+save:
+INSERT INTO Keep(key, siteName, vodName, vodPic, createTime, type, cid)
+VALUES(?,?,?,?,CURRENT_TIMESTAMP ,?,?);
