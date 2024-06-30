@@ -44,7 +44,7 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameControll
     Column(
         modifier.padding(horizontal = 8.dp, vertical = 1.dp),
         horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
         Slider(
             value = animatedTimestamp,
@@ -54,7 +54,7 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameControll
             colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.secondary, disabledActiveTrackColor = MaterialTheme.colorScheme.tertiary)
         )
         Row(
-            Modifier.fillMaxWidth().height(45.dp),
+            Modifier.fillMaxWidth().height(50.dp).padding(bottom = 5.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
