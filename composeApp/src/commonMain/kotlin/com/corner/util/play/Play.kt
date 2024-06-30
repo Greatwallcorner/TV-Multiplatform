@@ -8,6 +8,7 @@ import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.v
 import com.corner.catvodcore.util.Paths
 import com.corner.ui.getPlayerSetting
+import com.corner.ui.scene.SnackBar
 import com.corner.util.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -68,6 +69,10 @@ fun getProcessBuilder(result: Result?, title: String?): ProcessBuilder? {
 fun getProcessBuilder(url:String, title: String?): ProcessBuilder? {
     if (StringUtils.isBlank(url)) return null
     val playerPath = SettingStore.getPlayerSetting()[1] as String
+    if(StringUtils.isBlank(playerPath)) {
+        SnackBar.postMsg("未配置外部播放器路径")
+        return null
+    }
     if(SystemUtils.IS_OS_MAC){
         return if(checkPlayer(playerPath)){
             ProcessBuilder("open", "-a", playerPath, url)
