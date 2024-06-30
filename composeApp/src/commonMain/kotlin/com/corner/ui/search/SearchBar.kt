@@ -60,7 +60,7 @@ fun SearchBar(
 
     var suggestions by remember { mutableStateOf(Suggest()) }
 
-    val searchFun = fun(text:String){
+    val searchFun = fun(text: String) {
         onSearch(text)
         suggestions = Suggest()
     }
@@ -93,9 +93,11 @@ fun SearchBar(
         shape = RoundedCornerShape(50),
         value = searchText,
         leadingIcon = {
-            AnimatedVisibility(visible = searching,
+            AnimatedVisibility(
+                visible = searching,
                 enter = fadeIn() + scaleIn(),
-                exit = fadeOut() + scaleOut()){
+                exit = fadeOut() + scaleOut()
+            ) {
                 CircularProgressIndicator(
                     modifier = Modifier.fillMaxHeight(),
 //                    color = MaterialTheme.colors.secondary,
@@ -125,7 +127,7 @@ fun SearchBar(
             keyboardType = KeyboardType.Text,
             autoCorrect = true
         ),
-        colors = TextFieldDefaults.textFieldColors(
+        colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent, // 焦点时下划线颜色
             unfocusedIndicatorColor = Color.Transparent,
 //            backgroundColor = Color.Gray.copy(alpha = 0.3f),
@@ -134,40 +136,38 @@ fun SearchBar(
     )
 
     val scrollState = remember { ScrollState(0) }
-//    val showSuggestion by remember { mutableStateOf(false) }
     val showSuggestion = derivedStateOf { searchText.isNotEmpty() && !suggestions.isEmpty() }
-//    AnimatedVisibility(showSuggestion){
-        DropdownMenu(
-            expanded = showSuggestion.value,
-            scrollState = scrollState,
-            offset = DpOffset(100.dp, 3.dp),
-            onDismissRequest = {
-                suggestions = Suggest()
-            },
-            properties = PopupProperties(
-                focusable = false,
-                dismissOnBackPress = true,
-                dismissOnClickOutside = true,
-                clippingEnabled = true
-            ),
-            modifier = Modifier.animateContentSize(animationSpec = spring())
-                .clip(RoundedCornerShape(15.dp))
-        ) {
-            Column(Modifier.padding(horizontal = 15.dp, vertical = 5.dp)) {
-                suggestions.data?.forEach {
-                    DropdownMenuItem(
-                        modifier = Modifier,
-                        onClick = {
-                            searchFun(it.name)
-                        },
-                        contentPadding = PaddingValues(horizontal = 15.dp, vertical = 5.dp)
-                        ,text = {Text(
+    DropdownMenu(
+        expanded = showSuggestion.value,
+        scrollState = scrollState,
+        offset = DpOffset(100.dp, 3.dp),
+        onDismissRequest = {
+            suggestions = Suggest()
+        },
+        properties = PopupProperties(
+            focusable = false,
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+            clippingEnabled = true
+        ),
+        modifier = Modifier.animateContentSize(animationSpec = spring())
+            .clip(RoundedCornerShape(15.dp))
+    ) {
+        Column(Modifier.padding(horizontal = 15.dp, vertical = 5.dp)) {
+            suggestions.data?.forEach {
+                DropdownMenuItem(
+                    modifier = Modifier,
+                    onClick = {
+                        searchFun(it.name)
+                    },
+                    contentPadding = PaddingValues(horizontal = 15.dp, vertical = 5.dp), text = {
+                        Text(
                             it.name,
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
-                        )}
-                    )
-//                }
+                        )
+                    }
+                )
             }
         }
     }

@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.Setting
 import com.corner.bean.SettingStore
@@ -87,7 +88,7 @@ fun SettingItem(modifier: Modifier, setting: Setting, onClick: (Setting) -> Unit
 @Composable
 fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
-    var showEditDialog by remember { mutableStateOf(false) }
+//    var showEditDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
     DisposableEffect("setting") {
         component.sync()
@@ -133,32 +134,45 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                     val setting = remember { model.value.settingList.getSetting(SettingType.VOD) }
                     val vodConfigList = remember { mutableStateListOf<Config?>(null) }
                     LaunchedEffect(isExpand.value) {
-                        val list: List<Config> = Db.Config.getAll()
-                        vodConfigList.clear()
-                        vodConfigList.addAll(list)
+                        if(isExpand.value){
+                            val list: List<Config> = Db.Config.getAll()
+                            vodConfigList.clear()
+                            vodConfigList.addAll(list)
+                            focusRequester.requestFocus()
+                        }
                     }
                     SettingItemTemplate(setting?.label!!) {
-                        Box(Modifier.fillMaxSize()) {
-                            TextField(
-                                value = setting.value ?: "",
-                                onValueChange = {
-                                    SettingStore.setValue(SettingType.VOD, it)
-                                    component.sync()
+                        Box(Modifier.fillMaxSize(), ) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                TextField(
+                                    value = setting.value ?: "",
+                                    onValueChange = {
+                                        SettingStore.setValue(SettingType.VOD, it)
+                                        component.sync()
+                                        focusRequester.requestFocus()
+                                    },
+                                    maxLines = 1,
+                                    enabled = true,
+                                    modifier = Modifier.focusRequester(focusRequester)
+                                        .fillMaxHeight(0.6f)
+                                        .weight(0.9f)
+                                        .align(Alignment.CenterVertically)
+                                        .onFocusEvent {
+                                            isExpand.value = it.isFocused
+                                        }
+                                )
+                                Button(onClick = {
+                                    setConfig(setting.value)
                                 },
-                                maxLines = 1,
-                                enabled = true,
-                                modifier = Modifier.focusRequester(focusRequester)
-                                    .fillMaxHeight(0.6f)
-                                    .fillMaxWidth()
-                                    .align(Alignment.Center)
-                                    .onFocusEvent {
-                                        isExpand.value = it.isFocused
-                                    }
-                            )
+                                    modifier = Modifier.weight(0.1f)){
+                                    Text("确定")
+                                }
+                            }
                             DropdownMenu(
                                 isExpand.value,
                                 { isExpand.value = false },
-                                modifier = Modifier.fillMaxWidth(0.8f)
+                                modifier = Modifier.fillMaxWidth(0.8f),
+                                properties = PopupProperties(focusable = false)
                             ) {
                                 vodConfigList.forEach {
                                     DropdownMenuItem(modifier = Modifier.fillMaxWidth(),
