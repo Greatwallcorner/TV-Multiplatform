@@ -61,34 +61,8 @@ import java.awt.Desktop
 import java.net.URI
 
 @Composable
-fun SettingItem(modifier: Modifier, setting: Setting, onClick: (Setting) -> Unit) {
-    Row(
-        modifier
-            .clickable {
-                onClick(setting)
-            }.shadow(3.dp)
-            .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp))
-            .padding(start = 20.dp, end = 20.dp)
-    ) {
-        Text(
-            setting.label,
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp),
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Text(
-            text = if (StringUtil.isBlank(setting.value)) "无" else setting.value ?: "",
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp)
-                .weight(0.5f),
-            color = MaterialTheme.colorScheme.onBackground
-        )
-    }
-}
-
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
 fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
-//    var showEditDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
     DisposableEffect("setting") {
         component.sync()
@@ -271,15 +245,12 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
             }
         }
         AboutDialog(Modifier.fillMaxSize(0.4f), showAboutDialog) { showAboutDialog = false }
-//        DialogEdit(showEditDialog, onClose = { showEditDialog = false }, currentChoose = currentChoose) {
-//            component.sync()
-//        }
     }
 
 }
 
 fun SettingStore.getPlayerSetting(): List<Any> {
-    val settingItem = SettingStore.getSettingItem(SettingType.PLAYER.id)
+    val settingItem = getSettingItem(SettingType.PLAYER.id)
     val split = settingItem.split("#")
     return if (split.size == 1) listOf(false, settingItem) else listOf(split[0].toBoolean(), split[1])
 }
@@ -429,59 +400,6 @@ fun setConfig(textFieldValue: String?) {
         SettingStore.setValue(SettingType.VOD, textFieldValue)
         ApiConfig.api.cfg.value = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
         initConfig()
-    }
-}
-
-@Composable
-fun DialogEdit(
-    showEditDialog: Boolean,
-    onClose: () -> Unit,
-    currentChoose: Setting?,
-    onValueChange: (v: String) -> Unit
-) {
-    var textFieldValue by remember { mutableStateOf(currentChoose?.value) }
-    val focusRequester = remember { FocusRequester() }
-    if (showEditDialog) {
-        LaunchedEffect(Unit) {
-            textFieldValue = currentChoose?.value
-            focusRequester.requestFocus()
-        }
-    }
-    Dialog(
-        modifier = Modifier.fillMaxWidth(0.5f),
-        showEditDialog,
-        onClose = {
-            onClose()
-        }
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 15.dp, vertical = 25.dp)) {
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Text(currentChoose?.label ?: ""/*, color = MaterialTheme.colors.onBackground*/)
-                Spacer(modifier = Modifier.size(35.dp))
-                TextField(
-                    modifier = Modifier.fillMaxWidth(0.8f).focusRequester(focusRequester),
-                    enabled = true,
-                    value = textFieldValue ?: "",
-                    onValueChange = { text -> textFieldValue = text },
-                    interactionSource = MutableInteractionSource(),
-                    maxLines = 2
-                )
-            }
-            Button(modifier = Modifier.align(Alignment.End), onClick = {
-                SiteViewModel.viewModelScope.launch {
-                    when (currentChoose!!.id) {
-                        "vod" -> {
-                            setConfig(textFieldValue)
-                        }
-                    }
-                }.invokeOnCompletion {
-                    onValueChange(textFieldValue ?: "")
-                    onClose()
-                }
-            }) {
-                Text("确认")
-            }
-        }
     }
 }
 
