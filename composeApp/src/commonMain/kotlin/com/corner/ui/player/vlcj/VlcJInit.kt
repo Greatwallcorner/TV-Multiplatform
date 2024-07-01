@@ -16,7 +16,7 @@ class VlcJInit {
             if(StringUtils.isNotBlank(resourcePath)){
                 NativeLibrary.addSearchPath(
                     RuntimeUtil.getLibVlcLibraryName(),
-                    Paths.get(resourcePath, "lib", "libvlc.dll").pathString
+                    Paths.get(resourcePath, "lib").pathString
                 )
             }else{
                 println("VlcJInit 未找到${Constants.resPathKey}环境变量")

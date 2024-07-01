@@ -83,7 +83,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     }
 
     override fun updateHistory(it:History?) {
-        if (it != null) {
+        if (it != null && StringUtils.isNotBlank(model.value.detail?.site?.key)) {
             Db.History.updateSome(
                 it.vodFlag ?: "",
                 it.vodRemarks ?: "",
