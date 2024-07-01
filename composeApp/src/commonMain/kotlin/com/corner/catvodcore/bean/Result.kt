@@ -9,13 +9,9 @@ import kotlinx.serialization.Transient
 
 @Serializable
 class Result {
-    //    @Path("class")
-//    @ElementList(entry = "ty", required = false, inline = true)
     @SerialName("class")
     var types: MutableList<Type> = mutableListOf()
 
-    //    @Path("list")
-//    @ElementList(entry = "video", required = false, inline = true)
     var list: MutableList<Vod> = mutableListOf()
 
     val filters: MutableMap<String, List<Filter>> = mutableMapOf()

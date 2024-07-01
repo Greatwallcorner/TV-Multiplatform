@@ -4,6 +4,7 @@ import com.arkivanov.decompose.value.MutableValue
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.Result
+import com.corner.catvodcore.bean.Url
 import com.corner.database.History
 import com.corner.ui.player.vlcj.VlcjFrameController
 import java.util.concurrent.CopyOnWriteArrayList
@@ -22,7 +23,8 @@ interface DetailComponent {
         var currentPlayUrl:String = "",
         var currentEp: Episode? = null,
         var showEpChooserDialog:Boolean = false,
-        var shouldPlay:Boolean = false
+        var shouldPlay:Boolean = false,
+        val currentUrl:Url? = null
     )
 
     fun load()

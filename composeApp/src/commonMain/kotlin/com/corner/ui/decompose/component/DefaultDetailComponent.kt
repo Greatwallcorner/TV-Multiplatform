@@ -296,6 +296,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             detail.currentFlag?.flag ?: "",
             ep.url
         )
+         model.update { it.copy(currentUrl = result?.url) }
         if (result == null) {
             nextFlag()
             return

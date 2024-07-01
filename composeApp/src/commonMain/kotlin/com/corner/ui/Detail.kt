@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,6 +46,7 @@ import com.corner.ui.scene.*
 import com.corner.ui.video.QuickSearchItem
 import com.corner.util.Constants
 import com.corner.util.play.Play
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 
@@ -81,7 +83,7 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
 
     val focus = remember { FocusRequester() }
 
-    LaunchedEffect(isFullScreen.value){
+    LaunchedEffect(isFullScreen.value) {
         focus.requestFocus()
     }
     Box(
@@ -140,15 +142,18 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                     SideEffect {
                         focus.requestFocus()
                     }
-                    Player(mrl.value, controller, Modifier.fillMaxWidth(videoWidth.value).focusable(),
+                    Player(
+                        mrl.value, controller, Modifier.fillMaxWidth(videoWidth.value).focusable(),
                         component,
                         focusRequester = focus
                     )
                 } else {
-                    Box(Modifier
-                        .fillMaxWidth(videoWidth.value)
-                        .fillMaxHeight()
-                        .background(Color.Black)){
+                    Box(
+                        Modifier
+                            .fillMaxWidth(videoWidth.value)
+                            .fillMaxHeight()
+                            .background(Color.Black)
+                    ) {
                         Text(
                             "使用外部播放器",
                             modifier = Modifier.align(Alignment.Center).focusRequester(focus),
@@ -186,74 +191,28 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                             } else {
                                 vodInfo(detail)
                             }
-                            // 线路
                             Spacer(modifier = Modifier.size(15.dp))
-                            Row(Modifier.padding(start = 10.dp)) {
-                                Text(
-                                    "线路",
-                                    fontSize = TextUnit(25F, TextUnitType.Sp),
-                                    modifier = Modifier.padding(bottom = 5.dp),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(Modifier.size(10.dp))
-                                if (detail?.vodFlags?.isNotEmpty() == true) {
-                                    val state = rememberLazyListState(0)
-                                    Box() {
-                                        LazyRow(
-                                            horizontalArrangement = Arrangement.spacedBy(5.dp),
-                                            state = state,
-                                            modifier = Modifier.padding(bottom = 10.dp)
-                                                .fillMaxWidth()
-                                                .onPointerEvent(PointerEventType.Scroll) {
-                                                    scope.launch {
-//                                            if(it.changes.size == 0) return@launch
-                                                        state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
-                                                    }
-                                                },
-                                        ) {
-                                            items(detail?.vodFlags?.toList() ?: listOf()) {
-                                                RatioBtn(it?.show ?: "", onClick = {
-                                                    scope.launch {
-                                                        for (vodFlag in detail?.vodFlags ?: listOf()) {
-                                                            if (it?.show == vodFlag?.show) {
-                                                                it?.activated = true
-                                                            } else {
-                                                                vodFlag?.activated = false
-                                                            }
-                                                        }
-                                                        var dt = detail?.copy(
-                                                            currentFlag = it,
-                                                            subEpisode = it?.episodes?.getPage(detail!!.currentTabIndex)
-                                                                ?.toMutableList()
-                                                        )
-                                                        val history = controller.history.value
-                                                        if(history != null){
-                                                            val findEp =
-                                                                detail?.findAndSetEpByName(controller.history.value!!)
-                                                            if(findEp != null) component.playEp(dt!!, findEp)
-                                                        }
-                                                        component.model.update { model ->
-                                                            model.copy(
-                                                                detail = dt,
-                                                                shouldPlay = true,
-                                                            )
-                                                        }
-                                                    }
-                                                }, selected = it?.activated ?: false)
-                                            }
-                                        }
-                                        if (state.layoutInfo.visibleItemsInfo.size < (detail?.vodFlags?.size
-                                                ?: 0)
-                                        ) {
-                                            HorizontalScrollbar(
-                                                rememberScrollbarAdapter(state),
-                                                style = defaultScrollbarStyle().copy(
-                                                    unhoverColor = Color.Gray.copy(0.45F),
-                                                    hoverColor = Color.DarkGray
-                                                ), modifier = Modifier.align(Alignment.BottomCenter)
-                                            )
+                            // 线路
+                            flags(detail, scope, controller, component)
+                            Spacer(Modifier.size(15.dp))
+                            val urls = rememberUpdatedState(component.model.value.currentUrl)
+                            val showUrl = derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
+                            if (showUrl.value) {
+                                Row {
+                                    Text(
+                                        "清晰度",
+                                        fontSize = TextUnit(25F, TextUnitType.Sp),
+                                        modifier = Modifier.padding(bottom = 5.dp, end = 5.dp),
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    LazyRow(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                                        itemsIndexed(urls.value?.values ?: listOf()) { i, item ->
+                                            RatioBtn(item.n ?: (i + 1).toString(), onClick = {
+                                                component.model.update { it.copy(currentUrl = urls.value?.copy(position = i), currentPlayUrl = item.v ?: "") }
+                                            }, i == urls.value?.position!!)
                                         }
                                     }
+
                                 }
                             }
                         }
@@ -280,6 +239,83 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
 
     }
 
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun flags(
+    detail: Vod?,
+    scope: CoroutineScope,
+    controller: VlcjFrameController,
+    component: DetailComponent
+) {
+    Row(Modifier.padding(start = 10.dp)) {
+        Text(
+            "线路",
+            fontSize = TextUnit(25F, TextUnitType.Sp),
+            modifier = Modifier.padding(bottom = 5.dp),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(Modifier.size(10.dp))
+        if (detail?.vodFlags?.isNotEmpty() == true) {
+            val state = rememberLazyListState(0)
+            Box() {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    state = state,
+                    modifier = Modifier.padding(bottom = 10.dp)
+                        .fillMaxWidth()
+                        .onPointerEvent(PointerEventType.Scroll) {
+                            scope.launch {
+//                                            if(it.changes.size == 0) return@launch
+                                state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
+                            }
+                        },
+                ) {
+                    items(detail.vodFlags.toList()) {
+                        RatioBtn(it?.show ?: "", onClick = {
+                            scope.launch {
+                                for (vodFlag in detail.vodFlags) {
+                                    if (it?.show == vodFlag?.show) {
+                                        it?.activated = true
+                                    } else {
+                                        vodFlag?.activated = false
+                                    }
+                                }
+                                val dt = detail.copy(
+                                    currentFlag = it,
+                                    subEpisode = it?.episodes?.getPage(detail.currentTabIndex)
+                                        ?.toMutableList()
+                                )
+                                val history = controller.history.value
+                                if (history != null) {
+                                    val findEp =
+                                        detail.findAndSetEpByName(controller.history.value!!)
+                                    if (findEp != null) component.playEp(dt, findEp)
+                                }
+                                component.model.update { model ->
+                                    model.copy(
+                                        detail = dt,
+                                        shouldPlay = true,
+                                    )
+                                }
+                            }
+                        }, selected = it?.activated ?: false)
+                    }
+                }
+                if (state.layoutInfo.visibleItemsInfo.size < (detail.vodFlags.size)
+                ) {
+                    HorizontalScrollbar(
+                        rememberScrollbarAdapter(state),
+                        style = defaultScrollbarStyle().copy(
+                            unhoverColor = Color.Gray.copy(0.45F),
+                            hoverColor = Color.DarkGray
+                        ), modifier = Modifier.align(Alignment.BottomCenter)
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -463,7 +499,12 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                                         if (model.currentEp?.name != it.name) {
                                             component.controller?.doWithHistory { it.copy(position = 0L) }
                                         }
-                                        component.controller?.doWithHistory { it.copy(episodeUrl = i.url, vodRemarks = i.name) }
+                                        component.controller?.doWithHistory {
+                                            it.copy(
+                                                episodeUrl = i.url,
+                                                vodRemarks = i.name
+                                            )
+                                        }
                                         model.copy(currentEp = i)
                                     }
                                 }
@@ -480,10 +521,11 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                                 detail.value?.currentFlag?.flag ?: "",
                                 it.url
                             )
+                            component.model.update { it.copy(currentUrl = result?.url) }
                             val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
-                            if(internalPlayer){
+                            if (internalPlayer) {
                                 component.play(result)
-                            }else{
+                            } else {
                                 Play.start(result?.url?.v() ?: "", model.value.currentEp?.name)
                             }
 //                                                Play.start(result, it.name ?: detail?.vodName)
