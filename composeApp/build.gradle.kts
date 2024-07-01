@@ -144,7 +144,6 @@ compose.desktop {
 
             linux {
                 iconFile.set(project.file("src/commonMain/resources/pic/TV-icon-s.png"))
-
             }
 
             macOS {
