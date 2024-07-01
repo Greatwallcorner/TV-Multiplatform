@@ -70,13 +70,17 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
                 contentScale = ContentScale.Crop,
                 placeholderPainter = { painterResource("/pic/empty.png") },
                 errorPainter = { painterResource("/pic/empty.png") })
-            Box(Modifier.align(Alignment.BottomCenter)){
+            Box(Modifier.align(Alignment.BottomCenter)) {
                 ToolTipText(
                     text = vod.vodName!!,
-                    textStyle = TextStyle(color = MaterialTheme.colorScheme.onSecondaryContainer, textAlign = TextAlign.Center),
+                    textStyle = TextStyle(
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        textAlign = TextAlign.Center
+                    ),
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))
-                        .fillMaxWidth().padding(0.dp, 10.dp))
+                        .fillMaxWidth().padding(0.dp, 10.dp)
+                )
             }
             // 左上角
             Text(
@@ -151,7 +155,7 @@ fun VideoScene(
                 }
                 val listEmpty = derivedStateOf { model.value.homeVodResult.isEmpty() }
                 if (listEmpty.value) {
-                    emptyShow(onRefresh = {component.homeLoad()})
+                    emptyShow(onRefresh = { component.homeLoad() })
                 } else {
                     Box {
                         LazyVerticalGrid(
@@ -163,7 +167,7 @@ fun VideoScene(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
 //                        userScrollEnabled = true
                         ) {
-                            itemsIndexed(list.value, key = {_,item -> item.vodId + item.vodName}) { _, item ->
+                            itemsIndexed(list.value, key = { _, item -> item.vodId + item.vodName }) { _, item ->
                                 VideoItem(Modifier.animateItemPlacement(), item, false) {
                                     if (item.isFolder()) {
                                         SiteViewModel.viewModelScope.launch {
@@ -190,7 +194,7 @@ fun VideoScene(
 }
 
 @Composable
-fun FloatButton(component: DefaultVideoComponent, state: LazyGridState, scope:CoroutineScope) {
+fun FloatButton(component: DefaultVideoComponent, state: LazyGridState, scope: CoroutineScope) {
     val show = derivedStateOf { GlobalModel.chooseVod.value.isFolder() }
     val model = component.model.subscribeAsState()
     val showButton = derivedStateOf { !model.value.currentFilter.isEmpty() || state.firstVisibleItemIndex > 8 }
@@ -253,7 +257,7 @@ fun FloatButton(component: DefaultVideoComponent, state: LazyGridState, scope:Co
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     if (it) {
-                        if(model.value.currentFilter.isEmpty()) return@AnimatedContent
+                        if (model.value.currentFilter.isEmpty()) return@AnimatedContent
                         ElevatedButton(
                             onClick = { showDialog = !showDialog },
                             modifier = modifier,
@@ -405,42 +409,41 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
                     component.isLoading.set(true)
                     SiteViewModel.viewModelScope.launch {
                         showProgress()
-//                        component.clear()
-                        try {
-                            for (tp in model.value.classList) {
-                                tp.selected = type.typeId == tp.typeId
-                            }
-                            model.value.currentClass = type
-                            model.value.classList = model.value.classList.toSet().toMutableSet()
-                            val filterMap = model.value.filtersMap
-                            if (filterMap.isNotEmpty()) {
-                                component.model.update {
-                                    it.copy(
-                                        currentFilter = component.getFilters(type)
-                                    )
-                                }
-                            }
-                            if (type.typeId == "home") {
-                                SiteViewModel.homeContent()
-                            } else {
-                                model.value.page.set(1)
-                                val result = SiteViewModel.categoryContent(
-                                    GlobalModel.home.value.key,
-                                    type.typeId,
-                                    model.value.page.get().toString(),
-                                    false,
-                                    HashMap()
+                        for (tp in model.value.classList) {
+                            tp.selected = type.typeId == tp.typeId
+                        }
+                        if (model.value.filtersMap.isNotEmpty()) {
+                            component.model.update {
+                                it.copy(
+                                    currentFilter = component.getFilters(type)
                                 )
-                                if (!result.isSuccess) {
-                                    model.value.currentClass?.failTime?.plus(1)
-                                }
                             }
-                        } finally {
-                            hideProgress()
+                        }
+                        component.model.update {
+                            it.copy(
+                                currentClass = type, classList = model.value.classList
+                            )
+                        }
+                        SiteViewModel.cancelAll()
+                        if (type.typeId == "home") {
+                            SiteViewModel.homeContent()
+                        } else {
+                            model.value.page.set(1)
+                            val result = SiteViewModel.categoryContent(
+                                GlobalModel.home.value.key,
+                                type.typeId,
+                                model.value.page.get().toString(),
+                                false,
+                                HashMap()
+                            )
+                            if (!result.isSuccess) {
+                                model.value.currentClass?.failTime?.plus(1)
+                            }
                         }
                     }.invokeOnCompletion {
                         onCLick(type)
                         component.isLoading.set(false)
+                        hideProgress()
                     }
                 }, type.selected)
             }

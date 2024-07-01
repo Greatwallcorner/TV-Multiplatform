@@ -18,6 +18,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.serialization.encodeToString
 import okhttp3.Headers.Companion.toHeaders
 import org.apache.commons.lang3.StringUtils
@@ -35,6 +36,10 @@ object SiteViewModel {
 
     private val supervisorJob = SupervisorJob()
     val viewModelScope = CoroutineScope(Dispatchers.IO + supervisorJob)
+
+    fun cancelAll(){
+        supervisorJob.cancelChildren()
+    }
 
     fun getSearchResultActive(): Collect {
         return search.value.first { it.isActivated().value }
