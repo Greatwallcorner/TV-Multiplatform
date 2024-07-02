@@ -54,24 +54,29 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     override val model: MutableValue<DetailComponent.Model> = _model
 
-    override var controller: VlcjFrameController? = null
+    override val controller: VlcjFrameController = VlcjFrameController(this)
 
     init {
         lifecycle.subscribe(object : Lifecycle.Callbacks {
+            override fun onCreate() {
+                controller.init()
+            }
             override fun onStop() {
                 log.info("Detail onStop")
-                updateHistory(controller?.history?.value)
+                updateHistory(controller.history.value)
                 super.onStop()
             }
 
             override fun onDestroy() {
                 log.info("Detail onDestroy")
                 super.onDestroy()
-                searchScope.cancel("on stop")
-                fromSearchLoadJob.cancel("on stop")
-                hideProgress()
-                clear()
-                controller?.dispose()
+                SiteViewModel.viewModelScope.launch {
+                    searchScope.cancel("on stop")
+                    fromSearchLoadJob.cancel("on stop")
+                    hideProgress()
+                    clear()
+                }
+                controller.dispose()
             }
         })
 
@@ -255,7 +260,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     override fun startPlay() {
         if (model.value.detail != null && model.value.detail?.isEmpty() == false) {
-            if (controller?.isPlaying() == true && !model.value.shouldPlay) {
+            if (controller.isPlaying() == true && !model.value.shouldPlay) {
                 log.info("视频播放中 返回")
                 return
             }
@@ -272,7 +277,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 if (model.value.currentEp != null && !model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null) {
                     history = history.copy(position = 0L)
                 }
-                controller?.setStartEnd(history.opening ?: -1, history.ending ?: -1)
+                controller.setStartEnd(history.opening ?: -1, history.ending ?: -1)
 
                 findEp = detail.findAndSetEpByName(history)
                 model.update { it.copy(detail = detail) }
@@ -281,7 +286,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 Utils.getHistoryKey(detail.site?.key!!, detail.vodId)
             )
             if(findHistory != null){
-                controller?.setControllerHistory(findHistory)
+                controller.setControllerHistory(findHistory)
             }
             detail.subEpisode?.apply {
                 val ep = findEp ?: first()
@@ -301,7 +306,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             nextFlag()
             return
         }
-        controller?.doWithHistory { it.copy(episodeUrl = ep.url) }
+        controller.doWithHistory { it.copy(episodeUrl = ep.url) }
         val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
         if(internalPlayer){
             model.update { it.copy(currentPlayUrl = result.url.v(), currentEp = ep) }
@@ -320,7 +325,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         var nextIndex = 0
         var currentIndex = 0
         val currentEp = detail?.subEpisode?.find { it.activated }
-        controller?.doWithHistory { it.copy(position = 0) }
+        controller.doWithHistory { it.copy(position = 0) }
         if (currentEp != null) {
             currentIndex = detail?.subEpisode?.indexOf(currentEp)!!
             nextIndex = currentIndex+1
@@ -346,7 +351,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             return
         }
         SnackBar.postMsg("切换至线路[${model.value.detail?.currentFlag?.flag}]")
-        controller?.doWithHistory { it.copy(vodFlag = model.value.detail?.currentFlag?.flag) }
+        controller.doWithHistory { it.copy(vodFlag = model.value.detail?.currentFlag?.flag) }
         GlobalModel.chooseVod.value = model.value.detail!!
         model.update { it.copy(detail = model.value.detail) }
     }
@@ -359,8 +364,8 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             if (!model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null) {
                 history = history.copy(position = 0L)
             }
-            controller?.setControllerHistory(history)
-            controller?.setStartEnd(history.opening ?: -1, history.ending ?: -1)
+            controller.setControllerHistory(history)
+            controller.setStartEnd(history.opening ?: -1, history.ending ?: -1)
 
             val findEp = detail.findAndSetEpByName(history)
             model.update { it.copy(detail = detail, currentEp = findEp, currentPlayUrl = findEp?.url ?: "") }

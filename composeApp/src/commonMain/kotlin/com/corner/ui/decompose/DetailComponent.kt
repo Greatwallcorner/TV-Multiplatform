@@ -13,7 +13,7 @@ interface DetailComponent {
 
     val model: MutableValue<Model>
 
-    var controller:VlcjFrameController?
+    val controller:VlcjFrameController
 
     data class Model(
         var siteKey:String = "",

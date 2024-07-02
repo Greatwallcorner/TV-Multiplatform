@@ -17,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ImageInfo
+import org.slf4j.LoggerFactory
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.embedded.videosurface.CallbackVideoSurface
 import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapters
@@ -32,6 +33,7 @@ class VlcjFrameController constructor(
     component: DetailComponent,
     private val controller: VlcjController = VlcjController(component),
 ) : FrameRenderer, PlayerController by controller {
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     private var byteArray: ByteArray? = null
     private var info: ImageInfo? = null
@@ -39,7 +41,14 @@ class VlcjFrameController constructor(
 
     private var historyCollectJob: Job? = null
 
-    private val callbackSurFace = CallbackVideoSurface(object : BufferFormatCallback {
+
+    private val _size = MutableStateFlow(0 to 0)
+    override val size = _size.asStateFlow()
+
+    private val _bytes = MutableStateFlow<ByteArray?>(null)
+    override val bytes = _bytes.asStateFlow()
+
+    val callbackSurFace = CallbackVideoSurface(object : BufferFormatCallback {
         override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
             info = ImageInfo.makeN32(sourceWidth, sourceHeight, ColorAlphaType.OPAQUE)
             return RV32BufferFormat(sourceWidth, sourceHeight)
@@ -68,20 +77,21 @@ class VlcjFrameController constructor(
         VideoSurfaceAdapters.getVideoSurfaceAdapter()
     )
 
-
-    private val _size = MutableStateFlow(0 to 0)
-    override val size = _size.asStateFlow()
-
-    private val _bytes = MutableStateFlow<ByteArray?>(null)
-    override val bytes = _bytes.asStateFlow()
-
     override fun load(url: String): PlayerController {
         controller.load(url)
-        controller.player?.videoSurface()?.set(callbackSurFace)
         speed(controller.history.value?.speed?.toFloat() ?: 1f)
+        controller.stop()
+//        if(controller.player?.status()?.isPlaying == true){
+//        }
         controller.play()
         seekTo(max(controller.history.value?.position ?: 0L, history.value?.opening ?: 0L))
         return controller
+    }
+
+    override fun init() {
+        log.info("播放器初始化")
+        controller.init()
+        controller.player?.videoSurface()?.set(callbackSurFace)
     }
 
     fun isPlaying(): Boolean {

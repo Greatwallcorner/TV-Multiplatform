@@ -51,7 +51,6 @@ import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
@@ -59,7 +58,7 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
 
     val detail by rememberUpdatedState(model.value.detail)
 
-    val controller = remember { VlcjFrameController(component) }
+    val controller = rememberUpdatedState(component.controller)
 
     val isFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
 
@@ -68,7 +67,6 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
 
 
     LaunchedEffect("detail") {
-        component.controller = controller
         component.load()
     }
 
@@ -143,7 +141,7 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                         focus.requestFocus()
                     }
                     Player(
-                        mrl.value, controller, Modifier.fillMaxWidth(videoWidth.value).focusable(),
+                        mrl.value, controller.value, Modifier.fillMaxWidth(videoWidth.value).focusable(),
                         component,
                         focusRequester = focus
                     )
@@ -193,7 +191,7 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                             }
                             Spacer(modifier = Modifier.size(15.dp))
                             // 线路
-                            flags(detail, scope, controller, component)
+                            flags(detail, scope, controller.value, component)
                             Spacer(Modifier.size(15.dp))
                             val urls = rememberUpdatedState(component.model.value.currentUrl)
                             val showUrl = derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
@@ -497,9 +495,9 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                                 if (i.activated) {
                                     component.model.update { model ->
                                         if (model.currentEp?.name != it.name) {
-                                            component.controller?.doWithHistory { it.copy(position = 0L) }
+                                            component.controller.doWithHistory { it.copy(position = 0L) }
                                         }
-                                        component.controller?.doWithHistory {
+                                        component.controller.doWithHistory {
                                             it.copy(
                                                 episodeUrl = i.url,
                                                 vodRemarks = i.name

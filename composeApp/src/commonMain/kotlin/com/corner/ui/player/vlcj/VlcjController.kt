@@ -54,7 +54,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         "--sout-mux-caching=3000"          // 设置输出缓存为 3000ms
     )
 
-    internal val factory by lazy { MediaPlayerFactory(vlcjArgs) }
+    internal lateinit var factory:MediaPlayerFactory
 
     override fun doWithMediaPlayer(block: (MediaPlayer) -> Unit) {
         player?.let {
@@ -193,6 +193,14 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         get() = _state.asStateFlow()
 
     override fun init() {
+        catch {
+//            dispose()
+            factory = MediaPlayerFactory(vlcjArgs)
+            player = factory.mediaPlayers()?.newEmbeddedMediaPlayer()?.apply {
+                events().addMediaPlayerEventListener(stateListener)
+                video().setScale(1.0f)
+            }
+        }
     }
 
     override fun load(url: String): PlayerController {
@@ -201,13 +209,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             return this
         }
         catch {
-            dispose()
-            player = factory.mediaPlayers()?.newEmbeddedMediaPlayer()?.apply {
-                events().addMediaPlayerEventListener(stateListener)
-                media().prepare(url)
-                video().setScale(1.0f)
-
-            }
+            player?.media()?.prepare(url)
         }
         return this
     }
@@ -255,11 +257,9 @@ class VlcjController(val component: DetailComponent) : PlayerController {
 
     override fun dispose() = catch {
         log.debug("dispose")
-        player?.run {
-            controls().stop()
-            events().removeMediaPlayerEventListener(stateListener)
-            release()
-        }
+        stop()
+        player?.release()
+        factory.release()
     }
 
     override fun seekTo(timestamp: Long) = catch {

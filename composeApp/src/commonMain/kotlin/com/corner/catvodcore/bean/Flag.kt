@@ -31,6 +31,7 @@ data class Flag (
             val episode = if(split.size > 1) Episode.create(if(split[0].isEmpty()) number else split[0].trim(), split[1]) else Episode.create(number, urls[i])
             if(!episodes.contains(episode)) episodes.add(episode)
         }
+        episodes.sortBy { it.number }
 //        episodes.sortWith(Comparator<Episode> { o1, o2 ->
 //            o1.name.compareTo(o2.name)
 //        })

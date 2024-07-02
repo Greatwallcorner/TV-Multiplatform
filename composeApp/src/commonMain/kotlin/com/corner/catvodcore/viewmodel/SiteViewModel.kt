@@ -88,7 +88,7 @@ object SiteViewModel {
 
     fun detailContent(key: String, id: String): Result? {
         val site: Site = ApiConfig.api.sites.find { it.key == key } ?: return null
-        var rst:Result = Result()
+        var rst = Result()
         try {
             if (site.type == 3) {
                 val spider: Spider = ApiConfig.getSpider(site)
@@ -126,7 +126,7 @@ object SiteViewModel {
             return null
         }
         rst.list.forEach { it.site = site }
-//        rst.list.sortBy { it.vodName }
+
         return rst
     }
 
