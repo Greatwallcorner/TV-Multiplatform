@@ -10,7 +10,6 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,11 +19,9 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusEvent
@@ -39,7 +36,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
-import com.corner.bean.Setting
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.catvodcore.config.ApiConfig
@@ -56,7 +52,6 @@ import com.corner.ui.scene.HoverableText
 import com.corner.ui.scene.SnackBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jsoup.internal.StringUtil
 import java.awt.Desktop
 import java.net.URI
 
@@ -116,7 +111,7 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                         }
                     }
                     SettingItemTemplate(setting?.label!!) {
-                        Box(Modifier.fillMaxSize(), ) {
+                        Box(Modifier.fillMaxSize()) {
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                 TextField(
                                     value = setting.value ?: "",
@@ -131,6 +126,7 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                                         .fillMaxHeight(0.6f)
                                         .weight(0.9f)
                                         .align(Alignment.CenterVertically)
+                                        .clip(RoundedCornerShape(5.dp))
                                         .onFocusEvent {
                                             isExpand.value = it.isFocused
                                         }
@@ -179,49 +175,54 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                     }
                 }
                 item {
-                    Row(
-                        Modifier
-                            .clickable {
-                            }.shadow(3.dp)
-                            .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp))
-                            .padding(start = 20.dp, end = 20.dp)
-                    ) {
-                        Text(
-                            "播放器",
-                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp)
-                                .align(Alignment.CenterVertically),
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                    SettingItemTemplate("播放器"){
                         val playerSetting = derivedStateOf {
                             SettingStore.getPlayerSetting()
                         }
-                        Switch(playerSetting.value[0] as Boolean, onCheckedChange = {
-                            SettingStore.setValue(SettingType.PLAYER, "$it#${playerSetting.value[1]}")
-                            if (it) SnackBar.postMsg("使用内置播放器") else SnackBar.postMsg("使用外部播放器 请配置播放器路径")
-                            component.sync()
-                        }, Modifier.width(100.dp).padding(end = 20.dp).align(Alignment.CenterVertically),
-                            thumbContent = {
-                                Box(Modifier.size(80.dp)) {
-                                    Text(
-                                        if (playerSetting.value[0] as Boolean) "内置" else "外置",
-                                        Modifier.fillMaxSize().align(Alignment.Center)
-                                    )
-                                }
-                            })
-                        // 只有外部播放器时展示
-                        if (!(playerSetting.value[0] as Boolean)) {
-                            TextField(
-                                value = playerSetting.value[1] as String,
-                                onValueChange = {
-                                    SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value[0]}#$it")
-                                    component.sync()
-                                },
-                                maxLines = 1,
-                                enabled = true,
-                                modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth().align(Alignment.CenterVertically)
-                            )
+                        Box{
+                            Switch(playerSetting.value[0] as Boolean, onCheckedChange = {
+                                SettingStore.setValue(SettingType.PLAYER, "$it#${playerSetting.value[1]}")
+                                if (it) SnackBar.postMsg("使用内置播放器") else SnackBar.postMsg("使用外部播放器 请配置播放器路径")
+                                component.sync()
+                            }, Modifier.width(100.dp).padding(end = 20.dp).align(Alignment.Center),
+                                thumbContent = {
+                                    Box(Modifier.size(80.dp)) {
+                                        Text(
+                                            if (playerSetting.value[0] as Boolean) "内置" else "外置",
+                                            Modifier.fillMaxSize().align(Alignment.Center)
+                                        )
+                                    }
+                                })
+                            // 只有外部播放器时展示
+                            if (!(playerSetting.value[0] as Boolean)) {
+                                TextField(
+                                    value = playerSetting.value[1] as String,
+                                    onValueChange = {
+                                        SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value[0]}#$it")
+                                        component.sync()
+                                    },
+                                    maxLines = 1,
+                                    enabled = true,
+                                    modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth().align(Alignment.Center)
+                                )
+                            }
                         }
                     }
+//                    Row(
+//                        Modifier
+//                            .clickable {
+//                            }.shadow(3.dp)
+//                            .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp))
+//                            .padding(start = 20.dp, end = 20.dp)
+//                    ) {
+//                        Text(
+//                            "播放器",
+//                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 15.dp)
+//                                .align(Alignment.CenterVertically),
+//                            color = MaterialTheme.colorScheme.onBackground
+//                        )
+//
+//                    }
                 }
                 item {
                     Box(Modifier.fillMaxSize().padding(top = 10.dp)) {
@@ -258,8 +259,8 @@ fun SettingStore.getPlayerSetting(): List<Any> {
 @Composable
 fun SettingItemTemplate(title: String, content: @Composable () -> Unit) {
     Row(
-        Modifier.shadow(3.dp)
-            .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp))
+        Modifier
+//            .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp))
             .padding(start = 20.dp, end = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
