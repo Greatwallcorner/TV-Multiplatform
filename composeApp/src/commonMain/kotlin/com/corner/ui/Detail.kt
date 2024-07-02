@@ -191,7 +191,7 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                             }
                             Spacer(modifier = Modifier.size(15.dp))
                             // 线路
-                            flags(detail, scope, controller.value, component)
+                            flags(scope, controller.value, component)
                             Spacer(Modifier.size(15.dp))
                             val urls = rememberUpdatedState(component.model.value.currentUrl)
                             val showUrl = derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
@@ -206,7 +206,12 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                                     LazyRow(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                                         itemsIndexed(urls.value?.values ?: listOf()) { i, item ->
                                             RatioBtn(item.n ?: (i + 1).toString(), onClick = {
-                                                component.model.update { it.copy(currentUrl = urls.value?.copy(position = i), currentPlayUrl = item.v ?: "") }
+                                                component.model.update {
+                                                    it.copy(
+                                                        currentUrl = urls.value?.copy(position = i),
+                                                        currentPlayUrl = item.v ?: ""
+                                                    )
+                                                }
                                             }, i == urls.value?.position!!)
                                         }
                                     }
@@ -242,11 +247,12 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun flags(
-    detail: Vod?,
     scope: CoroutineScope,
     controller: VlcjFrameController,
     component: DetailComponent
 ) {
+    val model = component.model.subscribeAsState()
+    val detail = derivedStateOf { model.value.detail }
     Row(Modifier.padding(start = 10.dp)) {
         Text(
             "线路",
@@ -255,7 +261,8 @@ private fun flags(
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(Modifier.size(10.dp))
-        if (detail?.vodFlags?.isNotEmpty() == true) {
+        val detailIsNotEmpty = derivedStateOf { detail.value?.vodFlags?.isNotEmpty() }
+        if (detailIsNotEmpty.value == true) {
             val state = rememberLazyListState(0)
             Box() {
                 LazyRow(
@@ -270,25 +277,26 @@ private fun flags(
                             }
                         },
                 ) {
-                    items(detail.vodFlags.toList()) {
+                    val flagList = derivedStateOf { detail.value?.vodFlags?.toList() ?: listOf() }
+                    items(flagList.value) {
                         RatioBtn(it?.show ?: "", onClick = {
-                            scope.launch {
-                                for (vodFlag in detail.vodFlags) {
+//                            scope.launch {
+                                for (vodFlag in detail.value!!.vodFlags) {
                                     if (it?.show == vodFlag?.show) {
                                         it?.activated = true
                                     } else {
                                         vodFlag?.activated = false
                                     }
                                 }
-                                val dt = detail.copy(
+                                val dt = detail.value!!.copy(
                                     currentFlag = it,
-                                    subEpisode = it?.episodes?.getPage(detail.currentTabIndex)
+                                    subEpisode = it?.episodes?.getPage(detail.value!!.currentTabIndex)
                                         ?.toMutableList()
                                 )
                                 val history = controller.history.value
                                 if (history != null) {
                                     val findEp =
-                                        detail.findAndSetEpByName(controller.history.value!!)
+                                        detail.value!!.findAndSetEpByName(controller.history.value!!)
                                     if (findEp != null) component.playEp(dt, findEp)
                                 }
                                 component.model.update { model ->
@@ -297,12 +305,13 @@ private fun flags(
                                         shouldPlay = true,
                                     )
                                 }
-                            }
+//                            }
                         }, selected = it?.activated ?: false)
                     }
                 }
-                if (state.layoutInfo.visibleItemsInfo.size < (detail.vodFlags.size)
-                ) {
+                val showScrollBar =
+                    derivedStateOf { state.layoutInfo.visibleItemsInfo.size < (detail.value!!.vodFlags.size) }
+                if (showScrollBar.value) {
                     HorizontalScrollbar(
                         rememberScrollbarAdapter(state),
                         style = defaultScrollbarStyle().copy(
@@ -410,9 +419,10 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(Modifier.size(10.dp))
-            if (detail.value?.currentFlag != null && (detail.value?.currentFlag?.episodes?.size
-                    ?: 0) > 0
-            ) {
+            val show = derivedStateOf {
+                detail.value?.currentFlag != null && (detail.value?.currentFlag?.episodes?.size ?: 0) > 0
+            }
+            if (show.value) {
                 Text(
                     "共${detail.value?.currentFlag?.episodes?.size}集",
                     textAlign = TextAlign.End,
@@ -421,18 +431,18 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                 )
             }
         }
-        val epSize = detail.value?.currentFlag?.episodes?.size ?: 0
+        val epSize = derivedStateOf { detail.value?.currentFlag?.episodes?.size ?: 0 }
 
         val scrollState = rememberLazyListState(0)
         val scrollBarAdapter = rememberScrollbarAdapter(scrollState)
-        if (epSize > 15) {
+        if (epSize.value > 15) {
             Box(modifier = Modifier.padding(bottom = 2.dp)) {
                 LazyRow(
                     state = scrollState,
                     modifier = Modifier.padding(bottom = 2.dp),
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-                    for (i in 0 until epSize step Constants.EpSize) {
+                    for (i in 0 until epSize.value step Constants.EpSize) {
                         item {
                             RatioBtn(
                                 selected = detail.value?.currentTabIndex == (i / Constants.EpSize),
@@ -463,6 +473,7 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
             }
         }
         val videoLoading = remember { mutableStateOf(false) }
+        val epList = derivedStateOf { detail.value?.subEpisode ?: listOf() }
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             state = rememberLazyGridState(),
@@ -470,7 +481,7 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             items(
-                detail.value?.subEpisode ?: listOf()
+                epList.value, key = { it.url + it.number }
             ) {
                 TooltipArea(
                     tooltip = {
@@ -526,7 +537,6 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                             } else {
                                 Play.start(result?.url?.v() ?: "", model.value.currentEp?.name)
                             }
-//                                                Play.start(result, it.name ?: detail?.vodName)
                         }.invokeOnCompletion {
                             videoLoading.value = false
                         }
