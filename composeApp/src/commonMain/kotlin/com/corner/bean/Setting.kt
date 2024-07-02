@@ -105,8 +105,8 @@ object SettingStore {
 
     fun reset(){
         settingFile = SettingFile(mutableListOf(), mutableMapOf())
-        write()
         initSetting()
+        write()
     }
 
     fun write() {
