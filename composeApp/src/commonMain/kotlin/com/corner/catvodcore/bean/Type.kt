@@ -7,7 +7,7 @@ import kotlinx.serialization.Transient
 
 @Serializable
 class Type {
-    constructor(id:String, name:String){
+    constructor(id: String, name: String) {
         this.typeId = id
         this.typeName = name
     }
@@ -19,13 +19,13 @@ class Type {
     var typeName: String = ""
 
     @Transient
-    var selected:Boolean = false
+    var selected: Boolean = false
 
     @Transient
-    var failTime:Int =0
+    var failTime: Int = 0
 
-    companion object{
-        fun home():Type{
+    companion object {
+        fun home(): Type {
             val type = Type("home", "推荐")
             type.selected = true
             return type
@@ -41,6 +41,7 @@ class Type {
         if (typeId != other.typeId) return false
         if (typeName != other.typeName) return false
         if (failTime != other.failTime) return false
+        if (selected != other.selected) return false
 
         return true
     }
@@ -49,6 +50,7 @@ class Type {
         var result = typeId.hashCode()
         result = 31 * result + typeName.hashCode()
         result = 31 * result + failTime.hashCode()
+        result = 31 * result + selected.hashCode()
         return result
     }
 }
