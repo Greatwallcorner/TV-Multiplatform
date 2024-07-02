@@ -167,7 +167,7 @@ fun VideoScene(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
 //                        userScrollEnabled = true
                         ) {
-                            itemsIndexed(list.value, key = { _, item -> item.vodId + item.vodName }) { _, item ->
+                            itemsIndexed(list.value, key = { i, item -> item.vodId + item.vodName+i }) { _, item ->
                                 VideoItem(Modifier.animateItemPlacement(), item, false) {
                                     if (item.isFolder()) {
                                         SiteViewModel.viewModelScope.launch {
