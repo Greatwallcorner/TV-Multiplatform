@@ -35,6 +35,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
@@ -306,19 +309,19 @@ fun VideoTopBar(
 
     TopAppBar(modifier = Modifier.height(50.dp).padding(1.dp), title = {}, actions = {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-            IconButton(modifier = Modifier.size(120.dp)
+            IconButton(modifier = Modifier.fillMaxWidth()
                 .indication(
                     MutableInteractionSource(),
                     indication = rememberRipple(bounded = true, radius = 50.dp)
                 ),
                 onClick = { onClickChooseHome() }) {
-                Row(Modifier.wrapContentWidth()) {
+                Row(Modifier.fillMaxWidth()) {
                     Icon(
                         Icons.Outlined.ArrowDropDown,
                         contentDescription = "Choose Home",
                         modifier = Modifier.padding(end = 3.dp)
                     )
-                    Text(home.value.name, modifier = Modifier.wrapContentWidth())
+                    Text(home.value.name, modifier = Modifier.wrapContentWidth(), overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = TextUnit(15f, TextUnitType.Sp))
                 }
             }
 
