@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -17,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.outlined.*
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -309,62 +307,68 @@ fun VideoTopBar(
 
     TopAppBar(modifier = Modifier.height(50.dp).padding(1.dp), title = {}, actions = {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-            IconButton(modifier = Modifier.fillMaxWidth()
-                .indication(
-                    MutableInteractionSource(),
-                    indication = rememberRipple(bounded = true, radius = 50.dp)
-                ),
-                onClick = { onClickChooseHome() }) {
-                Row(Modifier.fillMaxWidth()) {
-                    Icon(
-                        Icons.Outlined.ArrowDropDown,
-                        contentDescription = "Choose Home",
-                        modifier = Modifier.padding(end = 3.dp)
-                    )
-                    Text(home.value.name, modifier = Modifier.wrapContentWidth(), overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = TextUnit(15f, TextUnitType.Sp))
+            Row(Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
+                ElevatedButton(modifier = Modifier.align(Alignment.Top).wrapContentWidth().padding(start = 5.dp),
+                    onClick = { onClickChooseHome() },
+                    colors = ButtonDefaults.elevatedButtonColors().copy(containerColor = MaterialTheme.colorScheme.background, disabledContentColor = MaterialTheme.colorScheme.background),
+                    elevation = ButtonDefaults.buttonElevation(),
+                ){
+                    Row(Modifier.wrapContentWidth()) {
+                        Icon(
+                            Icons.Outlined.ArrowDropDown,
+                            contentDescription = "Choose Home",
+                            modifier = Modifier.padding(end = 3.dp)
+                        )
+                        Text(
+                            home.value.name,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1,
+                            fontSize = TextUnit(15f, TextUnitType.Sp)
+                        )
+                    }
                 }
-            }
 
-            Box(modifier = Modifier.align(Alignment.Center)
-                .fillMaxWidth(0.3f)
-                .fillMaxHeight(0.6f)
-                .background(Color.Gray.copy(alpha = 0.3f), shape = RoundedCornerShape(percent = 50))
-                .clickable {
-                    onClickSearch()
-                }) {
-                AnimatedContent(
-                    targetState = model.value.prompt,
-                    contentAlignment = Alignment.Center,
-                    transitionSpec = {
-                        slideInVertically { height -> height } + fadeIn() togetherWith
-                                slideOutVertically { height -> -height } + fadeOut()
-                    },
-                    modifier = Modifier.fillMaxHeight()/*.padding(top = 4.dp)*/
-                ) {
-                    Text(
-                        text = it,
-                        modifier = Modifier.align(Alignment.Center)
-                            .fillMaxWidth()
-                            .fillMaxHeight(),
-                        textAlign = TextAlign.Center
+                Box(modifier = Modifier.align(Alignment.CenterVertically)
+                    .fillMaxWidth(0.3f)
+                    .fillMaxHeight(0.6f)
+                    .background(Color.Gray.copy(alpha = 0.3f), shape = RoundedCornerShape(percent = 50))
+                    .clickable {
+                        onClickSearch()
+                    }) {
+                    AnimatedContent(
+                        targetState = model.value.prompt,
+                        contentAlignment = Alignment.Center,
+                        transitionSpec = {
+                            slideInVertically { height -> height } + fadeIn() togetherWith
+                                    slideOutVertically { height -> -height } + fadeOut()
+                        },
+                        modifier = Modifier.fillMaxHeight()/*.padding(top = 4.dp)*/
+                    ) {
+                        Text(
+                            text = it,
+                            modifier = Modifier.align(Alignment.Center)
+                                .fillMaxWidth()
+                                .fillMaxHeight(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    Icon(
+                        Icons.Outlined.Search,
+                        contentDescription = "搜索",
+                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 15.dp)
                     )
                 }
-                Icon(
-                    Icons.Outlined.Search,
-                    contentDescription = "搜索",
-                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 15.dp)
-                )
-            }
-            Row(modifier = Modifier.align(Alignment.CenterEnd)) {
-                IconButton(onClick = {
-                    onClickHistory()
-                }, modifier = Modifier.padding(end = 20.dp)) {
-                    Icon(Icons.Outlined.History, "history")
-                }
-                IconButton(onClick = {
-                    onClickSetting()
-                }, modifier = Modifier.padding(end = 20.dp)) {
-                    Icon(Icons.Outlined.Settings, "settings")
+                Row(modifier = Modifier.align(Alignment.Bottom)) {
+                    IconButton(onClick = {
+                        onClickHistory()
+                    }, modifier = Modifier.padding(end = 20.dp)) {
+                        Icon(Icons.Outlined.History, "history")
+                    }
+                    IconButton(onClick = {
+                        onClickSetting()
+                    }, modifier = Modifier) {
+                        Icon(Icons.Outlined.Settings, "settings")
+                    }
                 }
             }
         }
