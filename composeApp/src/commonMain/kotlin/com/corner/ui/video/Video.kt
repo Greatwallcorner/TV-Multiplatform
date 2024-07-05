@@ -64,13 +64,23 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = RoundedCornerShape(8.dp)
     ) {
+        val picModifier = remember { Modifier.height(220.dp).width(200.dp) }
         Box(modifier = modifier) {
-            AutoSizeImage(url = vod.vodPic ?: "",
-                modifier = Modifier.height(220.dp).width(200.dp),
-                contentDescription = vod.vodName,
-                contentScale = ContentScale.Crop,
-                placeholderPainter = { painterResource("/pic/empty.png") },
-                errorPainter = { painterResource("/pic/empty.png") })
+            if(vod.isFolder()){
+                Image(
+                    modifier = modifier,
+                    painter = painterResource("/pic/folder-back.png"),
+                    contentDescription = "This is a folder ${vod.vodName}",
+                    contentScale = ContentScale.Fit
+                )
+            }else{
+                AutoSizeImage(url = vod.vodPic ?: "",
+                    modifier = picModifier,
+                    contentDescription = vod.vodName,
+                    contentScale = ContentScale.Crop,
+                    placeholderPainter = { painterResource("/pic/empty.png") },
+                    errorPainter = { painterResource("/pic/empty.png") })
+            }
             Box(Modifier.align(Alignment.BottomCenter)) {
                 ToolTipText(
                     text = vod.vodName!!,
@@ -112,6 +122,10 @@ fun VideoScene(
     val state = rememberLazyGridState()
     val model = component.model.subscribeAsState()
     val list = derivedStateOf { component.model.value.homeVodResult.toTypedArray() }
+
+    LaunchedEffect(list.value){
+        println("list 修改")
+    }
 
     LaunchedEffect(state) {
         snapshotFlow { state.layoutInfo }
@@ -171,9 +185,7 @@ fun VideoScene(
                             itemsIndexed(list.value, key = { i, item -> item.vodId + item.vodName+i }) { _, item ->
                                 VideoItem(Modifier.animateItemPlacement(), item, false) {
                                     if (item.isFolder()) {
-                                        SiteViewModel.viewModelScope.launch {
-
-                                        }
+                                        component.clickFolder(it)
                                     } else {
                                         onClickItem(it)
                                     }

@@ -6,9 +6,11 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.backhandler.BackHandlerOwner
 import com.arkivanov.essenty.lifecycle.Lifecycle
+import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Filter
 import com.corner.catvodcore.bean.Type
 import com.corner.catvodcore.bean.getFirstOrEmpty
+import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.VideoComponent
 import com.corner.ui.scene.hideProgress
@@ -153,6 +155,22 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
         }
     }
 
+    override fun clickFolder(vod: Vod) {
+        showProgress()
+        SiteViewModel.viewModelScope.launch {
+            val result = SiteViewModel.categoryContent(
+                ApiConfig.api.recent!!,
+                vod.vodId,
+                "1",
+                false,
+                hashMapOf()
+            )
+            model.update { it.copy(homeVodResult = result.list.toMutableSet()) }
+        }.invokeOnCompletion {
+            hideProgress()
+        }
+    }
+
     override fun loadMore() {
         if (model.value.currentClass == null || model.value.currentClass?.typeId == "home") return
         if ((model.value.currentClass?.failTime ?: 0) >= 2) return
@@ -175,6 +193,11 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
                     return@launch
                 }
                 val list = rst.list
+                // 有的源不支持分页 每次请求返回相同的数据
+                if(model.value.homeVodResult.map { it.vodId }.containsAll(list.map { it.vodId })){
+                    model.value.currentClass?.failTime = model.value.currentClass?.failTime!! + 1
+                    return@launch
+                }
                 model.value.homeVodResult.addAll(list)
                 model.update { it.copy(homeVodResult = model.value.homeVodResult) }
             } finally {

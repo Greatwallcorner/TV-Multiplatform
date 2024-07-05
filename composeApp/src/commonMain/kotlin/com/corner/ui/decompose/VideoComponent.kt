@@ -16,6 +16,8 @@ interface VideoComponent {
 
     fun loadMore()
 
+    fun clickFolder(vod:Vod)
+
     fun chooseCate(cate: String)
 
     fun clear()
