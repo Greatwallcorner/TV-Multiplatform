@@ -35,6 +35,13 @@
 ![](readme_images/search_result.png)
 ## 历史记录
 ![](readme_images/history.png)
+## 详情页
+### 内部播放器
+![](readme_images/internalPlayer.png)
+### 外部播放器
+![](readme_images/externalPlayer.png)
+## 设置页
+![](readme_images/settings.png)
 
 
 # 讨论群
