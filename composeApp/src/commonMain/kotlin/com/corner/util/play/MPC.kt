@@ -1,5 +1,6 @@
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.v
+import com.corner.catvodcore.util.Paths
 import com.corner.util.play.PlayerCommand
 
 object MPC: PlayerCommand {
@@ -17,6 +18,10 @@ object MPC: PlayerCommand {
     }
 
     override fun getProcessBuilder(result: Result, title: String, playerPath: String): ProcessBuilder {
-        return ProcessBuilder(playerPath, url(result.url.v()), "/play")
+        return ProcessBuilder(playerPath, url(result.url.v()), "/play").redirectOutput(Paths.playerLog())
+    }
+
+    override fun getProcessBuilder(url: String, title: String, playerPath: String): ProcessBuilder {
+        return ProcessBuilder(playerPath, url(url), "/play").redirectOutput(Paths.playerLog())
     }
 }

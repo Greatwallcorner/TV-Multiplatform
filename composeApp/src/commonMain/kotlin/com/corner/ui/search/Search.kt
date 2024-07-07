@@ -169,7 +169,7 @@ private fun SearchResult(
                     if (currentVodList.value.isEmpty()) {
                         Image(
                             modifier = Modifier.align(Alignment.Center),
-                            painter = painterResource("/icon/nothing.png"),
+                            painter = painterResource("/pic/nothing.png"),
                             contentDescription = "nothing here",
                             contentScale = ContentScale.Crop
                         )

@@ -39,5 +39,14 @@ SELECT * FROM
 Config
 WHERE type = ? AND url = ?;
 
+getAll:
+SELECT * FROM
+Config
+ORDER BY time DESC;
+
+deleteById:
+DELETE FROM Config WHERE id = ?;
+
+
 
 

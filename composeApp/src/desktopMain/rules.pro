@@ -7,10 +7,14 @@
 #-keep class org.bouncycastle.** {*;}
 -keep class ch.qos.** {*;}
 -keep class org.eclipse.jetty.** {*;}
+-keep class org.eclipse.jetty.** {*;}
 #-keep class reactor.blockhound.** {*;}
 #-keep class com.oracle.svm.** {*;}
 #-keep class com.sun.activation.** {*;}
 #-keep class org.graalvm.nativeimage.** {*;}
+-keep class com.sun.jna.** {*;}
+-keep class javax.swing.** {*;}
+
 #tls 1.3
 #-keep class org.osgi.** {*;}
 -keep class com.google.appengine.** {*;}
@@ -60,6 +64,8 @@
 -keep class androidx.compose.material3.** {*;}
 -keep class androidx.compose.ui.** {*;}
 -keep class androidx.compose.runtime.** {*;}
+
+
 
 -dontwarn org.jboss.marshalling.**
 -dontwarn org.conscrypt.**

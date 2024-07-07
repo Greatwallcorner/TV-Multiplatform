@@ -5,6 +5,7 @@ import com.arkivanov.decompose.router.stack.*
 import com.arkivanov.decompose.value.Value
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.database.History
 import com.corner.ui.decompose.component.*
 import kotlinx.serialization.Serializable
 

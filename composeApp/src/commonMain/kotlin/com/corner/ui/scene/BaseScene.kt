@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -77,14 +79,29 @@ fun LoadingIndicator(showProgress: Boolean) {
 }
 
 @Composable
-fun emptyShow(){
-    Column(Modifier.fillMaxWidth()/*.align(Alignment.CenterHorizontally)*/) {
+fun emptyShow(modifier: Modifier = Modifier, onRefresh: (() -> Unit)? = null) {
+    Column(modifier.fillMaxWidth()/*.align(Alignment.CenterHorizontally)*/) {
         Image(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            painter = painterResource("/icon/nothing.png"),
+            painter = painterResource("/pic/nothing.png"),
             contentDescription = "/icon/nothing here",
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Fit
         )
+        onRefresh?.let {
+            Spacer(Modifier.size(20.dp))
+            Button(
+                onClick = onRefresh,
+                Modifier.align(Alignment.CenterHorizontally).size(80.dp),
+                shape = RoundedCornerShape(9.dp),
+                colors = ButtonDefaults.buttonColors().copy(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                enabled = !isShowProgress()
+            ) {
+                Icon(Icons.Default.Refresh, contentDescription = "refresh", modifier = Modifier.fillMaxSize(0.8f))
+            }
+        }
 //                        Text("这里什么都没有...", modifier.align(Alignment.CenterHorizontally))
     }
 }
@@ -127,16 +144,16 @@ fun MenuItem(
  * @param modifier 弹窗窗体的modifier
  */
 @Composable
-fun Dialog(modifier: Modifier,
-           showDialog: Boolean,
-           onClose: () -> Unit,
-           enter: EnterTransition = scaleIn() + fadeIn(spring()),
-           exit: ExitTransition = scaleOut() + fadeOut(spring()),
-           content: @Composable () -> Unit) {
+fun Dialog(
+    modifier: Modifier,
+    showDialog: Boolean,
+    onClose: () -> Unit,
+    enter: EnterTransition = scaleIn() + fadeIn(spring()),
+    exit: ExitTransition = scaleOut() + fadeOut(spring()),
+    content: @Composable () -> Unit
+) {
     AnimatedVisibility(
-        visible = showDialog,
-        enter = enter,
-        exit = exit
+        visible = showDialog, enter = enter, exit = exit
     ) {
         val interactionSource = remember { MutableInteractionSource() }
 
@@ -147,9 +164,7 @@ fun Dialog(modifier: Modifier,
                 })
         ) {
             Surface(
-                modifier = modifier
-                    .shadow(2.dp, shape = RoundedCornerShape(10.dp))
-                    .align(Alignment.Center)
+                modifier = modifier.shadow(2.dp, shape = RoundedCornerShape(10.dp)).align(Alignment.Center)
                     .clickable(enabled = false, onClick = {}),
                 shape = RoundedCornerShape(15.dp),
                 border = BorderStroke(2.dp, Color.Gray)
@@ -162,7 +177,7 @@ fun Dialog(modifier: Modifier,
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ToolTipText(text: String, textStyle: TextStyle, delayMills:Int = 600, modifier: Modifier = Modifier) {
+fun ToolTipText(text: String, textStyle: TextStyle, delayMills: Int = 600, modifier: Modifier = Modifier) {
     TooltipArea(
         tooltip = {
             // composable tooltip content
@@ -177,15 +192,10 @@ fun ToolTipText(text: String, textStyle: TextStyle, delayMills:Int = 600, modifi
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
-        },
-        delayMillis = delayMills
+        }, delayMillis = delayMills
     ) {
         Text(
-            text = text,
-            maxLines = 1,
-            style = textStyle,
-            overflow = TextOverflow.Ellipsis,
-            modifier = modifier
+            text = text, maxLines = 1, style = textStyle, overflow = TextOverflow.Ellipsis, modifier = modifier
         )
     }
 }
@@ -207,10 +217,7 @@ fun HoverableText(text: String, style: TextStyle = TextStyle(), onClick: () -> U
             onClick()
         },
         style = style,
-        modifier = Modifier
-            .padding(8.dp)
-            .background(Color.Transparent)
-            .hoverable(interactionSource, true)
+        modifier = Modifier.padding(8.dp).background(Color.Transparent).hoverable(interactionSource, true)
     )
 }
 

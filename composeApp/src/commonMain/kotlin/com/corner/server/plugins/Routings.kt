@@ -50,11 +50,10 @@ fun Application.configureRouting() {
                 if (objects.isEmpty()) errorResp(call)
                 else if (objects[0] is Response) {
                     response = objects[0] as Response
-                    response.headers.forEach { i -> call.response.headers.append(i.first, i.second) }
+                    response.headers.forEach { i -> if(!HttpHeaders.isUnsafe(i.first)) call.response.headers.append(i.first, i.second) }
                     log.debug("proxy resp code:{} headers:{}", response.code, response.headers)
                     call.respondOutputStream(
                         status = HttpStatusCode.fromValue(response.code),
-//                        status = HttpStatusCode.PartialContent,
                     ) {
                         response.body.byteStream().transferTo(this)
                     }

@@ -19,6 +19,7 @@ import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.jetbrains.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.corner.bean.SettingStore
+import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.init.Init
 import com.corner.init.generateImageLoader
 import com.corner.ui.SwingUtil
@@ -33,8 +34,9 @@ import java.awt.*
 
 
 private val log = LoggerFactory.getLogger("main")
+
 @OptIn(ExperimentalDecomposeApi::class)
-fun main(){
+fun main() {
     launchErrorCatcher()
     printSystemInfo()
     application {
@@ -45,37 +47,43 @@ fun main(){
             )
         }
 
-        LaunchedEffect(Unit) {
-            launch(Dispatchers.Default){
-                Init.start()
-            }
-        }
         val windowState = rememberWindowState(
             size = Util.getPreferWindowSize(800, 800), position = WindowPosition.Aligned(Alignment.Center)
         )
+        GlobalModel.windowState = windowState
+
+        LaunchedEffect(Unit) {
+            launch(Dispatchers.Default) {
+                Init.start()
+            }
+        }
 
         LifecycleController(lifecycle, windowState)
 
         val contextMenuRepresentation =
             if (isSystemInDarkTheme()) DarkDefaultContextMenuRepresentation else LightDefaultContextMenuRepresentation
         Window(
-            onCloseRequest = ::exitApplication, icon = painterResource("/icon/TV-icon-s.png"), title = "TV",
+            onCloseRequest = ::exitApplication, icon = painterResource("pic/TV-icon-s.png"), title = "TV",
             state = windowState,
             undecorated = true,
-            transparent = false
+            transparent = false,
+
         ) {
+
             window.minimumSize = Dimension(800, 600)
             CompositionLocalProvider(
                 LocalImageLoader provides remember { generateImageLoader() },
                 LocalContextMenuRepresentation provides remember { contextMenuRepresentation }
             ) {
-                RootContent(component = root, modifier =  Modifier.fillMaxSize(), windowState){
+                RootContent(component = root, modifier = Modifier.fillMaxSize(), windowState) {
+                    window.isVisible = false
                     SettingStore.write()
                     Init.stop()
                     exitApplication()
                 }
             }
         }
+
     }
 }
 
@@ -91,9 +99,9 @@ fun printSystemInfo() {
     log.info("系统信息：{}", s.toString())
 }
 
-private fun getSystemPropAndAppend(key:String, s:StringBuilder){
+private fun getSystemPropAndAppend(key: String, s: StringBuilder) {
     val v = SystemPropsUtil.get(key)
-    if(v.isNotBlank()){
+    if (v.isNotBlank()) {
         s.append(key).append(":").append(v).append("\n")
     }
 }

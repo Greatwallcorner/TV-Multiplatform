@@ -1,0 +1,121 @@
+name: TV-Multiplatform Build Pre Release
+on:
+  push:
+    branches: [pre-release]
+env:
+  tag: ${{ github.run_id }}
+jobs:
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'gradle'
+      - run: ls
+#      - run: ./gradlew packageReleaseDistributionForCurrentOS
+      - run: ./gradlew createReleaseDistributable
+      - run: ls && tree ./desktopApp /f
+      - name: compress
+        shell: pwsh
+        run: Compress-Archive -Path "./composeApp/build/compose/binaries/main-release/app/TV" -DestinationPath ./TV-win-$Env:tag.zip
+#      - name: move result to root
+#        shell: pwsh
+#        run: Move-Item -Path "./composeApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./composeApp/build/compose/binaries/main-release/msi/*.msi" -Destination "./"
+      - run: ls
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-file
+          path: |
+            *.msi
+            *.zip
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'gradle'
+      - run: ls
+      - run: chmod +x ./gradlew && ./gradlew createReleaseDistributable
+      - run: ./gradlew packageReleaseDistributionForCurrentOS
+      - run: ls && tree
+      - name: compress
+        run: cd ./composeApp/build/compose/binaries/main-release/app && zip -q -r ./TV-linux-$tag.zip ./TV
+      - name: move file
+        run: mv ./composeApp/build/compose/binaries/main-release/deb/*.deb ./TV-linux-$tag.deb && mv ./composeApp/build/compose/binaries/main-release/app/*.zip ./
+      - run: ls
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-file
+          path: |
+            *.deb
+            *.zip
+            #            https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Signing_and_notarization_on_macOS/README.md
+  build-mac:
+    runs-on: macos-13
+    steps:
+       - uses: actions/checkout@v4
+       - uses: actions/setup-java@v4
+         with:
+           distribution: 'temurin'
+           java-version: 17
+           cache: 'gradle'
+       - run: ls
+       - run: chmod +x ./gradlew && ./gradlew createReleaseDistributable
+#       - run: ./gradlew packageReleaseDistributionForCurrentOS
+       - run: ls
+       - name: compress
+         run: zip -q -r ./TV-mac-$tag.zip ./composeApp/build/compose/binaries/main-release/app
+#       - name: move file
+#         run: mv ./composeApp/build/compose/binaries/main-release/dmg/*.dmg ./TV-mac-$tag.dmg
+       - run: ls
+       - uses: actions/upload-artifact@v4
+         with:
+           name: mac-file
+           path: |
+             *.dmg
+             *.zip
+  release:
+    runs-on: ubuntu-latest
+    needs: [ build-win, build-linux, build-mac]
+    steps:
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v4
+      - run: ls && tree
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            **/*.zip
+            **/*.deb
+            **/*.pkg
+            **/*.dmg
+            **/*.msi
+          tag_name: ${{env.tag}}
+          prerelease: true
+    permissions:
+      contents: write
+  sendMsg:
+    name: sendMsg
+    runs-on: ubuntu-latest
+    needs:
+      - release
+    steps:
+      - uses: colutius/Telegram-Msg@main
+        with:
+          token: ${{ secrets.TG_TOKEN }}
+          chatid: ${{ secrets.TG_GROUP_ID }}
+          message: |
+            👇新的预发布👇
+
+            📦仓库: ${{ github.repository }}
+          button: true
+          button_name: 👀下载👀
+          button_url: https://github.com/${{ github.repository }}/releases/tag/${{env.tag}}
+          is_notify: true
+          is_preview: true

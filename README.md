@@ -31,9 +31,14 @@
 ![](readme_images/home.png)
 ## 搜索
 ![](readme_images/search.png)
+## 搜索结果页
+![](readme_images/search_result.png)
 ## 历史记录
 ![](readme_images/history.png)
 
 
 # 讨论群
 [TG](https://t.me/tv_multiplatform)
+
+# 引用
+player: https://github.com/numq/jetpack-compose-desktop-media-player

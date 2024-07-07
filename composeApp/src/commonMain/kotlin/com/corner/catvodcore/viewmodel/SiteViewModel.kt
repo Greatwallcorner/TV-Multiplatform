@@ -18,6 +18,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.serialization.encodeToString
 import okhttp3.Headers.Companion.toHeaders
 import org.apache.commons.lang3.StringUtils
@@ -34,7 +35,11 @@ object SiteViewModel {
     val quickSearch: MutableState<CopyOnWriteArrayList<Collect>> = mutableStateOf(CopyOnWriteArrayList(listOf(Collect.all())))
 
     private val supervisorJob = SupervisorJob()
-    val viewModelScope = CoroutineScope(Dispatchers.Default + supervisorJob)
+    val viewModelScope = CoroutineScope(Dispatchers.IO + supervisorJob)
+
+    fun cancelAll(){
+        supervisorJob.cancelChildren()
+    }
 
     fun getSearchResultActive(): Collect {
         return search.value.first { it.isActivated().value }
@@ -54,7 +59,7 @@ object SiteViewModel {
                     if ((rst.list.size) > 0) result.value = rst
                     val homeVideoContent = spider.homeVideoContent()
                     SpiderDebug.log("homeContent: $homeVideoContent")
-                    rst.list.addAll(Jsons.decodeFromString<Result>(homeContent).list)
+                    rst.list.addAll(Jsons.decodeFromString<Result>(homeVideoContent).list)
                     result.value = rst.also { this.result.value = it }
                 }
 
@@ -83,7 +88,7 @@ object SiteViewModel {
 
     fun detailContent(key: String, id: String): Result? {
         val site: Site = ApiConfig.api.sites.find { it.key == key } ?: return null
-        var rst:Result = Result()
+        var rst = Result()
         try {
             if (site.type == 3) {
                 val spider: Spider = ApiConfig.getSpider(site)
@@ -91,7 +96,7 @@ object SiteViewModel {
                 SpiderDebug.log("detail:$detailContent")
                 ApiConfig.setRecent(site)
                 rst = Jsons.decodeFromString<Result>(detailContent)
-                if (!rst.list.isEmpty()) rst.list.get(0).setVodFlags()
+                if (rst.list.isNotEmpty()) rst.list.get(0).setVodFlags()
                 //            if (!rst.list.isEmpty()) checkThunder(rst.list.get(0).vodFlags())
                 detail.value = rst
             } else if (site.key.isEmpty() && site.name.isEmpty() && key == "push_agent") {
@@ -121,6 +126,7 @@ object SiteViewModel {
             return null
         }
         rst.list.forEach { it.site = site }
+
         return rst
     }
 

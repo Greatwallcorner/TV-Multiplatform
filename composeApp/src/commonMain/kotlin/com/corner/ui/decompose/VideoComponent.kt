@@ -16,6 +16,8 @@ interface VideoComponent {
 
     fun loadMore()
 
+    fun clickFolder(vod:Vod)
+
     fun chooseCate(cate: String)
 
     fun clear()
@@ -56,7 +58,7 @@ interface VideoComponent {
             homeVodResult.forEach{result = 31 * result + it.hashCode()}
             result = 31 * result + homeLoaded.hashCode()
             result = 31 * result + classList.hashCode()
-            classList.forEach{ result = 31 * result + it.hashCode()}
+//            classList.forEach{ result = 31 * result + it.hashCode()}
             result = 31 * result + filtersMap.hashCode()
             result = 31 * result + (currentClass?.hashCode() ?: 0)
             result = 31 * result + (currentClass?.hashCode() ?: 0)

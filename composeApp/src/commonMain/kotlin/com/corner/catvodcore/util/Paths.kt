@@ -8,7 +8,7 @@ import java.io.File
 import java.nio.file.Path
 
 object Paths {
-    private val runPath = System.getProperty("user.dir")
+//    private val runPath = System.getProperty("user.dir")
     private val classPath = System.getProperty("java.class.path")
     private val ApplicationName = "TV-Multiplatform"
     private val log = LoggerFactory.getLogger("Paths")
@@ -32,7 +32,7 @@ object Paths {
     }
 
     fun root():File{
-        return File(runPath).resolve("data")
+        return userDataDir.resolve("data")
     }
 
     fun userDataRoot():File{
@@ -88,8 +88,8 @@ object Paths {
         return file.toPath()
     }
 
-    fun log(): File {
-        return root().check().resolve("log.txt")
+    fun playerLog(): File {
+        return root().check().resolve("playerLog.txt")
     }
 
     fun logPath():File{

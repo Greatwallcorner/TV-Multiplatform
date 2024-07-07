@@ -23,20 +23,44 @@ class SearchHistoryCache:Cache{
 
     private val maxSize:Int = 30
 
-    private var searchHistoryList:MutableSet<String> = mutableSetOf()
+    private var searchHistoryList:LinkedHashSet<String> = linkedSetOf()
     override fun getName(): String {
         return "searchHistory"
     }
 
     override fun add(t:String) {
         if(searchHistoryList.size >= maxSize){
-            searchHistoryList = searchHistoryList.drop(1).toMutableSet()
+            val list:LinkedHashSet<String> = linkedSetOf()
+            list.addAll(searchHistoryList.drop(1))
+            searchHistoryList = list
         }
+        searchHistoryList.remove(t)
         searchHistoryList.add(t)
     }
 
-    fun getSearchList():Set<String>{
-        return searchHistoryList
+    fun getSearchList():List<String>{
+        return searchHistoryList.reversed()
+    }
+
+}
+
+@Serializable
+class PlayerStateCache:Cache{
+    private val map:MutableMap<String, String> = mutableMapOf();
+    override fun getName(): String {
+        return "playerState"
+    }
+
+    override fun add(t: String) {
+
+    }
+
+    fun add(key:String, value: String){
+        map.put(key,value)
+    }
+
+    fun get(key: String):String?{
+        return map.get(key)
     }
 
 }
@@ -59,8 +83,8 @@ enum class SettingType(val id: String) {
 object SettingStore {
     private val defaultList = listOf(
         Setting("vod", "点播", ""),
-        Setting("player", "外部播放器", ""),
-        Setting("log", "日志级别", Level.DEBUG.levelStr)
+        Setting("log", "日志级别", Level.DEBUG.levelStr),
+        Setting("player", "播放器", "false#")
     )
 
     private var settingFile = SettingFile(mutableListOf<Setting>(), mutableMapOf())
@@ -79,6 +103,12 @@ object SettingStore {
         return settingFile.list
     }
 
+    fun reset(){
+        settingFile = SettingFile(mutableListOf(), mutableMapOf())
+        initSetting()
+        write()
+    }
+
     fun write() {
         Files.write(Paths.setting(), Jsons.encodeToString(settingFile).toByteArray())
     }
@@ -88,8 +118,9 @@ object SettingStore {
         write()
     }
     
-    fun setCache(name:String, value: String){
-        settingFile.cache[name]?.add(value)
+    fun doWithCache(func:(MutableMap<String, Cache>) -> Unit){
+        func(settingFile.cache)
+        write()
     }
 
     fun getCache(name:String): Cache? {
@@ -120,7 +151,7 @@ object SettingStore {
         }
         val cache = getCache(SettingType.SEARCHHISTORY.id)
         if (cache != null) {
-            return (cache as SearchHistoryCache).getSearchList()
+            return (cache as SearchHistoryCache).getSearchList().toSet()
         }
         return setOf()
     }

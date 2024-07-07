@@ -22,6 +22,72 @@
       }
     },
     {
+      "key": "ng",
+      "name": "南瓜",
+      "type": 3,
+      "api": "csp_NG",
+      "searchable": 1,
+      "changeable": 0,
+      "ext": {
+      }
+    },
+    {
+      "key": "ChangZhang",
+      "name": "厂长影视",
+      "type": 3,
+      "api": "csp_ChangZhang",
+      "searchable": "1",
+      "filterable": "0",
+      "changeable": 0,
+      "ext": {
+      }
+    },
+    {
+      "key": "Zxzj",
+      "name": "在线之家",
+      "type": 3,
+      "api": "csp_Zxzj",
+      "searchable": "1",
+      "filterable": "0",
+      "changeable": 0,
+      "ext": {
+      }
+    },
+    {
+      "key": "Mtyy",
+      "name": "麦田影院",
+      "type": 3,
+      "api": "csp_Mtyy",
+      "searchable": "1",
+      "filterable": "0",
+      "changeable": 0,
+      "ext": {
+      }
+    },
+    {
+      "key": "bili",
+      "name": "哔哩",
+      "type": 3,
+      "api": "csp_Bili",
+      "searchable": 1,
+      "changeable": 0,
+      "ext": {
+        "type": "帕梅拉#太极拳#广场舞#演唱会",
+        "cookie": ""
+      }
+    },
+    {
+      "key": "Liangzi",
+      "name": "量子影视",
+      "type": 3,
+      "api": "csp_Liangzi",
+      "searchable": "1",
+      "filterable": "0",
+      "changeable": 0,
+      "ext": {
+      }
+    },
+    {
       "key": "BD",
       "name": "BD|首页",
       "type": 3,

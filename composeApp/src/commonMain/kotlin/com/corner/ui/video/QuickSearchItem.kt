@@ -27,12 +27,12 @@ fun QuickSearchItem(vod:Vod, onClick:()->Unit){
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(8.dp))
         .clip(RoundedCornerShape(8.dp))
         .clickable(onClick = {onClick()})
-        .padding(horizontal = 15.dp, vertical = 10.dp)){
+        .padding(horizontal = 10.dp, vertical = 6.dp)){
         Column {
             ToolTipText(vod.vodName?:"",
-                TextStyle(fontWeight = FontWeight.Bold, fontSize = TextUnit(18f, TextUnitType.Sp), color = MaterialTheme.colorScheme.onPrimaryContainer))
-            Text(vod.site?.name ?: "", fontSize = TextUnit(15f, TextUnitType.Sp),color = MaterialTheme.colorScheme.onSecondaryContainer)
-            ToolTipText(vod.vodRemarks ?: "", TextStyle(fontSize = TextUnit(15f, TextUnitType.Sp), color = MaterialTheme.colorScheme.onSecondaryContainer))
+                TextStyle(fontWeight = FontWeight.Medium, fontSize = TextUnit(15f, TextUnitType.Sp), color = MaterialTheme.colorScheme.onPrimaryContainer))
+            Text(vod.site?.name ?: "", fontSize = TextUnit(12f, TextUnitType.Sp),color = MaterialTheme.colorScheme.onSecondaryContainer)
+            ToolTipText(vod.vodRemarks ?: "", TextStyle(fontSize = TextUnit(12f, TextUnitType.Sp), color = MaterialTheme.colorScheme.onSecondaryContainer))
         }
     }
 }

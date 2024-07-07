@@ -24,9 +24,9 @@ kotlin {
         val desktopMain by getting
 
         commonMain.dependencies {
-            val ktorVer = "2.3.8"
+            val ktorVer = "2.3.12"
             val logbackVer = "1.3.14"
-            val imageLoader = "1.7.4"
+            val imageLoader = "1.8.1"
             val hutoolVer = "5.8.27"
 //            val kotlinVersion = extra["kotlin.version"] as String
             implementation(compose.runtime)
@@ -66,8 +66,8 @@ kotlin {
             implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVer")
             implementation("io.ktor:ktor-server-swagger:$ktorVer")
             implementation("io.ktor:ktor-client-core:$ktorVer")
-            implementation("io.ktor:ktor-client-cio:$ktorVer")
-            implementation("io.ktor:ktor-server-call-logging:$ktorVer")
+            implementation("io.ktor:ktor-client-okhttp:$ktorVer")
+//            implementation("io.ktor:ktor-server-call-logging:$ktorVer")
 
             // log
             implementation("ch.qos.logback:logback-classic:$logbackVer")
@@ -76,7 +76,7 @@ kotlin {
             // optional - Moko Resources Decoder
 //                api("io.github.qdsfdhvh:image-loader-extension-moko-resources:$imageLoader")
 
-            api(project.dependencies.platform("com.squareup.okhttp3:okhttp-bom:5.0.0-alpha.12"))
+            api(project.dependencies.platform("com.squareup.okhttp3:okhttp-bom:5.0.0-alpha.14"))
             api("com.squareup.okhttp3:okhttp")
             api("com.squareup.okhttp3:okhttp-dnsoverhttps")
 
@@ -132,23 +132,22 @@ compose.desktop {
                 "jdk.httpserver",
                 "jdk.unsupported"
             )
-            val dir = project.layout.projectDirectory.dir("/src/desktopMain/resources/res")
+            val dir = project.layout.projectDirectory.dir("src/desktopMain/resources/res")
             println(dir)
-            appResourcesRootDir.set(project.layout.projectDirectory.dir("/src/desktopMain/resources/res"))
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("src/desktopMain/resources/res"))
 //            app icons https://github.com/JetBrains/compose-multiplatform/tree/master/tutorials/Native_distributions_and_local_execution#app-icon
             windows {
-                iconFile.set(project.file("src/commonMain/composeResources/icon/icon-s.ico"))
+                iconFile.set(project.file("src/commonMain/resources/pic/icon-s.ico"))
                 dirChooser = true
                 upgradeUuid = "161FA5A0-A30B-4568-9E84-B3CD637CC8FE"
             }
 
             linux {
-                iconFile.set(project.file("src/commonMain/composeResources/icon/TV-icon-s.png"))
-
+                iconFile.set(project.file("src/commonMain/resources/pic/TV-icon-s.png"))
             }
 
             macOS {
-                iconFile.set(project.file("src/commonMain/composeResources/icon/icon.icns"))
+                iconFile.set(project.file("src/commonMain/resources/pic/icon.icns"))
             }
 
         }

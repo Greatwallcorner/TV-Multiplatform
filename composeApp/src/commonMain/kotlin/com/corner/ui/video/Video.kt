@@ -1,13 +1,11 @@
 package com.corner.ui.video
 
-import AppTheme
 import SiteViewModel
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -18,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.outlined.*
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,6 +33,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
@@ -64,20 +64,34 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = RoundedCornerShape(8.dp)
     ) {
+        val picModifier = remember { Modifier.height(220.dp).width(200.dp) }
         Box(modifier = modifier) {
-            AutoSizeImage(url = vod.vodPic ?: "",
-                modifier = Modifier.height(220.dp).width(200.dp),
-                contentDescription = vod.vodName,
-                contentScale = ContentScale.Crop,
-                placeholderPainter = { painterResource("/icon/empty.png") },
-                errorPainter = { painterResource("/icon/empty.png") })
-            Box(Modifier.align(Alignment.BottomCenter)){
+            if(vod.isFolder()){
+                Image(
+                    modifier = modifier,
+                    painter = painterResource("/pic/folder-back.png"),
+                    contentDescription = "This is a folder ${vod.vodName}",
+                    contentScale = ContentScale.Fit
+                )
+            }else{
+                AutoSizeImage(url = vod.vodPic ?: "",
+                    modifier = picModifier,
+                    contentDescription = vod.vodName,
+                    contentScale = ContentScale.Crop,
+                    placeholderPainter = { painterResource("/pic/empty.png") },
+                    errorPainter = { painterResource("/pic/empty.png") })
+            }
+            Box(Modifier.align(Alignment.BottomCenter)) {
                 ToolTipText(
                     text = vod.vodName!!,
-                    textStyle = TextStyle(color = MaterialTheme.colorScheme.onSecondaryContainer, textAlign = TextAlign.Center),
+                    textStyle = TextStyle(
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        textAlign = TextAlign.Center
+                    ),
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))
-                        .fillMaxWidth().padding(0.dp, 10.dp))
+                        .fillMaxWidth().padding(0.dp, 10.dp)
+                )
             }
             // 左上角
             Text(
@@ -107,6 +121,11 @@ fun VideoScene(
     val scope = rememberCoroutineScope()
     val state = rememberLazyGridState()
     val model = component.model.subscribeAsState()
+    val list = derivedStateOf { component.model.value.homeVodResult.toTypedArray() }
+
+    LaunchedEffect(list.value){
+        println("list 修改")
+    }
 
     LaunchedEffect(state) {
         snapshotFlow { state.layoutInfo }
@@ -139,7 +158,8 @@ fun VideoScene(
     ) {
         Box(modifier = modifier.fillMaxSize().padding(it)) {
             Column {
-                if (model.value.classList.isNotEmpty()) {
+                val classIsEmpty = derivedStateOf { model.value.classList.isNotEmpty() }
+                if (classIsEmpty.value) {
                     ClassRow(component) {
                         component.model.update { it.copy(homeVodResult = SiteViewModel.result.value.list.toMutableSet()) }
                         model.value.page.set(1)
@@ -148,8 +168,9 @@ fun VideoScene(
                         }
                     }
                 }
-                if (model.value.homeVodResult.isEmpty()) {
-                    emptyShow()
+                val listEmpty = derivedStateOf { model.value.homeVodResult.isEmpty() }
+                if (listEmpty.value) {
+                    emptyShow(onRefresh = { component.homeLoad() })
                 } else {
                     Box {
                         LazyVerticalGrid(
@@ -161,12 +182,10 @@ fun VideoScene(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
 //                        userScrollEnabled = true
                         ) {
-                            itemsIndexed(model.value.homeVodResult.toList()) { _, item ->
+                            itemsIndexed(list.value, key = { i, item -> item.vodId + item.vodName+i }) { _, item ->
                                 VideoItem(Modifier.animateItemPlacement(), item, false) {
                                     if (item.isFolder()) {
-                                        SiteViewModel.viewModelScope.launch {
-
-                                        }
+                                        component.clickFolder(it)
                                     } else {
                                         onClickItem(it)
                                     }
@@ -188,7 +207,7 @@ fun VideoScene(
 }
 
 @Composable
-fun FloatButton(component: DefaultVideoComponent, state: LazyGridState, scope:CoroutineScope) {
+fun FloatButton(component: DefaultVideoComponent, state: LazyGridState, scope: CoroutineScope) {
     val show = derivedStateOf { GlobalModel.chooseVod.value.isFolder() }
     val model = component.model.subscribeAsState()
     val showButton = derivedStateOf { !model.value.currentFilter.isEmpty() || state.firstVisibleItemIndex > 8 }
@@ -251,12 +270,13 @@ fun FloatButton(component: DefaultVideoComponent, state: LazyGridState, scope:Co
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     if (it) {
-                        if(model.value.currentFilter.isEmpty()) return@AnimatedContent
+                        if (model.value.currentFilter.isEmpty()) return@AnimatedContent
                         ElevatedButton(
                             onClick = { showDialog = !showDialog },
                             modifier = modifier,
                             colors = buttonColors,
-                            shape = shape, contentPadding = PaddingValues(8.dp)
+                            shape = shape,
+                            contentPadding = PaddingValues(8.dp)
                         )
                         {
                             Icon(
@@ -299,62 +319,68 @@ fun VideoTopBar(
 
     TopAppBar(modifier = Modifier.height(50.dp).padding(1.dp), title = {}, actions = {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-            IconButton(modifier = Modifier.size(120.dp)
-                .indication(
-                    MutableInteractionSource(),
-                    indication = rememberRipple(bounded = true, radius = 50.dp)
-                ),
-                onClick = { onClickChooseHome() }) {
-                Row(Modifier.wrapContentWidth()) {
-                    Icon(
-                        Icons.Outlined.ArrowDropDown,
-                        contentDescription = "Choose Home",
-                        modifier = Modifier.padding(end = 3.dp)
-                    )
-                    Text(home.value.name, modifier = Modifier.wrapContentWidth())
+            Row(Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
+                ElevatedButton(modifier = Modifier.align(Alignment.Top).wrapContentWidth().padding(start = 5.dp),
+                    onClick = { onClickChooseHome() },
+                    colors = ButtonDefaults.elevatedButtonColors().copy(containerColor = MaterialTheme.colorScheme.background, disabledContentColor = MaterialTheme.colorScheme.background),
+                    elevation = ButtonDefaults.buttonElevation(),
+                ){
+                    Row(Modifier.wrapContentWidth()) {
+                        Icon(
+                            Icons.Outlined.ArrowDropDown,
+                            contentDescription = "Choose Home",
+                            modifier = Modifier.padding(end = 3.dp)
+                        )
+                        Text(
+                            home.value.name,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1,
+                            fontSize = TextUnit(15f, TextUnitType.Sp)
+                        )
+                    }
                 }
-            }
 
-            Box(modifier = Modifier.align(Alignment.Center)
-                .fillMaxWidth(0.3f)
-                .fillMaxHeight(0.6f)
-                .background(Color.Gray.copy(alpha = 0.3f), shape = RoundedCornerShape(percent = 50))
-                .clickable {
-                    onClickSearch()
-                }) {
-                AnimatedContent(
-                    targetState = model.value.prompt,
-                    contentAlignment = Alignment.Center,
-                    transitionSpec = {
-                        slideInVertically { height -> height } + fadeIn() togetherWith
-                                slideOutVertically { height -> -height } + fadeOut()
-                    },
-                    modifier = Modifier.fillMaxHeight()/*.padding(top = 4.dp)*/
-                ) {
-                    Text(
-                        text = it,
-                        modifier = Modifier.align(Alignment.Center)
-                            .fillMaxWidth()
-                            .fillMaxHeight(),
-                        textAlign = TextAlign.Center
+                Box(modifier = Modifier.align(Alignment.CenterVertically)
+                    .fillMaxWidth(0.3f)
+                    .fillMaxHeight(0.6f)
+                    .background(Color.Gray.copy(alpha = 0.3f), shape = RoundedCornerShape(percent = 50))
+                    .clickable {
+                        onClickSearch()
+                    }) {
+                    AnimatedContent(
+                        targetState = model.value.prompt,
+                        contentAlignment = Alignment.Center,
+                        transitionSpec = {
+                            slideInVertically { height -> height } + fadeIn() togetherWith
+                                    slideOutVertically { height -> -height } + fadeOut()
+                        },
+                        modifier = Modifier.fillMaxHeight()/*.padding(top = 4.dp)*/
+                    ) {
+                        Text(
+                            text = it,
+                            modifier = Modifier.align(Alignment.Center)
+                                .fillMaxWidth()
+                                .fillMaxHeight(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    Icon(
+                        Icons.Outlined.Search,
+                        contentDescription = "搜索",
+                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 15.dp)
                     )
                 }
-                Icon(
-                    Icons.Outlined.Search,
-                    contentDescription = "搜索",
-                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 15.dp)
-                )
-            }
-            Row(modifier = Modifier.align(Alignment.CenterEnd)) {
-                IconButton(onClick = {
-                    onClickHistory()
-                }, modifier = Modifier.padding(end = 20.dp)) {
-                    Icon(Icons.Outlined.History, "history")
-                }
-                IconButton(onClick = {
-                    onClickSetting()
-                }, modifier = Modifier.padding(end = 20.dp)) {
-                    Icon(Icons.Outlined.Settings, "settings")
+                Row(modifier = Modifier.align(Alignment.Bottom)) {
+                    IconButton(onClick = {
+                        onClickHistory()
+                    }, modifier = Modifier.padding(end = 20.dp)) {
+                        Icon(Icons.Outlined.History, "history")
+                    }
+                    IconButton(onClick = {
+                        onClickSetting()
+                    }, modifier = Modifier) {
+                        Icon(Icons.Outlined.Settings, "settings")
+                    }
                 }
             }
         }
@@ -395,48 +421,48 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
             contentPadding = PaddingValues(top = 5.dp, start = 5.dp, end = 5.dp, bottom = 5.dp),
             userScrollEnabled = true
         ) {
-            items(model.value.classList.toList()) { type ->
+            val list = derivedStateOf { model.value.classList.toList() }
+            items(list.value) { type ->
                 RatioBtn(text = type.typeName, onClick = {
                     if (component.isLoading.get()) return@RatioBtn
                     component.isLoading.set(true)
                     SiteViewModel.viewModelScope.launch {
                         showProgress()
-//                        component.clear()
-                        try {
-                            for (tp in model.value.classList) {
-                                tp.selected = type.typeId == tp.typeId
-                            }
-                            model.value.currentClass = type
-                            model.value.classList = model.value.classList.toSet().toMutableSet()
-                            val filterMap = SiteViewModel.result.value.filters
-                            if (filterMap.isNotEmpty()) {
-                                component.model.value.filtersMap = filterMap
-                                component.model.update {
-                                    it.copy(
-                                        currentFilter = component.getFilters(type)
-                                    )
-                                }
-                            }
-                            if (type.typeId == "home") {
-                                SiteViewModel.homeContent()
-                            } else {
-                                val result = SiteViewModel.categoryContent(
-                                    GlobalModel.home.value.key,
-                                    type.typeId,
-                                    model.value.page.getAndAdd(1).toString(),
-                                    false,
-                                    HashMap()
+                        for (tp in model.value.classList) {
+                            tp.selected = type.typeId == tp.typeId
+                        }
+                        if (model.value.filtersMap.isNotEmpty()) {
+                            component.model.update {
+                                it.copy(
+                                    currentFilter = component.getFilters(type)
                                 )
-                                if (!result.isSuccess) {
-                                    model.value.currentClass?.failTime?.plus(1)
-                                }
                             }
-                        } finally {
-                            hideProgress()
+                        }
+                        component.model.update {
+                            it.copy(
+                                currentClass = type, classList = model.value.classList
+                            )
+                        }
+                        SiteViewModel.cancelAll()
+                        if (type.typeId == "home") {
+                            SiteViewModel.homeContent()
+                        } else {
+                            model.value.page.set(1)
+                            val result = SiteViewModel.categoryContent(
+                                GlobalModel.home.value.key,
+                                type.typeId,
+                                model.value.page.get().toString(),
+                                false,
+                                HashMap()
+                            )
+                            if (!result.isSuccess) {
+                                model.value.currentClass?.failTime?.plus(1)
+                            }
                         }
                     }.invokeOnCompletion {
                         onCLick(type)
                         component.isLoading.set(false)
+                        hideProgress()
                     }
                 }, type.selected)
             }
@@ -453,10 +479,10 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
 @Composable
 @Preview
 fun previewClassRow() {
-    AppTheme {
-        val list = listOf(Type("1", "ABC"), Type("2", "CDR"), Type("3", "ddr"))
-//        ClassRow(list.toMutableSet()) {}
-    }
+//    AppTheme {
+//        val list = listOf(Type("1", "ABC"), Type("2", "CDR"), Type("3", "ddr"))
+////        ClassRow(list.toMutableSet()) {}
+//    }
 }
 
 @Composable

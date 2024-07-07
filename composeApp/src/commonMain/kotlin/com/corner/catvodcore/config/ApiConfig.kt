@@ -32,6 +32,8 @@ object ApiConfig{
         log.info("parseConfig start cfg:{} isJson:{}", cfg, isJson)
         val data = getData(if (isJson) cfg.json ?: "" else cfg.url!!, isJson) ?: throw RuntimeException("配置读取异常")
         if(StringUtils.isBlank(data)) {
+            log.warn("配置数据为空")
+            SnackBar.postMsg("配置数据为空 请检查")
             setHome(null)
             return api
         }
@@ -155,8 +157,4 @@ fun Api.initSite() {
         GlobalModel.home.value = sites.first()
         Db.Config.setHome(url, ConfigType.SITE.ordinal, GlobalModel.home.value.toString())
     }
-}
-
-fun proxyLocal() {
-
 }

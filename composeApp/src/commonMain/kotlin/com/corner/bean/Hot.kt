@@ -10,28 +10,33 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.decodeFromStream
 import okhttp3.Headers.Companion.toHeaders
+import okhttp3.Response
+import org.slf4j.LoggerFactory
+
+private val log = LoggerFactory.getLogger("Hot")
 
 @Serializable
-data class Hot(val data:List<HotData>) {
-    companion object{
+data class Hot(val data: List<HotData>) {
+    companion object {
         @OptIn(ExperimentalSerializationApi::class)
         public fun getHotList() {
             SiteViewModel.viewModelScope.launch {
-                val response = Http.Get("https://api.web.360kan.com/v1/rank?cat=1", headers = mapOf(HttpHeaders.Referrer to "https://www.360kan.com/rank/general").toHeaders()).execute()
-//                val response = KtorClient.client.get("https://api.web.360kan.com/v1/rank?cat=1") {
-//                    headers {
-//                        set(HttpHeaders.Referrer, "https://www.360kan.com/rank/general")
-//                    }
-//                }
+                var response: Response? = null
+                try {
+                    response = Http.Get(
+                        "https://api.web.360kan.com/v1/rank?cat=1",
+                        headers = mapOf(HttpHeaders.Referrer to "https://www.360kan.com/rank/general").toHeaders()
+                    ).execute()
+                } catch (e: Exception) {
+                    log.error("请求热搜失败", e)
+                }
 
-                if(response.isSuccessful)
+                if (response?.isSuccessful == true)
                     GlobalModel.hotList.value = Jsons.decodeFromStream<Hot>(response.body.byteStream()).data
-//                    GlobalModel.hotList.update { it. = Jsons.decodeFromStream<Hot>(response.bodyAsChannel().toInputStream()).data}
-//                    GlobalModel.hotList.value.addAll()
             }
         }
     }
 }
 
 @Serializable
-data class HotData(val title:String, val comment:String, val upinfo:String, val description:String)
+data class HotData(val title: String, val comment: String, val upinfo: String, val description: String)
