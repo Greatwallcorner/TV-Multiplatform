@@ -38,7 +38,6 @@ kotlin {
             implementation(compose.materialIconsExtended)
 
             api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-//                api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
 
 //                // tool
             api("com.google.guava:guava:31.1-jre")
@@ -67,7 +66,6 @@ kotlin {
             implementation("io.ktor:ktor-server-swagger:$ktorVer")
             implementation("io.ktor:ktor-client-core:$ktorVer")
             implementation("io.ktor:ktor-client-okhttp:$ktorVer")
-//            implementation("io.ktor:ktor-server-call-logging:$ktorVer")
 
             // log
             implementation("ch.qos.logback:logback-classic:$logbackVer")
@@ -94,7 +92,6 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
-//                implementation("org.nanohttpd:nanohttpd:2.3.1")
             // Player
             implementation("uk.co.caprica:vlcj:4.8.2")
         }
@@ -117,7 +114,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "TV"
-            packageVersion = "1.1.22"
+            packageVersion = "1.2.1"
             vendor = "TV Multiplatform"
 
             modules(

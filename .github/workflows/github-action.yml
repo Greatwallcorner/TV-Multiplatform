@@ -101,3 +101,22 @@ jobs:
           tag_name: ${{env.tag}}
     permissions:
       contents: write
+  sendMsg:
+    name: sendMsg
+    runs-on: ubuntu-latest
+    needs:
+      - release
+    steps:
+      - uses: colutius/Telegram-Msg@main
+        with:
+          token: ${{ secrets.TG_TOKEN }}
+          chatid: ${{ secrets.TG_GROUP_ID }}
+          message: |
+            👇新的版本👇
+
+            📦仓库: ${{ github.repository }}
+          button: true
+          button_name: 👀下载👀
+          button_url: https://github.com/${{ github.repository }}/releases/tag/${{env.tag}}
+          is_notify: true
+          is_preview: true
