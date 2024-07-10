@@ -197,18 +197,19 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                                         }
                                     })
                                 // 只有外部播放器时展示
-                                if (!(playerSetting.value[0] as Boolean)) {
-                                    TextField(
-                                        value = playerSetting.value[1] as String,
-                                        onValueChange = {
-                                            SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value[0]}#$it")
-                                            component.sync()
-                                        },
-                                        maxLines = 1,
-                                        enabled = true,
-                                        modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth().align(Alignment.CenterVertically)
-                                    )
-                                }
+//                                if (!(playerSetting.value[0] as Boolean)) {
+                                TextField(
+                                    value = playerSetting.value[1] as String,
+                                    onValueChange = {
+                                        SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value[0]}#$it")
+                                        component.sync()
+                                    },
+                                    maxLines = 1,
+                                    enabled = true,
+                                    modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth()
+                                        .align(Alignment.CenterVertically)
+                                )
+//                                }
                             }
                         }
                     }
