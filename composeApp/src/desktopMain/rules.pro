@@ -36,10 +36,26 @@
 -keep class org.codehaus.** {*;}
 -keep class com.github.sardine.** {*;}
 -keep class io.ktor.** {*;}
--keep class uk.co.caprica.vlcj.binding.support.component.** {*;}
 #-keep class com.corner.**{*;}
 -keep class org.jupnp.** {*;}
 -keep class uk.co.caprica.vlcj.** {*;}
+# vlcj 的一些其他类
+-keep class uk.co.caprica.vlcj.player.** { *; }
+-keep class uk.co.caprica.vlcj.factory.** { *; }
+-keep class uk.co.caprica.vlcj.log.** { *; }
+
+# 保留 vlcj 的接口和回调
+-keep interface uk.co.caprica.vlcj.** { *; }
+-keep class * implements uk.co.caprica.vlcj.** { *; }
+
+# 保留 vlcj 的静态方法
+-keep,allowobfuscation class uk.co.caprica.vlcj.** {
+    public static void main(java.lang.String[]);
+    public static ** valueOf(java.lang.String);
+    public static ** valueOf(int);
+    public static ** of(...);
+    public static ** create(...);
+}
 -keep class org.slf4j.** {*;}
 -keep class kotlinx.serialization.** {*;}
 -keep class org.json.** {*;}
