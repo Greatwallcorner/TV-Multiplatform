@@ -26,11 +26,12 @@ import com.corner.ui.SwingUtil
 import com.corner.ui.Util
 import com.corner.ui.decompose.DefaultRootComponent
 import com.corner.ui.decompose.RootContent
+import com.corner.ui.scene.SnackBar
 import com.seiko.imageloader.LocalImageLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
-import java.awt.*
+import java.awt.Dimension
 
 
 private val log = LoggerFactory.getLogger("main")
@@ -108,19 +109,21 @@ private fun getSystemPropAndAppend(key: String, s: StringBuilder) {
 
 private fun launchErrorCatcher() {
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
-        Dialog(Frame(), e.message ?: "Error").apply {
-            log.error("启动异常", e)
-            layout = FlowLayout()
-            val label = Label(e.message)
-            val text = TextArea(e.stackTraceToString())
-            add(label)
-            add(text)
-            val button = Button("OK").apply {
-                addActionListener { dispose() }
-            }
-            add(button)
-            setSize(300, 300)
-            isVisible = true
-        }
+        SnackBar.postMsg("未知异常， 请查看日志")
+        log.error("未知异常", e)
+//        Dialog(Frame(), e.message ?: "Error").apply {
+//            log.error("启动异常", e)
+//            layout = FlowLayout()
+//            val label = Label(e.message)
+//            val text = TextArea(e.stackTraceToString())
+//            add(label)
+//            add(text)
+//            val button = Button("OK").apply {
+//                addActionListener { dispose() }
+//            }
+//            add(button)
+//            setSize(300, 300)
+//            isVisible = true
+//        }
     }
 }

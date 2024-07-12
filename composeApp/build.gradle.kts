@@ -39,7 +39,7 @@ kotlin {
 
             api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
-//                // tool
+            // tool
             api("com.google.guava:guava:31.1-jre")
             implementation("cn.hutool:hutool-all:$hutoolVer")
 
@@ -93,7 +93,7 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
             // Player
-            implementation("uk.co.caprica:vlcj:4.8.2")
+            implementation(libs.vlcj)
         }
     }
 }

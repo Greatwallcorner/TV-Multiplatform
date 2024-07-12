@@ -263,11 +263,13 @@ class VlcjController(val component: DetailComponent) : PlayerController {
     }
 
     override fun seekTo(timestamp: Long) = catch {
+        _state.update { it.copy(timestamp = timestamp) }
         player?.controls()?.setTime(timestamp)
     }
 
     override fun setVolume(value: Float) = catch {
         player?.audio()?.setVolume((value * 100).toInt().coerceIn(0..150))
+        _state.update { it.copy(volume = value) }
         showTips("音量：${player?.audio()?.volume()}")
     }
 
@@ -275,11 +277,13 @@ class VlcjController(val component: DetailComponent) : PlayerController {
 
     override fun volumeUp() {
         player?.audio()?.setVolume((((player?.audio()?.volume() ?: 0) + volumeStep).coerceIn(0..150)))
+        _state.update { it.copy(volume = (player?.audio()?.volume() ?: 80) / 100f) }
         showTips("音量：${player?.audio()?.volume()}")
     }
 
     override fun volumeDown() {
         player?.audio()?.setVolume((((player?.audio()?.volume() ?: 0) - volumeStep).coerceIn(0..150)))
+        _state.update { it.copy(volume = (player?.audio()?.volume() ?: 80) / 100f) }
         showTips("音量：${player?.audio()?.volume()}")
     }
 
@@ -289,11 +293,13 @@ class VlcjController(val component: DetailComponent) : PlayerController {
     override fun forward(time: String) {
         showTips("快进：$time")
         player?.controls()?.skipTime(Duration.parse(time).toLong(DurationUnit.MILLISECONDS))
+        _state.update { it.copy(timestamp = (player?.status()?.time() ?: 0)) }
     }
 
     override fun backward(time: String) {
         showTips("快退：$time")
         player?.controls()?.skipTime(-Duration.parse(time).toLong(DurationUnit.MILLISECONDS))
+        _state.update { it.copy(timestamp = (player?.status()?.time() ?: 0)) }
     }
 
     override fun toggleSound() = catch {
