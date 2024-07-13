@@ -15,7 +15,7 @@ jobs:
         run: |
           latest_tag=$(git describe --tags --abbrev=0)
           echo $latest_tag
-          echo "export tag=${latest_tag}" >> $GITHUB_ENV
+          echo "tag=${latest_tag}" >> $GITHUB_ENV
       - name: 打印
         run: echo $tag
   build-win:
