@@ -1,17 +1,17 @@
 name: TV-Multiplatform Build
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - v*.*.*
+#  push:
+#    tags:
+#      - v*.*.*
 env:
-  tag: ${{ github.ref_name != '' && github.ref_name || github.run_id }}
+  tag: ${{ git describe --tags --abbrev=0 }}
 jobs:
   mod-version:
     runs-on: ubuntu-latest
     steps:
       - run: echo 修改版本号
-      - run: sed -i 's/^app-version.*/app-version = "$tag"/' gradle/libs.versions.toml
+      - run: sed -i 's/^app-version.*/app-version = "$tag"/' ./gradle/libs.versions.toml
       - run: echo 打印内容 && cat gradle/libs.versions.toml
   build-win:
     runs-on: windows-latest
