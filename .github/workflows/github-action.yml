@@ -12,7 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-tags: true
+          fetch-tags: 'true'
+          fetch-depth: 0
       - run: |
           latest_tag=$(git describe --tags --abbrev=0)
           echo "tag=$latest_tag" >> $GITHUB_OUTPUT
