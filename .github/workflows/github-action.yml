@@ -112,7 +112,7 @@ jobs:
             **/*.pkg
             **/*.dmg
             **/*.msi
-          tag_name: ${{env.tag}}
+          tag_name: ${{tag}}
     permissions:
       contents: write
   sendMsg:
