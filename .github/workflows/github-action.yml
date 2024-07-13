@@ -16,6 +16,7 @@ jobs:
           fetch-depth: 0
       - run: |
           latest_tag=$(git describe --tags --abbrev=0)
+          echo $latest_tag
           echo "tag=$latest_tag" >> $GITHUB_OUTPUT
           echo "export tag=$latest_tag" >> $GITHUB_ENV
       - run: echo 修改版本号
