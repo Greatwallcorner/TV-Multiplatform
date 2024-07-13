@@ -5,11 +5,15 @@ on:
 #    tags:
 #      - v*.*.*
 env:
-  tag: ${{ git describe --tags --abbrev=0 }}
+  tag: ${{ github.ref_name != '' && github.ref_name || github.run_id }}
 jobs:
   mod-version:
     runs-on: ubuntu-latest
     steps:
+      - run: |
+          latest_tag=$(git describe --tags --abbrev=0)
+          echo "tag=$latest_tag" >> $GITHUB_OUTPUT
+          echo "export tag=$latest_tag" >> $GITHUB_ENV
       - run: echo 修改版本号
       - run: sed -i 's/^app-version.*/app-version = "$tag"/' ./gradle/libs.versions.toml
       - run: echo 打印内容 && cat gradle/libs.versions.toml
