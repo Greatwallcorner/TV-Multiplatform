@@ -10,6 +10,7 @@ jobs:
   mod-version:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - run: |
           latest_tag=$(git describe --tags --abbrev=0)
           echo "tag=$latest_tag" >> $GITHUB_OUTPUT
