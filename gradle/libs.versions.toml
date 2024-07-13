@@ -4,6 +4,7 @@ compose-plugin = "1.6.11"
 junit = "4.13.2"
 kotlin = "1.9.23"
 vlcj = "4.8.3"
+app-verion = "1.2.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
