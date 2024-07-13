@@ -8,7 +8,7 @@ env:
   tag: ${{ github.ref_name != '' && github.ref_name || github.run_id }}
 jobs:
   mod-version:
-    runs-on: linux
+    runs-on: ubuntu-latest
     steps:
       - run: echo 修改版本号
       - run: sed -i 's/^app-version.*/app-version = "$tag"/' gradle/libs.versions.toml
