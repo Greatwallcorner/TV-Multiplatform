@@ -18,10 +18,11 @@ jobs:
       - run: |
           latest_tag=$(git describe --tags --abbrev=0)
           echo $latest_tag
-          sed -i 's/^app-version.*/app-version = "$latest_tag"/' ./gradle/libs.versions.toml
+          sed -i 's/^app-version.*/app-version = "${latest_tag}"/' ./gradle/libs.versions.toml
           echo "tag=$latest_tag" >> $GITHUB_OUTPUT
           echo "export tag=$latest_tag" >> $GITHUB_ENV
       - run: echo 打印内容 && cat gradle/libs.versions.toml
+      - run: git commit -m "chore:mod version" && git push
   build-win:
     runs-on: windows-latest
     needs: mod-version
