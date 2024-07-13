@@ -4,8 +4,6 @@ on:
 #  push:
 #    tags:
 #      - v*.*.*
-#env:
-#  tag: ${{ github.ref_name != '' && github.ref_name || github.run_id }}
 jobs:
   mod-version:
     runs-on: ubuntu-latest
@@ -17,7 +15,6 @@ jobs:
         run: |
           latest_tag=$(git describe --tags --abbrev=0)
           echo $latest_tag
-#          sed -i 's/^app-version.*/app-version = "${latest_tag}"/' ./gradle/libs.versions.toml
           echo "export tag=${latest_tag}" >> $GITHUB_ENV
       - name: 打印
         run: echo $tag
