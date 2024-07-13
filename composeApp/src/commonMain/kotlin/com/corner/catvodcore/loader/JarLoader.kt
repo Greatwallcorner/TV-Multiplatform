@@ -75,7 +75,7 @@ object JarLoader {
         try {
             val jaKey = Utils.md5(jar)
             val spKey = jaKey + key
-            if (spiders.contains(spKey)) return spiders[spKey]!!
+            if (spiders.containsKey(spKey)) return spiders[spKey]!!
             if (loaders[jaKey] == null) loadJar(jaKey, jar)
             val loader = loaders[jaKey]
             val classPath = "${Constant.catVodSpider}.${api.replace("csp_", "")}"
@@ -83,7 +83,7 @@ object JarLoader {
                 loader!!.loadClass(classPath).getDeclaredConstructor()
                     .newInstance() as Spider
             spider.init(ext)
-            spiders[spKey] = spider
+            spiders.put(spKey, spider)
             return spider
         } catch (e: Exception) {
             e.printStackTrace()
