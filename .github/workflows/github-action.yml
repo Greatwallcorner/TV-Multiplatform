@@ -118,7 +118,7 @@ jobs:
             **/*.pkg
             **/*.dmg
             **/*.msi
-          tag_name: $tag
+          tag_name: ${{ needs.set-tag.outputs.tag }}
     permissions:
       contents: write
   sendMsg:
