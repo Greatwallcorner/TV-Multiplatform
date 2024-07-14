@@ -123,9 +123,10 @@ jobs:
       contents: write
   sendMsg:
     name: sendMsg
-    runs-on: [ubuntu-latest, set-tag]
+    runs-on: [ubuntu-latest]
     needs:
       - release
+      - set-tag
     steps:
       - uses: colutius/Telegram-Msg@main
         with:
