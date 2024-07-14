@@ -15,6 +15,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: get-tag
+        id: get-tag
         run: |
           latest_tag=$(git describe --tags --abbrev=0)
           echo $latest_tag
