@@ -16,6 +16,7 @@ jobs:
           latest_tag=$(git describe --tags --abbrev=0)
           echo $latest_tag
           echo "tag=${latest_tag}" >> $GITHUB_ENV
+          echo "tag=${latest_tag}" >> $GITHUB_OUTPUT
       - name: 打印
         run: echo $tag
   build-win:
@@ -34,7 +35,7 @@ jobs:
       - run: ls && tree ./desktopApp /f
       - name: compress
         shell: pwsh
-        run: Compress-Archive -Path "./composeApp/build/compose/binaries/main-release/app/TV" -DestinationPath ./TV-win-$Env:tag.zip
+        run: Compress-Archive -Path "./composeApp/build/compose/binaries/main-release/app/TV" -DestinationPath ./TV-win-${{ needs.set-global-var.outputs.tag }}.zip
       - name: move result to root
         shell: pwsh
         run: Move-Item -Path "./composeApp/build/compose/binaries/main-release/app/*.zip" -Destination "./" && Move-Item -Path "./composeApp/build/compose/binaries/main-release/msi/*.msi" -Destination "./"
@@ -60,7 +61,7 @@ jobs:
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ls && tree
       - name: compress
-        run: cd ./composeApp/build/compose/binaries/main-release/app && zip -q -r ./TV-linux-$tag.zip ./TV
+        run: cd ./composeApp/build/compose/binaries/main-release/app && zip -q -r ./TV-linux-${{ needs.set-global-var.outputs.tag }}.zip ./TV
       - name: move file
         run: mv ./composeApp/build/compose/binaries/main-release/deb/*.deb ./TV-linux-$tag.deb && mv ./composeApp/build/compose/binaries/main-release/app/*.zip ./
       - run: ls
@@ -88,7 +89,7 @@ jobs:
        - name: compress
          run: zip -q -r ./TV-mac-$tag.zip ./composeApp/build/compose/binaries/main-release/app
        - name: move file
-         run: mv ./composeApp/build/compose/binaries/main-release/dmg/*.dmg ./TV-mac-$tag.dmg
+         run: mv ./composeApp/build/compose/binaries/main-release/dmg/*.dmg ./TV-mac-${{ needs.set-global-var.outputs.tag }}.dmg
        - run: ls
        - uses: actions/upload-artifact@v4
          with:
@@ -131,6 +132,6 @@ jobs:
             📦仓库: ${{ github.repository }}
           button: true
           button_name: 👀下载👀
-          button_url: https://github.com/${{ github.repository }}/releases/tag/${{env.tag}}
+          button_url: https://github.com/${{ github.repository }}/releases/tag/${{ needs.set-global-var.outputs.tag }}
           is_notify: true
           is_preview: true
