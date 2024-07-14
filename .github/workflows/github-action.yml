@@ -32,6 +32,7 @@ jobs:
           distribution: 'temurin'
           java-version: 17
           cache: 'gradle'
+      - run: echo ${{needs.set-tag.outputs.tag}}
       - run: ls
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ./gradlew createReleaseDistributable
