@@ -2,6 +2,7 @@ import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.KtorClient
 import com.corner.catvodcore.util.Urls
+import com.corner.catvodcore.util.Utils
 import com.corner.server.KtorD
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.encodeToJsonElement
+import java.io.File
 import java.net.URI
 import java.net.URL
 import java.util.*
@@ -50,6 +52,11 @@ class commonTest {
 //        val path = Paths.get(URI("F:/sync/compose-mutiplatform-workspace/My/CatVodSpider/json/config.json"))
 //            .resolve("./alist.json").toString()
 //        println(path)
+    }
+
+    @Test
+    fun md5Test(){
+        println(Utils.md5(File("F:\\sync\\compose-mutiplatform-workspace\\My\\CatVodSpider\\jar\\spider.jar")))
     }
 
     @Test

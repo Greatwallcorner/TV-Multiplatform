@@ -3,11 +3,10 @@ package com.corner.catvodcore.util
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.database.Db
 import org.apache.commons.lang3.StringUtils
+import java.io.File
+import java.io.FileInputStream
 import java.math.BigInteger
 import java.security.MessageDigest
-import java.time.Instant
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatterBuilder
 import java.util.*
 
 object Utils {
@@ -25,6 +24,28 @@ object Utils {
         }
 
     }
+
+    fun equals(name: String, md5: String): Boolean {
+        return md5(Paths.jar(name)).equals(md5, ignoreCase = true)
+    }
+
+    fun md5(file: File?): String {
+        try {
+            val digest = MessageDigest.getInstance("MD5")
+            val fis = FileInputStream(file)
+            val bytes = ByteArray(4096)
+            var count: Int
+            while ((fis.read(bytes).also { count = it }) != -1) digest.update(bytes, 0, count)
+            fis.close()
+            val sb = java.lang.StringBuilder()
+            for (b in digest.digest()) sb.append(((b.toInt() and 0xff) + 0x100).toString(16).substring(1))
+            return sb.toString()
+        } catch (e: java.lang.Exception) {
+            return ""
+        }
+    }
+
+//    private fun md5()
 
     fun base64(s: String): String {
         return base64(s.toByteArray())

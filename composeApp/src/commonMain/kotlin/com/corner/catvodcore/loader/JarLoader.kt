@@ -30,19 +30,28 @@ object JarLoader {
 
     fun loadJar(key: String, spider: String) {
         val texts = spider.split(Constant.md5Split)
-//        val md5 = if(texts.size<=1) "" else texts[1].trim()
+        val md5 = if(texts.size<=1) "" else texts[1].trim()
         val jar = texts[0]
 
-        if(Paths.jar(jar).exists()){
+        // 可以避免重复下载
+        if(md5.isNotEmpty() && Utils.equals(parseJarUrl(jar), md5)){
             load(key, Paths.jar(jar))
         }else if (jar.startsWith("file")) {
             load(key, Paths.local(jar))
         } else if (jar.startsWith("http")) {
             load(key, download(jar))
         } else {
-             loadJar(key, Urls.convert(ApiConfig.api.url!!, spider))
+             loadJar(key, Urls.convert(ApiConfig.api.url!!, jar))
         }
 
+    }
+
+    /**
+     * 如果在配置文件种使用的相对路径， 下载的时候使用的全路径 如果的判断md5是否一致的时候使用相对路径 就会造成重复下载
+     */
+    private fun parseJarUrl(jar: String): String {
+        if(jar.startsWith("file") || jar.startsWith("http")) return jar
+        return Urls.convert(ApiConfig.api.url!!, jar)
     }
 
     private fun load(key: String, jar: File) {
@@ -83,7 +92,7 @@ object JarLoader {
                 loader!!.loadClass(classPath).getDeclaredConstructor()
                     .newInstance() as Spider
             spider.init(ext)
-            spiders.put(spKey, spider)
+            spiders[spKey] = spider
             return spider
         } catch (e: Exception) {
             e.printStackTrace()
