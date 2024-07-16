@@ -7,12 +7,14 @@ import com.corner.catvodcore.util.Paths
 import com.corner.catvodcore.util.Urls
 import com.corner.catvodcore.util.Utils
 import com.github.catvod.crawler.Spider
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.lang.reflect.Method
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 
 object JarLoader {
+    private val log = LoggerFactory.getLogger(this::class.java)
     private val loaders: ConcurrentHashMap<String, URLClassLoader> by lazy { ConcurrentHashMap() }
 
     //proxy method
@@ -35,7 +37,7 @@ object JarLoader {
 
         // 可以避免重复下载
         if(md5.isNotEmpty() && Utils.equals(parseJarUrl(jar), md5)){
-            load(key, Paths.jar(jar))
+            load(key, Paths.jar(parseJarUrl(jar)))
         }else if (jar.startsWith("file")) {
             load(key, Paths.local(jar))
         } else if (jar.startsWith("http")) {
@@ -55,6 +57,7 @@ object JarLoader {
     }
 
     private fun load(key: String, jar: File) {
+        log.debug("load jar {}", jar)
         loaders[key] =  URLClassLoader(arrayOf(jar.toURI().toURL()),this.javaClass.classLoader)
         putProxy(key)
         invokeInit(key)
@@ -101,7 +104,9 @@ object JarLoader {
     }
 
     private fun download(jar: String): File {
-        return Paths.write(Paths.jar(jar), Http.Get(jar).execute().body.bytes())
+        val jarPath = Paths.jar(jar)
+        log.debug("download jar file {} to:{}",jar, jarPath)
+        return Paths.write(jarPath, Http.Get(jar).execute().body.bytes())
     }
 
     fun proxyInvoke(params: Map<String, String>): Array<Any>? {
