@@ -379,6 +379,7 @@ fun setConfig(textFieldValue: String?) {
             SnackBar.postMsg("不可为空")
             return@launch
         }
+        SettingStore.setValue(SettingType.VOD, textFieldValue)
         val config = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
         if (config == null) {
             Db.Config.save(
@@ -388,7 +389,6 @@ fun setConfig(textFieldValue: String?) {
         } else {
             Db.Config.updateUrl(config.id, textFieldValue)
         }
-        SettingStore.setValue(SettingType.VOD, textFieldValue)
         ApiConfig.api.cfg.value = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
         initConfig()
     }
