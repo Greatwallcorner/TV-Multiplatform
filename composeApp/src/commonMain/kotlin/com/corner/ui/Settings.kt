@@ -46,6 +46,7 @@ import com.corner.database.Db
 import com.corner.init.initConfig
 import com.corner.ui.decompose.component.DefaultSettingComponent
 import com.corner.ui.decompose.component.getSetting
+import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.Dialog
 import com.corner.ui.scene.HoverableText
@@ -53,6 +54,7 @@ import com.corner.ui.scene.SnackBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.awt.Desktop
+import java.io.File
 import java.net.URI
 
 @Composable
@@ -202,6 +204,13 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                                     value = playerSetting.value[1] as String,
                                     onValueChange = {
                                         SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value[0]}#$it")
+                                        SiteViewModel.viewModelScope.launch {
+                                            if(playerSetting.value[0] as Boolean){
+                                                if(File(it).exists()){
+                                                    VlcJInit.init(true)
+                                                }
+                                            }
+                                        }
                                         component.sync()
                                     },
                                     maxLines = 1,
