@@ -75,8 +75,8 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                     fromSearchLoadJob.cancel("on stop")
                     hideProgress()
                     clear()
+                    controller.dispose()
                 }
-                controller.dispose()
             }
         })
 
