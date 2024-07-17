@@ -143,8 +143,8 @@ fun Player(
         }
         AnimatedVisibility(showControllerBar.value,
             modifier = Modifier.align(Alignment.TopEnd),
-            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-            exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut()){
+            enter = fadeIn(),
+            exit = fadeOut()){
             Row (Modifier.height(40.dp).fillMaxWidth(), horizontalArrangement = Arrangement.End){
                 IconButton(onClick = {
                     showMediaInfoDialog.value = true
@@ -156,8 +156,10 @@ fun Player(
         AnimatedVisibility(
             showControllerBar.value,
             modifier = Modifier.align(Alignment.BottomEnd),
-            enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
-            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+//            enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+//            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+            enter = fadeIn(),
+            exit = fadeOut()
         ) {
             DefaultControls(
                 Modifier.background(Color.Gray.copy(alpha = 0.45f))
