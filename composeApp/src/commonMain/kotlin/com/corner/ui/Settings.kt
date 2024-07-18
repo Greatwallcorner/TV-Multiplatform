@@ -47,10 +47,7 @@ import com.corner.init.initConfig
 import com.corner.ui.decompose.component.DefaultSettingComponent
 import com.corner.ui.decompose.component.getSetting
 import com.corner.ui.player.vlcj.VlcJInit
-import com.corner.ui.scene.BackRow
-import com.corner.ui.scene.Dialog
-import com.corner.ui.scene.HoverableText
-import com.corner.ui.scene.SnackBar
+import com.corner.ui.scene.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.awt.Desktop
@@ -383,6 +380,7 @@ fun previewLogButtonList() {
 }
 
 fun setConfig(textFieldValue: String?) {
+    showProgress()
     SiteViewModel.viewModelScope.launch {
         if (textFieldValue == null || textFieldValue == "") {
             SnackBar.postMsg("不可为空")
@@ -400,6 +398,8 @@ fun setConfig(textFieldValue: String?) {
         }
         ApiConfig.api.cfg.value = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
         initConfig()
+    }.invokeOnCompletion {
+        hideProgress()
     }
 }
 
