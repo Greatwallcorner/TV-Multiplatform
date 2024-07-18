@@ -120,12 +120,18 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
                         if (classList.isEmpty()) return@launch
                         val types = classList.firstOrNull()
                         types?.selected = true
+                        val extend = HashMap<String,String>()
+                        model.value.currentFilters.forEach{
+                            if(it.key!!.isNotBlank() && it.init.isNotBlank()){
+                                extend[it.key] = it.init
+                            }
+                        }
                         val rst = SiteViewModel.categoryContent(
                             home.value.key,
                             types?.typeId ?: "",
                             _model.value.page.toString(),
-                            false,
-                            HashMap()
+                            extend.isNotEmpty(),
+                            extend
                         )
                         if (!rst.isSuccess) {
                             return@launch
