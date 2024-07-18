@@ -99,10 +99,9 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(horizontalArrangement = Arrangement.Start) {
-                            Text(
+                            ToolTipText(
                                 detail?.vodName ?: "",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onBackground,
+                                textStyle = MaterialTheme.typography.headlineMedium.copy(color = MaterialTheme.colorScheme.onBackground),
                                 modifier = Modifier.padding(start = 50.dp)
                             )
                         }
