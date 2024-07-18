@@ -2,7 +2,6 @@ package com.corner.ui.video
 
 import SiteViewModel
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.scrollBy
@@ -43,12 +42,12 @@ import com.arkivanov.decompose.value.update
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Type
-import com.corner.catvodcore.bean.isEmpty
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
+import com.corner.ui.decompose.VideoComponent
 import com.corner.ui.decompose.component.DefaultVideoComponent
 import com.corner.ui.scene.*
 import com.corner.util.isScrollingUp
@@ -66,14 +65,14 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
     ) {
         val picModifier = remember { Modifier.height(220.dp).width(200.dp) }
         Box(modifier = modifier) {
-            if(vod.isFolder()){
+            if (vod.isFolder()) {
                 Image(
                     modifier = modifier,
                     painter = painterResource("/pic/folder-back.png"),
                     contentDescription = "This is a folder ${vod.vodName}",
                     contentScale = ContentScale.Fit
                 )
-            }else{
+            } else {
                 AutoSizeImage(url = vod.vodPic ?: "",
                     modifier = picModifier,
                     contentDescription = vod.vodName,
@@ -123,7 +122,7 @@ fun VideoScene(
     val model = component.model.subscribeAsState()
     val list = derivedStateOf { model.value.homeVodResult.toTypedArray() }
 
-    LaunchedEffect(list.value){
+    LaunchedEffect(list.value) {
         println("list 修改")
     }
 
@@ -142,6 +141,7 @@ fun VideoScene(
     }
 
     var showChooseHome by remember { mutableStateOf(false) }
+    var showFiltersDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -153,7 +153,9 @@ fun VideoScene(
                 onClickHistory = { onClickSwitch(Menu.HISTORY) })
         },
         floatingActionButton = {
-            FloatButton(component, state, scope)
+            FloatButton(component, state, scope, showFiltersDialog) {
+                showFiltersDialog = !showFiltersDialog
+            }
         }
     ) {
         Box(modifier = modifier.fillMaxSize().padding(it)) {
@@ -174,15 +176,14 @@ fun VideoScene(
                 } else {
                     Box {
                         LazyVerticalGrid(
-                            modifier = modifier.padding(15.dp),/*.scrollable(state, orientation = Orientation.Vertical)*/
+                            modifier = modifier.padding(15.dp),
                             columns = GridCells.Adaptive(140.dp),
                             contentPadding = PaddingValues(5.dp),
                             state = state,
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
-//                        userScrollEnabled = true
                         ) {
-                            itemsIndexed(list.value, key = { i, item -> item.vodId + item.vodName+i }) { _, item ->
+                            itemsIndexed(list.value, key = { i, item -> item.vodId + item.vodName + i }) { _, item ->
                                 VideoItem(Modifier.animateItemPlacement(), item, false) {
                                     if (item.isFolder()) {
                                         component.clickFolder(it)
@@ -202,17 +203,80 @@ fun VideoScene(
                     state.animateScrollToItem(0)
                 }
             }
+
+            FiltersDialog(Modifier.align(Alignment.BottomCenter), showFiltersDialog, model, component) {
+                showFiltersDialog = false
+            }
         }
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun FloatButton(component: DefaultVideoComponent, state: LazyGridState, scope: CoroutineScope) {
+private fun FiltersDialog(
+    modifier: Modifier,
+    showFiltersDialog: Boolean,
+    model: State<VideoComponent.Model>,
+    component: DefaultVideoComponent,
+    onClose: () -> Unit
+) {
+    val scope = rememberCoroutineScope()
+    Dialog(
+        modifier
+            .fillMaxWidth(0.7f)
+            .fillMaxHeight(0.3f)
+            .defaultMinSize(minWidth = 100.dp)
+            .padding(20.dp), onClose = { onClose() }, showDialog = showFiltersDialog,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Box {
+            val listState = rememberLazyListState(0)
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.align(Alignment.Center),
+                contentPadding = PaddingValues(5.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                items(model.value.currentFilters) { filter ->
+                    val state = rememberLazyListState(0)
+                    LazyRow(state = state , horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        modifier = Modifier.onPointerEvent(PointerEventType.Scroll) {
+                        scope.launch {
+                            state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
+                        }
+                    }) {
+                        items(filter.value ?: listOf()) {
+                            RatioBtn(it.n ?: "", onClick = {
+                                filter.init = it.v ?: ""
+                                component.chooseCate(it.v ?: "")
+                            }, selected = it.v == filter.init, loading = false)
+                        }
+                    }
+                }
+            }
+            VerticalScrollbar(rememberScrollbarAdapter(listState),
+                modifier = Modifier.align(Alignment.CenterEnd).padding(vertical = 5.dp, horizontal = 8.dp),
+                style = defaultScrollbarStyle().copy(
+                    unhoverColor = Color.Gray.copy(0.45F),
+                    hoverColor = Color.DarkGray
+                ))
+        }
+    }
+
+}
+
+@Composable
+fun FloatButton(
+    component: DefaultVideoComponent,
+    state: LazyGridState,
+    scope: CoroutineScope,
+    showFiltersDialog: Boolean,
+    onClickFilter: () -> Unit
+) {
     val show = derivedStateOf { GlobalModel.chooseVod.value.isFolder() }
     val model = component.model.subscribeAsState()
-    val showButton = derivedStateOf { !model.value.currentFilter.isEmpty() || state.firstVisibleItemIndex > 8 }
-    var showDialog by remember { mutableStateOf(false) }
-    val dialogWidth = animateDpAsState(if (showDialog) 140.dp else 0.dp)
+    val showButton = derivedStateOf { !model.value.currentFilters.isEmpty() || state.firstVisibleItemIndex > 8 }
     AnimatedVisibility(
         showButton.value,
         enter = slideInVertically(
@@ -227,37 +291,6 @@ fun FloatButton(component: DefaultVideoComponent, state: LazyGridState, scope: C
                 .fillMaxWidth(0.2f)
                 .padding(10.dp)
         ) {
-            Surface(
-                Modifier.align(Alignment.BottomEnd)
-                    .background(Color.Transparent)
-                    .width(dialogWidth.value)
-                    .offset(y = (-70).dp),
-            ) {
-                Box(Modifier.background(Color.Transparent).padding(5.dp)) {
-                    val listState = rememberLazyListState(0)
-                    LazyColumn(
-                        Modifier
-                            .background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(5.dp)),
-                        contentPadding = PaddingValues(5.dp),
-                        verticalArrangement = Arrangement.spacedBy(5.dp)
-                    ) {
-                        items(model.value.currentFilter.value ?: listOf()) {
-                            RatioBtn(it.n ?: "", onClick = {
-                                model.value.currentFilter.init = it.v ?: ""
-                                component.chooseCate(it.v ?: "")
-                            }, selected = it.v == model.value.currentFilter.init, loading = false)
-                        }
-                    }
-                    VerticalScrollbar(
-                        rememberScrollbarAdapter(listState),
-                        modifier = Modifier.align(Alignment.CenterEnd),
-                        style = defaultScrollbarStyle().copy(
-                            unhoverColor = Color.Yellow,
-                            hoverColor = Color.DarkGray
-                        )
-                    )
-                }
-            }
             Box(Modifier.align(Alignment.BottomEnd)) {
                 AnimatedContent(state.isScrollingUp(),
                     contentAlignment = Alignment.BottomEnd,
@@ -269,10 +302,11 @@ fun FloatButton(component: DefaultVideoComponent, state: LazyGridState, scope: C
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                    if (it) {
-                        if (model.value.currentFilter.isEmpty()) return@AnimatedContent
+                    if (it && model.value.currentFilters.isNotEmpty()) {
                         ElevatedButton(
-                            onClick = { showDialog = !showDialog },
+                            onClick = {
+                                onClickFilter()
+                            },
                             modifier = modifier,
                             colors = buttonColors,
                             shape = shape,
@@ -280,7 +314,7 @@ fun FloatButton(component: DefaultVideoComponent, state: LazyGridState, scope: C
                         )
                         {
                             Icon(
-                                if (showDialog) Icons.Outlined.Close else Icons.Outlined.FilterAlt,
+                                if (showFiltersDialog) Icons.Outlined.Close else Icons.Outlined.FilterAlt,
                                 "show filter dialog",
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer
                             )
@@ -319,12 +353,16 @@ fun VideoTopBar(
 
     TopAppBar(modifier = Modifier.height(50.dp).padding(1.dp), title = {}, actions = {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-            Row(Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
-                ElevatedButton(modifier = Modifier.align(Alignment.Top).wrapContentWidth().padding(start = 5.dp),
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                ElevatedButton(
+                    modifier = Modifier.align(Alignment.Top).wrapContentWidth().padding(start = 5.dp),
                     onClick = { onClickChooseHome() },
-                    colors = ButtonDefaults.elevatedButtonColors().copy(containerColor = MaterialTheme.colorScheme.background, disabledContentColor = MaterialTheme.colorScheme.background),
+                    colors = ButtonDefaults.elevatedButtonColors().copy(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        disabledContentColor = MaterialTheme.colorScheme.background
+                    ),
                     elevation = ButtonDefaults.buttonElevation(),
-                ){
+                ) {
                     Row(Modifier.wrapContentWidth()) {
                         Icon(
                             Icons.Outlined.ArrowDropDown,
@@ -431,16 +469,11 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
                         for (tp in model.value.classList) {
                             tp.selected = type.typeId == tp.typeId
                         }
-                        if (model.value.filtersMap.isNotEmpty()) {
-                            component.model.update {
-                                it.copy(
-                                    currentFilter = component.getFilters(type)
-                                )
-                            }
-                        }
                         component.model.update {
                             it.copy(
-                                currentClass = type, classList = model.value.classList
+                                currentClass = type,
+                                classList = model.value.classList,
+                                currentFilters = component.getFilters(type)
                             )
                         }
                         SiteViewModel.cancelAll()

@@ -9,7 +9,6 @@ import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Filter
 import com.corner.catvodcore.bean.Type
-import com.corner.catvodcore.bean.getFirstOrEmpty
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.VideoComponent
@@ -87,7 +86,7 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
             it.copy(
                 homeVodResult = mutableSetOf(),
                 homeLoaded = false, classList = mutableSetOf(), filtersMap = mutableMapOf(),
-                currentClass = null, currentFilter = Filter.ALL,
+                currentClass = null, currentFilters = listOf(),
                 page = AtomicInteger(1), isRunning = false, prompt = ""
             )
         }
@@ -180,12 +179,16 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
         SiteViewModel.viewModelScope.launch {
             try {
                 val extend = HashMap<String, String>()
-                extend[model.value.currentFilter.key ?: ""] = model.value.currentFilter.init
+                model.value.currentFilters.forEach {
+                    if(it.key!!.isNotEmpty() && it.init.isNotBlank()){
+                        extend[it.key] = it.init
+                    }
+                }
                 val rst = SiteViewModel.categoryContent(
                     GlobalModel.home.value.key,
                     model.value.currentClass?.typeId ?: "",
                     model.value.page.addAndGet(1).toString(),
-                    model.value.currentFilter.init.isNotBlank(),
+                    extend.isNotEmpty(),
                     extend
                 )
                 if (!rst.isSuccess || rst.list.isEmpty()) {
@@ -215,12 +218,16 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
             try {
                 model.value.page.set(1)
                 val extend = HashMap<String, String>()
-                extend[model.value.currentFilter.key ?: ""] = cate
+                model.value.currentFilters.forEach {
+                    model.value.currentFilters.forEach {
+                        extend[it.key!!] = it.init
+                    }
+                }
                 val result = SiteViewModel.categoryContent(
                     GlobalModel.home.value.key,
                     cate,
                     model.value.page.toString(),
-                    model.value.currentFilter.init.isNotBlank(),
+                    extend.isNotEmpty(),
                     extend
                 )
                 model.update { it.copy(homeVodResult = result.list.toMutableSet()) }
@@ -232,10 +239,10 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
         }
     }
 
-    fun getFilters(type: Type): Filter {
-        val filters = model.value.filtersMap[type.typeId] ?: return Filter.ALL
+    fun getFilters(type: Type): List<Filter> {
+        val filters = model.value.filtersMap[type.typeId] ?: return listOf()
         // todo 这里可有多个Filter 需要修改页面 可以显示多个Filter
-        return filters.getFirstOrEmpty()
+        return filters
     }
 
     fun searchBarPrompt() {

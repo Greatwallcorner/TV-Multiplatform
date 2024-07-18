@@ -28,7 +28,7 @@ interface VideoComponent {
         var classList: MutableSet<Type> = mutableSetOf(),
         var filtersMap: MutableMap<String, List<Filter>> = mutableMapOf(),
         var currentClass: Type? = null,
-        var currentFilter: Filter = Filter.ALL,
+        var currentFilters: List<Filter> = listOf(),
         var page: AtomicInteger = AtomicInteger(1),
         var isRunning: Boolean = false,
         val prompt:String = ""
@@ -44,7 +44,7 @@ interface VideoComponent {
             if (homeLoaded != other.homeLoaded) return false
             if (classList != other.classList) return false
             if (currentClass != other.currentClass) return false
-            if (currentFilter != other.currentFilter) return false
+            if (currentFilters != other.currentFilters) return false
             if (filtersMap != other.filtersMap) return false
             if (page != other.page) return false
             if (isRunning != other.isRunning) return false
