@@ -90,7 +90,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         }
 
         override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
-            _state.update { it.copy(isBuffering = newCache != 100F) }
+            _state.update { it.copy(isBuffering = newCache != 100F, bufferProgression = newCache) }
         }
 
         override fun corked(mediaPlayer: MediaPlayer?, corked: Boolean) {
