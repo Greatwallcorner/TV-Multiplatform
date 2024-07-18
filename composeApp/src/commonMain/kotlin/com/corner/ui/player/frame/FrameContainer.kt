@@ -6,28 +6,38 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.isTypedEvent
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.player.vlcj.VlcjFrameController
-import uk.co.caprica.vlcj.player.base.State
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FrameContainer(
     modifier: Modifier = Modifier,
     controller: VlcjFrameController,
-    onClick:()->Unit
+    onClick: () -> Unit
 ) {
     val playerState = controller.state.collectAsState()
     val bitmap by remember { controller.imageBitmapState }
@@ -79,15 +89,23 @@ fun FrameContainer(
             true
         }, contentAlignment = Alignment.Center
     ) {
-        if(bitmap != null){
-            bitmap?.let {
-                Image(bitmap = it, contentDescription = "Video", modifier = Modifier.fillMaxSize())
+        if (bitmap != null) {
+            Box {
+                bitmap?.let {
+                    Image(bitmap = it, contentDescription = "Video", modifier = Modifier.fillMaxSize())
+                }
+                if (playerState.value.isBuffering) {
+                    ProgressIndicator(
+                        Modifier.align(Alignment.Center),
+                        progression = playerState.value.bufferProgression
+                    )
+                }
             }
-        }else{
+        } else {
             Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-                if(playerState.value.isBuffering){
-                    androidx.compose.material3.CircularProgressIndicator(Modifier.align(Alignment.Center))
-                }else {
+                if (playerState.value.isBuffering) {
+                    ProgressIndicator(Modifier.align(Alignment.Center))
+                } else {
                     Image(
                         modifier = Modifier.align(Alignment.Center),
                         painter = painterResource("/pic/TV-icon-x.png"),
@@ -97,5 +115,28 @@ fun FrameContainer(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ProgressIndicator(modifier: Modifier, text: String = "加载中...", progression: Float = -1f) {
+    Column(modifier) {
+        if(progression != -1f){
+            CircularProgressIndicator(
+                progress = { progression },
+            )
+        }else{
+            CircularProgressIndicator()
+        }
+        Text(
+            if (progression != -1f) "%.2f".format(progression) + "%" else text, style = TextStyle(
+                color = MaterialTheme.colorScheme.primary, shadow = Shadow(
+                    color = Color.Black,
+                    offset = Offset(8f, 8f),
+                    blurRadius = 8f
+                ),
+                fontWeight = FontWeight.Bold
+            )
+        )
     }
 }

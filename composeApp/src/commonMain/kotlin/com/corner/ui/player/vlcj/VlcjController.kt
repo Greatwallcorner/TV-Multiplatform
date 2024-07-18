@@ -93,6 +93,10 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             _state.update { it.copy(isBuffering = newCache != 100F) }
         }
 
+        override fun corked(mediaPlayer: MediaPlayer?, corked: Boolean) {
+            log.debug("corked： $corked")
+        }
+
         override fun opening(mediaPlayer: MediaPlayer?) {
             _state.update { it.copy(isBuffering = true) }
         }

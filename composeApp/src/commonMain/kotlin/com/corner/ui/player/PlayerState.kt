@@ -3,6 +3,7 @@ package com.corner.ui.player
 data class PlayerState(
     val isPlaying: Boolean = false,
     val isBuffering:Boolean = false,
+    val bufferProgression: Float = 0.0f,
     val isMuted: Boolean = false,
     var isFullScreen: Boolean = false,
     val volume: Float = .5f,
