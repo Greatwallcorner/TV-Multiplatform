@@ -59,8 +59,11 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     init {
         lifecycle.subscribe(object : Lifecycle.Callbacks {
             override fun onCreate() {
-                controller.init()
+                SiteViewModel.viewModelScope.launch {
+                    controller.init()
+                }
             }
+
             override fun onStop() {
                 log.info("Detail onStop")
                 updateHistory(controller.history.value)
@@ -87,7 +90,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 //        }
     }
 
-    override fun updateHistory(it:History?) {
+    override fun updateHistory(it: History?) {
         if (it != null && StringUtils.isNotBlank(model.value.detail?.site?.key)) {
             Db.History.updateSome(
                 it.vodFlag ?: "",
@@ -285,7 +288,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             val findHistory = Db.History.findHistory(
                 Utils.getHistoryKey(detail.site?.key!!, detail.vodId)
             )
-            if(findHistory != null){
+            if (findHistory != null) {
                 controller.setControllerHistory(findHistory)
             }
             detail.subEpisode?.apply {
@@ -295,28 +298,28 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         }
     }
 
-     override fun playEp(detail: Vod, ep: Episode) {
+    override fun playEp(detail: Vod, ep: Episode) {
         val result = SiteViewModel.playerContent(
             detail.site?.key ?: "",
             detail.currentFlag?.flag ?: "",
             ep.url
         )
-         model.update { it.copy(currentUrl = result?.url) }
+        model.update { it.copy(currentUrl = result?.url) }
         if (result == null) {
             nextFlag()
             return
         }
         controller.doWithHistory { it.copy(episodeUrl = ep.url) }
         val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
-        if(internalPlayer){
+        if (internalPlayer) {
             model.update { it.copy(currentPlayUrl = result.url.v(), currentEp = ep) }
         }
         detail.subEpisode?.parallelStream()?.forEach {
             it.activated = it == ep
         }
-         if(!internalPlayer){
-             SnackBar.postMsg("上次播放" + ": ${ep.name}")
-         }
+        if (!internalPlayer) {
+            SnackBar.postMsg("上次播放" + ": ${ep.name}")
+        }
     }
 
     override fun nextEP() {
@@ -328,7 +331,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         controller.doWithHistory { it.copy(position = 0) }
         if (currentEp != null) {
             currentIndex = detail?.subEpisode?.indexOf(currentEp)!!
-            nextIndex = currentIndex+1
+            nextIndex = currentIndex + 1
         }
         if (currentIndex >= Constants.EpSize - 1) {
             log.info("当前分组播放完毕 下一个分组")
