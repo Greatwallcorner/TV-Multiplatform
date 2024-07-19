@@ -210,6 +210,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
     override fun load(url: String): PlayerController {
         log.debug("加载：$url")
         if (StringUtils.isBlank(url)) {
+            SnackBar.postMsg("播放地址为空")
             return this
         }
         catch {

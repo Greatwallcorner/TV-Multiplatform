@@ -8,6 +8,8 @@ import com.corner.database.History
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.PlayerController
 import com.corner.ui.player.frame.FrameRenderer
+import com.corner.ui.scene.hideProgress
+import com.corner.ui.scene.showProgress
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -90,8 +92,10 @@ class VlcjFrameController constructor(
 
     override fun init() {
         log.info("播放器初始化")
+        showProgress()
         controller.init()
         controller.player?.videoSurface()?.set(callbackSurFace)
+        hideProgress()
     }
 
     fun isPlaying(): Boolean {
