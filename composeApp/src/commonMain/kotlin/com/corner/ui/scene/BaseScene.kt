@@ -2,9 +2,7 @@ package com.corner.ui.scene
 
 import AppTheme
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,7 +17,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -63,14 +60,14 @@ fun ExpandedText(text: String, maxLine: Int, textStyle: TextStyle = TextStyle())
 
 @Composable
 fun LoadingIndicator(showProgress: Boolean) {
-    val alpha by animateFloatAsState(targetValue = 1f, animationSpec = tween(500))
     if (showProgress) {
         Box(
-            Modifier.fillMaxSize()
+            Modifier.fillMaxSize().shadow(8.dp, ambientColor = Color.DarkGray)
         ) {
             CircularProgressIndicator(
-                modifier = Modifier.width(64.dp).align(Alignment.Center).alpha(alpha),
+                modifier = Modifier.width(64.dp).align(Alignment.Center),
                 color = MaterialTheme.colorScheme.secondary,
+                strokeWidth = 5.dp,
                 trackColor = MaterialTheme.colorScheme.secondaryContainer,
             )
 
