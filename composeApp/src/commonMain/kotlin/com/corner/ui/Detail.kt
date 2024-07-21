@@ -279,10 +279,11 @@ private fun flags(
                     val flagList = derivedStateOf { detail.value?.vodFlags?.toList() ?: listOf() }
                     items(flagList.value) {
                         RatioBtn(it?.show ?: "", onClick = {
-//                            scope.launch {
+                            scope.launch {
                                 for (vodFlag in detail.value!!.vodFlags) {
                                     if (it?.show == vodFlag?.show) {
                                         it?.activated = true
+                                        detail.value!!.currentFlag = it
                                     } else {
                                         vodFlag?.activated = false
                                     }
@@ -292,6 +293,7 @@ private fun flags(
                                     subEpisode = it?.episodes?.getPage(detail.value!!.currentTabIndex)
                                         ?.toMutableList()
                                 )
+                                controller.doWithHistory { it.copy(vodFlag = detail.value!!.currentFlag?.flag) }
                                 val history = controller.history.value
                                 if (history != null) {
                                     val findEp =
@@ -304,7 +306,7 @@ private fun flags(
                                         shouldPlay = true,
                                     )
                                 }
-//                            }
+                            }
                         }, selected = it?.activated ?: false)
                     }
                 }

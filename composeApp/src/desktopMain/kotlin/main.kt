@@ -68,7 +68,6 @@ fun main() {
             state = windowState,
             undecorated = true,
             transparent = false,
-
         ) {
 
             window.minimumSize = Dimension(800, 600)
