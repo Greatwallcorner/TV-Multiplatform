@@ -48,7 +48,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         "--no-autoscale",                  // 禁用自动缩放
         "--no-disable-screensaver",        // 禁用屏保
         "--avcodec-fast",                  // 使用快速解码模式
-        "--network-caching=3000",          // 设置网络缓存为 3000ms
+        "--network-caching=10000",          // 设置网络缓存为 10000ms
         "--file-caching=3000",             // 设置文件缓存为 3000ms
         "--live-caching=3000",             // 设置直播缓存为 3000ms
         "--sout-mux-caching=3000"          // 设置输出缓存为 3000ms
