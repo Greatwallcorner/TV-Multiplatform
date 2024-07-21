@@ -29,8 +29,8 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
         val fa = fileAppender(context)
         val rootLogger = context?.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
         rootLogger?.level = Level.valueOf(SettingStore.getSettingItem("log") )
-        System.setOut(createMyPrintStream(System.out))
-        System.setErr(createMyPrintStream(System.err))
+//        System.setOut(createMyPrintStream(System.out))
+//        System.setErr(createMyPrintStream(System.err))
         rootLogger?.addAppender(ca)
         rootLogger?.addAppender(fa)
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY
@@ -39,7 +39,9 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
     fun createMyPrintStream(printStream: PrintStream): PrintStream {
         val myStream: PrintStream = object : PrintStream(printStream) {
             override fun print(string: String) {
-                log.info(string)
+                synchronized(this){
+                    log.info(string)
+                }
             }
         }
         return myStream
