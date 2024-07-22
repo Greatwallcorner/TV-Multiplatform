@@ -3,6 +3,7 @@ package com.corner.ui.decompose
 import com.arkivanov.decompose.value.MutableValue
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Filter
+import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.Type
 import org.slf4j.Logger
 import java.util.concurrent.atomic.AtomicInteger
@@ -70,4 +71,6 @@ interface VideoComponent {
 
 
     }
+
+    fun loadCate(cate: String): Result
 }

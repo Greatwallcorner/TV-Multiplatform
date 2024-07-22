@@ -8,9 +8,10 @@ import com.arkivanov.essenty.backhandler.BackHandlerOwner
 import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Filter
+import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.Type
-import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.catvodcore.viewmodel.GlobalModel.home
 import com.corner.ui.decompose.VideoComponent
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
@@ -120,19 +121,7 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
                         if (classList.isEmpty()) return@launch
                         val types = classList.firstOrNull()
                         types?.selected = true
-                        val extend = HashMap<String,String>()
-                        model.value.currentFilters.forEach{
-                            if(it.key!!.isNotBlank() && it.init.isNotBlank()){
-                                extend[it.key] = it.init
-                            }
-                        }
-                        val rst = SiteViewModel.categoryContent(
-                            home.value.key,
-                            types?.typeId ?: "",
-                            _model.value.page.toString(),
-                            extend.isNotEmpty(),
-                            extend
-                        )
+                        val rst = loadCate(types?.typeId ?: "")
                         if (!rst.isSuccess) {
                             return@launch
                         }
@@ -149,6 +138,7 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
                             filtersMap = filtersMap
                         )
                     }
+                    _model.update { it.copy(currentFilters = getFilters(currentClass!!)) }
                 }
             } catch (e: Exception) {
                 log.error("homeLoad", e)
@@ -163,13 +153,7 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
     override fun clickFolder(vod: Vod) {
         showProgress()
         SiteViewModel.viewModelScope.launch {
-            val result = SiteViewModel.categoryContent(
-                ApiConfig.api.recent!!,
-                vod.vodId,
-                "1",
-                false,
-                hashMapOf()
-            )
+            val result = loadCate(vod.vodId)
             model.update { it.copy(homeVodResult = result.list.toMutableSet()) }
         }.invokeOnCompletion {
             hideProgress()
@@ -184,26 +168,14 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
         isLoading.set(true)
         SiteViewModel.viewModelScope.launch {
             try {
-                val extend = HashMap<String, String>()
-                model.value.currentFilters.forEach {
-                    if(it.key!!.isNotEmpty() && it.init.isNotBlank()){
-                        extend[it.key] = it.init
-                    }
-                }
-                val rst = SiteViewModel.categoryContent(
-                    GlobalModel.home.value.key,
-                    model.value.currentClass?.typeId ?: "",
-                    model.value.page.addAndGet(1).toString(),
-                    extend.isNotEmpty(),
-                    extend
-                )
+                val rst = loadCate(model.value.currentClass?.typeId ?: "")
                 if (!rst.isSuccess || rst.list.isEmpty()) {
                     model.value.currentClass?.failTime = model.value.currentClass?.failTime!! + 1
                     return@launch
                 }
                 val list = rst.list
                 // 有的源不支持分页 每次请求返回相同的数据
-                if(model.value.homeVodResult.map { it.vodId }.containsAll(list.map { it.vodId })){
+                if (model.value.homeVodResult.map { it.vodId }.containsAll(list.map { it.vodId })) {
                     model.value.currentClass?.failTime = model.value.currentClass?.failTime!! + 1
                     return@launch
                 }
@@ -217,29 +189,30 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
         }
     }
 
+    override fun loadCate(cate: String):Result {
+        val extend = HashMap<String, String>()
+        model.value.currentFilters.forEach {
+            if (it.key!!.isNotBlank() && it.init.isNotBlank()) {
+                extend[it.key] = it.init
+            }
+        }
+        val rst = SiteViewModel.categoryContent(
+            home.value.key,
+            cate,
+            _model.value.page.toString(),
+            extend.isNotEmpty(),
+            extend
+        )
+        return rst
+    }
+
     override fun chooseCate(cate: String) {
         if (isLoading.get()) return
         isLoading.set(true)
         SiteViewModel.viewModelScope.launch {
-            try {
-                model.value.page.set(1)
-                val extend = HashMap<String, String>()
-                model.value.currentFilters.forEach {
-                    model.value.currentFilters.forEach {
-                        extend[it.key!!] = it.init
-                    }
-                }
-                val result = SiteViewModel.categoryContent(
-                    GlobalModel.home.value.key,
-                    cate,
-                    model.value.page.toString(),
-                    extend.isNotEmpty(),
-                    extend
-                )
-                model.update { it.copy(homeVodResult = result.list.toMutableSet()) }
-            } finally {
-
-            }
+            model.value.page.set(1)
+            val result = loadCate(cate)
+            model.update { it.copy(homeVodResult = result.list.toMutableSet()) }
         }.invokeOnCompletion {
             isLoading.set(false)
         }
