@@ -134,7 +134,7 @@ fun HistoryScene(component: DefaultHistoryComponent, onClickItem:(Vod)->Unit, on
             ) {
                 items(model.value.historyList) {
                     HistoryItem(Modifier,
-                        it, showSite = false, { key ->
+                        it, showSite = false, onDelete = { key ->
                             Db.History.deleteBatch(listOf(key))
                             component.fetchHistoryList()
                         }) {
@@ -146,12 +146,5 @@ fun HistoryScene(component: DefaultHistoryComponent, onClickItem:(Vod)->Unit, on
             }
             VerticalScrollbar(rememberScrollbarAdapter(gridState))
         }
-//        if (vod != null) {
-//            DetailDialog( vod, chooseHistory?.getSiteKey() ?: "") {
-//                showDetailDialog = false
-//                vod = null
-//                chooseHistory = null
-//            }
-//        }
     }
 }

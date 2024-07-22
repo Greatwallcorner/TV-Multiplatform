@@ -340,6 +340,11 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             nextIndex = 0
             model.update { it.copy(detail = detail) }
         }
+        val size = detail?.currentFlag?.episodes?.size ?: 0
+        if(size <= nextIndex) {
+//            SnackBar.postMsg("没有更多了")
+            return
+        }
         detail?.subEpisode?.get(nextIndex)?.let {
             playEp(detail, it)
         }

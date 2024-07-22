@@ -37,9 +37,9 @@ import kotlin.math.roundToLong
 @Composable
 fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameController, component: DetailComponent) {
 
-    val state by controller.state.collectAsState()
+    val playerState by controller.state.collectAsState()
 
-    val animatedTimestamp by animateFloatAsState(state.timestamp.toFloat())
+    val animatedTimestamp by animateFloatAsState(playerState.timestamp.toFloat())
 
     Column(
         modifier.padding(horizontal = 8.dp, vertical = 1.dp),
@@ -49,7 +49,7 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameControll
         Slider(
             value = animatedTimestamp,
             onValueChange = { controller.seekTo(it.roundToLong()) },
-            valueRange = 0f..state.duration.toFloat(),
+            valueRange = 0f..playerState.duration.toFloat(),
             modifier = Modifier.fillMaxWidth().height(15.dp).padding(start = 4.dp, end = 4.dp, top = 8.dp, bottom = 20.dp),
             colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.secondary, disabledActiveTrackColor = MaterialTheme.colorScheme.tertiary)
         )
@@ -58,20 +58,20 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameControll
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextButtonTransparent(if(state.opening == -1L) "片头" else Utils.formatMilliseconds(state.opening)){
+            TextButtonTransparent(if(playerState.opening == -1L) "片头" else Utils.formatMilliseconds(playerState.opening)){
                 controller.updateOpening(component.model.value.detail)
             }
-            TextButtonTransparent(if(state.ending == -1L) "片尾" else Utils.formatMilliseconds(state.ending)){
+            TextButtonTransparent(if(playerState.ending == -1L) "片尾" else Utils.formatMilliseconds(playerState.ending)){
                 controller.updateEnding(component.model.value.detail)
             }
 
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-                Text("${state.timestamp.formatTimestamp()} / ${state.duration.formatTimestamp()}",
+                Text("${playerState.timestamp.formatTimestamp()} / ${playerState.duration.formatTimestamp()}",
                     color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold,
                 )
             }
-            if (state.isPlaying) {
+            if (playerState.state == PlayState.PLAY) {
                 IconButton(controller::pause) {
                     Icon(Icons.Rounded.Pause, "pause media", tint = MaterialTheme.colorScheme.primary)
                 }
@@ -85,25 +85,25 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameControll
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (state.isMuted || state.volume == 0f) IconButton(controller::toggleSound) {
+                    if (playerState.isMuted || playerState.volume == 0f) IconButton(controller::toggleSound) {
                         Icon(Icons.AutoMirrored.Rounded.VolumeOff, "volume off", tint = MaterialTheme.colorScheme.primary)
                     }
                     else {
-                        if (state.volume < .5f) IconButton(controller::toggleSound) {
+                        if (playerState.volume < .5f) IconButton(controller::toggleSound) {
                             Icon(Icons.AutoMirrored.Rounded.VolumeDown, "volume low", tint = MaterialTheme.colorScheme.primary)
                         } else IconButton(controller::toggleSound) {
                             Icon(Icons.AutoMirrored.Rounded.VolumeUp, "volume high", tint = MaterialTheme.colorScheme.primary )
                         }
                     }
                     Slider(
-                        value = state.volume,
+                        value = playerState.volume,
                         onValueChange = controller::setVolume,
                         modifier = Modifier.width(128.dp),
                         valueRange = 0f..1.5f,
                         colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.secondary, disabledActiveTrackColor = MaterialTheme.colorScheme.tertiary)
                     )
                     Spacer(Modifier.size(5.dp))
-                    Speed(initialValue = state.speed, Modifier.width(85.dp).height(45.dp)) { controller.speed(it ?: 1F) }
+                    Speed(initialValue = playerState.speed, Modifier.width(85.dp).height(45.dp)) { controller.speed(it ?: 1F) }
                     IconButton({controller.toggleFullscreen()}){
                         Icon(Icons.Default.Fullscreen, contentDescription = "fullScreen/UnFullScreen", tint = MaterialTheme.colorScheme.primary)
                     }

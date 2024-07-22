@@ -120,11 +120,12 @@ fun VideoScene(
     val scope = rememberCoroutineScope()
     val state = rememberLazyGridState()
     val model = component.model.subscribeAsState()
-    val list = derivedStateOf { model.value.homeVodResult.toTypedArray() }
+    val result = derivedStateOf { model.value.homeVodResult }
+    val list = derivedStateOf { result.value.toTypedArray() }
 
-    LaunchedEffect(list.value) {
-        println("list 修改")
-    }
+//    LaunchedEffect(list.value) {
+//        println("list 修改")
+//    }
 
     LaunchedEffect(state) {
         snapshotFlow { state.layoutInfo }

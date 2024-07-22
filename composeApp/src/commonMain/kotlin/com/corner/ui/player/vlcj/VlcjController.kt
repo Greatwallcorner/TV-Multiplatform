@@ -7,6 +7,7 @@ import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.History
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.MediaInfo
+import com.corner.ui.player.PlayState
 import com.corner.ui.player.PlayerController
 import com.corner.ui.player.PlayerState
 import com.corner.ui.scene.SnackBar
@@ -82,7 +83,6 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         }
 
         override fun videoOutput(mediaPlayer: MediaPlayer?, newCount: Int) {
-
             val trackInfo = mediaPlayer?.media()?.info()?.videoTracks()?.first()
             if(trackInfo != null){
                 _state.update { it.copy(mediaInfo = MediaInfo(url = mediaPlayer.media()?.info()?.mrl() ?: "", height = trackInfo.height(), width = trackInfo.width())) }
@@ -90,7 +90,11 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         }
 
         override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
-            _state.update { it.copy(isBuffering = newCache != 100F, bufferProgression = newCache) }
+            if(newCache != 100F){
+                _state.update { it.copy(state = PlayState.BUFFERING, bufferProgression = newCache) }
+            }else{
+                _state.update { it.copy(state = PlayState.PLAY, bufferProgression = newCache) }
+            }
         }
 
         override fun corked(mediaPlayer: MediaPlayer?, corked: Boolean) {
@@ -98,26 +102,26 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         }
 
         override fun opening(mediaPlayer: MediaPlayer?) {
-            _state.update { it.copy(isBuffering = true) }
+            _state.update { it.copy(state = PlayState.BUFFERING) }
         }
 
 
         override fun playing(mediaPlayer: MediaPlayer) {
-            _state.update { it.copy(isPlaying = true) }
+            _state.update { it.copy(state = PlayState.PLAY) }
         }
 
         override fun paused(mediaPlayer: MediaPlayer) {
-            _state.update { it.copy(isPlaying = false) }
+            _state.update { it.copy(state = PlayState.PAUSE) }
         }
 
         override fun stopped(mediaPlayer: MediaPlayer) {
             println("stopped")
-            _state.update { it.copy(isPlaying = false) }
+            _state.update { it.copy(state = PlayState.PAUSE) }
         }
 
         override fun finished(mediaPlayer: MediaPlayer) {
             println("finished")
-            _state.update { it.copy(isPlaying = false) }
+            _state.update { it.copy(state = PlayState.PAUSE) }
             scope.launch {
                 try {
                     if (checkEnd(mediaPlayer)) {
@@ -145,6 +149,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
                     (state as PlayerStateCache).add("volume", volume.toString())
                 }
             }
+            log.debug("volume:{}", volume)
             _state.update { it.copy(volume = volume) }
         }
 
@@ -162,12 +167,12 @@ class VlcjController(val component: DetailComponent) : PlayerController {
 
         override fun error(mediaPlayer: MediaPlayer?) {
             log.error("播放错误: ${mediaPlayer?.media()?.info()?.mrl()}")
+            _state.update { it.copy(state = PlayState.ERROR, msg = "播放错误") }
             scope.launch {
                 try {
                     if (checkEnd(mediaPlayer)) {
                         return@launch
                     }
-                    SnackBar.postMsg("播放错误")
                 } catch (e: Exception) {
                     log.error("error ", e)
                 }
@@ -178,7 +183,10 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         private fun checkEnd(mediaPlayer: MediaPlayer?): Boolean {
             try {
                 val len = mediaPlayer?.status()?.length() ?: 0
-                println("playable" + mediaPlayer?.status()?.isPlayable)
+                println("playable: " + mediaPlayer?.status()?.isPlayable)
+                if(mediaPlayer?.status()?.isPlayable == false){
+                    return true
+                }
 //                if (len <= 0 /*|| mediaPlayer?.status()?.time() != len*/ || mediaPlayer?.status()?.isPlayable == false) {
 //                    component.nextFlag()
 //                    return true

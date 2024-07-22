@@ -62,7 +62,7 @@ fun ExpandedText(text: String, maxLine: Int, textStyle: TextStyle = TextStyle())
 fun LoadingIndicator(showProgress: Boolean) {
     if (showProgress) {
         Box(
-            Modifier.fillMaxSize().shadow(8.dp, ambientColor = Color.DarkGray)
+            Modifier.fillMaxSize()
         ) {
             CircularProgressIndicator(
                 modifier = Modifier.width(64.dp).align(Alignment.Center),

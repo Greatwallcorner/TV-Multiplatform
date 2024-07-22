@@ -1,8 +1,7 @@
 package com.corner.ui.player
 
 data class PlayerState(
-    val isPlaying: Boolean = false,
-    val isBuffering:Boolean = false,
+    val state:PlayState = PlayState.PAUSE,
     val bufferProgression: Float = 0.0f,
     val isMuted: Boolean = false,
     var isFullScreen: Boolean = false,
@@ -13,6 +12,7 @@ data class PlayerState(
     var opening:Long = -1,
     val ending:Long = -1,
     val mediaInfo: MediaInfo? = null,
+    val msg:String = ""
 )
 
 data class MediaInfo(
@@ -20,3 +20,7 @@ data class MediaInfo(
     val width:Int,
     val url:String
 )
+
+enum class PlayState {
+    PLAY, BUFFERING, ERROR, PAUSE
+}
