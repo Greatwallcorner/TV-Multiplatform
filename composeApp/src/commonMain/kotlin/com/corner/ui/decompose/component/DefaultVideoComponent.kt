@@ -173,6 +173,7 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
                     model.value.currentClass?.failTime = model.value.currentClass?.failTime!! + 1
                     return@launch
                 }
+                _model.value.page.addAndGet(1)
                 val list = rst.list
                 // 有的源不支持分页 每次请求返回相同的数据
                 if (model.value.homeVodResult.map { it.vodId }.containsAll(list.map { it.vodId })) {
@@ -212,7 +213,7 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
         SiteViewModel.viewModelScope.launch {
             model.value.page.set(1)
             val result = loadCate(cate)
-            model.update { it.copy(homeVodResult = result.list.toMutableSet()) }
+            model.update { it.copy(homeVodResult = result.list.toMutableSet(), currentFilters = it.currentFilters) }
         }.invokeOnCompletion {
             isLoading.set(false)
         }
