@@ -47,7 +47,6 @@ import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
-import com.corner.ui.decompose.VideoComponent
 import com.corner.ui.decompose.component.DefaultVideoComponent
 import com.corner.ui.scene.*
 import com.corner.util.isScrollingUp
@@ -205,7 +204,7 @@ fun VideoScene(
                 }
             }
 
-            FiltersDialog(Modifier.align(Alignment.BottomCenter), showFiltersDialog, model, component) {
+            FiltersDialog(Modifier.align(Alignment.BottomCenter), showFiltersDialog, component) {
                 showFiltersDialog = false
             }
         }
@@ -217,11 +216,11 @@ fun VideoScene(
 private fun FiltersDialog(
     modifier: Modifier,
     showFiltersDialog: Boolean,
-    model: State<VideoComponent.Model>,
     component: DefaultVideoComponent,
     onClose: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val model = component.model.subscribeAsState()
     Dialog(
         modifier
             .fillMaxWidth(0.7f)
@@ -241,17 +240,23 @@ private fun FiltersDialog(
             ) {
                 items(model.value.currentFilters) { filter ->
                     val state = rememberLazyListState(0)
+                    val f = rememberUpdatedState(filter)
                     LazyRow(state = state , horizontalArrangement = Arrangement.spacedBy(5.dp),
                         modifier = Modifier.onPointerEvent(PointerEventType.Scroll) {
                         scope.launch {
                             state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
                         }
                     }) {
-                        items(filter.value ?: listOf()) {
+                        items(f.value.value ?: listOf()) {
                             RatioBtn(it.n ?: "", onClick = {
-                                filter.init = it.v ?: ""
+                                scope.launch {
+                                    f.value.init = it.v ?: ""
+                                    f.value.value?.filter { i -> i.n != it.n  }?.map { t -> t.selected = false }
+                                    it.selected = true
+                                    component.model.update { it.copy(currentFilters = model.value.currentFilters) }
+                                }
                                 component.chooseCate(it.v ?: "")
-                            }, selected = it.v == filter.init, loading = false)
+                            }, selected = it.selected, loading = false)
                         }
                     }
                 }

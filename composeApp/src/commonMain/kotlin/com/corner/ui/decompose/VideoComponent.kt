@@ -60,8 +60,8 @@ interface VideoComponent {
             result = 31 * result + homeLoaded.hashCode()
             result = 31 * result + classList.hashCode()
 //            classList.forEach{ result = 31 * result + it.hashCode()}
+            result = 31 * result + currentFilters.hashCode()
             result = 31 * result + filtersMap.hashCode()
-            result = 31 * result + (currentClass?.hashCode() ?: 0)
             result = 31 * result + (currentClass?.hashCode() ?: 0)
             result = 31 * result + page.hashCode()
             result = 31 * result + isRunning.hashCode()
