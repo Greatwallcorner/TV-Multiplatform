@@ -24,7 +24,8 @@ interface DetailComponent {
         var currentEp: Episode? = null,
         var showEpChooserDialog:Boolean = false,
         var shouldPlay:Boolean = false,
-        val currentUrl:Url? = null
+        val currentUrl:Url? = null,
+        val playResult:Result? = null
     )
 
     fun load()

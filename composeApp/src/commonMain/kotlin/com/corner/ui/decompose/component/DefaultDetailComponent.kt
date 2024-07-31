@@ -9,10 +9,7 @@ import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
 import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
-import com.corner.catvodcore.bean.Episode
-import com.corner.catvodcore.bean.Result
-import com.corner.catvodcore.bean.detailIsEmpty
-import com.corner.catvodcore.bean.v
+import com.corner.catvodcore.bean.*
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalModel
@@ -83,11 +80,6 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             }
         })
 
-//        scope.launch {
-//            controller?.history?.collect {
-//                updateHistory(it)
-//            }
-//        }
     }
 
     override fun updateHistory(it: History?) {
@@ -254,11 +246,11 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     override fun play(result: Result?) {
         //获取到的播放结果为空 尝试下一个线路
-        if (result == null) {
+        if (result == null || result.playResultIsEmpty()) {
             nextFlag()
             return
         }
-        model.update { it.copy(currentPlayUrl = result.url.v()) }
+        model.update { it.copy(currentPlayUrl = result.url.v(), playResult = result) }
     }
 
     override fun startPlay() {
@@ -305,7 +297,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             ep.url
         )
         model.update { it.copy(currentUrl = result?.url) }
-        if (result == null) {
+        if (result == null || result.playResultIsEmpty()) {
             nextFlag()
             return
         }
@@ -352,16 +344,22 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     override fun nextFlag() {
         log.info("nextFlag")
-        model.value.detail?.currentFlag = model.value.detail?.nextFlag()
-        if (model.value.detail?.currentFlag == null) {
-            model.value.detail?.vodId = "" // 清空id 快搜就会重新加载详情
+        val detail = model.value.detail?.copy()
+        detail?.currentFlag = model.value.detail?.nextFlag()
+        if (detail?.currentFlag == null) {
+            detail?.vodId = "" // 清空id 快搜就会重新加载详情
             quickSearch()
             return
         }
-        SnackBar.postMsg("切换至线路[${model.value.detail?.currentFlag?.flag}]")
-        controller.doWithHistory { it.copy(vodFlag = model.value.detail?.currentFlag?.flag) }
+        detail.subEpisode = model.value.detail?.currentFlag?.episodes?.getPage(model.value.detail?.currentTabIndex ?: 0)
+            ?.toMutableList()
+        SnackBar.postMsg("切换至线路[${detail.currentFlag?.flag}]")
+        controller.doWithHistory { it.copy(vodFlag = detail.currentFlag?.flag) }
         GlobalModel.chooseVod.value = model.value.detail!!
-        model.update { it.copy(detail = model.value.detail) }
+        model.update { it.copy(detail = detail) }
+        val findEp = detail.findAndSetEpByName(controller.history.value!!)
+//        if(findEp == null)
+        playEp(detail, findEp ?: detail.subEpisode!!.first())
     }
 
     override fun syncHistory() {

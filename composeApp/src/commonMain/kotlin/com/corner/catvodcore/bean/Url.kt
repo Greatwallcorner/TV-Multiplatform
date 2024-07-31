@@ -18,6 +18,10 @@ fun Url.replace(url:String){
     values[position].v = url
 }
 
+fun Url.isEmpty():Boolean{
+    return values.isEmpty() || values.filter { it.valueIsEmpty() }.size == values.size
+}
+
 fun Url.add(url:String):Url{
     values.add(Value("",url))
     return this

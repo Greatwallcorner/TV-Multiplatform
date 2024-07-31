@@ -114,6 +114,66 @@ data class Vod(
 //        flag.episodes.indexOf()
         return flag
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Vod
+
+        if (vodId != other.vodId) return false
+        if (vodName != other.vodName) return false
+        if (typeName != other.typeName) return false
+        if (vodPic != other.vodPic) return false
+        if (vodRemarks != other.vodRemarks) return false
+        if (vodYear != other.vodYear) return false
+        if (vodArea != other.vodArea) return false
+        if (vodDirector != other.vodDirector) return false
+        if (vodActor != other.vodActor) return false
+        if (vodContent != other.vodContent) return false
+        if (vodPlayFrom != other.vodPlayFrom) return false
+        if (vodPlayUrl != other.vodPlayUrl) return false
+        if (vodTag != other.vodTag) return false
+        if (cate != other.cate) return false
+        if (style != other.style) return false
+        if (land != other.land) return false
+        if (circle != other.circle) return false
+        if (ratio != other.ratio) return false
+        if (vodFlags != other.vodFlags) return false
+        if (site != other.site) return false
+        if (currentFlag != other.currentFlag) return false
+        if (subEpisode != other.subEpisode) return false
+        if (currentTabIndex != other.currentTabIndex) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = vodId.hashCode()
+        result = 31 * result + (vodName?.hashCode() ?: 0)
+        result = 31 * result + (typeName?.hashCode() ?: 0)
+        result = 31 * result + (vodPic?.hashCode() ?: 0)
+        result = 31 * result + (vodRemarks?.hashCode() ?: 0)
+        result = 31 * result + (vodYear?.hashCode() ?: 0)
+        result = 31 * result + (vodArea?.hashCode() ?: 0)
+        result = 31 * result + (vodDirector?.hashCode() ?: 0)
+        result = 31 * result + (vodActor?.hashCode() ?: 0)
+        result = 31 * result + (vodContent?.hashCode() ?: 0)
+        result = 31 * result + (vodPlayFrom?.hashCode() ?: 0)
+        result = 31 * result + (vodPlayUrl?.hashCode() ?: 0)
+        result = 31 * result + (vodTag?.hashCode() ?: 0)
+        result = 31 * result + (cate?.hashCode() ?: 0)
+        result = 31 * result + (style?.hashCode() ?: 0)
+        result = 31 * result + (land?.hashCode() ?: 0)
+        result = 31 * result + (circle?.hashCode() ?: 0)
+        result = 31 * result + (ratio?.hashCode() ?: 0)
+        vodFlags.forEach { result += 31 * result + it.hashCode() }
+        result = 31 * result + (site?.hashCode() ?: 0)
+        result = 31 * result + (currentFlag?.hashCode() ?: 0)
+        result = 31 * result + (subEpisode?.hashCode() ?: 0)
+        result = 31 * result + currentTabIndex
+        return result
+    }
 }
 
 enum class VodTag(val called: String) {

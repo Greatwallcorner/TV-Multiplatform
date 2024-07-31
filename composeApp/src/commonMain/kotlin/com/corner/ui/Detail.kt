@@ -252,6 +252,9 @@ private fun flags(
 ) {
     val model = component.model.subscribeAsState()
     val detail = derivedStateOf { model.value.detail }
+    LaunchedEffect(detail.value){
+        println("detail detail 修改")
+    }
     Row(Modifier.padding(start = 10.dp)) {
         Text(
             "线路",

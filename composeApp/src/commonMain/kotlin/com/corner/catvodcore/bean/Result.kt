@@ -58,3 +58,7 @@ class Result {
 fun Result.detailIsEmpty():Boolean{
     return list.isEmpty() || list[0].vodFlags[0]?.episodes?.isEmpty() == true
 }
+
+fun Result.playResultIsEmpty():Boolean{
+    return url.isEmpty()
+}

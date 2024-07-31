@@ -168,6 +168,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         override fun error(mediaPlayer: MediaPlayer?) {
             log.error("播放错误: ${mediaPlayer?.media()?.info()?.mrl()}")
             _state.update { it.copy(state = PlayState.ERROR, msg = "播放错误") }
+            component.nextFlag()
             scope.launch {
                 try {
                     if (checkEnd(mediaPlayer)) {
