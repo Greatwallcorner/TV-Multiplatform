@@ -170,6 +170,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             _state.update { it.copy(state = PlayState.ERROR, msg = "播放错误") }
             component.nextFlag()
             scope.launch {
+                component.updateHistory(history.value)
                 try {
                     if (checkEnd(mediaPlayer)) {
                         return@launch

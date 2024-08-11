@@ -149,7 +149,7 @@ fun ProgressIndicator(modifier: Modifier, text: String = "加载中...", progres
     Column(modifier) {
         if (progression != -1f) {
             CircularProgressIndicator(
-                progress = { progression },
+                progress = { progression / 100},
             )
         } else {
             CircularProgressIndicator()
