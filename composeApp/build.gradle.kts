@@ -87,6 +87,8 @@ kotlin {
             api("com.arkivanov.decompose:extensions-compose-jetbrains:2.2.2")
             // Add the dependency, typically under the commonMain source set
             api("com.arkivanov.essenty:lifecycle:1.3.0")
+
+            implementation("wang.harlon.quickjs:wrapper-java:2.0.0")
         }
 
         desktopMain.dependencies {

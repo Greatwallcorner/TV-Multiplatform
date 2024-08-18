@@ -13,7 +13,7 @@ import java.lang.reflect.Method
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 
-object JarLoader {
+public object JarLoader {
     private val log = LoggerFactory.getLogger(this::class.java)
     private val loaders: ConcurrentHashMap<String, URLClassLoader> by lazy { ConcurrentHashMap() }
 
@@ -28,6 +28,11 @@ object JarLoader {
         methods.clear()
         spiders.clear()
         recent = null
+    }
+
+    fun getLoader(key: String, jar: String): URLClassLoader? {
+        if (!loaders.containsKey(key)) loadJar(key, jar)
+        return loaders[key]
     }
 
     fun loadJar(key: String, spider: String) {
@@ -58,7 +63,7 @@ object JarLoader {
 
     private fun load(key: String, jar: File) {
         log.debug("load jar {}", jar)
-        loaders[key] =  URLClassLoader(arrayOf(jar.toURI().toURL()),this.javaClass.classLoader)
+        loaders[key] = URLClassLoader(arrayOf(jar.toURI().toURL()),this.javaClass.classLoader)
         putProxy(key)
         invokeInit(key)
     }

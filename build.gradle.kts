@@ -3,6 +3,7 @@ plugins {
     // in each subproject's classloader
     alias(libs.plugins.jetbrainsCompose) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
+    id("java")
 }
 
 version = 1

@@ -12,25 +12,26 @@ import kotlin.io.path.exists
 data class Setting(val id: String, val label: String, var value: String?)
 
 @Serializable
-sealed interface Cache{
-    fun getName():String
+sealed interface Cache {
+    fun getName(): String
 
-    fun add(t:String)
+    fun add(t: String, v: String)
 }
 
+
 @Serializable
-class SearchHistoryCache:Cache{
+class SearchHistoryCache : Cache {
 
-    private val maxSize:Int = 30
+    private val maxSize: Int = 30
 
-    private var searchHistoryList:LinkedHashSet<String> = linkedSetOf()
+    private var searchHistoryList: LinkedHashSet<String> = linkedSetOf()
     override fun getName(): String {
         return "searchHistory"
     }
 
-    override fun add(t:String) {
-        if(searchHistoryList.size >= maxSize){
-            val list:LinkedHashSet<String> = linkedSetOf()
+    override fun add(t: String, v: String) {
+        if (searchHistoryList.size >= maxSize) {
+            val list: LinkedHashSet<String> = linkedSetOf()
             list.addAll(searchHistoryList.drop(1))
             searchHistoryList = list
         }
@@ -38,29 +39,50 @@ class SearchHistoryCache:Cache{
         searchHistoryList.add(t)
     }
 
-    fun getSearchList():List<String>{
+    fun get(t: String): List<String> {
+        return searchHistoryList.reversed()
+    }
+
+    fun getSearchList(): List<String> {
         return searchHistoryList.reversed()
     }
 
 }
 
 @Serializable
-class PlayerStateCache:Cache{
-    private val map:MutableMap<String, String> = mutableMapOf();
+class PlayerStateCache : Cache {
+    private val map: MutableMap<String, String> = mutableMapOf();
     override fun getName(): String {
         return "playerState"
     }
 
-    override fun add(t: String) {
-
+    override fun add(key: String, value: String) {
+        map[key] = value
     }
 
-    fun add(key:String, value: String){
-        map.put(key,value)
+    fun get(key: String): String {
+        return map[key] ?: ""
     }
 
-    fun get(key: String):String?{
-        return map.get(key)
+}
+
+@Serializable
+class LocalCache : Cache {
+    private val map: MutableMap<String, String> = mutableMapOf();
+    override fun getName(): String {
+        return "localCache"
+    }
+
+    override fun add(t: String, v: String) {
+        map[t] = v
+    }
+
+    fun get(t: String): String {
+        return map[t] ?: ""
+    }
+
+    fun del(t: String) {
+        map.remove(t)
     }
 
 }
@@ -77,7 +99,8 @@ enum class SettingType(val id: String) {
     PLAYER("player"),
     VOD("vod"),
     LOG("log"),
-    SEARCHHISTORY("searchHistory")
+    SEARCHHISTORY("searchHistory"),
+    LOCAL_CACHE("localCache")
 }
 
 object SettingStore {
@@ -92,6 +115,7 @@ object SettingStore {
     init {
         getSettingList()
     }
+
     fun getSettingItem(s: String): String {
         return settingFile.list.find { it.id == s }?.value ?: ""
     }
@@ -103,7 +127,7 @@ object SettingStore {
         return settingFile.list
     }
 
-    fun reset(){
+    fun reset() {
         settingFile = SettingFile(mutableListOf(), mutableMapOf())
         initSetting()
         write()
@@ -117,13 +141,13 @@ object SettingStore {
         settingFile.list.find { i -> i.id == type.id }?.value = s
         write()
     }
-    
-    fun doWithCache(func:(MutableMap<String, Cache>) -> Unit){
+
+    fun doWithCache(func: (MutableMap<String, Cache>) -> Unit) {
         func(settingFile.cache)
         write()
     }
 
-    fun getCache(name:String): Cache? {
+    fun getCache(name: String): Cache? {
         return settingFile.cache[name]
     }
 
@@ -156,11 +180,11 @@ object SettingStore {
         return setOf()
     }
 
-    fun addSearchHistory(s: String){
+    fun addSearchHistory(s: String) {
         val cache = getCache(SettingType.SEARCHHISTORY.id)
-        if(cache == null) settingFile.cache[SettingType.SEARCHHISTORY.id] = SearchHistoryCache()
-        if(s.trim().isNotBlank()){
-            getCache(SettingType.SEARCHHISTORY.id)!!.add(s)
+        if (cache == null) settingFile.cache[SettingType.SEARCHHISTORY.id] = SearchHistoryCache()
+        if (s.trim().isNotBlank()) {
+            getCache(SettingType.SEARCHHISTORY.id)!!.add(s, s)
             write()
         }
     }

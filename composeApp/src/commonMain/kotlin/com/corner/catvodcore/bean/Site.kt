@@ -26,4 +26,8 @@ data class Site(
             return Site(key, name, -1, "")
         }
     }
+
+    fun isEmpty(): Boolean {
+        return key.isEmpty() && name.isEmpty()
+    }
 }

@@ -2,14 +2,18 @@ package com.corner.catvodcore.util
 
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.database.Db
+import com.corner.server.KtorD
 import org.apache.commons.lang3.StringUtils
+import org.apache.http.conn.util.InetAddressUtils
 import java.io.File
 import java.io.FileInputStream
 import java.math.BigInteger
+import java.net.InetAddress
 import java.security.MessageDigest
 import java.util.*
 
 object Utils {
+    @JvmStatic
     fun md5(str:String):String{
         try {
             if(StringUtils.isBlank(str)) return ""
@@ -55,6 +59,14 @@ object Utils {
         return Base64.getEncoder().encodeToString(bytes)
     }
 
+    fun decode(s: String?): ByteArray {
+        return decode(s)
+    }
+
+    fun decode(s: String?, flags: Int): ByteArray {
+        return  Base64.getDecoder().decode(s)
+    }
+
     fun getDigit(text: String): Int {
         try {
             if (text.startsWith("上") || text.startsWith("下")) return -1
@@ -82,6 +94,10 @@ object Utils {
         }else{
             "%02d:%02d".format(minutes, seconds)
         }
+    }
+
+    fun getIp(): String {
+        return InetAddress.getLocalHost().hostAddress
     }
 
 

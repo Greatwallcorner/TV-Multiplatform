@@ -101,7 +101,8 @@ fun FrameContainer(
             }
             when (playerState.value.state) {
                 PlayState.BUFFERING -> {
-                    if (bitmap != null) {
+                    if (playerState.value.bufferProgression > 0) {
+//                    if (bitmap != null) {
                         ProgressIndicator(
                             Modifier.align(Alignment.Center),
                             progression = playerState.value.bufferProgression

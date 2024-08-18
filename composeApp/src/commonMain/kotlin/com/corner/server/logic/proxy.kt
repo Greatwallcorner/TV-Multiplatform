@@ -2,6 +2,8 @@ package com.corner.server.logic
 
 import com.corner.catvodcore.loader.JarLoader
 import com.corner.catvodcore.util.KtorClient
+import com.corner.catvodcore.util.Utils
+import com.corner.server.KtorD
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -81,4 +83,8 @@ suspend fun downloadSegment(url: String, segment: Pair<Long, Long>, call: Applic
 //        headers { response.headers }
 //    }
     println("${response.contentLength()} ${response.headers.get(HttpHeaders.ContentRange)}")
+}
+
+fun getUrl(local: Boolean): String {
+    return "http://" + (if (local) "127.0.0.1" else Utils.getIp()) + ":" + KtorD.port + "/proxy"
 }

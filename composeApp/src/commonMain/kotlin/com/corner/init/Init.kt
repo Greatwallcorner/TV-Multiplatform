@@ -11,10 +11,13 @@ import com.corner.catvodcore.loader.JarLoader
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
 import com.corner.database.appModule
+import com.corner.quickjs.QuickJsInit
 import com.corner.server.KtorD
 import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
+import com.whl.quickjs.wrapper.QuickJSContext
+import com.whl.quickjs.wrapper.ModuleLoader
 import org.apache.commons.lang3.StringUtils
 import org.koin.core.context.startKoin
 import org.slf4j.LoggerFactory
@@ -29,6 +32,7 @@ class Init {
                 initKoin()
                 //Http Server
                 KtorD.init()
+                QuickJsInit.init()
                 initConfig()
                 initPlatformSpecify()
                 Hot.getHotList()

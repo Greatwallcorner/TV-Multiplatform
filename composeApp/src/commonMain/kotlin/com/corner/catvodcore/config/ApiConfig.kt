@@ -5,6 +5,7 @@ import com.corner.catvod.enum.bean.Rule
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.loader.JarLoader
+import com.corner.catvodcore.loader.JsLoader
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Urls
@@ -12,8 +13,8 @@ import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Config
 import com.corner.database.Db
 import com.corner.ui.scene.SnackBar
-import com.corner.util.isEmpty
 import com.github.catvod.crawler.Spider
+import com.github.catvod.crawler.SpiderNull
 import okio.Path.Companion.toPath
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -21,17 +22,17 @@ import java.nio.file.Files
 
 private val log = LoggerFactory.getLogger("apiConfig")
 
-object ApiConfig{
+object ApiConfig {
     var api: Api = Api(spider = "")
 
-    fun clear(){
+    fun clear() {
         api = Api(spider = "")
     }
 
     fun parseConfig(cfg: Config, isJson: Boolean): Api {
         log.info("parseConfig start cfg:{} isJson:{}", cfg, isJson)
         val data = getData(if (isJson) cfg.json ?: "" else cfg.url!!, isJson) ?: throw RuntimeException("配置读取异常")
-        if(StringUtils.isBlank(data)) {
+        if (StringUtils.isBlank(data)) {
             log.warn("配置数据为空")
             SnackBar.postMsg("配置数据为空 请检查")
             setHome(null)
@@ -43,36 +44,39 @@ object ApiConfig{
         api.data = data
         api.cfg.value = cfg
         JarLoader.loadJar("", api.spider)
-        if(cfg.home?.isNotBlank() == true) {
+        if (cfg.home?.isNotBlank() == true) {
             setHome(api.sites.find { it.key == cfg.home })
-        }else{
+        } else {
             setHome(api.sites.first())
         }
         log.info("parseConfig end")
         return apiConfig
     }
 
-    fun setHome(home:Site?){
-        GlobalModel.home.value = home ?: Site.get("","")
+    fun setHome(home: Site?) {
+        GlobalModel.home.value = home ?: Site.get("", "")
     }
 
+    /**
+     * /* if (py) pyLoader.getSpider(
+     *         site.key,
+     *         site.api,
+     *         site.ext
+     *     ) else */
+     */
     fun getSpider(site: Site): Spider {
-//    val js: Boolean = site.api.contains(".js")
+        val js: Boolean = site.api.contains(".js")
 //    val py: Boolean = site.api.contains(".py")
         val csp: Boolean = site.api.startsWith("csp_")
-        return/* if (py) pyLoader.getSpider(
-        site.key,
-        site.api,
-        site.ext
-    ) else if (js) jsLoader.getSpider(
-        site.key,
-        site.api,
-        site.ext,
-        site.jar
-    ) else*/ if (csp) JarLoader.getSpider(site.key, site.api, site.ext , site.jar ?: "") else Spider()
+        return if (js) JsLoader.getSpider(
+            site.key,
+            site.api,
+            site.ext,
+            site.jar ?: ""
+        ) else if (csp) JarLoader.getSpider(site.key, site.api, site.ext, site.jar ?: "") else SpiderNull()
     }
 
-    fun getSite(key:String): Site? {
+    fun getSite(key: String): Site? {
         return api.sites.find { it.key == key }
     }
 
@@ -133,7 +137,7 @@ object ApiConfig{
                 return Files.readString(file.toPath())
             }
         } catch (e: Exception) {
-            SnackBar.postMsg("获取配置失败: "+e.message)
+            SnackBar.postMsg("获取配置失败: " + e.message)
             log.error("获取配置失败", e)
             return ""
         }

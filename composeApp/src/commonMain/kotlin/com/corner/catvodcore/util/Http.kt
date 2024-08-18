@@ -119,14 +119,33 @@ class Http {
             return selector!!
         }
 
-        fun client(connectTimeout: Int): HttpClient.Builder {
-            return HttpClient.newBuilder().connectTimeout(Duration.of(connectTimeout.toLong(), ChronoUnit.MINUTES))
+//        fun client(connectTimeout: Int): HttpClient.Builder {
+//            return HttpClient.newBuilder().connectTimeout(Duration.of(connectTimeout.toLong(), ChronoUnit.MINUTES))
+//        }
+
+        fun client(timeout: Int): OkHttpClient {
+            return client().newBuilder()
+                .connectTimeout(timeout.toLong(), TimeUnit.MILLISECONDS)
+                .readTimeout(timeout.toLong(), TimeUnit.MILLISECONDS)
+                .writeTimeout(timeout.toLong(), TimeUnit.MILLISECONDS).build()
         }
 
         fun client(): OkHttpClient {
             return if (client == null) builder.build().also {
                 client = it
             } else client!!
+        }
+
+        fun noRedirect(timeout: Int): OkHttpClient {
+            return client().newBuilder()
+                .connectTimeout(timeout.toLong(), TimeUnit.MILLISECONDS)
+                .readTimeout(timeout.toLong(), TimeUnit.MILLISECONDS)
+                .writeTimeout(timeout.toLong(), TimeUnit.MILLISECONDS).followRedirects(false).followSslRedirects(false)
+                .build()
+        }
+
+        fun client(redirect: Boolean, timeout: Int): OkHttpClient {
+            return if (redirect) client(timeout) else noRedirect(timeout)
         }
 
         @JvmOverloads
