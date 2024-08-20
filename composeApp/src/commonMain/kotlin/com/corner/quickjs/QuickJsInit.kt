@@ -13,7 +13,7 @@ object QuickJsInit {
         val resPath = System.getProperty(Constants.resPathKey)
         if(resPath.isNullOrBlank()) {
             log.error("资源路径为空")
-            val resource = this.javaClass.getResource("/lib/qjs")
+            val resource = this.javaClass.getResource("/lib/qjs.exe")
             if (resource != null) {
                 if(!resource.file.isNullOrBlank()){
                     val file = File(resource.file)

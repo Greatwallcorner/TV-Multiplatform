@@ -38,6 +38,14 @@ class commonTest {
     }
 
     @Test
+    fun fileTest(){
+        var b = "\u202AF:\\ProgramFiles\\tool\\vlc"
+        var a = "\u202AF:\\ProgramFiles\\tool\\vlc".filter { i -> !Character.isWhitespace(i) }
+
+        println(File(a.replace("\\p{Cc}", "")).exists())
+    }
+
+    @Test
     fun resolve(){
 //        val convert = Urls.convert(
 //            "F:/sync/compose-mutiplatform-workspace/My/CatVodSpider/json/config.json",
