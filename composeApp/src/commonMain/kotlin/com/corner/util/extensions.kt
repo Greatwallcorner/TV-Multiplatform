@@ -2,9 +2,11 @@ package com.corner.util
 
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.*
+import cn.hutool.core.util.CharUtil
 import com.corner.catvod.enum.bean.Site
 import io.ktor.util.*
 import kotlinx.coroutines.Job
+import org.apache.commons.lang3.StringUtils
 import java.util.concurrent.TimeUnit
 
 fun Site.isEmpty():Boolean{
@@ -50,4 +52,30 @@ fun Long.formatTimestamp(): String {
     val minutes = TimeUnit.MILLISECONDS.toMinutes(this) - TimeUnit.HOURS.toMinutes(hours)
     val seconds = TimeUnit.MILLISECONDS.toSeconds(this) - TimeUnit.MINUTES.toSeconds(minutes) - TimeUnit.HOURS.toSeconds(hours)
     return String.format("%02d:%02d:%02d", hours, minutes, seconds)
+}
+
+fun String.deleteInvisibleChar():String{
+    val str = this
+    if (StringUtils.isEmpty(str)) {
+        return str
+    }
+    val sz: Int = str.length
+    val chs = CharArray(sz)
+    var count = 0
+    for (i in 0 until sz) {
+        if (!CharUtil.isBlankChar(str[i])) {
+            chs[count++] = str[i]
+        }
+    }
+    if (count == sz) {
+        return str
+    }
+    if (count == 0) {
+        return StringUtils.EMPTY
+    }
+    return String(chs, 0, count)
+}
+
+fun String.trimBlankChar():String{
+    return this.trim{CharUtil.isBlankChar(it)}
 }
