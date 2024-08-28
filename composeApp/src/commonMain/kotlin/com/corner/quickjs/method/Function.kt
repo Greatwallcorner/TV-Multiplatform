@@ -1,10 +1,11 @@
 package com.corner.quickjs.method
 
 import com.whl.quickjs.wrapper.*
+import org.mozilla.javascript.Scriptable
 import java.util.concurrent.Callable
 
 class Function private constructor(
-    private val `object`: JSObject,
+    private val `object`: Scriptable,
     private val name: String,
     private val args: Array<Any>
 ) : Callable<Any?> {
@@ -12,7 +13,7 @@ class Function private constructor(
 
     @Throws(Exception::class)
     override fun call(): Any? {
-        val function = `object`.getJSFunction(name) ?: return null
+        val function = `object`.get(name) ?: return null
         result = function.call(*args)
         if (result is JSObject) then(result!!)
         return result

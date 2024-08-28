@@ -88,7 +88,10 @@ kotlin {
             // Add the dependency, typically under the commonMain source set
             api("com.arkivanov.essenty:lifecycle:1.3.0")
 
-            implementation("wang.harlon.quickjs:wrapper-java:2.0.0")
+//            implementation("wang.harlon.quickjs:wrapper-java:2.0.0")
+
+            // https://mvnrepository.com/artifact/org.mozilla/rhino
+            implementation("org.mozilla:rhino:1.7.15")
         }
 
         desktopMain.dependencies {
