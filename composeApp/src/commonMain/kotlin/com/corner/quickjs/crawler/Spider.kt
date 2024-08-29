@@ -10,7 +10,11 @@ import com.corner.quickjs.utils.JSUtil
 import com.corner.quickjs.utils.Module
 import org.json.JSONArray
 import org.mozilla.javascript.Context
+import org.mozilla.javascript.FunctionObject
+import org.mozilla.javascript.NativeArray
+import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
+import org.mozilla.javascript.annotations.JSFunction
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
@@ -24,7 +28,7 @@ class Spider(private val key: String, private val api: String, private val loade
     private val executor: ExecutorService = Executors.newSingleThreadExecutor()
     private var cat = false
     private var ctx: Context? = null
-    private var ScriptableObject: ScriptableObject? = null
+    private var jsObject: ScriptableObject? = null
     private val log: Logger = LoggerFactory.getLogger(Spider::class.java)
 
     init {
@@ -44,7 +48,7 @@ class Spider(private val key: String, private val api: String, private val loade
         //return executor.submit((Function.call(ScriptableObject, func, args))).get();
         try {
             return CompletableFuture.supplyAsync(
-                { Async.run(ScriptableObject!!, func, args as Array<Any>) }, executor
+                { Async.run(jsObject!!, func, args as Array<Any>) }, executor
             ).join().get() ?: Any()
         } catch (e: Exception) {
             log.error("call 调用错误", e)
@@ -72,7 +76,7 @@ class Spider(private val key: String, private val api: String, private val loade
 
     override fun categoryContent(tid: String, pg: String, filter: Boolean, extend: HashMap<String, String>): String {
         try {
-            val obj = submit<ScriptableObject> { JSUtil.toObj(ctx, extend) }.get()
+            val obj = submit<Scriptable> { JSUtil.toObj(ctx, jsObject!!, extend) }.get()
             return call("category", tid, pg, filter, obj) as String
         } catch (e: Exception) {
             log.error("cate错误", e)
@@ -94,9 +98,9 @@ class Spider(private val key: String, private val api: String, private val loade
     }
 
     override fun playerContent(flag: String?, id: String?, vipFlags: List<String?>?): String {
-        var array: JSArray? = null
+        var array: NativeArray? = null
         try {
-            array = submit<JSArray> { JSUtil.toArray(ctx, vipFlags) }.get()
+            array = submit<NativeArray> { JSUtil.toArray(ctx, jsObject!!, vipFlags) }.get()
         } catch (e: Exception) {
             log.error("playContent 错误", e)
         }
@@ -140,11 +144,11 @@ class Spider(private val key: String, private val api: String, private val loade
 
     private fun createCtx() {
         ctx = Context.enter()
-        ScriptableObject = ctx!!.initStandardObjects()
+        jsObject = ctx!!.initStandardObjects()
         ctx!!.apply {
 //            setConsole(Console())
-            evaluateString(ScriptableObject, Asset.read("js/lib/http.js"), "http", 1, null)
-            Global.create(ctx!!, executor).setProperty()
+            evaluateString(jsObject, Asset.read("js/lib/http.js"), "http", 1, null)
+            Global.create(ctx!!,jsObject!!, executor).setProperty()
 //            getGlobalObject().setProperty("local", Local::class.java)
 //            setModuleLoader(object : BytecodeModuleLoader() {
 //                override fun moduleNormalizeName(baseModuleName: String, moduleName: String): String {
@@ -164,10 +168,10 @@ class Spider(private val key: String, private val api: String, private val loade
 
     private fun createLoader() {
         try {
-            val obj = ctx!!.createNewScriptableObject()
+            val obj = ctx!!.newObject(jsObject)
             val clz = loader!!.loadClass("com.github.catvod.js.Method")
             val classes = clz.declaredClasses
-            ctx!!.globalObject.setProperty("jsapi", obj)
+            jsObject?.put("jsapi",jsObject,obj)
             if (classes.size == 0) invokeSingle(clz, obj)
             if (classes.size >= 1) invokeMultiple(clz, obj)
         } catch (e: Throwable) {
@@ -176,39 +180,39 @@ class Spider(private val key: String, private val api: String, private val loade
     }
 
     @Throws(Throwable::class)
-    private fun invokeSingle(clz: Class<*>, jsObj: ScriptableObject) {
-        invoke(clz, jsObj, clz.getDeclaredConstructor(QuickJSContext::class.java).newInstance(ctx))
+    private fun invokeSingle(clz: Class<*>, jsObj: Scriptable) {
+        invoke(clz, jsObj, clz.getDeclaredConstructor(Context::class.java).newInstance(ctx))
     }
 
     @Throws(Throwable::class)
-    private fun invokeMultiple(clz: Class<*>, jsObj: ScriptableObject) {
+    private fun invokeMultiple(clz: Class<*>, jsObj: Scriptable) {
         for (subClz in clz.declaredClasses) {
             val javaObj = subClz.getDeclaredConstructor(clz).newInstance(
                 clz.getDeclaredConstructor(
-                    QuickJSContext::class.java
+                    Context::class.java
                 ).newInstance(ctx)
             )
-            val subObj = ctx!!.createNewScriptableObject()
+            val subObj = ctx!!.newObject(jsObject)
             invoke(subClz, subObj, javaObj)
-            jsObj.setProperty(subClz.simpleName, subObj)
+            jsObj.put(subClz.simpleName,jsObject, subObj)
         }
     }
 
-    private fun invoke(clz: Class<*>, jsObj: ScriptableObject, javaObj: Any) {
+    private fun invoke(clz: Class<*>, jsObj: Scriptable, javaObj: Any) {
         for (method in clz.methods) {
-            if (!method.isAnnotationPresent(JSMethod::class.java)) continue
+            if (!method.isAnnotationPresent(JSFunction::class.java)) continue
             invoke(jsObj, method, javaObj)
         }
     }
 
-    private fun invoke(jsObj: ScriptableObject, method: Method, javaObj: Any) {
-        jsObj.setProperty(method.name) { args: Array<Any?> ->
+    private fun invoke(jsObj: Scriptable, method: Method, javaObj: Any) {
+        jsObj.put(method.name, jsObj, FunctionObject(method.name, method, jsObj)) /*{ args: Array<Any?> ->
             try {
                 return@setProperty method.invoke(javaObj, *args)
             } catch (e: Throwable) {
                 return@setProperty null
             }
-        }
+        }*/
     }
 
     private fun createObj() {
@@ -216,19 +220,19 @@ class Spider(private val key: String, private val api: String, private val loade
         val spider = "__JS_SPIDER__"
         val global = "globalThis.$spider"
         val content = Module.get().fetch(api)
-        if (content.startsWith("//bb")) ctx!!.execute(Module.get().bb(content))
-        else ctx!!.evaluateModule(content.replace(spider, global), api)
-        ctx!!.evaluateModule(String.format(Asset.read("js/lib/spider.js"), api))
-        if (content.startsWith("//bb") || content.contains(jsEval)) cat = true
-        ScriptableObject = ctx!!.getProperty(ctx!!.globalObject, spider) as ScriptableObject
+//        if (content.startsWith("//bb")) ctx!!.evaluateString(jsObject, Module.get().bb(content), "bb", 1, null)
+        ctx!!.evaluateString(jsObject, content.replace(spider, global),api, 1, null)
+        ctx!!.evaluateString(jsObject, String.format(Asset.read("js/lib/spider.js")), api,1, null)
+        if (content.contains(jsEval)) cat = true
+//        ScriptableObject = ctx!!.getProperty(ctx!!.globalObject, spider) as ScriptableObject
     }
 
     private fun cfg(ext: String?): ScriptableObject {
-        val cfg = ctx!!.createNewScriptableObject()
-        cfg.setProperty("stype", 3)
-        cfg.setProperty("skey", key)
-        if (Json.invalid(ext)) cfg.setProperty("ext", ext)
-        else cfg.setProperty("ext", ctx!!.parse(ext) as ScriptableObject)
+        val cfg = ctx!!.newObject(jsObject)
+        cfg.put("stype",jsObject, 3)
+        cfg.put("skey",jsObject, key)
+        if (Json.invalid(ext)) cfg.put("ext",jsObject, ext)
+        else cfg.put("ext", ctx!!.parse(ext) as ScriptableObject)
         return cfg
     }
 

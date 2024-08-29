@@ -13,8 +13,8 @@ import java.util.Map;
 
 public class JSUtil {
 
-    public static Scriptable toArray(Context ctx, ScriptableObject scope, List<String> items) {
-        return ctx.newArray(scope, items.toArray());
+    public static NativeArray toArray(Context ctx, ScriptableObject scope, List<String> items) {
+        return (NativeArray)ctx.newArray(scope, items.toArray());
     }
 
     public static Scriptable toArray(Context ctx, ScriptableObject scope, byte[] bytes) {
