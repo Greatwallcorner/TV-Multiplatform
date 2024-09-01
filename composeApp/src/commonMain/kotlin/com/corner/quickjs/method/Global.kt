@@ -42,22 +42,22 @@ class Global private constructor(
         if (!executor.isShutdown) executor.submit(runnable)
     }
 
-    @JSFunction
+
     fun s2t(text: String?): String {
         return Trans.s2t(false, text)
     }
 
-    @JSFunction
+
     fun t2s(text: String?): String {
         return Trans.t2s(false, text)
     }
 
-    @JSFunction
+
     fun getProxy(local: Boolean): String {
         return getUrl(local) + "?do=js"
     }
 
-    @JSFunction
+
     fun js2Proxy(dynamic: Boolean?, siteType: Int, siteKey: String, url: String?, headers: ScriptableObject): String {
         return getProxy(!dynamic!!) + "&from=catvod" + "&siteType=" + siteType + "&siteKey=" + siteKey + "&header=" + URLEncodeUtil.encode(
             (
@@ -66,14 +66,14 @@ class Global private constructor(
         )
     }
 
-    @JSFunction
+
     fun setTimeout(func: FunctionObject, delay: Int): Any? {
 //        func.hold()
         schedule(func, delay)
         return null
     }
 
-    @JSFunction
+
     fun _http(url: String?, options: ScriptableObject): Scriptable? {
         if (options.has("complete", options)) {
             val funComplete = options.get("complete")
@@ -88,7 +88,7 @@ class Global private constructor(
         return null
     }
 
-    @JSFunction
+
     fun req(url: String?, options: ScriptableObject): Scriptable {
         try {
             val req: Req = Req.objectFrom(Context.toString(options))
@@ -99,36 +99,32 @@ class Global private constructor(
         }
     }
 
-    @JSFunction
+
     fun pd(html: String?, rule: String?, urlKey: String?): String {
         return parser.parseDomForUrl(html, rule, urlKey)
     }
 
-    @JSFunction
+
     fun pdfh(html: String?, rule: String?): String {
         return parser.parseDomForUrl(html, rule, "")
     }
 
 
-    @JSFunction
-    fun pdfa(html: String?, rule: String?): NativeArray {
+    fun pdfa(html: String?, rule: String?): List<Any> {
         return JSUtil.toArray(ctx, jsObject, parser.parseDomForArray(html, rule))
     }
 
 
-    @JSFunction
     fun pdfl(html: String?, rule: String?, texts: String?, urls: String?, urlKey: String?): NativeArray {
         return JSUtil.toArray(ctx, jsObject, parser.parseDomForList(html, rule, texts, urls, urlKey))
     }
 
 
-    @JSFunction
     fun joinUrl(parent: String, child: String): String {
         return Urls.convert(parent, child)
     }
 
 
-    @JSFunction
     @Throws(CharacterCodingException::class)
     fun gbkDecode(buffer: NativeArray?): String {
         val result: String = JSUtil.decodeTo("GB2312", buffer)
@@ -137,7 +133,6 @@ class Global private constructor(
     }
 
 
-    @JSFunction
     fun md5X(text: String?): String {
         val result: String = Crypto.md5(text)
         log.debug("text:{}\nresult:\n{}", text, result)
@@ -145,7 +140,6 @@ class Global private constructor(
     }
 
 
-    @JSFunction
     fun aesX(
         mode: String?,
         encrypt: Boolean,
@@ -171,7 +165,6 @@ class Global private constructor(
     }
 
 
-    @JSFunction
     fun rsaX(
         mode: String?,
         pub: Boolean,

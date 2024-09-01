@@ -10,14 +10,9 @@ import com.corner.quickjs.utils.JSUtil
 import com.corner.quickjs.utils.Module
 import com.dokar.quickjs.QuickJs
 import com.dokar.quickjs.binding.JsObject
+import kotlinx.coroutines.Dispatchers
 import netscape.javascript.JSObject
 import org.json.JSONArray
-import org.mozilla.javascript.Context
-import org.mozilla.javascript.FunctionObject
-import org.mozilla.javascript.NativeArray
-import org.mozilla.javascript.Scriptable
-import org.mozilla.javascript.ScriptableObject
-import org.mozilla.javascript.annotations.JSFunction
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
@@ -61,8 +56,8 @@ class Spider(private val key: String, private val api: String, private val loade
 
     override fun init(extend: String?) {
         try {
-            if (cat) call("init", submit<JSObject> { cfg(extend) }.get())
-            else call("init", (if (Json.valid(extend)) Context.javaToJS(extend, jsObject, ctx) else extend)!!)
+            if (cat) call("init", submit<JsObject> { cfg(extend) }.get())
+            else call("init", (if (Json.valid(extend)) Json.toMap(extend) else extend)!!)
         } catch (e: Exception) {
             log.error("初始化错误", e)
             //            throw new RuntimeException(e);
@@ -79,8 +74,7 @@ class Spider(private val key: String, private val api: String, private val loade
 
     override fun categoryContent(tid: String, pg: String, filter: Boolean, extend: HashMap<String, String>): String {
         try {
-            val obj = submit<JSObject> { JSUtil.toObj(ctx, jsObject!!, extend) }.get()
-            return call("category", tid, pg, filter, obj) as String
+            return call("category", tid, pg, filter, extend) as String
         } catch (e: Exception) {
             log.error("cate错误", e)
             //            throw new RuntimeException(e);
@@ -101,13 +95,11 @@ class Spider(private val key: String, private val api: String, private val loade
     }
 
     override fun playerContent(flag: String?, id: String?, vipFlags: List<String?>?): String {
-        var array: NativeArray? = null
-        try {
-            array = submit<NativeArray> { JSUtil.toArray(ctx, jsObject!!, vipFlags) }.get()
-        } catch (e: Exception) {
-            log.error("playContent 错误", e)
-        }
-        return call("play", flag!!, id!!, array!!) as String
+//        try {
+//        } catch (e: Exception) {
+//            log.error("playContent 错误", e)
+//        }
+        return call("play", flag!!, id!!, vipFlags!!) as String
     }
 
     override fun manualVideoCheck(): Boolean {
@@ -146,7 +138,7 @@ class Spider(private val key: String, private val api: String, private val loade
     }
 
     private fun createCtx() {
-        ctx = Context.enter()
+        ctx = QuickJs.create(Dispatchers.Default)
         jsObject = ctx!!.initStandardObjects()
         ctx!!.apply {
 //            setConsole(Console())
@@ -230,8 +222,8 @@ class Spider(private val key: String, private val api: String, private val loade
 //        ScriptableObject = ctx!!.getProperty(ctx!!.globalObject, spider) as ScriptableObject
     }
 
-    private fun cfg(ext: String): JsObject {
-        val map = mutableMapOf<String, Any>()
+    private fun cfg(ext: String?): JsObject {
+        val map = mutableMapOf<String, Any?>()
         map["stype"] = 3
         map["skey"] = key
         if (Json.invalid(ext)) map["ext"] = ext
