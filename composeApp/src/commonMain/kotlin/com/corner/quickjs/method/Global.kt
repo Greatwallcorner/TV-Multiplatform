@@ -1,5 +1,6 @@
 package com.corner.quickjs.method
 
+import cn.hutool.core.net.URLEncodeUtil
 import com.corner.catvodcore.util.Trans
 import com.corner.catvodcore.util.Urls
 import com.corner.quickjs.bean.Req
@@ -11,34 +12,24 @@ import com.corner.server.logic.getUrl
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
-import org.mozilla.javascript.Context
-import org.mozilla.javascript.FunctionObject
-import org.mozilla.javascript.NativeArray
-import org.mozilla.javascript.ScriptableObject
+import org.mozilla.javascript.*
 import org.mozilla.javascript.annotations.JSFunction
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
-import java.net.URLEncoder
 import java.util.*
 import java.util.concurrent.ExecutorService
 
-class Global private constructor(ctx: Context, scope: ScriptableObject, executor: ExecutorService) {
+class Global private constructor(
+    private val ctx: Context,
+    scope: ScriptableObject,
     private val executor: ExecutorService
-    private val ctx: Context
-    private val jsObject: ScriptableObject
-    private val parser: Parser
-    private val timer: Timer
+) {
+    private val jsObject: ScriptableObject = scope
+    private val parser: Parser = Parser()
+    private val timer: Timer = Timer()
 
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
-
-    init {
-        this.parser = Parser()
-        this.executor = executor
-        this.timer = Timer()
-        this.ctx = ctx
-        this.jsObject = scope
-    }
 
     fun setProperty() {
         for (method in javaClass.methods) {
@@ -48,7 +39,7 @@ class Global private constructor(ctx: Context, scope: ScriptableObject, executor
     }
 
     private fun submit(runnable: Runnable) {
-        if (!executor.isShutdown()) executor.submit(runnable)
+        if (!executor.isShutdown) executor.submit(runnable)
     }
 
     @JSFunction
@@ -68,34 +59,43 @@ class Global private constructor(ctx: Context, scope: ScriptableObject, executor
 
     @JSFunction
     fun js2Proxy(dynamic: Boolean?, siteType: Int, siteKey: String, url: String?, headers: ScriptableObject): String {
-        return getProxy(!dynamic!!) + "&from=catvod" + "&siteType=" + siteType + "&siteKey=" + siteKey + "&header=" + URLEncoder.encode(
-            headers.stringify()
-        ) + "&url=" + URLEncoder.encode(url)
+        return getProxy(!dynamic!!) + "&from=catvod" + "&siteType=" + siteType + "&siteKey=" + siteKey + "&header=" + URLEncodeUtil.encode(
+            (
+                    Context.toString(headers)
+                    ) + "&url=" + URLEncodeUtil.encode(url)
+        )
     }
 
     @JSFunction
     fun setTimeout(func: FunctionObject, delay: Int): Any? {
-        func.hold()
+//        func.hold()
         schedule(func, delay)
         return null
     }
 
     @JSFunction
-    fun _http(url: String?, options: ScriptableObject): ScriptableObject? {
-        val complete = options.getJSFunction("complete") ?: return req(url, options)
-        val req: Req = Req.objectFrom(options.stringify())
-        Connect.to(url, req).enqueue(getCallback(complete, req))
+    fun _http(url: String?, options: ScriptableObject): Scriptable? {
+        if (options.has("complete", options)) {
+            val funComplete = options.get("complete")
+            val req: Req = Req.objectFrom(Context.toString(options))
+            Connect.to(url, req).enqueue(getCallback(funComplete as ScriptableObject, req))
+        } else {
+            return req(url, options)
+        }
+//        val complete = options.getJSFunction("complete") ?: return req(url, options)
+//        val req: Req = Req.objectFrom(options.stringify())
+//        Connect.to(url, req).enqueue(getCallback(complete, req))
         return null
     }
 
     @JSFunction
-    fun req(url: String?, options: ScriptableObject): ScriptableObject {
+    fun req(url: String?, options: ScriptableObject): Scriptable {
         try {
-            val req: Req = Req.objectFrom(options.stringify())
+            val req: Req = Req.objectFrom(Context.toString(options))
             val res: Response = Connect.to(url, req).execute()
-            return Connect.success(ctx, req, res)
+            return Connect.success(ctx, options, req, res)
         } catch (e: Exception) {
-            return Connect.error(ctx)
+            return Connect.error(ctx, options)
         }
     }
 
@@ -111,14 +111,14 @@ class Global private constructor(ctx: Context, scope: ScriptableObject, executor
 
 
     @JSFunction
-    fun pdfa(html: String?, rule: String?): JSArray {
-        return JSUtil.toArray(ctx, parser.parseDomForArray(html, rule))
+    fun pdfa(html: String?, rule: String?): NativeArray {
+        return JSUtil.toArray(ctx, jsObject, parser.parseDomForArray(html, rule))
     }
 
 
     @JSFunction
     fun pdfl(html: String?, rule: String?, texts: String?, urls: String?, urlKey: String?): NativeArray {
-        return JSUtil.toArray(ctx, parser.parseDomForList(html, rule, texts, urls, urlKey))
+        return JSUtil.toArray(ctx, jsObject, parser.parseDomForList(html, rule, texts, urls, urlKey))
     }
 
 
@@ -201,12 +201,25 @@ class Global private constructor(ctx: Context, scope: ScriptableObject, executor
 
             override fun onResponse(call: Call, res: Response) {
                 submit {
-                    FunctionObject.callMethod(complete, complete.className, arrayOf(Connect.success(ctx, req, res)))
+                    (complete as FunctionObject).call(
+                        ctx,
+                        jsObject,
+                        complete,
+                        arrayOf(Connect.success(ctx, jsObject, req, res))
+                    )
+//                    FunctionObject.callMethod(complete, complete.className, arrayOf(Connect.success(ctx, req, res)))
 //                    complete.call(Connect.success(ctx, req, res)) }
                 }
+            }
 
-                override fun onFailure(call: Call, e: IOException) {
-                    submit { complete.call(Connect.error(ctx)) }
+            override fun onFailure(call: Call, e: IOException) {
+                submit {
+                    (complete as FunctionObject).call(
+                        ctx,
+                        jsObject,
+                        complete,
+                        arrayOf(Connect.error(ctx, jsObject))
+                    )
                 }
             }
         }
@@ -215,7 +228,7 @@ class Global private constructor(ctx: Context, scope: ScriptableObject, executor
     private fun schedule(func: ScriptableObject, delay: Int) {
         timer.schedule(object : TimerTask() {
             override fun run() {
-                submit { FunctionObject.callMethod()func.call() }
+                submit { (func as FunctionObject).call(ctx, jsObject, func, arrayOf()) }
             }
         }, delay.toLong())
     }

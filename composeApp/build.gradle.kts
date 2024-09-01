@@ -91,7 +91,8 @@ kotlin {
 //            implementation("wang.harlon.quickjs:wrapper-java:2.0.0")
 
             // https://mvnrepository.com/artifact/org.mozilla/rhino
-            implementation("org.mozilla:rhino:1.7.15")
+//            implementation("org.mozilla:rhino:1.7.15")
+            implementation("io.github.dokar3:quickjs-kt:1.0.0-alpha13")
         }
 
         desktopMain.dependencies {

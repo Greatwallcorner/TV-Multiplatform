@@ -11,7 +11,6 @@ import com.corner.catvodcore.loader.JarLoader
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
 import com.corner.database.appModule
-import com.corner.quickjs.QuickJsInit
 import com.corner.server.KtorD
 import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.scene.hideProgress

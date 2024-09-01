@@ -8,6 +8,9 @@ import com.corner.quickjs.method.Async
 import com.corner.quickjs.method.Global
 import com.corner.quickjs.utils.JSUtil
 import com.corner.quickjs.utils.Module
+import com.dokar.quickjs.QuickJs
+import com.dokar.quickjs.binding.JsObject
+import netscape.javascript.JSObject
 import org.json.JSONArray
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.FunctionObject
@@ -27,8 +30,8 @@ class Spider(private val key: String, private val api: String, private val loade
     com.github.catvod.crawler.Spider() {
     private val executor: ExecutorService = Executors.newSingleThreadExecutor()
     private var cat = false
-    private var ctx: Context? = null
-    private var jsObject: ScriptableObject? = null
+    private var ctx: QuickJs? = null
+//    private var jsObject: ScriptableObject? = null
     private val log: Logger = LoggerFactory.getLogger(Spider::class.java)
 
     init {
@@ -48,7 +51,7 @@ class Spider(private val key: String, private val api: String, private val loade
         //return executor.submit((Function.call(ScriptableObject, func, args))).get();
         try {
             return CompletableFuture.supplyAsync(
-                { Async.run(jsObject!!, func, args as Array<Any>) }, executor
+                { Async.run(func, args as Array<Any>) }, executor
             ).join().get() ?: Any()
         } catch (e: Exception) {
             log.error("call 调用错误", e)
@@ -58,8 +61,8 @@ class Spider(private val key: String, private val api: String, private val loade
 
     override fun init(extend: String?) {
         try {
-            if (cat) call("init", submit<ScriptableObject> { cfg(extend) }.get())
-            else call("init", (if (Json.valid(extend)) ctx!!.parse(extend) else extend)!!)
+            if (cat) call("init", submit<JSObject> { cfg(extend) }.get())
+            else call("init", (if (Json.valid(extend)) Context.javaToJS(extend, jsObject, ctx) else extend)!!)
         } catch (e: Exception) {
             log.error("初始化错误", e)
             //            throw new RuntimeException(e);
@@ -76,7 +79,7 @@ class Spider(private val key: String, private val api: String, private val loade
 
     override fun categoryContent(tid: String, pg: String, filter: Boolean, extend: HashMap<String, String>): String {
         try {
-            val obj = submit<Scriptable> { JSUtil.toObj(ctx, jsObject!!, extend) }.get()
+            val obj = submit<JSObject> { JSUtil.toObj(ctx, jsObject!!, extend) }.get()
             return call("category", tid, pg, filter, obj) as String
         } catch (e: Exception) {
             log.error("cate错误", e)
@@ -227,18 +230,19 @@ class Spider(private val key: String, private val api: String, private val loade
 //        ScriptableObject = ctx!!.getProperty(ctx!!.globalObject, spider) as ScriptableObject
     }
 
-    private fun cfg(ext: String?): ScriptableObject {
-        val cfg = ctx!!.newObject(jsObject)
-        cfg.put("stype",jsObject, 3)
-        cfg.put("skey",jsObject, key)
-        if (Json.invalid(ext)) cfg.put("ext",jsObject, ext)
-        else cfg.put("ext", ctx!!.parse(ext) as ScriptableObject)
-        return cfg
+    private fun cfg(ext: String): JsObject {
+        val map = mutableMapOf<String, Any>()
+        map["stype"] = 3
+        map["skey"] = key
+        if (Json.invalid(ext)) map["ext"] = ext
+        else map["ext"] = ext
+        return JsObject(map)
     }
 
     private fun proxy1(params: Map<String?, String?>?): Array<Any> {
-        val `object` = JSUtil.toObj(ctx, params)
-        val array = JSONArray((ScriptableObject!!.getJSFunction("proxy").call(`object`) as JSArray).stringify())
+        val obj = JSUtil.toObj(ctx, jsObject, params)
+//        val array = FunctionObject.callMethod(jsObject, "proxy", arrayOf(obj)) as Array<Any>
+        val array = JSONArray(Context.toString(FunctionObject.callMethod(jsObject, "proxy", arrayOf(obj)) as NativeArray))
         val headers = if (array.length() > 3) Json.toMap(array.optString(3)) else null
         val base64 = array.length() > 4 && array.optInt(4) == 1
         val result = arrayOf<Any>(
@@ -254,12 +258,17 @@ class Spider(private val key: String, private val api: String, private val loade
     private fun proxy2(params: Map<String?, String?>?): Array<Any> {
         val url = params!!["url"]
         val header = params["header"]
-        val array = submit<JSArray> {
-            JSUtil.toArray(ctx, Arrays.asList(*url!!.split("/".toRegex()).dropLastWhile { it.isEmpty() }
+        val array = submit(Callable<NativeArray> {
+            JSUtil.toArray(ctx, jsObject, listOf(*url!!.split("/".toRegex()).dropLastWhile { it.isEmpty() }
                 .toTypedArray()))
-        }.get()
-        val `object` = submit<Any> { ctx!!.parse(header) }.get()
-        val json = call("proxy", array, `object`) as String
+        }).get()
+//        val array = submit<NativeArray> {
+//            JSUtil.toArray(ctx, Arrays.asList(*url!!.split("/".toRegex()).dropLastWhile { it.isEmpty() }
+//                .toTypedArray()))
+//        }.get()
+
+        val obj = submit<Any> { Context.javaToJS(header, jsObject, ctx) }.get()
+        val json = call("proxy", array, obj) as String
         val res = Res.objectFrom(json)
         val result = arrayOf<Any>(res.code, res.contentType, res.stream)
         return result

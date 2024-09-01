@@ -1,11 +1,13 @@
 package com.corner.quickjs.method
 
-import com.whl.quickjs.wrapper.*
+import org.mozilla.javascript.Context
+import org.mozilla.javascript.FunctionObject
 import org.mozilla.javascript.Scriptable
+import org.mozilla.javascript.ScriptableObject
 import java.util.concurrent.Callable
 
 class Function private constructor(
-    private val `object`: Scriptable,
+    private val obj: Scriptable,
     private val name: String,
     private val args: Array<Any>
 ) : Callable<Any?> {
@@ -13,23 +15,23 @@ class Function private constructor(
 
     @Throws(Exception::class)
     override fun call(): Any? {
-        val function = `object`.get(name) ?: return null
-        result = function.call(*args)
-        if (result is JSObject) then(result!!)
+        result = FunctionObject.callMethod(obj, name, args)
+        if (result is ScriptableObject) then(result!!)
         return result
     }
 
     private fun then(result: Any) {
-        val promise = result as JSObject
-        val then = promise.getJSFunction("then")
-        then?.call(callback)
+        FunctionObject.callMethod(result as Scriptable, "then",
+            arrayOf(Context.javaToJS(Function::class.java.getMethod("callback"), obj)))
     }
 
-    private val callback = JSCallFunction { args -> args[0].also { result = it } }
+    fun callback(args:Array<Any>){
+        args[0].also { result = it }
+    }
 
     companion object {
-        fun call(`object`: JSObject, name: String, args: Array<Any>): Function {
-            return Function(`object`, name, args)
+        fun call(obj: ScriptableObject, name: String, args: Array<Any>): Function {
+            return Function(obj, name, args)
         }
     }
 }

@@ -36,7 +36,7 @@ object JsLoader {
             if (spiders.containsKey(key)) return spiders[key]!!
             val spider: Spider = com.corner.quickjs.crawler.Spider(key, api, loader(key, jar))
             spider.init(ext)
-            spiders[key!!] = spider
+            spiders[key] = spider
             return spider
         } catch (e: Throwable) {
             e.printStackTrace()

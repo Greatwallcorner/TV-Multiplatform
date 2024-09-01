@@ -1,16 +1,18 @@
 package com.corner.quickjs.method
 
-import com.whl.quickjs.wrapper.JSCallFunction
-import com.whl.quickjs.wrapper.JSObject
+import org.mozilla.javascript.Context
+import org.mozilla.javascript.FunctionObject
+import org.mozilla.javascript.ScriptableObject
 import java.util.concurrent.CompletableFuture
 
 class Async private constructor() {
     private val future = CompletableFuture<Any?>()
 
-    private fun call(`object`: JSObject, name: String, args: Array<Any>): CompletableFuture<Any?> {
-        val function = `object`.getJSFunction(name) ?: return empty()
-        val result = function.call(*args)
-        if (result is JSObject) then(result)
+    private fun call(name: String, args: Array<Any>): CompletableFuture<Any?> {
+        val result = FunctionObject.callMethod(obj, name, args)
+//        val function = obj.getJSFunction(name) ?: return empty()
+//        val result = function.call(*args)
+        if (result is ScriptableObject) then(result)
         else future.complete(result)
         return future
     }
@@ -21,19 +23,23 @@ class Async private constructor() {
     }
 
     private fun then(result: Any) {
-        val promise = result as JSObject
-        val then = promise.getJSFunction("then")
-        then?.call(callback)
+        val promise = result as ScriptableObject
+        val then = FunctionObject.callMethod(promise, "then", arrayOf(Context.javaToJS(Async::class.java.getMethod("callback"), promise)))
+//        val then = promise.getJSFunction("then")
+//        then?.call(callback)
     }
 
-    private val callback = JSCallFunction { args ->
+    fun callback(args:Array<Any>){
         future.complete(args[0])
-        null
     }
+//    private val callback = Function { args ->
+//        future.complete(args[0])
+//        null
+//    }
 
     companion object {
-        fun run(`object`: JSObject, name: String, args: Array<Any>): CompletableFuture<Any?> {
-            return Async().call(`object`, name, args)
+        fun run(name: String, args: Array<Any>): CompletableFuture<Any?> {
+            return Async().call(name, args)
         }
     }
 }

@@ -4,13 +4,12 @@ import com.corner.catvodcore.util.Http;
 import com.corner.catvodcore.util.Json;
 import com.corner.catvodcore.util.Utils;
 import com.corner.quickjs.bean.Req;
+import com.dokar.quickjs.binding.JsObject;
 import com.google.common.net.HttpHeaders;
-import com.whl.quickjs.wrapper.JSObject;
-import com.whl.quickjs.wrapper.QuickJSContext;
 import okhttp3.*;
-import org.mozilla.javascript.Context;
 
 import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,29 +20,29 @@ public class Connect {
         return client.newCall(getRequest(url, req, Headers.of(req.getHeader())));
     }
 
-    public static JSObject success(Context ctx, Req req, Response res) {
+    public static JsObject success(Req req, Response res) {
         try {
-            JSObject jsObject = ctx.createNewJSObject();
-            JSObject jsHeader = ctx.createNewJSObject();
-            setHeader(ctx, res, jsHeader);
-            jsObject.setProperty("code", res.code());
-            jsObject.setProperty("headers", jsHeader);
-            if (req.getBuffer() == 0) jsObject.setProperty("content", new String(res.body().bytes(), req.getCharset()));
-            if (req.getBuffer() == 1) jsObject.setProperty("content", JSUtil.toArray(ctx, res.body().bytes()));
-            if (req.getBuffer() == 2) jsObject.setProperty("content", Utils.INSTANCE.base64(res.body().bytes()));
-            return jsObject;
+            JsObject object = new JsObject(new HashMap<>());
+            JsObject header = new JsObject(new HashMap<>());
+            setHeader(res, header);
+            object.put("code", res.code());
+            object.put("headers", header);
+            if (req.getBuffer() == 0) object.put("content", new String(res.body().bytes(), req.getCharset()));
+            if (req.getBuffer() == 1) object.put("content", JSUtil.toArray(res.body().bytes()));
+            if (req.getBuffer() == 2) object.put("content", Utils.INSTANCE.base64(res.body().bytes()));
+            return object;
         } catch (Exception e) {
-            return error(ctx);
+            return error();
         }
     }
 
-    public static JSObject error(QuickJSContext ctx) {
-        JSObject jsObject = ctx.createNewJSObject();
-        JSObject jsHeader = ctx.createNewJSObject();
-        jsObject.setProperty("headers", jsHeader);
-        jsObject.setProperty("content", "");
-        jsObject.setProperty("code", "");
-        return jsObject;
+    public static JsObject error() {
+        JsObject object = new JsObject(new HashMap<>());
+        JsObject jsHeader = new JsObject(new HashMap<>());
+        object.put("headers", jsHeader);
+        object.put("content", "");
+        object.put("code",  "");
+        return object;
     }
 
     private static Request getRequest(String url, Req req, Headers headers) {
@@ -83,10 +82,10 @@ public class Connect {
         return builder.build();
     }
 
-    private static void setHeader(QuickJSContext ctx, Response res, JSObject object) {
+    private static void setHeader(Response res, JsObject object) {
         for (Map.Entry<String, List<String>> entry : res.headers().toMultimap().entrySet()) {
-            if (entry.getValue().size() == 1) object.setProperty(entry.getKey(), entry.getValue().get(0));
-            if (entry.getValue().size() >= 2) object.setProperty(entry.getKey(), JSUtil.toArray(ctx, entry.getValue()));
+            if (entry.getValue().size() == 1) object.put(entry.getKey(), entry.getValue().get(0));
+            if (entry.getValue().size() >= 2) object.put(entry.getKey(), entry.getValue());
         }
     }
 }
