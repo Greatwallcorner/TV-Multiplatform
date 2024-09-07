@@ -6,27 +6,36 @@ import com.corner.catvodcore.util.Utils.decode
 import com.corner.quickjs.bean.Res
 import com.corner.quickjs.method.Async
 import com.corner.quickjs.method.Global
+import com.corner.quickjs.method.JsMethod
+import com.corner.quickjs.method.Local
 import com.corner.quickjs.utils.JSUtil
 import com.corner.quickjs.utils.Module
 import com.dokar.quickjs.QuickJs
 import com.dokar.quickjs.binding.JsObject
+import com.dokar.quickjs.binding.define
+import com.dokar.quickjs.binding.function
+import com.dokar.quickjs.quickJs
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import netscape.javascript.JSObject
 import org.json.JSONArray
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
-import java.lang.reflect.Method
 import java.net.URLClassLoader
 import java.util.*
 import java.util.concurrent.*
 
 class Spider(private val key: String, private val api: String, private val loader: URLClassLoader?) :
     com.github.catvod.crawler.Spider() {
+    private val coroutine = CoroutineScope(Dispatchers.Default)
     private val executor: ExecutorService = Executors.newSingleThreadExecutor()
     private var cat = false
     private var ctx: QuickJs? = null
-//    private var jsObject: ScriptableObject? = null
+
+    //    private var jsObject: ScriptableObject? = null
     private val log: Logger = LoggerFactory.getLogger(Spider::class.java)
 
     init {
@@ -130,8 +139,7 @@ class Spider(private val key: String, private val api: String, private val loade
     @Throws(Exception::class)
     private fun initializeJS() {
         submit<Any?> {
-            if (ctx == null) createCtx()
-            if (loader != null) createLoader()
+            createCtx()
             createObj()
             null
         }.get()
@@ -139,11 +147,20 @@ class Spider(private val key: String, private val api: String, private val loade
 
     private fun createCtx() {
         ctx = QuickJs.create(Dispatchers.Default)
-        jsObject = ctx!!.initStandardObjects()
-        ctx!!.apply {
+        coroutine.launch {
+            ctx!!.apply {
 //            setConsole(Console())
-            evaluateString(jsObject, Asset.read("js/lib/http.js"), "http", 1, null)
-            Global.create(ctx!!,jsObject!!, executor).setProperty()
+                evaluate<Any>(Asset.read("js/lib/http.js"))
+                val g = Global.create(ctx!!, executor)
+                g.javaClass.methods.forEach {method ->
+                    if(method.isAnnotationPresent(JsMethod::class.java)){
+                        function(method.name){
+                            method.invoke(g, it)
+                        }
+                    }
+                }
+//                Global.create(ctx!!, executor).setProperty()
+                define<Local>("local", Local())
 //            getGlobalObject().setProperty("local", Local::class.java)
 //            setModuleLoader(object : BytecodeModuleLoader() {
 //                override fun moduleNormalizeName(baseModuleName: String, moduleName: String): String {
@@ -158,68 +175,23 @@ class Spider(private val key: String, private val api: String, private val loade
 //                    )
 //                }
 //            })
-        }
-    }
-
-    private fun createLoader() {
-        try {
-            val obj = ctx!!.newObject(jsObject)
-            val clz = loader!!.loadClass("com.github.catvod.js.Method")
-            val classes = clz.declaredClasses
-            jsObject?.put("jsapi",jsObject,obj)
-            if (classes.size == 0) invokeSingle(clz, obj)
-            if (classes.size >= 1) invokeMultiple(clz, obj)
-        } catch (e: Throwable) {
-            log.error("createLoader 错误", e)
-        }
-    }
-
-    @Throws(Throwable::class)
-    private fun invokeSingle(clz: Class<*>, jsObj: Scriptable) {
-        invoke(clz, jsObj, clz.getDeclaredConstructor(Context::class.java).newInstance(ctx))
-    }
-
-    @Throws(Throwable::class)
-    private fun invokeMultiple(clz: Class<*>, jsObj: Scriptable) {
-        for (subClz in clz.declaredClasses) {
-            val javaObj = subClz.getDeclaredConstructor(clz).newInstance(
-                clz.getDeclaredConstructor(
-                    Context::class.java
-                ).newInstance(ctx)
-            )
-            val subObj = ctx!!.newObject(jsObject)
-            invoke(subClz, subObj, javaObj)
-            jsObj.put(subClz.simpleName,jsObject, subObj)
-        }
-    }
-
-    private fun invoke(clz: Class<*>, jsObj: Scriptable, javaObj: Any) {
-        for (method in clz.methods) {
-            if (!method.isAnnotationPresent(JSFunction::class.java)) continue
-            invoke(jsObj, method, javaObj)
-        }
-    }
-
-    private fun invoke(jsObj: Scriptable, method: Method, javaObj: Any) {
-        jsObj.put(method.name, jsObj, FunctionObject(method.name, method, jsObj)) /*{ args: Array<Any?> ->
-            try {
-                return@setProperty method.invoke(javaObj, *args)
-            } catch (e: Throwable) {
-                return@setProperty null
             }
-        }*/
+        }
     }
 
     private fun createObj() {
-        val jsEval = "__jsEvalReturn"
         val spider = "__JS_SPIDER__"
         val global = "globalThis.$spider"
-        val content = Module.get().fetch(api)
-//        if (content.startsWith("//bb")) ctx!!.evaluateString(jsObject, Module.get().bb(content), "bb", 1, null)
-        ctx!!.evaluateString(jsObject, content.replace(spider, global),api, 1, null)
-        ctx!!.evaluateString(jsObject, String.format(Asset.read("js/lib/spider.js")), api,1, null)
-        if (content.contains(jsEval)) cat = true
-//        ScriptableObject = ctx!!.getProperty(ctx!!.globalObject, spider) as ScriptableObject
+        val content: String = Module.get().fetch(api)
+        val bb = content.startsWith("//bb")
+        cat = bb || content.contains("__jsEvalReturn")
+        runBlocking {
+            quickJs {
+                if (!bb) evaluate<Any>(content.replace(spider, global), api)
+                evaluate<Any>(String.format(Asset.read("js/lib/spider.js"), api))
+            }
+        }
+//        jsObject = ctx.getProperty(ctx.getGlobalObject(), spider) as JSObject
     }
 
     private fun cfg(ext: String?): JsObject {
@@ -231,35 +203,52 @@ class Spider(private val key: String, private val api: String, private val loade
         return JsObject(map)
     }
 
-    private fun proxy1(params: Map<String?, String?>?): Array<Any> {
-        val obj = JSUtil.toObj(ctx, jsObject, params)
+    private fun proxy1(params: Map<String?, String?>): Array<Any> {
+        val obj = params
+        var res: Array<Any> = arrayOf()
 //        val array = FunctionObject.callMethod(jsObject, "proxy", arrayOf(obj)) as Array<Any>
-        val array = JSONArray(Context.toString(FunctionObject.callMethod(jsObject, "proxy", arrayOf(obj)) as NativeArray))
-        val headers = if (array.length() > 3) Json.toMap(array.optString(3)) else null
-        val base64 = array.length() > 4 && array.optInt(4) == 1
-        val result = arrayOf<Any>(
-            array.optInt(0),
-            array.optString(1),
-            getStream(array.opt(2), base64),
-            headers ?: mapOf<String, String>()
-        )
-        return result
+        runBlocking {
+            ctx.run {
+                res = call("proxy", params) as Array<Any>
+            }
+//            quickJs {
+//                res = call("proxy", params) as Array<Any>
+////                val array = JSONArray(res)
+////                val headers = if (array.length() > 3) Json.toMap(array.optString(3)) else null
+////                val base64 = array.length() > 4 && array.optInt(4) == 1
+////                val result = arrayOf<Any>(
+////                    array.optInt(0),
+////                    array.optString(1),
+////                    getStream(array.opt(2), base64),
+////                    headers ?: mapOf<String, String>()
+////                )
+////                return result
+//            }
+//        }
+//        val array =
+//            JSONArray(Context.toString(FunctionObject.callMethod(jsObject, "proxy", arrayOf(obj)) as NativeArray))
+//        val headers = if (array.length() > 3) Json.toMap(array.optString(3)) else null
+//        val base64 = array.length() > 4 && array.optInt(4) == 1
+//        val result = arrayOf<Any>(
+//            array.optInt(0),
+//            array.optString(1),
+//            getStream(array.opt(2), base64),
+//            headers ?: mapOf<String, String>()
+//        )
+        return res
     }
 
     @Throws(Exception::class)
     private fun proxy2(params: Map<String?, String?>?): Array<Any> {
         val url = params!!["url"]
         val header = params["header"]
-        val array = submit(Callable<NativeArray> {
-            JSUtil.toArray(ctx, jsObject, listOf(*url!!.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-                .toTypedArray()))
-        }).get()
+        val array = listOf(*url!!.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
 //        val array = submit<NativeArray> {
 //            JSUtil.toArray(ctx, Arrays.asList(*url!!.split("/".toRegex()).dropLastWhile { it.isEmpty() }
 //                .toTypedArray()))
 //        }.get()
 
-        val obj = submit<Any> { Context.javaToJS(header, jsObject, ctx) }.get()
+        val obj = Json.toMap(header)
         val json = call("proxy", array, obj) as String
         val res = Res.objectFrom(json)
         val result = arrayOf<Any>(res.code, res.contentType, res.stream)

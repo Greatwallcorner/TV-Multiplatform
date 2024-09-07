@@ -1,5 +1,12 @@
 package com.corner.quickjs.utils;
 
+import com.sun.xml.bind.v2.schemagen.xmlschema.Any;
+
+import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 
 public class JSUtil {
@@ -30,10 +37,10 @@ public class JSUtil {
 //     * @return
 //     * @throws CharacterCodingException
 //     */
-//    public static String decodeTo(String charset, Scriptable buffer) throws CharacterCodingException {
-//        int length = (int) ((NativeArray) buffer).getLength();
-//        byte[] bytes = new byte[length];
-//        for (int i = 0; i < length; i++) bytes[i] = (byte) (int) buffer.get(i, buffer);
-//        return Charset.forName(charset).newDecoder().decode(ByteBuffer.wrap(bytes)).toString();
-//    }
+    public static String decodeTo(String charset, ArrayList<Object> buffer) throws CharacterCodingException {
+        int length = (int) buffer.size();
+        byte[] bytes = new byte[length];
+        for (int i = 0; i < length; i++) bytes[i] = (byte) (int) buffer.get(i);
+        return Charset.forName(charset).newDecoder().decode(ByteBuffer.wrap(bytes)).toString();
+    }
 }

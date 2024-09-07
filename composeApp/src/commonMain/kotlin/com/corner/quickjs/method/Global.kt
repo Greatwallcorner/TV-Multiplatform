@@ -1,6 +1,7 @@
 package com.corner.quickjs.method
 
 import cn.hutool.core.net.URLEncodeUtil
+import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Trans
 import com.corner.catvodcore.util.Urls
 import com.corner.quickjs.bean.Req
@@ -9,11 +10,16 @@ import com.corner.quickjs.utils.Crypto
 import com.corner.quickjs.utils.JSUtil
 import com.corner.quickjs.utils.Parser
 import com.corner.server.logic.getUrl
+import com.dokar.quickjs.QuickJs
+import com.dokar.quickjs.binding.JsFunction
+import com.dokar.quickjs.binding.JsObject
+import com.dokar.quickjs.evaluate
+import com.dokar.quickjs.quickJs
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
-import org.mozilla.javascript.*
-import org.mozilla.javascript.annotations.JSFunction
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -21,64 +27,61 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 
 class Global private constructor(
-    private val ctx: Context,
-    scope: ScriptableObject,
+    private val ctx: QuickJs,
     private val executor: ExecutorService
 ) {
-    private val jsObject: ScriptableObject = scope
     private val parser: Parser = Parser()
     private val timer: Timer = Timer()
 
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
 
-    fun setProperty() {
-        for (method in javaClass.methods) {
-            if (!method.isAnnotationPresent(JSFunction::class.java)) continue
-            jsObject.put(method.name, jsObject, FunctionObject(method.name, method, jsObject))
-        }
-    }
+//    fun setProperty() {
+//        for (method in javaClass.methods) {
+//            if (!method.isAnnotationPresent(JSFunction::class.java)) continue
+//            jsObject.put(method.name, jsObject, FunctionObject(method.name, method, jsObject))
+//        }
+//    }
 
     private fun submit(runnable: Runnable) {
         if (!executor.isShutdown) executor.submit(runnable)
     }
 
 
+    @JsMethod
     fun s2t(text: String?): String {
         return Trans.s2t(false, text)
     }
 
-
+    @JsMethod
     fun t2s(text: String?): String {
         return Trans.t2s(false, text)
     }
 
-
+    @JsMethod
     fun getProxy(local: Boolean): String {
         return getUrl(local) + "?do=js"
     }
 
-
-    fun js2Proxy(dynamic: Boolean?, siteType: Int, siteKey: String, url: String?, headers: ScriptableObject): String {
+    @JsMethod
+    fun js2Proxy(dynamic: Boolean?, siteType: Int, siteKey: String, url: String?, headers: JsObject): String {
         return getProxy(!dynamic!!) + "&from=catvod" + "&siteType=" + siteType + "&siteKey=" + siteKey + "&header=" + URLEncodeUtil.encode(
-            (
-                    Context.toString(headers)
-                    ) + "&url=" + URLEncodeUtil.encode(url)
+            (Jsons.encodeToString(headers)) + "&url=" + URLEncodeUtil.encode(url)
         )
     }
 
-
-    fun setTimeout(func: FunctionObject, delay: Int): Any? {
+    @JsMethod
+    fun setTimeout(func: JsFunction, delay: Int): Any? {
 //        func.hold()
         schedule(func, delay)
         return null
     }
 
-
-    fun _http(url: String?, options: ScriptableObject): Scriptable? {
-        if (options.has("complete", options)) {
-            val funComplete = options.get("complete")
-            val req: Req = Req.objectFrom(Context.toString(options))
-            Connect.to(url, req).enqueue(getCallback(funComplete as ScriptableObject, req))
+    @JsMethod
+    fun _http(url: String?, options: JsObject): JsObject? {
+        if (options.contains("complete")) {
+            val funComplete = options["complete"]
+            val req: Req = Req.objectFrom(Jsons.encodeToString(options))
+            Connect.to(url, req).enqueue(getCallback(funComplete as JsFunction, req))
         } else {
             return req(url, options)
         }
@@ -88,58 +91,58 @@ class Global private constructor(
         return null
     }
 
-
-    fun req(url: String?, options: ScriptableObject): Scriptable {
+    @JsMethod
+    fun req(url: String?, options: JsObject): JsObject {
         try {
-            val req: Req = Req.objectFrom(Context.toString(options))
+            val req: Req = Req.objectFrom(Jsons.encodeToString(options))
             val res: Response = Connect.to(url, req).execute()
-            return Connect.success(ctx, options, req, res)
+            return Connect.success(req, res)
         } catch (e: Exception) {
-            return Connect.error(ctx, options)
+            return Connect.error()
         }
     }
 
-
+    @JsMethod
     fun pd(html: String?, rule: String?, urlKey: String?): String {
         return parser.parseDomForUrl(html, rule, urlKey)
     }
 
-
+    @JsMethod
     fun pdfh(html: String?, rule: String?): String {
         return parser.parseDomForUrl(html, rule, "")
     }
 
-
+    @JsMethod
     fun pdfa(html: String?, rule: String?): List<Any> {
-        return JSUtil.toArray(ctx, jsObject, parser.parseDomForArray(html, rule))
+        return parser.parseDomForArray(html, rule)
     }
 
-
-    fun pdfl(html: String?, rule: String?, texts: String?, urls: String?, urlKey: String?): NativeArray {
-        return JSUtil.toArray(ctx, jsObject, parser.parseDomForList(html, rule, texts, urls, urlKey))
+    @JsMethod
+    fun pdfl(html: String?, rule: String?, texts: String?, urls: String?, urlKey: String?): List<String> {
+        return parser.parseDomForList(html, rule, texts, urls, urlKey)
     }
 
-
+    @JsMethod
     fun joinUrl(parent: String, child: String): String {
         return Urls.convert(parent, child)
     }
 
-
+    @JsMethod
     @Throws(CharacterCodingException::class)
-    fun gbkDecode(buffer: NativeArray?): String {
+    fun gbkDecode(buffer: ArrayList<Any>?): String {
         val result: String = JSUtil.decodeTo("GB2312", buffer)
         log.debug("text:{}\nresult:\n{}", buffer, result)
         return result
     }
 
-
+    @JsMethod
     fun md5X(text: String?): String {
         val result: String = Crypto.md5(text)
         log.debug("text:{}\nresult:\n{}", text, result)
         return result
     }
 
-
+    @JsMethod
     fun aesX(
         mode: String?,
         encrypt: Boolean,
@@ -163,8 +166,7 @@ class Global private constructor(
         )
         return result
     }
-
-
+    @JsMethod
     fun rsaX(
         mode: String?,
         pub: Boolean,
@@ -189,17 +191,24 @@ class Global private constructor(
         return result
     }
 
-    private fun getCallback(complete: ScriptableObject, req: Req): Callback {
+    private fun getCallback(complete: JsFunction, req: Req): Callback {
         return object : Callback {
 
-            override fun onResponse(call: Call, res: Response) {
+            override fun onResponse(cal: Call, res: Response) {
+
                 submit {
-                    (complete as FunctionObject).call(
-                        ctx,
-                        jsObject,
-                        complete,
-                        arrayOf(Connect.success(ctx, jsObject, req, res))
-                    )
+                    runBlocking {
+                        ctx.run {
+
+                        }
+                    }
+//                    ctx.
+//                    (complete as FunctionObject).call(
+//                        ctx,
+//                        jsObject,
+//                        complete,
+//                        arrayOf(Connect.success(ctx, jsObject, req, res))
+//                    )
 //                    FunctionObject.callMethod(complete, complete.className, arrayOf(Connect.success(ctx, req, res)))
 //                    complete.call(Connect.success(ctx, req, res)) }
                 }
@@ -227,8 +236,8 @@ class Global private constructor(
     }
 
     companion object {
-        fun create(ctx: Context, scope: ScriptableObject, executor: ExecutorService): Global {
-            return Global(ctx, scope, executor)
+        fun create(ctx: QuickJs, executor: ExecutorService): Global {
+            return Global(ctx, executor)
         }
     }
 }
