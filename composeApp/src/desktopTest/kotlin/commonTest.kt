@@ -1,3 +1,4 @@
+import cn.hutool.system.SystemUtil
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.KtorClient
@@ -182,6 +183,12 @@ class commonTest {
             "../jar/spider.jar"
         )
         println(convert)
+    }
+
+    @Test
+    fun osTest(){
+        println(SystemUtil.getOsInfo().version)
+        println(SystemUtil.getOsInfo().name)
     }
 
 }

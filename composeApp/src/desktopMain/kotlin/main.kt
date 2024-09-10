@@ -18,6 +18,7 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.jetbrains.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.corner.RootContent
 import com.corner.bean.SettingStore
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.init.Init
@@ -25,8 +26,8 @@ import com.corner.init.generateImageLoader
 import com.corner.ui.SwingUtil
 import com.corner.ui.Util
 import com.corner.ui.decompose.DefaultRootComponent
-import com.corner.ui.decompose.RootContent
 import com.corner.ui.scene.SnackBar
+import com.corner.util.SysVerUtil
 import com.seiko.imageloader.LocalImageLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -67,9 +68,8 @@ fun main() {
             onCloseRequest = ::exitApplication, icon = painterResource("pic/TV-icon-s.png"), title = "TV",
             state = windowState,
             undecorated = true,
-            transparent = false,
+            transparent = !SysVerUtil.isWin10(),
         ) {
-
             window.minimumSize = Dimension(800, 600)
             CompositionLocalProvider(
                 LocalImageLoader provides remember { generateImageLoader() },
