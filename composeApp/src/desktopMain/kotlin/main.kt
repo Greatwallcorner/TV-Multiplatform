@@ -75,7 +75,10 @@ fun main() {
                 LocalImageLoader provides remember { generateImageLoader() },
                 LocalContextMenuRepresentation provides remember { contextMenuRepresentation }
             ) {
-                RootContent(component = root, modifier = Modifier.fillMaxSize(), windowState) {
+                RootContent(component = root, modifier = Modifier.fillMaxSize())
+            }
+            GlobalModel.closeApp.observe {
+                if(it){
                     window.isVisible = false
                     SettingStore.write()
                     Init.stop()
@@ -83,6 +86,7 @@ fun main() {
                 }
             }
         }
+
 
     }
 }

@@ -7,7 +7,6 @@ import com.arkivanov.decompose.value.MutableValue
 import com.corner.bean.HotData
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
-import com.corner.ui.scene.SnackBar
 
 object GlobalModel {
     var windowState:WindowState? = null
@@ -16,6 +15,7 @@ object GlobalModel {
     var detailFromSearch = false
     val home = MutableValue<Site>(Site.get("",""))
     val clear = MutableValue<Boolean>(false)
+    val closeApp = MutableValue<Boolean>(false)
     var keyword = MutableValue<String>("")
     var videoFullScreen = MutableValue<Boolean>(false)
         private set

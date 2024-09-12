@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.outlined.*
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.zIndex
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.arkivanov.decompose.value.update
@@ -110,7 +112,7 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun VideoScene(
+fun WindowScope.VideoScene(
     component: DefaultVideoComponent,
     modifier: Modifier,
     onClickItem: (Vod) -> Unit,
@@ -121,10 +123,6 @@ fun VideoScene(
     val model = component.model.subscribeAsState()
     val result = derivedStateOf { model.value.homeVodResult }
     val list = derivedStateOf { result.value.toTypedArray() }
-
-//    LaunchedEffect(list.value) {
-//        println("list 修改")
-//    }
 
     LaunchedEffect(state) {
         snapshotFlow { state.layoutInfo }
@@ -145,12 +143,14 @@ fun VideoScene(
 
     Scaffold(
         topBar = {
-            VideoTopBar(
-                component = component,
-                onClickSearch = { onClickSwitch(Menu.SEARCH) },
-                onClickChooseHome = { showChooseHome = true },
-                onClickSetting = { onClickSwitch(Menu.SETTING) },
-                onClickHistory = { onClickSwitch(Menu.HISTORY) })
+            WindowDraggableArea {
+                VideoTopBar(
+                    component = component,
+                    onClickSearch = { onClickSwitch(Menu.SEARCH) },
+                    onClickChooseHome = { showChooseHome = true },
+                    onClickSetting = { onClickSwitch(Menu.SETTING) },
+                    onClickHistory = { onClickSwitch(Menu.HISTORY) })
+            }
         },
         floatingActionButton = {
             FloatButton(component, state, scope, showFiltersDialog) {
@@ -241,17 +241,17 @@ private fun FiltersDialog(
                 items(model.value.currentFilters) { filter ->
                     val state = rememberLazyListState(0)
                     val f = rememberUpdatedState(filter)
-                    LazyRow(state = state , horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    LazyRow(state = state, horizontalArrangement = Arrangement.spacedBy(5.dp),
                         modifier = Modifier.onPointerEvent(PointerEventType.Scroll) {
-                        scope.launch {
-                            state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
-                        }
-                    }) {
+                            scope.launch {
+                                state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
+                            }
+                        }) {
                         items(f.value.value ?: listOf()) {
                             RatioBtn(it.n ?: "", onClick = {
                                 scope.launch {
                                     f.value.init = it.v ?: ""
-                                    f.value.value?.filter { i -> i.n != it.n  }?.map { t -> t.selected = false }
+                                    f.value.value?.filter { i -> i.n != it.n }?.map { t -> t.selected = false }
                                     it.selected = true
                                     component.model.update { it.copy(currentFilters = model.value.currentFilters) }
                                 }
@@ -261,12 +261,14 @@ private fun FiltersDialog(
                     }
                 }
             }
-            VerticalScrollbar(rememberScrollbarAdapter(listState),
+            VerticalScrollbar(
+                rememberScrollbarAdapter(listState),
                 modifier = Modifier.align(Alignment.CenterEnd).padding(vertical = 5.dp, horizontal = 8.dp),
                 style = defaultScrollbarStyle().copy(
                     unhoverColor = Color.Gray.copy(0.45F),
                     hoverColor = Color.DarkGray
-                ))
+                )
+            )
         }
     }
 
@@ -345,7 +347,6 @@ fun FloatButton(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VideoTopBar(
     component: DefaultVideoComponent,
@@ -357,78 +358,148 @@ fun VideoTopBar(
     val home = GlobalModel.home.subscribeAsState()
     val model = component.model.subscribeAsState()
 
-    TopAppBar(modifier = Modifier.height(50.dp).padding(1.dp), title = {}, actions = {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                ElevatedButton(
-                    modifier = Modifier.align(Alignment.Top).wrapContentWidth().padding(start = 5.dp),
-                    onClick = { onClickChooseHome() },
-                    colors = ButtonDefaults.elevatedButtonColors().copy(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        disabledContentColor = MaterialTheme.colorScheme.background
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(),
-                ) {
-                    Row(Modifier.wrapContentWidth()) {
-                        Icon(
-                            Icons.Outlined.ArrowDropDown,
-                            contentDescription = "Choose Home",
-                            modifier = Modifier.padding(end = 3.dp)
-                        )
-                        Text(
-                            home.value.name,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1,
-                            fontSize = TextUnit(15f, TextUnitType.Sp)
-                        )
-                    }
-                }
-
-                Box(modifier = Modifier.align(Alignment.CenterVertically)
-                    .fillMaxWidth(0.3f)
-                    .fillMaxHeight(0.6f)
-                    .background(Color.Gray.copy(alpha = 0.3f), shape = RoundedCornerShape(percent = 50))
-                    .clickable {
-                        onClickSearch()
-                    }) {
-                    AnimatedContent(
-                        targetState = model.value.prompt,
-                        contentAlignment = Alignment.Center,
-                        transitionSpec = {
-                            slideInVertically { height -> height } + fadeIn() togetherWith
-                                    slideOutVertically { height -> -height } + fadeOut()
-                        },
-                        modifier = Modifier.fillMaxHeight()/*.padding(top = 4.dp)*/
-                    ) {
-                        Text(
-                            text = it,
-                            modifier = Modifier.align(Alignment.Center)
-                                .fillMaxWidth()
-                                .fillMaxHeight(),
-                            textAlign = TextAlign.Center
-                        )
-                    }
+    ControlBar(
+        title = {},
+        modifier = Modifier.height(50.dp).padding(1.dp),
+        leading = {
+            ElevatedButton(
+                modifier = Modifier.wrapContentWidth().padding(start = 5.dp),
+                onClick = { onClickChooseHome() },
+                colors = ButtonDefaults.elevatedButtonColors().copy(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    disabledContentColor = MaterialTheme.colorScheme.background
+                ),
+                elevation = ButtonDefaults.buttonElevation(),
+            ) {
+                Row(Modifier.wrapContentWidth()) {
                     Icon(
-                        Icons.Outlined.Search,
-                        contentDescription = "搜索",
-                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 15.dp)
+                        Icons.Outlined.ArrowDropDown,
+                        contentDescription = "Choose Home",
+                        modifier = Modifier.padding(end = 3.dp)
+                    )
+                    Text(
+                        home.value.name,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                        fontSize = TextUnit(15f, TextUnitType.Sp)
                     )
                 }
-                Row(modifier = Modifier.align(Alignment.Bottom)) {
-                    IconButton(onClick = {
-                        onClickHistory()
-                    }, modifier = Modifier.padding(end = 20.dp)) {
-                        Icon(Icons.Outlined.History, "history")
-                    }
-                    IconButton(onClick = {
-                        onClickSetting()
-                    }, modifier = Modifier) {
-                        Icon(Icons.Outlined.Settings, "settings")
-                    }
-                }
             }
-        }
-    })
+        },
+        actions = {
+            Box(modifier = Modifier.align(Alignment.CenterVertically)
+                .fillMaxWidth(0.3f)
+                .fillMaxHeight(0.6f)
+                .background(Color.Gray.copy(alpha = 0.3f), shape = RoundedCornerShape(percent = 50))
+                .clickable {
+                    onClickSearch()
+                }) {
+                AnimatedContent(
+                    targetState = model.value.prompt,
+                    contentAlignment = Alignment.Center,
+                    transitionSpec = {
+                        slideInVertically { height -> height } + fadeIn() togetherWith
+                                slideOutVertically { height -> -height } + fadeOut()
+                    },
+                    modifier = Modifier.fillMaxHeight()/*.padding(top = 4.dp)*/
+                ) {
+                    Text(
+                        text = it,
+                        modifier = Modifier.align(Alignment.Center)
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+                Icon(
+                    Icons.Outlined.Search,
+                    contentDescription = "搜索",
+                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 15.dp)
+                )
+            }
+            IconButton(onClick = {
+                onClickHistory()
+            }, modifier = Modifier.padding(end = 20.dp)) {
+                Icon(Icons.Outlined.History, "history")
+            }
+            IconButton(onClick = {
+                onClickSetting()
+            }, modifier = Modifier) {
+                Icon(Icons.Outlined.Settings, "settings")
+            }
+        })
+//    TopAppBar(modifier = Modifier.height(50.dp).padding(1.dp), title = {}, actions = {
+//        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
+//            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+//                ElevatedButton(
+//                    modifier = Modifier.align(Alignment.Top).wrapContentWidth().padding(start = 5.dp),
+//                    onClick = { onClickChooseHome() },
+//                    colors = ButtonDefaults.elevatedButtonColors().copy(
+//                        containerColor = MaterialTheme.colorScheme.background,
+//                        disabledContentColor = MaterialTheme.colorScheme.background
+//                    ),
+//                    elevation = ButtonDefaults.buttonElevation(),
+//                ) {
+//                    Row(Modifier.wrapContentWidth()) {
+//                        Icon(
+//                            Icons.Outlined.ArrowDropDown,
+//                            contentDescription = "Choose Home",
+//                            modifier = Modifier.padding(end = 3.dp)
+//                        )
+//                        Text(
+//                            home.value.name,
+//                            overflow = TextOverflow.Ellipsis,
+//                            maxLines = 1,
+//                            fontSize = TextUnit(15f, TextUnitType.Sp)
+//                        )
+//                    }
+//                }
+//
+//                Box(modifier = Modifier.align(Alignment.CenterVertically)
+//                    .fillMaxWidth(0.3f)
+//                    .fillMaxHeight(0.6f)
+//                    .background(Color.Gray.copy(alpha = 0.3f), shape = RoundedCornerShape(percent = 50))
+//                    .clickable {
+//                        onClickSearch()
+//                    }) {
+//                    AnimatedContent(
+//                        targetState = model.value.prompt,
+//                        contentAlignment = Alignment.Center,
+//                        transitionSpec = {
+//                            slideInVertically { height -> height } + fadeIn() togetherWith
+//                                    slideOutVertically { height -> -height } + fadeOut()
+//                        },
+//                        modifier = Modifier.fillMaxHeight()/*.padding(top = 4.dp)*/
+//                    ) {
+//                        Text(
+//                            text = it,
+//                            modifier = Modifier.align(Alignment.Center)
+//                                .fillMaxWidth()
+//                                .fillMaxHeight(),
+//                            textAlign = TextAlign.Center
+//                        )
+//                    }
+//                    Icon(
+//                        Icons.Outlined.Search,
+//                        contentDescription = "搜索",
+//                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 15.dp)
+//                    )
+//                }
+//                Row(modifier = Modifier.align(Alignment.Bottom)) {
+//                    IconButton(onClick = {
+//                        onClickHistory()
+//                    }, modifier = Modifier.padding(end = 20.dp)) {
+//                        Icon(Icons.Outlined.History, "history")
+//                    }
+//                    IconButton(onClick = {
+//                        onClickSetting()
+//                    }, modifier = Modifier) {
+//                        Icon(Icons.Outlined.Settings, "settings")
+//                    }
+//                }
+//            }
+//        }
+//    })
 }
 
 @Composable

@@ -2,6 +2,7 @@ package com.corner.util
 
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
 import cn.hutool.core.util.CharUtil
 import com.corner.catvod.enum.bean.Site
 import io.ktor.util.*
@@ -79,3 +80,7 @@ fun String.deleteInvisibleChar():String{
 fun String.trimBlankChar():String{
     return this.trim{CharUtil.isBlankChar(it)}
 }
+
+var Color.Companion.FirefoxGray:Color
+    get() = Color(59, 59, 60)
+    set(value) {}
