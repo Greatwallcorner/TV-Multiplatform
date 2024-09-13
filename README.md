@@ -10,7 +10,7 @@
   1. vlc
   2. mpc-hc
   3. mpv 等
-- 本项目按道理支持win/linux/macos, 但只在win上测试过
+- 本项目按道理支持win(10/11)/linux/macos, 但只在win上测试过
 - 配置播放器, 使用内部播放器需要安装vlc如果无法自动找到vlc， 可以在输入框中输入vlc可执行文件的路径。
 
 # TODO
