@@ -50,7 +50,7 @@ fun main() {
         }
 
         val windowState = rememberWindowState(
-            size = Util.getPreferWindowSize(800, 800), position = WindowPosition.Aligned(Alignment.Center)
+            size = Util.getPreferWindowSize(600, 500), position = WindowPosition.Aligned(Alignment.Center)
         )
         GlobalModel.windowState = windowState
 
@@ -70,7 +70,7 @@ fun main() {
             undecorated = true,
             transparent = !SysVerUtil.isWin10(),
         ) {
-            window.minimumSize = Dimension(800, 600)
+            window.minimumSize = Dimension(700, 600)
             CompositionLocalProvider(
                 LocalImageLoader provides remember { generateImageLoader() },
                 LocalContextMenuRepresentation provides remember { contextMenuRepresentation }

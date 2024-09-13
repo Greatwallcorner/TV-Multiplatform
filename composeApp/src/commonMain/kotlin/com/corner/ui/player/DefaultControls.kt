@@ -109,7 +109,6 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameControll
                     }
                     TextButtonTransparent("选集"){
                         component.model.update { it.copy(showEpChooserDialog = !component.model.value.showEpChooserDialog) }
-                        println("选集")
                     }
                 }
             }

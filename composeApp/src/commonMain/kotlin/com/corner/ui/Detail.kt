@@ -85,52 +85,49 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
         focus.requestFocus()
     }
     Box(
-        modifier = Modifier.fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
     ) {
         Column(Modifier) {
             if (!isFullScreen.value) {
-                BackRow(Modifier, onClickBack = {
-                    onClickBack()
-                }) {
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(horizontalArrangement = Arrangement.Start) {
-                            ToolTipText(
-                                detail?.vodName ?: "",
-                                textStyle = MaterialTheme.typography.headlineMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                                modifier = Modifier.padding(start = 50.dp)
-                            )
-                        }
-
-                        Row(horizontalArrangement = Arrangement.End) {
-                            IconButton(
-                                onClick = {
-                                    scope.launch {
-                                        component.clear()
-                                        component.quickSearch()
-                                        SnackBar.postMsg("重新加载")
-                                    }
-                                },
-                                enabled = !model.value.isLoading
-                            ) {
-                                Icon(
-                                    Icons.Default.Autorenew,
-                                    contentDescription = "renew",
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                ControlBar(leading = {
+                    BackRow(Modifier, onClickBack = {
+                        onClickBack()
+                    }) {
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(horizontalArrangement = Arrangement.Start) {
+                                ToolTipText(
+                                    detail?.vodName ?: "",
+                                    textStyle = MaterialTheme.typography.headlineMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+                                    modifier = Modifier.padding(start = 50.dp)
                                 )
                             }
                         }
                     }
-                }
+                }, actions = {
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                component.clear()
+                                component.quickSearch()
+                                SnackBar.postMsg("重新加载")
+                            }
+                        }, enabled = !model.value.isLoading
+                    ) {
+                        Icon(
+                            Icons.Default.Autorenew,
+                            contentDescription = "renew",
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                })
             }
             val mrl = derivedStateOf { model.value.currentPlayUrl }
             Row(
-                modifier = Modifier.fillMaxHeight(videoHeight.value),
-                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                modifier = Modifier.fillMaxHeight(videoHeight.value), horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 val internalPlayer = derivedStateOf {
                     SettingStore.getPlayerSetting()[0] as Boolean
@@ -140,16 +137,15 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                         focus.requestFocus()
                     }
                     Player(
-                        mrl.value, controller.value, Modifier.fillMaxWidth(videoWidth.value).focusable(),
+                        mrl.value,
+                        controller.value,
+                        Modifier.fillMaxWidth(videoWidth.value).focusable(),
                         component,
                         focusRequester = focus
                     )
                 } else {
                     Box(
-                        Modifier
-                            .fillMaxWidth(videoWidth.value)
-                            .fillMaxHeight()
-                            .background(Color.Black)
+                        Modifier.fillMaxWidth(videoWidth.value).fillMaxHeight().background(Color.Black)
                     ) {
                         Text(
                             "使用外部播放器",
@@ -162,12 +158,10 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                 }
                 AnimatedVisibility(!isFullScreen.value, modifier = Modifier.fillMaxSize()) {
                     EpChooser(
-                        component, Modifier.fillMaxSize()
-                            .background(
+                        component, Modifier.fillMaxSize().background(
                                 MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
                                 shape = RoundedCornerShape(4.dp)
-                            )
-                            .padding(horizontal = 5.dp)
+                            ).padding(horizontal = 5.dp)
                     )
                 }
             }
@@ -180,8 +174,7 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                             quickSearchResult(model, searchResultList, component)
                         }
                         Column(
-                            modifier = Modifier.padding(start = 10.dp)
-                                .fillMaxSize()
+                            modifier = Modifier.padding(start = 10.dp).fillMaxSize()
                         ) {
                             if (model.value.detail == null) {
                                 emptyShow(onRefresh = { component.load() })
@@ -223,19 +216,13 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
             }
         }
         val showEpChooserDialog = derivedStateOf { isFullScreen.value && model.value.showEpChooserDialog }
-        Dialog(Modifier.align(Alignment.CenterEnd)
-            .fillMaxWidth(0.3f)
-            .fillMaxHeight(0.8f)
-            .padding(end = 20.dp),
+        Dialog(Modifier.align(Alignment.CenterEnd).fillMaxWidth(0.3f).fillMaxHeight(0.8f).padding(end = 20.dp),
             showDialog = showEpChooserDialog.value,
             onClose = { component.model.update { it.copy(showEpChooserDialog = false) } }) {
             EpChooser(
-                component, Modifier.fillMaxSize()
-                    .background(
-                        MaterialTheme.colorScheme.surfaceContainerLow,
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .padding(horizontal = 5.dp)
+                component, Modifier.fillMaxSize().background(
+                        MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(8.dp)
+                    ).padding(horizontal = 5.dp)
             )
         }
 
@@ -246,13 +233,11 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun flags(
-    scope: CoroutineScope,
-    controller: VlcjFrameController,
-    component: DetailComponent
+    scope: CoroutineScope, controller: VlcjFrameController, component: DetailComponent
 ) {
     val model = component.model.subscribeAsState()
     val detail = derivedStateOf { model.value.detail }
-    LaunchedEffect(detail.value){
+    LaunchedEffect(detail.value) {
         println("detail detail 修改")
     }
     Row(Modifier.padding(start = 10.dp)) {
@@ -270,9 +255,7 @@ private fun flags(
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     state = state,
-                    modifier = Modifier.padding(bottom = 10.dp)
-                        .fillMaxWidth()
-                        .onPointerEvent(PointerEventType.Scroll) {
+                    modifier = Modifier.padding(bottom = 10.dp).fillMaxWidth().onPointerEvent(PointerEventType.Scroll) {
                             scope.launch {
 //                                            if(it.changes.size == 0) return@launch
                                 state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
@@ -293,14 +276,12 @@ private fun flags(
                                 }
                                 val dt = detail.value!!.copy(
                                     currentFlag = it,
-                                    subEpisode = it?.episodes?.getPage(detail.value!!.currentTabIndex)
-                                        ?.toMutableList()
+                                    subEpisode = it?.episodes?.getPage(detail.value!!.currentTabIndex)?.toMutableList()
                                 )
                                 controller.doWithHistory { it.copy(vodFlag = detail.value!!.currentFlag?.flag) }
                                 val history = controller.history.value
                                 if (history != null) {
-                                    val findEp =
-                                        detail.value!!.findAndSetEpByName(controller.history.value!!)
+                                    val findEp = detail.value!!.findAndSetEpByName(controller.history.value!!)
                                     if (findEp != null) component.playEp(dt, findEp)
                                 }
                                 component.model.update { model ->
@@ -317,10 +298,8 @@ private fun flags(
                     derivedStateOf { state.layoutInfo.visibleItemsInfo.size < (detail.value!!.vodFlags.size) }
                 if (showScrollBar.value) {
                     HorizontalScrollbar(
-                        rememberScrollbarAdapter(state),
-                        style = defaultScrollbarStyle().copy(
-                            unhoverColor = Color.Gray.copy(0.45F),
-                            hoverColor = Color.DarkGray
+                        rememberScrollbarAdapter(state), style = defaultScrollbarStyle().copy(
+                            unhoverColor = Color.Gray.copy(0.45F), hoverColor = Color.DarkGray
                         ), modifier = Modifier.align(Alignment.BottomCenter)
                     )
                 }
@@ -331,9 +310,7 @@ private fun flags(
 
 @Composable
 private fun quickSearchResult(
-    model: State<DetailComponent.Model>,
-    searchResultList: State<List<Vod>>,
-    component: DetailComponent
+    model: State<DetailComponent.Model>, searchResultList: State<List<Vod>>, component: DetailComponent
 ) {
     if (model.value.quickSearchResult.isNotEmpty()) {
         val quickState = rememberLazyGridState()
@@ -355,10 +332,8 @@ private fun quickSearchResult(
                 }
             }
             VerticalScrollbar(
-                modifier = Modifier.align(Alignment.CenterEnd),
-                adapter = adapter, style = defaultScrollbarStyle().copy(
-                    unhoverColor = Color.Gray.copy(0.45F),
-                    hoverColor = Color.DarkGray
+                modifier = Modifier.align(Alignment.CenterEnd), adapter = adapter, style = defaultScrollbarStyle().copy(
+                    unhoverColor = Color.Gray.copy(0.45F), hoverColor = Color.DarkGray
                 )
             )
         }
@@ -371,8 +346,7 @@ private fun vodInfo(detail: Vod?) {
         Row() {
             if (detail?.site?.name?.isNotBlank() == true) {
                 Text(
-                    "站源: " + detail.site?.name,
-                    color = MaterialTheme.colorScheme.onSurface
+                    "站源: " + detail.site?.name, color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(Modifier.width(5.dp))
             }
@@ -388,13 +362,11 @@ private fun vodInfo(detail: Vod?) {
                 s.add(detail?.typeName!!)
             }
             Text(
-                s.joinToString(separator = " | "),
-                color = MaterialTheme.colorScheme.onSurface
+                s.joinToString(separator = " | "), color = MaterialTheme.colorScheme.onSurface
             )
         }
         Text(
-            "导演：${detail?.vodDirector ?: "无"}",
-            color = MaterialTheme.colorScheme.onSurface
+            "导演：${detail?.vodDirector ?: "无"}", color = MaterialTheme.colorScheme.onSurface
         )
         ExpandedText(
             "演员：${detail?.vodActor ?: "无"}",
@@ -449,104 +421,101 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                     for (i in 0 until epSize.value step Constants.EpSize) {
                         item {
                             RatioBtn(
-                                selected = detail.value?.currentTabIndex == (i / Constants.EpSize),
-                                onClick = {
+                                selected = detail.value?.currentTabIndex == (i / Constants.EpSize), onClick = {
                                     detail.value?.currentTabIndex = i / Constants.EpSize
                                     val dt = detail.value?.copy(
                                         subEpisode = detail.value?.currentFlag?.episodes?.getPage(
                                             detail.value!!.currentTabIndex
-                                        )
-                                            ?.toMutableList()
+                                        )?.toMutableList()
                                     )
                                     component.model.update { it.copy(detail = dt) }
-                                },
-                                text = "${i + 1}-${i + Constants.EpSize}"
+                                }, text = "${i + 1}-${i + Constants.EpSize}"
                             )
                         }
                     }
                 }
                 HorizontalScrollbar(
                     adapter = scrollBarAdapter,
-                    modifier = Modifier.padding(bottom = 5.dp)
-                        .align(Alignment.BottomCenter),
+                    modifier = Modifier.padding(bottom = 5.dp).align(Alignment.BottomCenter),
                     style = defaultScrollbarStyle().copy(
-                        unhoverColor = Color.Gray.copy(0.45F),
-                        hoverColor = Color.DarkGray
+                        unhoverColor = Color.Gray.copy(0.45F), hoverColor = Color.DarkGray
                     )
                 )
             }
         }
         val videoLoading = remember { mutableStateOf(false) }
         val epList = derivedStateOf { detail.value?.subEpisode ?: listOf() }
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            state = rememberLazyGridState(),
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            verticalArrangement = Arrangement.spacedBy(5.dp)
-        ) {
-            items(
-                epList.value, key = { it.url + it.number }
+        val state = rememberLazyGridState()
+        Box {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(1),
+                state = state,
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                TooltipArea(
-                    tooltip = {
-                        // composable tooltip content
-                        Surface(
-                            modifier = Modifier.shadow(4.dp),
-                            shape = RoundedCornerShape(4.dp)
-                        ) {
-                            Text(
-                                text = it.name,
-                                modifier = Modifier.padding(10.dp),
-                            )
-                        }
-                    },
-                    delayMillis = 600
-                ) {
-                    RatioBtn(text = it.name, onClick = {
-                        videoLoading.value = true
-                        SiteViewModel.viewModelScope.launch {
-                            for (i in detail.value?.currentFlag?.episodes ?: listOf()) {
-                                i.activated = (i.name == it.name)
-                                if (i.activated) {
-                                    component.model.update { model ->
-                                        if (model.currentEp?.name != it.name) {
-                                            component.controller.doWithHistory { it.copy(position = 0L) }
+                items(epList.value, key = { it.url + it.number }) {
+                    TooltipArea(
+                        tooltip = {
+                            // composable tooltip content
+                            Surface(
+                                modifier = Modifier.shadow(4.dp), shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = it.name,
+                                    modifier = Modifier.padding(10.dp),
+                                )
+                            }
+                        }, delayMillis = 600
+                    ) {
+                        RatioBtn(text = it.name, onClick = {
+                            videoLoading.value = true
+                            SiteViewModel.viewModelScope.launch {
+                                for (i in detail.value?.currentFlag?.episodes ?: listOf()) {
+                                    i.activated = (i.name == it.name)
+                                    if (i.activated) {
+                                        component.model.update { model ->
+                                            if (model.currentEp?.name != it.name) {
+                                                component.controller.doWithHistory { it.copy(position = 0L) }
+                                            }
+                                            component.controller.doWithHistory {
+                                                it.copy(
+                                                    episodeUrl = i.url, vodRemarks = i.name
+                                                )
+                                            }
+                                            model.copy(currentEp = i)
                                         }
-                                        component.controller.doWithHistory {
-                                            it.copy(
-                                                episodeUrl = i.url,
-                                                vodRemarks = i.name
-                                            )
-                                        }
-                                        model.copy(currentEp = i)
                                     }
                                 }
-                            }
-                            val dt = detail.value?.copy(
-                                subEpisode = detail.value?.currentFlag?.episodes?.getPage(
-                                    detail.value!!.currentTabIndex
+                                val dt = detail.value?.copy(
+                                    subEpisode = detail.value?.currentFlag?.episodes?.getPage(
+                                        detail.value!!.currentTabIndex
+                                    )?.toMutableList()?.toList()?.toMutableList(),
                                 )
-                                    ?.toMutableList()?.toList()?.toMutableList(),
-                            )
-                            component.model.update { it.copy(detail = dt) }
-                            val result = SiteViewModel.playerContent(
-                                detail.value?.site?.key ?: "",
-                                detail.value?.currentFlag?.flag ?: "",
-                                it.url
-                            )
-                            component.model.update { it.copy(currentUrl = result?.url) }
-                            val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
-                            if (internalPlayer) {
-                                component.play(result)
-                            } else {
-                                Play.start(result?.url?.v() ?: "", model.value.currentEp?.name)
+                                component.model.update { it.copy(detail = dt) }
+                                val result = SiteViewModel.playerContent(
+                                    detail.value?.site?.key ?: "", detail.value?.currentFlag?.flag ?: "", it.url
+                                )
+                                component.model.update { it.copy(currentUrl = result?.url) }
+                                val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
+                                if (internalPlayer) {
+                                    component.play(result)
+                                } else {
+                                    Play.start(result?.url?.v() ?: "", model.value.currentEp?.name)
+                                }
+                            }.invokeOnCompletion {
+                                videoLoading.value = false
                             }
-                        }.invokeOnCompletion {
-                            videoLoading.value = false
-                        }
-                    }, selected = it.activated, it.activated && videoLoading.value)
+                        }, selected = it.activated, it.activated && videoLoading.value)
+                    }
                 }
             }
+            VerticalScrollbar(
+                adapter = rememberScrollbarAdapter(state),
+                modifier = Modifier.align(Alignment.CenterEnd),
+                style = defaultScrollbarStyle().copy(
+                    unhoverColor = Color.Gray.copy(0.45F), hoverColor = Color.DarkGray
+                )
+            )
         }
     }
 }

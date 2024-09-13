@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.HotData
 import com.corner.ui.decompose.component.DefaultSearchPageComponent
+import com.corner.ui.scene.ControlBar
 import com.corner.ui.scene.ExpandedText
 
 /**
@@ -43,20 +44,22 @@ fun SearchPage(component: DefaultSearchPageComponent, onClickBack: () -> Unit, o
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(modifier = Modifier.align(alignment = Alignment.TopStart)) {
             // TopBar
-            Row(modifier = Modifier.align(Alignment.Start)/*.background(MaterialTheme.colors.background)*/.height(80.dp)) {
-                IconButton(
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                        .padding(start = 20.dp, end = 20.dp),
-                    onClick = { onClickBack() }
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "back to video home",
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
+            ControlBar(leading = {
+                Row(modifier = Modifier.align(Alignment.Start)/*.background(MaterialTheme.colors.background)*/.height(80.dp)) {
+                    IconButton(
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                            .padding(start = 20.dp, end = 20.dp),
+                        onClick = { onClickBack() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "back to video home",
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                    SearchBar(Modifier, focusRequester, "", onSearch, false)
                 }
-                SearchBar(Modifier.align(Alignment.CenterVertically), focusRequester, "", onSearch, false)
-            }
+            }, center = {})
             Column(Modifier.fillMaxSize()) {
                 if (model.value.historyList.isNotEmpty()) {
                     Box(modifier = Modifier.fillMaxHeight(0.4f)) {

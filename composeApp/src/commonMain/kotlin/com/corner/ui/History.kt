@@ -32,6 +32,7 @@ import com.corner.database.History
 import com.corner.database.repository.buildVod
 import com.corner.ui.decompose.component.DefaultHistoryComponent
 import com.corner.ui.scene.BackRow
+import com.corner.ui.scene.ControlBar
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
 import com.seiko.imageloader.ui.AutoSizeImage
@@ -64,10 +65,14 @@ fun HistoryItem(
                     errorPainter = { painterResource("/pic/empty.png") })
                 Text(
                     text = history.vodName!!,
-                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)).align(Alignment.BottomCenter)
+                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))
+                        .align(Alignment.BottomCenter)
                         .fillMaxWidth().padding(0.dp, 10.dp),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f), maxLines = 1, softWrap = true,
-                    overflow = TextOverflow.Ellipsis, style = TextStyle(textAlign = TextAlign.Center)
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f),
+                    maxLines = 1,
+                    softWrap = true,
+                    overflow = TextOverflow.Ellipsis,
+                    style = TextStyle(textAlign = TextAlign.Center)
                 )
                 Text(
                     modifier = Modifier
@@ -86,7 +91,7 @@ fun HistoryItem(
 }
 
 @Composable
-fun HistoryScene(component: DefaultHistoryComponent, onClickItem:(Vod)->Unit, onClickBack: () -> Unit) {
+fun HistoryScene(component: DefaultHistoryComponent, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
     var chooseHistory by remember { mutableStateOf<History?>(null) }
     LaunchedEffect(Unit) {
@@ -99,16 +104,27 @@ fun HistoryScene(component: DefaultHistoryComponent, onClickItem:(Vod)->Unit, on
             }
         }
     }
-    Box(modifier = Modifier.fillMaxSize()
-        .background(MaterialTheme.colorScheme.background)) {
+    Box(
+        modifier = Modifier.fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         Column {
-            BackRow(modifier = Modifier.align(Alignment.Start), { onClickBack() }) {
-                Row(modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
-                    Text(
-                        "历史记录", style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
+            ControlBar(leading = {
+                BackRow(modifier = Modifier.align(Alignment.Start), { onClickBack() }) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "历史记录", style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    }
+                }
+            },
+                actions = {
                     IconButton(modifier = Modifier.align(Alignment.CenterVertically)
                         .padding(end = 20.dp)
                         .size(80.dp), onClick = {
@@ -120,8 +136,7 @@ fun HistoryScene(component: DefaultHistoryComponent, onClickItem:(Vod)->Unit, on
                             Text("清空", color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
-                }
-            }
+                })
             val gridState = remember { LazyGridState() }
             LazyVerticalGrid(
                 modifier = Modifier.padding(horizontal = 10.dp),

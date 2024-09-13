@@ -12,7 +12,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Minimize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -36,31 +36,33 @@ fun ControlBar(
     val isFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
     if (!isFullScreen.value) {
         Column(modifier = modifier.fillMaxWidth()){
-            Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceAround) {
+            Box(Modifier.fillMaxWidth()){
                 if (leading != null) {
-                    Row {
+                    Row(Modifier.align(alignment = Alignment.CenterStart)) {
                         leading()
                         title()
                     }
                 }
+
                 if (center != null) {
-                    Box(Modifier.align(alignment = Alignment.CenterVertically).weight(1f)) {
+                    Row(Modifier.align(alignment = Alignment.Center).wrapContentWidth()) {
                         center()
                     }
                 }
-                Row {
+
+                Row(Modifier.align(alignment = Alignment.CenterEnd)) {
                     actions()
-                    CustomActionButton(onClick = {
+                    CustomActionButton(modifier = Modifier.fillMaxHeight(), onClick = {
                         GlobalModel.windowState?.isMinimized = !GlobalModel.windowState?.isMinimized!!
                     }) {
                         Icon(
                             Icons.Default.Minimize,
                             contentDescription = "minimize",
                             tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(25.dp).padding(2.dp),
+                            modifier = Modifier.padding(2.dp).fillMaxHeight(),
                         )
                     }
-                    CustomActionButton(onClick = {
+                    CustomActionButton(modifier = Modifier.fillMaxHeight(), onClick = {
                         GlobalModel.windowState?.placement =
                             if (WindowPlacement.Maximized == GlobalModel.windowState?.placement) WindowPlacement.Floating else WindowPlacement.Maximized
                     }) {
@@ -68,63 +70,22 @@ fun ControlBar(
                             Icons.Default.KeyboardArrowUp,
                             contentDescription = "maximize",
                             tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(25.dp).padding(2.dp)
+                            modifier = Modifier.padding(2.dp).fillMaxHeight()
                         )
                     }
-                    CustomActionButton(onClick = {
+                    CustomActionButton(modifier = Modifier.fillMaxHeight(), onClick = {
                         GlobalModel.closeApp.value = true
                     }) {
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "close",
                             tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(25.dp).padding(2.dp)
+                            modifier = Modifier.padding(2.dp).fillMaxHeight()
                         )
                     }
                 }
             }
-//                TopAppBar(
-//                    title = title,
-//                    modifier = modifier,
-//                    backgroundColor = MaterialTheme.colorScheme.background,
-//                    actions = {
-//                        actions()
-//                        CustomActionButton(onClick = {
-//                            GlobalModel.windowState?.isMinimized = !GlobalModel.windowState?.isMinimized!!
-//                        }) {
-//                            Icon(
-//                                Icons.Default.Minimize,
-//                                contentDescription = "minimize",
-//                                tint = MaterialTheme.colorScheme.onBackground,
-//                                modifier = Modifier.size(25.dp).padding(2.dp),
-//                            )
-//                        }
-//                        CustomActionButton(onClick = {
-//                            GlobalModel.windowState?.placement =
-//                                if (WindowPlacement.Maximized == GlobalModel.windowState?.placement) WindowPlacement.Floating else WindowPlacement.Maximized
-//                        }) {
-//                            Icon(
-//                                Icons.Default.KeyboardArrowUp,
-//                                contentDescription = "maximize",
-//                                tint = MaterialTheme.colorScheme.onBackground,
-//                                modifier = Modifier.size(25.dp).padding(2.dp)
-//                            )
-//                        }
-//                        CustomActionButton(onClick = {
-//                            GlobalModel.closeApp.value = true
-//                        }) {
-//                            Icon(
-//                                Icons.Default.Close,
-//                                contentDescription = "close",
-//                                tint = MaterialTheme.colorScheme.onBackground,
-//                                modifier = Modifier.size(25.dp).padding(2.dp)
-//                            )
-//                        }
-//                    },
-//                    elevation = 4.dp
-//                )
-//            }
-            Divider(color = Color.FirefoxGray, thickness = 1.dp)
+            Divider(color = Color.FirefoxGray, thickness = 1.5.dp)
         }
     }
 }
@@ -136,8 +97,8 @@ fun CustomActionButton(
     onClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    var isHover = 0
-    val hoverColor = Color.Gray
+    var isHover by remember{mutableStateOf(0)}
+    val hoverColor = Color.Gray.copy(alpha = 0.8f)
     val clickColor = Color.Gray.copy(alpha = 0.6f)
     Box(
         modifier = modifier
@@ -149,15 +110,6 @@ fun CustomActionButton(
     ) {
         content()
     }
-//    IconButton(onClick,
-//        modifier.onPointerEvent(PointerEventType.Enter, onEvent = {isHover = 1})
-//        .onPointerEvent(PointerEventType.Exit, onEvent = {isHover = 0})
-//            .onPointerEvent(PointerEventType.Press, onEvent = {isHover = 2}),
-//        colors = IconButtonDefaults.iconButtonColors().copy(containerColor = if(isHover == 0) MaterialTheme.colorScheme.background else if (isHover == 1) hoverColor else clickColor),
-//        interactionSource = MutableInteractionSource()
-//    ){
-//        content()
-//    }
 }
 
 @Composable

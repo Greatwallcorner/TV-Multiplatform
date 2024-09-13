@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -21,10 +22,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.*
+import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -69,8 +73,10 @@ fun SearchBar(
         modifier = modifier
             .focusRequester(focusRequester)
             .fillMaxWidth(0.9f)
-            .fillMaxHeight(0.6f)
+            .fillMaxHeight()
+            .padding(top = 2.dp)
             .background(color = Color.Gray.copy(0.3f), shape = RoundedCornerShape(50)),
+        singleLine = true,
         onValueChange = { i ->
             searchText = i
             if (job.isActive) return@TextField
@@ -80,7 +86,7 @@ fun SearchBar(
                 isGettingSuggestion = true
                 try {
                     val response =
-                        KtorClient.client.get("https://suggest.video.iqiyi.com/?if=mobile&key=" + searchText)
+                        KtorClient.client.get("https://suggest.video.iqiyi.com/?if=mobile&key=$searchText")
                     if (response.status == HttpStatusCode.OK) {
                         suggestions = Suggest.objectFrom(response.bodyAsText())
                     }
@@ -106,21 +112,15 @@ fun SearchBar(
             }
         },
         trailingIcon = {
-            Icon(
-                Icons.Outlined.Search, contentDescription = "Search", modifier = Modifier
-                    .clickable(
-                        interactionSource = MutableInteractionSource(),
-                        indication = rememberRipple(
-                            bounded = true,
-                            radius = 8.dp,
-                            color = Color.LightGray.copy(0.5f)
-                        ),
-                        onClick = { searchFun(searchText) }, enabled = StringUtils.isNotBlank(searchText)
-                    )
-            )
+            IconButton(
+                modifier = Modifier,
+                onClick = { searchFun(searchText) },
+                enabled = StringUtils.isNotBlank(searchText)
+            ) {
+                Icon(Icons.Outlined.Search, contentDescription = "Search", modifier = Modifier)
+            }
         },
         textStyle = TextStyle(fontSize = TextUnit(12f, TextUnitType.Sp)),
-        maxLines = 1,
         keyboardActions = KeyboardActions(onDone = { searchFun(searchText) }),
         keyboardOptions = KeyboardOptions.Default.copy(
             imeAction = ImeAction.Done,

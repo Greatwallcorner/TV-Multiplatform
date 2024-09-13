@@ -35,6 +35,7 @@ import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.component.DefaultSearchComponent
 import com.corner.ui.decompose.component.DefaultSearchPageComponent
 import com.corner.ui.decompose.component.DefaultSearchPagesComponent
+import com.corner.ui.scene.ControlBar
 import com.corner.ui.scene.RatioBtn
 import com.corner.ui.video.VideoItem
 
@@ -105,13 +106,9 @@ private fun SearchResult(
     Box(modifier = Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
 //        TopBar
-            Row(
-                modifier = Modifier.align(Alignment.Start)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .height(75.dp)
-            ) {
+            ControlBar(leading = {
                 IconButton(
-                    modifier = Modifier.align(Alignment.CenterVertically)
+                    modifier = Modifier
                         .padding(start = 20.dp, end = 20.dp),
                     onClick = {
                         component.clear()
@@ -126,15 +123,44 @@ private fun SearchResult(
                     )
                 }
                 SearchBar(
-                    Modifier.align(Alignment.CenterVertically),
+                    Modifier,
                     remember { FocusRequester() },
                     searchText.value,
                     onSearch = { s ->
                         GlobalModel.keyword.update { s }
                     }, model.value.isSearching
                 )
-                Spacer(Modifier.size(20.dp))
-            }
+            }) {  }
+//            Row(
+//                modifier = Modifier.align(Alignment.Start)
+//                    .background(MaterialTheme.colorScheme.surface)
+//                    .height(75.dp)
+//            ) {
+//                IconButton(
+//                    modifier = Modifier.align(Alignment.CenterVertically)
+//                        .padding(start = 20.dp, end = 20.dp),
+//                    onClick = {
+//                        component.clear()
+//                        onClickBack()
+//                    }
+//
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+//                        contentDescription = "back to video home",
+//                        tint = MaterialTheme.colorScheme.onBackground
+//                    )
+//                }
+//                SearchBar(
+//                    Modifier.align(Alignment.CenterVertically),
+//                    remember { FocusRequester() },
+//                    searchText.value,
+//                    onSearch = { s ->
+//                        GlobalModel.keyword.update { s }
+//                    }, model.value.isSearching
+//                )
+//                Spacer(Modifier.size(20.dp))
+//            }
 //        Content
             Row {
                 Box(Modifier.fillMaxWidth(0.2f).fillMaxHeight()) {

@@ -75,26 +75,29 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column(Modifier.fillMaxSize()) {
-            BackRow(Modifier.align(Alignment.Start), onClickBack = { onClickBack() }) {
-                Row(
-                    Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "设置",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-                    OutlinedButton(
-                        onClick = { Desktop.getDesktop().open(Paths.userDataRoot()) },
-                        modifier = Modifier.align(Alignment.CenterVertically)
+            ControlBar(leading = {
+                BackRow(Modifier.align(Alignment.Start), onClickBack = { onClickBack() }) {
+                    Row(
+                        Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("打开用户数据目录")
+                        Text(
+                            "设置",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
                     }
                 }
-            }
+            }, actions = {
+                OutlinedButton(
+                    onClick = { Desktop.getDesktop().open(Paths.userDataRoot()) },
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                ) {
+                    Text("打开用户数据目录")
+                }
+            })
             LazyColumn(contentPadding = PaddingValues(8.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 item {
                     val focusRequester = remember { FocusRequester() }
