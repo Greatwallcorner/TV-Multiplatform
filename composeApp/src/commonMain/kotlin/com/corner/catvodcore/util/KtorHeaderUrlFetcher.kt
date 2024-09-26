@@ -13,6 +13,7 @@ import io.ktor.http.*
 import io.ktor.util.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.serialization.json.jsonObject
+import kotlin.time.Duration
 
 
 class KtorHeaderUrlFetcher private constructor(
@@ -63,7 +64,14 @@ class KtorHeaderUrlFetcher private constructor(
     companion object {
 
         val CustomUrlFetcher = Factory {
-            HttpClient(OkHttp)
+            HttpClient(OkHttp){
+                engine{
+                    config {
+                        callTimeout(Duration.parse("2s"))
+                        readTimeout(Duration.parse("2s"))
+                    }
+                }
+            }
         }
     }
 }
