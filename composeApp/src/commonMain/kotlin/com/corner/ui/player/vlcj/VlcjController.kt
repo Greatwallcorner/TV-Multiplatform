@@ -52,7 +52,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         "--network-caching=10000",          // 设置网络缓存为 10000ms
         "--file-caching=3000",             // 设置文件缓存为 3000ms
         "--live-caching=3000",             // 设置直播缓存为 3000ms
-        "--sout-mux-caching=3000"          // 设置输出缓存为 3000ms
+        "--sout-mux-caching=10000"          // 设置输出缓存为 3000ms
     )
 
     internal lateinit var factory:MediaPlayerFactory

@@ -90,6 +90,7 @@ fun Player(
             if(videoFullScreen.value && !showControllerBar.value){
                 var time = 1
                 if (videoFullScreen.value) {
+                    focusRequester.requestFocus()
                     keepScreenOnJob = Timer("keepScreenOn")
                     keepScreenOnJob?.scheduleAtFixedRate(timerTask {
                         val robot = Robot()

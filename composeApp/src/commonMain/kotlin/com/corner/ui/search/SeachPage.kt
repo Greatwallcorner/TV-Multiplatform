@@ -99,7 +99,7 @@ fun HotPanel(modifier: Modifier, hots: List<HotData>, onClick: (HotData) -> Unit
             modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally),
             userScrollEnabled = true
         ) {
-            items(hotList.toList(), key = { i -> i.title }) {
+            items(hotList.toList(), key = { i -> i.title + i.hashCode() }) {
                 HotItem(Modifier.wrapContentHeight(), it) {
                     onClick(it)
                 }

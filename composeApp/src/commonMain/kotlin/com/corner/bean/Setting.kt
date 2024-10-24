@@ -39,7 +39,7 @@ class SearchHistoryCache:Cache{
     }
 
     fun getSearchList():List<String>{
-        return searchHistoryList.reversed()
+        return searchHistoryList.toList().reversed()
     }
 
 }
