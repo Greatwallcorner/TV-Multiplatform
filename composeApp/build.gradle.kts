@@ -3,6 +3,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.jetbrainsCompose)
+    alias(libs.plugins.compose.compiler)
     kotlin("plugin.serialization") version "1.9.20"
     id("app.cash.sqldelight") version "2.0.0"
     id("dev.hydraulic.conveyor") version "1.10"

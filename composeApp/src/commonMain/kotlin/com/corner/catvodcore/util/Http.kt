@@ -132,7 +132,7 @@ class Http {
         @JvmOverloads
         fun Get(url: String, params: Map<String, String?>? = null, headers: Headers? = null): Call {
             val builder: HttpUrl.Builder = url.toHttpUrlOrNull()!!.newBuilder()
-            params?.forEach { (name: String?, value: String?) ->
+            params?.forEach { (name: String, value: String?) ->
                 builder.addQueryParameter(
                     name,
                     value
