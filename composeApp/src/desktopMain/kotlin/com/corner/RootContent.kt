@@ -2,6 +2,7 @@ package com.corner
 
 import AppTheme
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -57,7 +58,7 @@ fun WindowScope.RootContent(
         Column(
             modifier = modifierVar.value
         ) {
-            Children(stack = component.childStack, modifier = modifier, animation = stackAnimation(fade())) {
+            Children(stack = component.childStack, modifier = modifier.background(Color.Transparent), animation = stackAnimation(fade())) {
                 when (val child = it.instance) {
                     is RootComponent.Child.VideoChild -> VideoScene(
                         child.component,

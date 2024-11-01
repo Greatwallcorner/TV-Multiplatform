@@ -24,7 +24,7 @@ kotlin {
         val desktopMain by getting
 
         commonMain.dependencies {
-            val ktorVer = "2.3.12"
+            val ktorVer = "3.0.1"
             val logbackVer = "1.3.14"
             val imageLoader = "1.8.1"
             val hutoolVer = "5.8.27"
@@ -82,6 +82,29 @@ kotlin {
             // DLNA
             implementation("org.jupnp:org.jupnp:2.7.1")
             implementation("org.jupnp:org.jupnp.support:2.7.1")
+//            // https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
+//            implementation("javax.servlet:javax.servlet-api:4.0.1")
+//            // https://mvnrepository.com/artifact/org.eclipse.jetty.ee10/jetty-ee10-servlet
+//            implementation("org.eclipse.jetty.ee10:jetty-ee10-servlet:12.0.14")
+//            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server
+//            implementation("org.eclipse.jetty:jetty-server:12.0.14")
+//            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-client
+//            implementation("org.eclipse.jetty:jetty-client:12.0.14")
+
+            api("javax.servlet:javax.servlet-api:4.0.1")
+            // https://mvnrepository.com/artifact/org.eclipse.jetty.ee10/jetty-ee10-servlet
+            api("org.eclipse.jetty.ee10:jetty-ee10-servlet:12.0.14")
+            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server
+            api("org.eclipse.jetty:jetty-server:12.0.14")
+            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-client
+            api("org.eclipse.jetty:jetty-client:12.0.14")
+            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-servlet
+            api("org.eclipse.jetty:jetty-servlet:11.0.24")
+
+
+
+
+
 
             api("com.arkivanov.decompose:decompose:2.2.2")
             api("com.arkivanov.decompose:extensions-compose-jetbrains:2.2.2")
@@ -109,7 +132,7 @@ compose.desktop {
             configurationFiles.from(project.file("src/desktopMain/rules.pro"))
         }
 
-        jvmArgs("-Dfile.encoding=UTF-8")
+        jvmArgs("-Dfile.encoding=UTF-8 --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --illegal-access=warn")
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
@@ -127,7 +150,7 @@ compose.desktop {
                 "java.security.jgss",
                 "java.sql",
                 "jdk.httpserver",
-                "jdk.unsupported"
+                "jdk.unsupported",
             )
             val dir = project.layout.projectDirectory.dir("src/desktopMain/resources/res")
             println(dir)

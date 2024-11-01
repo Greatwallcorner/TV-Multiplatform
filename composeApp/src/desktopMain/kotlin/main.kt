@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -62,13 +63,15 @@ fun main() {
 
         LifecycleController(lifecycle, windowState)
 
+        val transparent = rememberUpdatedState(!SysVerUtil.isWin10())
+
         val contextMenuRepresentation =
             if (isSystemInDarkTheme()) DarkDefaultContextMenuRepresentation else LightDefaultContextMenuRepresentation
         Window(
             onCloseRequest = ::exitApplication, icon = painterResource("pic/TV-icon-s.png"), title = "TV",
             state = windowState,
             undecorated = true,
-            transparent = !SysVerUtil.isWin10(),
+            transparent = transparent.value,
         ) {
             window.minimumSize = Dimension(700, 600)
             CompositionLocalProvider(
