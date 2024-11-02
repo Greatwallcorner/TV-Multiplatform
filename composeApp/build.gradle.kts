@@ -4,10 +4,9 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
-    kotlin("plugin.serialization") version "1.9.20"
-    id("app.cash.sqldelight") version "2.0.0"
-    id("dev.hydraulic.conveyor") version "1.10"
-//    id("io.ktor.plugin") version "2.3.7"
+    alias(libs.plugins.serialization)
+    alias(libs.plugins.sqldelight)
+//    alias(libs.plugins.conveyor)
 }
 
 sqldelight {
@@ -38,7 +37,7 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(compose.materialIconsExtended)
 
-            api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+            api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
             // tool
             api("com.google.guava:guava:31.1-jre")
@@ -130,10 +129,11 @@ compose.desktop {
         buildTypes.release.proguard {
 //            obfuscate.set(true)
             isEnabled.set(true)
+            version.set("7.4.0")
             configurationFiles.from(project.file("src/desktopMain/rules.pro"))
         }
 
-        jvmArgs("-Dfile.encoding=UTF-8 --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --illegal-access=warn")
+        jvmArgs("-Dfile.encoding=UTF-8", /*"--add-opens java.base/jdk.internal.misc=ALL-UNNAMED", "--illegal-access=warn"*/)
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)

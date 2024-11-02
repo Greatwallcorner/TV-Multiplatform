@@ -11,7 +11,7 @@ object KtorD {
 
     var port: Int = -1;
 
-    var server:ApplicationEngine? = null
+    var server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>? = null
 
     /**
      * https://ktor.io/docs/configuration-file.html#predefined-properties
@@ -21,15 +21,7 @@ object KtorD {
         port = 9978
         do {
             try {
-                server = embeddedServer(Netty, port = port, host = "0.0.0.0", module = Application::module, configure = {
-                    connectionGroupSize = 20
-                    workerGroupSize = 8
-                    callGroupSize = 15
-                    shutdownGracePeriod = 2000
-                    shutdownTimeout = 3000
-                    responseWriteTimeoutSeconds = -1
-                    requestReadTimeoutSeconds = 0
-                })
+               server = embeddedServer(Netty, port = port, module = Application::module)
                     .start(wait = false)
                 break
             } catch (e: Exception) {
@@ -38,7 +30,7 @@ object KtorD {
                 server?.stop()
             }
         }while(port < 9999)
-        log.info("KtorD init end port:{}", server!!.resolvedConnectors().first().port)
+        log.info("KtorD init end port:{}", server!!.application.engine.resolvedConnectors().first().port)
     }
 
     fun stop(){

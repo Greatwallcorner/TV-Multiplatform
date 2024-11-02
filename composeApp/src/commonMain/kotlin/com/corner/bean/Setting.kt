@@ -11,6 +11,14 @@ import kotlin.io.path.exists
 @Serializable
 data class Setting(val id: String, val label: String, var value: String?)
 
+/**
+ * 以井号分割的字符串
+ * #
+ */
+fun Setting.parseValueToList():List<String>{
+    return value?.split("#") ?: listOf()
+}
+
 @Serializable
 sealed interface Cache{
     fun getName():String

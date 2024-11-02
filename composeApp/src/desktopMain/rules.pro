@@ -58,6 +58,11 @@
 }
 -keep class org.slf4j.** {*;}
 -keep class kotlinx.serialization.** {*;}
+# disable optimisation for descriptor field because in some versions of ProGuard, optimization generates incorrect bytecode that causes a verification error
+# see https://github.com/Kotlin/kotlinx.serialization/issues/2719
+-keepclassmembers public class **$$serializer {
+    private ** descriptor;
+}
 -keep class org.json.** {*;}
 -keep class com.google.gson.** {*;}
 -keep class okhttp3.** {*;}
