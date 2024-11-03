@@ -71,7 +71,7 @@ fun main() {
             onCloseRequest = ::exitApplication, icon = painterResource("pic/TV-icon-s.png"), title = "TV",
             state = windowState,
             undecorated = true,
-            transparent = transparent.value,
+            transparent = false,
         ) {
             window.minimumSize = Dimension(700, 600)
             CompositionLocalProvider(

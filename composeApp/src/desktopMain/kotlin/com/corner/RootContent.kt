@@ -44,12 +44,13 @@ fun WindowScope.RootContent(
         if (isFullScreen.value) {
             Modifier.fillMaxSize().border(border = BorderStroke(0.dp, Color.Transparent))
         } else {
-            if(SysVerUtil.isWin10()){
-                Modifier.fillMaxSize().border(BorderStroke(1.dp, Color.FirefoxGray)).shadow(15.dp)
-            }else{
-                Modifier.fillMaxSize().border(BorderStroke(1.dp, Color.FirefoxGray), shape = RoundedCornerShape(10.dp))
-                    .clip(RoundedCornerShape(10.dp)).shadow(elevation = 8.dp, ambientColor = Color.DarkGray, spotColor = Color.DarkGray)
-            }
+            Modifier.fillMaxSize().border(BorderStroke(1.dp, Color.FirefoxGray)).shadow(15.dp)
+//            if(SysVerUtil.isWin10()){
+//                Modifier.fillMaxSize().border(BorderStroke(1.dp, Color.FirefoxGray)).shadow(15.dp)
+//            }else{
+//                Modifier.fillMaxSize().border(BorderStroke(1.dp, Color.FirefoxGray), shape = RoundedCornerShape(10.dp))
+//                    .clip(RoundedCornerShape(10.dp)).shadow(elevation = 8.dp, ambientColor = Color.DarkGray, spotColor = Color.DarkGray)
+//            }
         }
 
     }
