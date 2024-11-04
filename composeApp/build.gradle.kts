@@ -133,7 +133,7 @@ compose.desktop {
             configurationFiles.from(project.file("src/desktopMain/rules.pro"))
         }
 
-        jvmArgs("-Dfile.encoding=UTF-8", /*"--add-opens java.base/jdk.internal.misc=ALL-UNNAMED", "--illegal-access=warn"*/)
+        jvmArgs("-Dfile.encoding=UTF-8")
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
