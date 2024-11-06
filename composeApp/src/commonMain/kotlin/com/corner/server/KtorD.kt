@@ -4,12 +4,14 @@ import com.corner.server.plugins.configureRouting
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.netty.handler.codec.http.HttpServerCodec
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("KtorD")
+
 object KtorD {
 
-    var port: Int = -1;
+    var ports: Int = -1;
 
     var server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>? = null
 
@@ -18,22 +20,34 @@ object KtorD {
      */
     suspend fun init() {
         log.info("KtorD init start")
-        port = 9978
+        ports = 9978
         do {
             try {
-               server = embeddedServer(Netty, port = port, module = Application::module)
+                server = embeddedServer(Netty, configure = {
+                    this.connectors.add(EngineConnectorBuilder().apply {
+                        port = ports
+                    }
+                    )
+                    httpServerCodec = {
+                        HttpServerCodec(
+                            maxInitialLineLength * 10,
+                            maxHeaderSize,
+                            maxChunkSize
+                        )
+                    }
+                }, module = Application::module)
                     .start(wait = false)
                 break
             } catch (e: Exception) {
                 log.error("start server e:", e)
-                ++port
+                ++ports
                 server?.stop()
             }
-        }while(port < 9999)
+        } while (ports < 9999)
         log.info("KtorD init end port:{}", server!!.application.engine.resolvedConnectors().first().port)
     }
 
-    fun stop(){
+    fun stop() {
         server?.stop()
     }
 
