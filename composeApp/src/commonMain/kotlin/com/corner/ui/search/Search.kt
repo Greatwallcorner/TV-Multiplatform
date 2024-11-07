@@ -85,7 +85,7 @@ private fun SearchResult(
 ) {
     val model = component.model.subscribeAsState()
     val searchText = GlobalModel.keyword.subscribeAsState()
-    val result = SiteViewModel.search
+    val result = remember { SiteViewModel.search }
     var currentCollect by remember { mutableStateOf<Collect?>(SiteViewModel.search.value[0]) }
     val currentVodList by rememberUpdatedState(model.value.currentVodList)
 
@@ -96,6 +96,11 @@ private fun SearchResult(
         derivedStateOf {
             model.value.searchCompleteSites.size < (ApiConfig.api.sites.filter { it.searchable == 1 }.size)
         }
+    }
+
+    DisposableEffect(result.value){
+        println("result 更改")
+        onDispose {  }
     }
 
     DisposableEffect(searchText.value) {
@@ -131,36 +136,6 @@ private fun SearchResult(
                     }, model.value.isSearching
                 )
             }) {  }
-//            Row(
-//                modifier = Modifier.align(Alignment.Start)
-//                    .background(MaterialTheme.colorScheme.surface)
-//                    .height(75.dp)
-//            ) {
-//                IconButton(
-//                    modifier = Modifier.align(Alignment.CenterVertically)
-//                        .padding(start = 20.dp, end = 20.dp),
-//                    onClick = {
-//                        component.clear()
-//                        onClickBack()
-//                    }
-//
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-//                        contentDescription = "back to video home",
-//                        tint = MaterialTheme.colorScheme.onBackground
-//                    )
-//                }
-//                SearchBar(
-//                    Modifier.align(Alignment.CenterVertically),
-//                    remember { FocusRequester() },
-//                    searchText.value,
-//                    onSearch = { s ->
-//                        GlobalModel.keyword.update { s }
-//                    }, model.value.isSearching
-//                )
-//                Spacer(Modifier.size(20.dp))
-//            }
 //        Content
             Row {
                 Box(Modifier.fillMaxWidth(0.2f).fillMaxHeight()) {
@@ -173,15 +148,15 @@ private fun SearchResult(
                     ) {
                         items(items = result.value.toList()) { item: Collect ->
                             RatioBtn(
-                                text = item.getSite()?.name ?: "",
+                                text = item.site?.name ?: "",
                                 onClick = {
                                     currentCollect = item
                                     component.onClickCollection(item)
                                     result.value.forEach { i ->
-                                        i.setActivated(i.getSite()?.key == item.getSite()?.key)
+                                        i.activated.value = (i.site?.key == item.site?.key)
                                     }
                                 },
-                                item.isActivated().value,
+                                item.activated.value,
                             )
                         }
                     }

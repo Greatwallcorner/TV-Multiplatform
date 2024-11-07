@@ -84,8 +84,8 @@ class DefaultSearchComponent(componentContext: ComponentContext) : SearchCompone
                             log.error("搜索执行 异常 msg:{}", e.message)
                         }
                     }
-                    model.value.currentVodList.value = (SiteViewModel.search.value.find { it.isActivated().value }
-                        ?.getList() ?: listOf()).toMutableList()
+                    model.value.currentVodList.value = (SiteViewModel.search.value.find { it.activated.value }
+                        ?.list ?: listOf()).toMutableList()
                     if (e == null) log.debug("一个job执行完毕 List size:{}", model.value.currentVodList.value.size)
                 }
                 model.value.jobList.add(job)
@@ -110,7 +110,7 @@ class DefaultSearchComponent(componentContext: ComponentContext) : SearchCompone
     }
 
     override fun onClickCollection(item: Collect) {
-        model.value.currentVodList.value = CopyOnWriteArrayList(item.getList())
+        model.value.currentVodList.value = CopyOnWriteArrayList(item.list)
 //        model.update { it.copy(currentVodList = CopyOnWriteArrayList(item.getList())) }
 
     }

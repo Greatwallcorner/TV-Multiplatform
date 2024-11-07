@@ -103,7 +103,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         currentSiteKey.value = chooseVod.site?.key ?: ""
         SiteViewModel.viewModelScope.launch {
             if (GlobalModel.detailFromSearch) {
-                val list = SiteViewModel.getSearchResultActive().getList()
+                val list = SiteViewModel.getSearchResultActive().list
                 model.update { it.copy(quickSearchResult = CopyOnWriteArrayList(list), detail = chooseVod) }
                 fromSearchLoadJob = SiteViewModel.viewModelScope.launch {
                     if (model.value.quickSearchResult.isNotEmpty()) model.value.detail?.let { loadDetail(it) }
@@ -156,7 +156,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                     }
                     model.update {
                         val list = CopyOnWriteArrayList<Vod>()
-                        list.addAllAbsent(SiteViewModel.quickSearch.value[0].getList())
+                        list.addAllAbsent(SiteViewModel.quickSearch.value[0].list)
                         it.copy(
                             quickSearchResult = list
                         )

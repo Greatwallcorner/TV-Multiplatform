@@ -42,7 +42,7 @@ object SiteViewModel {
     }
 
     fun getSearchResultActive(): Collect {
-        return search.value.first { it.isActivated().value }
+        return search.value.first { it.activated.value }
     }
 
     fun homeContent(): Result {
@@ -275,14 +275,14 @@ object SiteViewModel {
                 quickSearch.value.add(Collect.all())
             }
             // 同样的数据添加到全部
-            quickSearch.value.get(0).getList().addAll(result.list)
+            quickSearch.value[0].list.addAll(result.list)
         } else {
             search.value.add(Collect.create(result.list))
             if(search.value.size == 0){
                 search.value.add(Collect.all())
             }
             // 同样的数据添加到全部
-            search.value.get(0).getList().addAll(result.list)
+            search.value[0].list.addAll(result.list)
         }
     }
 
