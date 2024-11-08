@@ -3,11 +3,13 @@ package com.corner.util
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
+import cn.hutool.core.collection.CollectionUtil
 import cn.hutool.core.util.CharUtil
 import com.corner.catvod.enum.bean.Site
 import io.ktor.util.*
 import kotlinx.coroutines.Job
 import org.apache.commons.lang3.StringUtils
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 
 fun Site.isEmpty():Boolean{
@@ -84,3 +86,12 @@ fun String.trimBlankChar():String{
 var Color.Companion.FirefoxGray:Color
     get() = Color(59, 59, 60)
     set(value) {}
+
+
+fun <E> CopyOnWriteArrayList<E>.copyAdd(item: E? = null, list: CopyOnWriteArrayList<E>? = null): CopyOnWriteArrayList<E> {
+    return CopyOnWriteArrayList<E>().apply {
+        addAll(this)
+        if(item != null) add(item)
+        if(CollectionUtil.isNotEmpty(list)) addAll(list!!)
+    }
+}

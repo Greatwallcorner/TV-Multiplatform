@@ -12,8 +12,8 @@ import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.util.copyAdd
 import com.github.catvod.crawler.Spider
-import com.github.catvod.crawler.SpiderDebug
 import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -270,16 +270,16 @@ object SiteViewModel {
         if (result.list.isEmpty()) return
         for (vod in result.list) vod.site = site
         if (quick) {
-            quickSearch.value.add(Collect.create(result.list))
+            quickSearch.value.copyAdd(Collect.create(result.list))
             if(quickSearch.value.size == 0){
-                quickSearch.value.add(Collect.all())
+                quickSearch.value.copyAdd(Collect.all())
             }
             // 同样的数据添加到全部
             quickSearch.value[0].list.addAll(result.list)
         } else {
-            search.value.add(Collect.create(result.list))
+            search.value.copyAdd(Collect.create(result.list))
             if(search.value.size == 0){
-                search.value.add(Collect.all())
+                search.value.copyAdd(Collect.all())
             }
             // 同样的数据添加到全部
             search.value[0].list.addAll(result.list)
