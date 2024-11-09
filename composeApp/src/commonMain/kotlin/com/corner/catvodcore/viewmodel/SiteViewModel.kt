@@ -270,16 +270,16 @@ object SiteViewModel {
         if (result.list.isEmpty()) return
         for (vod in result.list) vod.site = site
         if (quick) {
-            quickSearch.value.copyAdd(Collect.create(result.list))
+            search.value = quickSearch.value.copyAdd(Collect.create(result.list))
             if(quickSearch.value.size == 0){
-                quickSearch.value.copyAdd(Collect.all())
+                search.value = quickSearch.value.copyAdd(Collect.all())
             }
             // 同样的数据添加到全部
             quickSearch.value[0].list.addAll(result.list)
         } else {
-            search.value.copyAdd(Collect.create(result.list))
+            search.value = search.value.copyAdd(Collect.create(result.list))
             if(search.value.size == 0){
-                search.value.copyAdd(Collect.all())
+                search.value = search.value.copyAdd(Collect.all())
             }
             // 同样的数据添加到全部
             search.value[0].list.addAll(result.list)

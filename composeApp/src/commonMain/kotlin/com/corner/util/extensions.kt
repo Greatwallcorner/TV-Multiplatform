@@ -89,9 +89,9 @@ var Color.Companion.FirefoxGray:Color
 
 
 fun <E> CopyOnWriteArrayList<E>.copyAdd(item: E? = null, list: CopyOnWriteArrayList<E>? = null): CopyOnWriteArrayList<E> {
-    return CopyOnWriteArrayList<E>().apply {
-        addAll(this)
-        if(item != null) add(item)
-        if(CollectionUtil.isNotEmpty(list)) addAll(list!!)
+    return CopyOnWriteArrayList<E>().also {
+        it.addAll(this)
+        if(item != null) it.add(item)
+        if(CollectionUtil.isNotEmpty(list)) it.addAll(list!!)
     }
 }
