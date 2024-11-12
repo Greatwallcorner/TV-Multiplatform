@@ -120,7 +120,7 @@ jobs:
             👇新的预发布版本👇
               ${{needs.set-tag.outputs.tag}}
             📦仓库: ${{ github.repository }}
-            See changes: https://github.com/${{ github.repository }}/compare/${{needs.set-tag.outputs.lastTag}}...${{needs.set-tag.outputs.tag}}
+            See changes: https://github.com/Greatwallcorner/TV-Multiplatform/commits/main/
             Download: https://github.com/${{ github.repository }}/releases/tag/${{ needs.set-tag.outputs.tag }}
     permissions:
       contents: write
