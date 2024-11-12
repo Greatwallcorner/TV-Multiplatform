@@ -134,7 +134,7 @@ jobs:
           chatid: ${{ secrets.TG_GROUP_ID }}
           message: |
             👇新的版本👇
-
+              ${{needs.set-tag.outputs.tag}}
             📦仓库: ${{ github.repository }}
           button: true
           button_name: 👀下载👀
