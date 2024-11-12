@@ -2,10 +2,8 @@ name: set-tag
 on:
   workflow_call:
     outputs:
-      tag:
-        value: ${{jobs.set-tag.outputs.output1}}
-      lastTag:
-        value: ${{jobs.set-tag.outputs.output2}}
+      tag: ${{jobs.set-tag.outputs.output1}}
+      lastTag: ${{jobs.set-tag.outputs.output2}}
 
 jobs:
   set-tag:

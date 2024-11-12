@@ -20,7 +20,7 @@ jobs:
           latest_tag=$(git describe --tags --abbrev=0)
           last_tag=$(git describe --tags `git rev-list --tags --max-count=2`^..`git rev-list --tags --max-count=1`)
           echo $latest_tag
-          echo $last_tag
+          echo $last_tag 
           echo "tag=${latest_tag}" >> $GITHUB_ENV
           echo "tag=${latest_tag}" >> $GITHUB_OUTPUT
           echo "last_tag=${last_tag}" >> $GITHUB_ENV
