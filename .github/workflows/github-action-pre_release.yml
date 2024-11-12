@@ -95,7 +95,7 @@ jobs:
              *.zip
   release:
     runs-on: ubuntu-latest
-    needs: [ build-win, build-linux, build-mac]
+    needs: [ build-win, build-linux, build-mac, set-tag]
     steps:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
@@ -120,5 +120,7 @@ jobs:
             👇新的预发布版本👇
               ${{needs.set-tag.outputs.tag}}
             📦仓库: ${{ github.repository }}
+            See changes: https://github.com/${{ github.repository }}/compare/${{needs.set-tag.outputs.lastTag}}...${{needs.set-tag.outputs.tag}}
+            Download: https://github.com/${{ github.repository }}/releases/tag/${{ needs.set-tag.outputs.tag }}
     permissions:
       contents: write
