@@ -3,18 +3,22 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    name: Build
+    uses: ./.github/workflows/set-tag-workflow.yml
+  echo:
+    name: echo
     runs-on: ubuntu-latest
     steps:
-      - name: send telegram message on push
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TG_GROUP_ID }}
-          token: ${{ secrets.TG_TOKEN }}
-          message: |
-            ${{ github.actor }} created commit:
-            Commit message: ${{ github.event.commits[0].message }}
-            
-            Repository: ${{ github.repository }}
-            
-            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
+      - run: echo ${{needs.build.outputs.tag}} && echo ${{needs.build.outputs.last-tag}}
+#    steps:
+#      - name: send telegram message on push
+#        uses: appleboy/telegram-action@master
+#        with:
+#          to: ${{ secrets.TG_GROUP_ID }}
+#          token: ${{ secrets.TG_TOKEN }}
+#          message: |
+#            ${{ github.actor }} created commit:
+#            Commit message: ${{ github.event.commits[0].message }}
+#
+#            Repository: ${{ github.repository }}
+#
+#            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}

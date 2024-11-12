@@ -18,9 +18,13 @@ jobs:
         id: get-tag
         run: |
           latest_tag=$(git describe --tags --abbrev=0)
+          last_tag=$(git describe --tags `git rev-list --tags --max-count=2`^..`git rev-list --tags --max-count=1`)
           echo $latest_tag
+          echo $last_tag
           echo "tag=${latest_tag}" >> $GITHUB_ENV
           echo "tag=${latest_tag}" >> $GITHUB_OUTPUT
+          echo "last_tag=${last_tag}" >> $GITHUB_ENV
+          echo "last_tag=${last_tag}" >> $GITHUB_OUTPUT
       - name: 打印
         run: echo $tag && echo "${{ steps.get-tag.outputs.tag}}"
   build-win:
@@ -119,6 +123,18 @@ jobs:
             **/*.dmg
             **/*.msi
           tag_name: ${{ needs.set-tag.outputs.tag }}
+      - name: send telegram message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TG_GROUP_ID }}
+          token: ${{ secrets.TG_TOKEN }}
+          message: |
+            👇新的版本👇
+              ${{needs.set-tag.outputs.tag}}
+            📦仓库: ${{ github.repository }}
+            ${{ github.actor }} created commit:
+            Commit message: ${{ github.event.commits[0].message }}
+            See changes: https://github.com/${{ github.repository }}/compare/...${{needs.set-tag.outputs.tag}}
     permissions:
       contents: write
   sendMsg:
