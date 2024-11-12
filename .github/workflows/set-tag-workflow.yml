@@ -17,6 +17,9 @@ jobs:
       output1: ${{ steps.tag.outputs.tag }}
       output2: ${{ steps.last-tag.outputs.lastTag }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - id: tag
         run: echo "tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
       - id: last-tag
