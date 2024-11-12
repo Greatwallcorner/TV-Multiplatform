@@ -23,4 +23,4 @@ jobs:
       - id: tag
         run: echo "tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
       - id: last-tag
-        run: echo "lastTag=$(git describe --tags `git rev-list --tags --max-count=2`^..`git rev-list --tags --max-count=1`)" >> $GITHUB_OUTPUT
+        run: echo "lastTag=$(git describe --tags `git rev-list --tags --max-count=2 --skip=1`)" >> $GITHUB_OUTPUT
