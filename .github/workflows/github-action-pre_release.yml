@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: set-tag
-        run: echo "tag=${date +"%Y%m%d%H%M%S"}" >> $GITHUB_OUTPUT
+        run: echo "tag=`date +"%Y%m%d%H%M%S"`" >> $GITHUB_OUTPUT
   build-win:
     runs-on: windows-latest
     needs:
