@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
-      - run: echo ${{needs.build.outputs.tag}} && echo ${{needs.build.outputs.last-tag}}
+      - run: echo ${{needs.build.outputs.tag}} ${{needs.build.outputs.lastTag}}
 #    steps:
 #      - name: send telegram message on push
 #        uses: appleboy/telegram-action@master
