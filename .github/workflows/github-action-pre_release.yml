@@ -2,8 +2,8 @@ name: TV-Multiplatform Build Pre Release
 on:
   push:
     branches: [pre-release]
-env:
-  tag: ${{ github.run_id }}
+#env:
+#  tag: ${{ github.run_id }}
 jobs:
   set-tag:
     outputs:
@@ -109,7 +109,7 @@ jobs:
             **/*.pkg
             **/*.dmg
             **/*.msi
-          tag_name: ${{env.tag}}
+          tag_name: ${{ needs.set-tag.outputs.tag }}
           prerelease: true
       - name: send telegram message
         uses: appleboy/telegram-action@master
