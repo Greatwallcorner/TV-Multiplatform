@@ -58,7 +58,7 @@ jobs:
       - name: compress
         run: cd ./composeApp/build/compose/binaries/main-release/app && zip -q -r ./TV-linux-${{ needs.set-tag.outputs.tag }}.zip ./TV
       - name: move file
-        run: mv ./composeApp/build/compose/binaries/main-release/deb/*.deb ./TV-linux-$tag.deb && mv ./composeApp/build/compose/binaries/main-release/app/*.zip ./
+        run: mv ./composeApp/build/compose/binaries/main-release/deb/*.deb ./TV-linux-${{ needs.set-tag.outputs.tag }}.deb && mv ./composeApp/build/compose/binaries/main-release/app/*.zip ./
       - run: ls
       - uses: actions/upload-artifact@v4
         with:
