@@ -2,8 +2,8 @@ name: TV-Multiplatform Build Pre Release
 on:
   push:
     branches: [pre-release]
-env:
-  tag: ${{ github.run_id }}
+#env:
+#  tag: ${{ github.run_id }}
 jobs:
   set-tag:
     outputs:
@@ -58,7 +58,7 @@ jobs:
       - name: compress
         run: cd ./composeApp/build/compose/binaries/main-release/app && zip -q -r ./TV-linux-${{ needs.set-tag.outputs.tag }}.zip ./TV
       - name: move file
-        run: mv ./composeApp/build/compose/binaries/main-release/deb/*.deb ./TV-linux-$tag.deb && mv ./composeApp/build/compose/binaries/main-release/app/*.zip ./
+        run: mv ./composeApp/build/compose/binaries/main-release/deb/*.deb ./TV-linux-${{ needs.set-tag.outputs.tag }}.deb && mv ./composeApp/build/compose/binaries/main-release/app/*.zip ./
       - run: ls
       - uses: actions/upload-artifact@v4
         with:
@@ -109,7 +109,7 @@ jobs:
             **/*.pkg
             **/*.dmg
             **/*.msi
-          tag_name: ${{env.tag}}
+          tag_name: ${{ needs.set-tag.outputs.tag }}
           prerelease: true
       - name: send telegram message
         uses: appleboy/telegram-action@master
@@ -120,7 +120,7 @@ jobs:
             👇新的预发布版本👇
               ${{needs.set-tag.outputs.tag}}
             📦仓库: ${{ github.repository }}
-            See changes: https://github.com/${{ github.repository }}/compare/${{needs.set-tag.outputs.lastTag}}...${{needs.set-tag.outputs.tag}}
+            See changes: https://github.com/Greatwallcorner/TV-Multiplatform/commits/main/
             Download: https://github.com/${{ github.repository }}/releases/tag/${{ needs.set-tag.outputs.tag }}
     permissions:
       contents: write

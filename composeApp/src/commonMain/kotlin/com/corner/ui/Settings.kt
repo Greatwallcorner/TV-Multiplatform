@@ -184,8 +184,11 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                 item {
                     SettingItemTemplate("播放器") {
                         val playerSetting = derivedStateOf {
-                                val parseValueToList =
+                                var parseValueToList =
                                     model.value.settingList.getSetting(SettingType.PLAYER)?.parseValueToList()
+                            if(parseValueToList?.size == 1){
+                                parseValueToList = listOf("false" , parseValueToList[0])
+                            }
                             parseValueToList ?: listOf()
                         }
                         Box {
