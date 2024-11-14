@@ -8,10 +8,13 @@ jobs:
   set-tag:
     outputs:
       tag: ${{steps.set-tag.outputs.tag}}
+      lastTag: ${{steps.last-tag.outputs.lastTag}}
     runs-on: ubuntu-latest
     steps:
       - id: set-tag
         run: echo "tag=`date +"%Y%m%d%H%M%S"`" >> $GITHUB_OUTPUT
+      - id: last-tag
+        run: echo "lastTag=$(git tag --sort=-creatordate | sed -n '2p')" >> $GITHUB_OUTPUT
   build-win:
     runs-on: windows-latest
     needs:
@@ -120,7 +123,7 @@ jobs:
             👇新的预发布版本👇
               ${{needs.set-tag.outputs.tag}}
             📦仓库: ${{ github.repository }}
-            See changes: https://github.com/Greatwallcorner/TV-Multiplatform/commits/main/
+            See changes: https://github.com/${{ github.repository }}/compare/${{needs.set-tag.outputs.lastTag}}...${{needs.set-tag.outputs.tag}}
             Download: https://github.com/${{ github.repository }}/releases/tag/${{ needs.set-tag.outputs.tag }}
     permissions:
       contents: write
