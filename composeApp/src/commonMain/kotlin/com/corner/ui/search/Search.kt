@@ -156,14 +156,14 @@ private fun SearchResult(
                                         i.activated.value = (i.site?.key == item.site?.key)
                                     }
                                 },
-                                item.activated.value,
+                                selected = item.activated.value,
                             )
                         }
                     }
                     Surface(Modifier.align(Alignment.BottomCenter).padding(vertical = 10.dp, horizontal = 8.dp)) {
-                        RatioBtn(text = if (showLoadMore.value) "加载更多" else "没有更多", onClick = {
+                        RatioBtn(Modifier.height(45.dp), text = if (showLoadMore.value) "加载更多" else "没有更多", onClick = {
                             component.search( searchText.value, true)
-                        }, false)
+                        }, selected = false, loading = model.value.isSearching)
                     }
                 }
                 Box(modifier = Modifier.fillMaxSize()) {

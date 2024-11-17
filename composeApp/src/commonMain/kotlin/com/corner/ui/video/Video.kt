@@ -248,7 +248,7 @@ private fun FiltersDialog(
                             }
                         }) {
                         items(f.value.value ?: listOf()) {
-                            RatioBtn(it.n ?: "", onClick = {
+                            RatioBtn(text = it.n ?: "", onClick = {
                                 scope.launch {
                                     f.value.init = it.v ?: ""
                                     f.value.value?.filter { i -> i.n != it.n }?.map { t -> t.selected = false }
@@ -504,7 +504,7 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
                         component.isLoading.set(false)
                         hideProgress()
                     }
-                }, type.selected)
+                }, selected = type.selected)
             }
         }
         if (visible.value) {
