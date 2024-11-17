@@ -429,7 +429,7 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                                         )?.toMutableList()
                                     )
                                     component.model.update { it.copy(detail = dt) }
-                                }, text = "${i + 1}-${i + Constants.EpSize}"
+                                }, text = "${i + 1}-${if ((i + Constants.EpSize) > epSize.value) epSize.value else i + Constants.EpSize}"
                             )
                         }
                     }
