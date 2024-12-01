@@ -9,7 +9,7 @@ import kotlinx.serialization.Transient
 
 @Serializable
 data class Api(
-    val spider: String,
+    val spider: String = "",
     val sites: MutableSet<Site> = mutableSetOf(),
     val lives: MutableSet<Live> = mutableSetOf(),
     val parses: MutableSet<Parse> = mutableSetOf(),

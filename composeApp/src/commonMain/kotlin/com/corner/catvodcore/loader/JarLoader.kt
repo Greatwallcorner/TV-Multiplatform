@@ -7,6 +7,7 @@ import com.corner.catvodcore.util.Paths
 import com.corner.catvodcore.util.Urls
 import com.corner.catvodcore.util.Utils
 import com.github.catvod.crawler.Spider
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.lang.reflect.Method
@@ -31,6 +32,7 @@ object JarLoader {
     }
 
     fun loadJar(key: String, spider: String) {
+        if(StringUtils.isBlank(spider)) return
         val texts = spider.split(Constant.md5Split)
         val md5 = if(texts.size<=1) "" else texts[1].trim()
         val jar = texts[0]
