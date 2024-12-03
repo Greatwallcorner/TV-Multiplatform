@@ -200,8 +200,8 @@ object SiteViewModel {
                 post(site, result, quick)
             } else {
                 val params = mutableMapOf<String, String>()
-                params.put("wd", keyword)
-                params.put("quick", quick.toString())
+                params["wd"] = keyword
+                params["quick"] = quick.toString()
                 val searchContent = call(site, params, true)
                 log.debug(site.name + "," + searchContent)
                 val result = Jsons.decodeFromString<Result>(searchContent)
@@ -223,8 +223,8 @@ object SiteViewModel {
                 result.value = rst
             } else {
                 val params = mutableMapOf<String, String>()
-                params.put("wd", keyword)
-                params.put("pg", page)
+                params["wd"] = keyword
+                params["pg"] = page
                 val searchContent = call(site, params, true)
                 log.debug(site.name + "," + searchContent)
                 val rst: Result = fetchPic(site, Jsons.decodeFromString<Result>(searchContent))
