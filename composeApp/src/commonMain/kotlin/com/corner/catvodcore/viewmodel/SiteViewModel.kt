@@ -112,14 +112,14 @@ object SiteViewModel {
             } else {
                 val params: MutableMap<String, String> =
                     mutableMapOf()
-                params.put("ac", if (site.type == 0) "videolist" else "detail")
-                params.put("ids", id)
+                params["ac"] = if (site.type == 0) "videolist" else "detail"
+                params["ids"] = id
                 val detailContent = call(site, params, true)
                 log.debug("detail: $detailContent")
-                val rs = Jsons.decodeFromString<Result>(detailContent)
-                if (rs.list.isNotEmpty()) rs.list[0].setVodFlags()
+                rst = Jsons.decodeFromString<Result>(detailContent)
+                if (rst.list.isNotEmpty()) rst.list[0].setVodFlags()
                 //            if (!rst.list.isEmpty()) checkThunder(rst.list.get(0).getVodFlags())
-                detail.value = rs
+                detail.value = rst
             }
         } catch (e: Exception) {
             log.error("${site.name} detailContent 异常", e)
@@ -148,8 +148,8 @@ object SiteViewModel {
                 return result
             } else if (site.type == 4) {
                 val params = mutableMapOf<String, String>()
-                params.put("play", id)
-                params.put("flag", flag)
+                params["play"] = id
+                params["flag"] = flag
                 val playerContent = call(site, params, true)
                 log.debug("player: $playerContent")
                 val result = Jsons.decodeFromString<Result>(playerContent)
@@ -166,7 +166,7 @@ object SiteViewModel {
                 return result
             }*/ else {
                 var url: Url = Url().add(id)
-                val type: String? = Url(id).parameters.get("type")
+                val type: String? = Url(id).parameters["type"]
                 if (type != null && type == "json") {
                     val string = Http.newCall(id, site.header.toHeaders()).execute().body.string()
                     if (StringUtils.isNotBlank(string)) {
