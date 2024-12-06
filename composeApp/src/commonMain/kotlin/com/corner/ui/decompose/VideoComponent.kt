@@ -32,7 +32,8 @@ interface VideoComponent {
         var currentFilters: List<Filter> = listOf(),
         var page: AtomicInteger = AtomicInteger(1),
         var isRunning: Boolean = false,
-        val prompt:String = ""
+        val prompt:String = "",
+        val dirPaths:MutableList<String> = mutableListOf() // 当前目录路径
     ){
 
         override fun equals(other: Any?): Boolean {
@@ -50,6 +51,7 @@ interface VideoComponent {
             if (page != other.page) return false
             if (isRunning != other.isRunning) return false
             if (prompt != other.prompt) return false
+            if (dirPaths != other.dirPaths) return false
 
             return true
         }
@@ -66,6 +68,7 @@ interface VideoComponent {
             result = 31 * result + page.hashCode()
             result = 31 * result + isRunning.hashCode()
             result = 31 * result + prompt.hashCode()
+            result = 31 * result + dirPaths.hashCode()
             return result
         }
 

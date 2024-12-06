@@ -207,6 +207,33 @@ fun WindowScope.VideoScene(
             FiltersDialog(Modifier.align(Alignment.BottomCenter), showFiltersDialog, component) {
                 showFiltersDialog = false
             }
+
+            DirPath(component = component)
+        }
+    }
+}
+
+//@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun DirPath(showDialog: Boolean = false, component: DefaultVideoComponent){
+    val state = component.model.subscribeAsState()
+    val show = derivedStateOf {
+        state.value.dirPaths.size > 1
+    }
+    AnimatedVisibility(show.value,){
+        Surface(modifier = Modifier.height(80.dp).fillMaxHeight(0.3f)
+            .shadow(8.dp, shape = RoundedCornerShape(10.dp)),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            LazyRow {
+                items(state.value.dirPaths){
+                    HoverableText(text = it){
+                        SiteViewModel.viewModelScope.launch {
+                            component.clickFolder(Vod(vodId = state.value.dirPaths.subList(0, state.value.dirPaths.indexOf(it)).joinToString("/")))
+                        }
+                    }
+                }
+            }
         }
     }
 }

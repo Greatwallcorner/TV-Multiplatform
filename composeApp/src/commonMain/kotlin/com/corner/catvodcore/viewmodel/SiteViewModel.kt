@@ -53,7 +53,7 @@ object SiteViewModel {
                 3 -> {
                     val spider = ApiConfig.getSpider(site)
                     val homeContent = spider.homeContent(true)
-                    log.debug("home:$homeContent")
+                    log.debug("home: $homeContent")
                     ApiConfig.setRecent(site)
                     val rst: Result = Jsons.decodeFromString<Result>(homeContent)
                     if ((rst.list.size) > 0) result.value = rst

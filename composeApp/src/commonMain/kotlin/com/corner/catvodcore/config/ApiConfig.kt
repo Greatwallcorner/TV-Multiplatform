@@ -18,6 +18,7 @@ import okio.Path.Companion.toPath
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
+import java.nio.file.Paths
 
 private val log = LoggerFactory.getLogger("apiConfig")
 
@@ -90,8 +91,10 @@ object ApiConfig{
 
     fun parseExt(ext: String): String {
         if (StringUtils.isBlank(ext)) return ext
-        if (ext.startsWith("http") || ext.startsWith("file")) return ext
-        if (ext.endsWith(".js") || ext.endsWith(".json") || ext.endsWith(".txt")) parseExt(
+        if (ext.startsWith("file")) {
+            return Files.readString(Paths.get(Urls.convert(ext)))
+        }
+        if (ext.endsWith(".js") || ext.endsWith(".json") || ext.endsWith(".txt")) return parseExt(
             Urls.convert(
                 api.url ?: "",
                 ext
