@@ -153,7 +153,7 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
         showProgress()
         SiteViewModel.viewModelScope.launch {
             val result = loadCate(vod.vodId)
-            model.update { it.copy(homeVodResult = result.list.toMutableSet(), dirPaths = mutableListOf<String>().apply { addAll(it.dirPaths); addAll(vod.vodId.split("/")) }) }
+            model.update { it.copy(homeVodResult = result.list.toMutableSet(), dirPaths = mutableListOf<String>().apply { addAll(vod.vodId.split("/")) }) }
         }.invokeOnCompletion {
             hideProgress()
         }
