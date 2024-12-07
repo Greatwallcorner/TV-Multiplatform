@@ -87,7 +87,7 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
             it.copy(
                 homeVodResult = mutableSetOf(),
                 homeLoaded = false, classList = mutableSetOf(), filtersMap = mutableMapOf(),
-                currentClass = null, currentFilters = listOf(),
+                currentClass = null, currentFilters = listOf(), dirPaths = mutableListOf(),
                 page = AtomicInteger(1), isRunning = false, prompt = ""
             )
         }
@@ -114,7 +114,6 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
                         }
                     }
 
-                    // 有首页内容
                     if (list.isNotEmpty()) {
                         classList = (mutableSetOf(Type.home()) + classList).toMutableSet()
                     } else {
@@ -154,7 +153,7 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
         showProgress()
         SiteViewModel.viewModelScope.launch {
             val result = loadCate(vod.vodId)
-            model.update { it.copy(homeVodResult = result.list.toMutableSet()) }
+            model.update { it.copy(homeVodResult = result.list.toMutableSet(), dirPaths = mutableListOf<String>().apply { addAll(vod.vodId.split("/")) }) }
         }.invokeOnCompletion {
             hideProgress()
         }

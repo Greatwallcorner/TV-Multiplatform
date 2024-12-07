@@ -20,11 +20,11 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun RatioBtn(text: String, onClick: () -> Unit, selected: Boolean, loading: Boolean = false) {
+fun RatioBtn(modifier: Modifier = Modifier,text: String, onClick: () -> Unit, selected: Boolean, loading: Boolean = false) {
     Surface(
         border = BorderStroke(1.dp, Color.Gray.copy(0.6F)),
         shape = RoundedCornerShape(6.dp),
-        modifier = Modifier
+        modifier = modifier
             .shadow(1.dp)
             .background(
                 if (selected) MaterialTheme.colorScheme.secondary else Color.Transparent,
@@ -32,7 +32,7 @@ fun RatioBtn(text: String, onClick: () -> Unit, selected: Boolean, loading: Bool
             )
             .clickable(
                 onClick = { onClick() },
-//                enabled = !selected
+                enabled = !loading
             ),
     ) {
         Box() {
@@ -66,7 +66,8 @@ fun RatioBtn(text: String, onClick: () -> Unit, selected: Boolean, loading: Bool
                 if (loading) {
                     CircularProgressIndicator(
                         modifier = Modifier
-                            .align(Alignment.CenterStart),
+                            .align(Alignment.CenterStart)
+                            .padding(1.dp),
                         color = Color.White,
                         trackColor = Color.Gray
                     )
@@ -81,9 +82,9 @@ fun RatioBtn(text: String, onClick: () -> Unit, selected: Boolean, loading: Bool
 fun RatioBtnPreview() {
     AppTheme {
         Column {
-            RatioBtn("测试", onClick = {}, true, loading = true)
-            Spacer(Modifier.size(15.dp))
-            RatioBtn("测试2", onClick = {}, false, loading = true)
+//            RatioBtn("测试", onClick = {}, true, loading = true)
+//            Spacer(Modifier.size(15.dp))
+//            RatioBtn("测试2", onClick = {}, false, loading = true)
         }
     }
 }

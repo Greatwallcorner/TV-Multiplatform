@@ -67,6 +67,7 @@ fun initConfig() {
     try {
         ApiConfig.parseConfig(siteConfig, false).init()
     } catch (e: Exception) {
+        log.error("initConfig error 尝试使用json解析", e)
         ApiConfig.parseConfig(siteConfig, true).init()
     }
     log.info("initConfig end")

@@ -18,7 +18,7 @@ class VlcJInit {
 //                println("VlcJInit 未找到${Constants.resPathKey}环境变量")
 //            }
             val discover = NativeDiscovery().discover()
-            if(!discover && SettingStore.getPlayerSetting()[0] as Boolean) SnackBar.postMsg("未找到VLC组件， 请安装VLC或者配置vlc可执行文件位置")
+            if(!discover && SettingStore.getPlayerSetting()[0] as Boolean) SnackBar.postMsg("未找到VLC播放器组件， 请安装VLC或者配置vlc可执行文件位置")
             if(notify) SnackBar.postMsg("VLC加载${if(discover) "成功" else "失败"}")
         }
     }

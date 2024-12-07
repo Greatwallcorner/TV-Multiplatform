@@ -55,6 +55,7 @@ import com.corner.util.isScrollingUp
 import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import javax.swing.Box
 
 @Composable
 fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> Unit) {
@@ -74,7 +75,8 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
                     contentScale = ContentScale.Fit
                 )
             } else {
-                AutoSizeImage(url = vod.vodPic ?: "",
+                AutoSizeImage(
+                    url = vod.vodPic ?: "",
                     modifier = picModifier,
                     contentDescription = vod.vodName,
                     contentScale = ContentScale.Crop,
@@ -207,9 +209,71 @@ fun WindowScope.VideoScene(
             FiltersDialog(Modifier.align(Alignment.BottomCenter), showFiltersDialog, component) {
                 showFiltersDialog = false
             }
+            val show = derivedStateOf {
+                model.value.dirPaths.size > 1
+            }
+            AnimatedVisibility(show.value) {
+                Box(Modifier.fillMaxSize()) {
+                    Surface(
+                        modifier = Modifier.wrapContentHeight()
+                            .wrapContentWidth()
+                            .align(Alignment.BottomStart)
+                            .shadow(8.dp, shape = RoundedCornerShape(10.dp))
+                            .padding(1.dp),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        LazyRow {
+                            items(model.value.dirPaths) {
+                                HoverableText(text = it) {
+                                    SiteViewModel.viewModelScope.launch {
+                                        component.clickFolder(
+                                            Vod(
+                                                vodId = model.value.dirPaths.subList(
+                                                    0,
+                                                    model.value.dirPaths.indexOf(it) + 1
+                                                ).joinToString("/")
+                                            )
+                                        )
+                                    }
+                                }
+                                Text(text = "/")
+                            }
+                        }
+                    }
+                }
+            }
+
+//            DirPath(component = component)
         }
     }
 }
+
+//@OptIn(ExperimentalAnimationApi::class)
+//@Composable
+//fun DirPath(showDialog: Boolean = false, component: DefaultVideoComponent){
+//    val state = component.model.subscribeAsState()
+//    val show = derivedStateOf {
+//        state.value.dirPaths.size > 1
+//    }
+//    AnimatedVisibility(show.value){
+//        Box(modifier = Modifier.height(80.dp)
+//            .fillMaxHeight(0.3f)
+//            .align(Alignment.BottomStart)
+//            .shadow(8.dp, shape = RoundedCornerShape(10.dp)),
+//            shape = RoundedCornerShape(10.dp)
+//        ) {
+//            LazyRow {
+//                items(state.value.dirPaths){
+//                    HoverableText(text = it){
+//                        SiteViewModel.viewModelScope.launch {
+//                            component.clickFolder(Vod(vodId = state.value.dirPaths.subList(0, state.value.dirPaths.indexOf(it)).joinToString("/")))
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -241,14 +305,15 @@ private fun FiltersDialog(
                 items(model.value.currentFilters) { filter ->
                     val state = rememberLazyListState(0)
                     val f = rememberUpdatedState(filter)
-                    LazyRow(state = state, horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    LazyRow(
+                        state = state, horizontalArrangement = Arrangement.spacedBy(5.dp),
                         modifier = Modifier.onPointerEvent(PointerEventType.Scroll) {
                             scope.launch {
                                 state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
                             }
                         }) {
                         items(f.value.value ?: listOf()) {
-                            RatioBtn(it.n ?: "", onClick = {
+                            RatioBtn(text = it.n ?: "", onClick = {
                                 scope.launch {
                                     f.value.init = it.v ?: ""
                                     f.value.value?.filter { i -> i.n != it.n }?.map { t -> t.selected = false }
@@ -300,7 +365,8 @@ fun FloatButton(
                 .padding(10.dp)
         ) {
             Box(Modifier.align(Alignment.BottomEnd)) {
-                AnimatedContent(state.isScrollingUp(),
+                AnimatedContent(
+                    state.isScrollingUp(),
                     contentAlignment = Alignment.BottomEnd,
                     transitionSpec = { fadeIn() togetherWith fadeOut() }
                 ) {
@@ -387,13 +453,14 @@ fun VideoTopBar(
             }
         },
         center = {
-            Box(modifier = Modifier
-                .fillMaxWidth(0.3f)
-                .fillMaxHeight(0.6f)
-                .background(Color.Gray.copy(alpha = 0.3f), shape = RoundedCornerShape(percent = 50))
-                .clickable {
-                    onClickSearch()
-                }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.3f)
+                    .fillMaxHeight(0.6f)
+                    .background(Color.Gray.copy(alpha = 0.3f), shape = RoundedCornerShape(percent = 50))
+                    .clickable {
+                        onClickSearch()
+                    }) {
                 AnimatedContent(
                     targetState = model.value.prompt,
                     contentAlignment = Alignment.Center,
@@ -480,7 +547,8 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
                             it.copy(
                                 currentClass = type,
                                 classList = model.value.classList,
-                                currentFilters = component.getFilters(type)
+                                currentFilters = component.getFilters(type),
+                                dirPaths = mutableListOf()
                             )
                         }
                         SiteViewModel.cancelAll()
@@ -504,7 +572,7 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
                         component.isLoading.set(false)
                         hideProgress()
                     }
-                }, type.selected)
+                }, selected = type.selected)
             }
         }
         if (visible.value) {
@@ -547,7 +615,8 @@ fun ChooseHomeDialog(
                 state = lazyListState
             ) {
                 items(items = ApiConfig.api.sites.toList()) { item ->
-                    OutlinedButton(modifier = Modifier.width(180.dp),
+                    OutlinedButton(
+                        modifier = Modifier.width(180.dp),
                         onClick = {
                             SiteViewModel.viewModelScope.launch {
                                 ApiConfig.setHome(item)

@@ -197,14 +197,14 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                                     )
                                     LazyRow(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                                         itemsIndexed(urls.value?.values ?: listOf()) { i, item ->
-                                            RatioBtn(item.n ?: (i + 1).toString(), onClick = {
+                                            RatioBtn(text = item.n ?: (i + 1).toString(), onClick = {
                                                 component.model.update {
                                                     it.copy(
                                                         currentUrl = urls.value?.copy(position = i),
                                                         currentPlayUrl = item.v ?: ""
                                                     )
                                                 }
-                                            }, i == urls.value?.position!!)
+                                            }, selected = i == urls.value?.position!!)
                                         }
                                     }
 
@@ -264,7 +264,7 @@ private fun flags(
                 ) {
                     val flagList = derivedStateOf { detail.value?.vodFlags?.toList() ?: listOf() }
                     items(flagList.value) {
-                        RatioBtn(it?.show ?: "", onClick = {
+                        RatioBtn(text = it?.show ?: "", onClick = {
                             scope.launch {
                                 for (vodFlag in detail.value!!.vodFlags) {
                                     if (it?.show == vodFlag?.show) {
@@ -429,7 +429,7 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                                         )?.toMutableList()
                                     )
                                     component.model.update { it.copy(detail = dt) }
-                                }, text = "${i + 1}-${i + Constants.EpSize}"
+                                }, text = "${i + 1}-${if ((i + Constants.EpSize) > epSize.value) epSize.value else i + Constants.EpSize}"
                             )
                         }
                     }
@@ -505,7 +505,7 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                             }.invokeOnCompletion {
                                 videoLoading.value = false
                             }
-                        }, selected = it.activated, it.activated && videoLoading.value)
+                        }, selected = it.activated, loading = it.activated && videoLoading.value)
                     }
                 }
             }
