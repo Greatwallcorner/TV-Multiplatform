@@ -24,11 +24,11 @@ fun generateImageLoader(): ImageLoader {
             }
             // cache 50 image
             imageMemoryCacheConfig {
-                maxSize(50)
+                maxSize(250)
             }
             // cache 50 painter
             painterMemoryCacheConfig {
-                maxSize(50)
+                maxSize(250)
             }
 
             diskCacheConfig {
