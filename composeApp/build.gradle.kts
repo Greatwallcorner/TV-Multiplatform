@@ -26,7 +26,7 @@ kotlin {
         commonMain.dependencies {
             val ktorVer = "3.0.1"
             val logbackVer = "1.3.14"
-            val imageLoader = "1.8.1"
+            val imageLoader = "1.9.0"
             val hutoolVer = "5.8.27"
 //            val kotlinVersion = extra["kotlin.version"] as String
             implementation(compose.runtime)
