@@ -82,10 +82,15 @@ fun main() {
             }
             GlobalModel.closeApp.observe {
                 if(it){
-                    window.isVisible = false
-                    SettingStore.write()
-                    Init.stop()
-                    exitApplication()
+                    try {
+                        window.isVisible = false
+                        SettingStore.write()
+                        Init.stop()
+                    }catch(e: Exception){
+                        log.error("关闭应用异常", e)
+                    } finally {
+                        exitApplication()
+                    }
                 }
             }
         }

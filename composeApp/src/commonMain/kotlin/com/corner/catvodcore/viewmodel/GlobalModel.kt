@@ -7,6 +7,7 @@ import com.arkivanov.decompose.value.MutableValue
 import com.corner.bean.HotData
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
+import org.jupnp.UpnpService
 
 object GlobalModel {
     var windowState:WindowState? = null
@@ -19,6 +20,8 @@ object GlobalModel {
     var keyword = MutableValue<String>("")
     var videoFullScreen = MutableValue<Boolean>(false)
         private set
+    var upnpService = mutableStateOf<UpnpService?>(null)
+
     fun clearHome(){
         home.value = Site.get("","")
     }

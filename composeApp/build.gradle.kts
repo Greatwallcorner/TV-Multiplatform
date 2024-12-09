@@ -80,8 +80,8 @@ kotlin {
 
 
             // DLNA
-            implementation("org.jupnp:org.jupnp:2.7.1")
-            implementation("org.jupnp:org.jupnp.support:2.7.1")
+            implementation("org.jupnp.bom:org.jupnp.bom.compile:3.0.2")
+            implementation("org.jupnp:org.jupnp.support:3.0.2")
 //            // https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
 //            implementation("javax.servlet:javax.servlet-api:4.0.1")
 //            // https://mvnrepository.com/artifact/org.eclipse.jetty.ee10/jetty-ee10-servlet
@@ -91,15 +91,15 @@ kotlin {
 //            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-client
 //            implementation("org.eclipse.jetty:jetty-client:12.0.14")
 
-            api("javax.servlet:javax.servlet-api:4.0.1")
-            // https://mvnrepository.com/artifact/org.eclipse.jetty.ee10/jetty-ee10-servlet
-            api("org.eclipse.jetty.ee10:jetty-ee10-servlet:12.0.14")
-            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server
-            api("org.eclipse.jetty:jetty-server:12.0.14")
-            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-client
-            api("org.eclipse.jetty:jetty-client:12.0.14")
-            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-servlet
-            api("org.eclipse.jetty:jetty-servlet:11.0.24")
+//            api("javax.servlet:javax.servlet-api:4.0.1")
+//            // https://mvnrepository.com/artifact/org.eclipse.jetty.ee10/jetty-ee10-servlet
+//            api("org.eclipse.jetty.ee10:jetty-ee10-servlet:12.0.14")
+//            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server
+//            api("org.eclipse.jetty:jetty-server:12.0.14")
+//            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-client
+//            api("org.eclipse.jetty:jetty-client:12.0.14")
+//            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-servlet
+//            api("org.eclipse.jetty:jetty-servlet:11.0.24")
 
 
 
