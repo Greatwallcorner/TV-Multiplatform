@@ -6,9 +6,10 @@ import org.jupnp.model.meta.LocalDevice
 import org.jupnp.model.meta.RemoteDevice
 import org.jupnp.registry.Registry
 import org.jupnp.registry.RegistryListener
+import upnp.TVMDevice
 
 
-object Registry {
+class Registry {
     val registry = object : RegistryListener {
         override fun remoteDeviceDiscoveryStarted(registry: Registry?, device: RemoteDevice?) {
             println(
@@ -67,6 +68,7 @@ object Registry {
     fun init(){
         val upnpServiceImpl = UpnpServiceImpl()
         upnpServiceImpl.registry.addListener(registry)
+        upnpServiceImpl.registry.addDevice(TVMDevice())
         upnpServiceImpl.controlPoint.search(STAllHeader())
 
 
@@ -82,4 +84,8 @@ object Registry {
 //        upnpServiceImpl.startup()
 
     }
+}
+
+fun main() {
+    Registry().init();
 }

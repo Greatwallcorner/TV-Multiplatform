@@ -39,6 +39,11 @@ class commonTest {
     }
 
     @Test
+    fun proxyTest(){
+        println(System.getProperty("http.proxyHost"))
+    }
+
+    @Test
     fun resolve(){
 //        val convert = Urls.convert(
 //            "F:/sync/compose-mutiplatform-workspace/My/CatVodSpider/json/config.json",

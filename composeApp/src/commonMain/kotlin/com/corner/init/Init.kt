@@ -33,6 +33,10 @@ class Init {
                 initPlatformSpecify()
                 Hot.getHotList()
                 VlcJInit.init()
+//                GlobalModel.upnpService.value = TVMUpnpService().apply {
+//                    startup()
+//                    sendAlive()
+//                }
             } finally {
                 hideProgress()
             }
@@ -52,7 +56,7 @@ class Init {
     }
 }
 
-expect fun initPlatformSpecify();
+expect fun initPlatformSpecify()
 
 fun initConfig() {
     log.info("initConfig start")

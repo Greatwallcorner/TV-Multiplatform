@@ -42,6 +42,7 @@ private val log = LoggerFactory.getLogger("main")
 fun main() {
     launchErrorCatcher()
     printSystemInfo()
+//    System.setProperty("java.net.useSystemProxies", "true");
     application {
         val lifecycle = LifecycleRegistry()
         val root = SwingUtil.runOnUiThread {
@@ -82,10 +83,15 @@ fun main() {
             }
             GlobalModel.closeApp.observe {
                 if(it){
-                    window.isVisible = false
-                    SettingStore.write()
-                    Init.stop()
-                    exitApplication()
+                    try {
+                        window.isVisible = false
+                        SettingStore.write()
+                        Init.stop()
+                    }catch(e: Exception){
+                        log.error("关闭应用异常", e)
+                    } finally {
+                        exitApplication()
+                    }
                 }
             }
         }

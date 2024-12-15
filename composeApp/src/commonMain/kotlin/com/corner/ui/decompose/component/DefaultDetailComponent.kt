@@ -291,6 +291,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     }
 
     override fun playEp(detail: Vod, ep: Episode) {
+        if(Utils.isDownloadLink(ep.url)) return
         val result = SiteViewModel.playerContent(
             detail.site?.key ?: "",
             detail.currentFlag?.flag ?: "",
@@ -310,7 +311,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             it.activated = it == ep
         }
         if (!internalPlayer) {
-            SnackBar.postMsg("上次播放" + ": ${ep.name}")
+            SnackBar.postMsg("上次看到" + ": ${ep.name}")
         }
     }
 
