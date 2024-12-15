@@ -3,13 +3,17 @@ package com.corner.ui.scene
 import AppTheme
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -20,7 +24,14 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun RatioBtn(modifier: Modifier = Modifier,text: String, onClick: () -> Unit, selected: Boolean, loading: Boolean = false) {
+fun RatioBtn(
+    modifier: Modifier = Modifier,
+    text: String,
+    onClick: () -> Unit,
+    selected: Boolean,
+    loading: Boolean = false,
+    tag: () -> Pair<Boolean, String> = { false to "" }
+) {
     Surface(
         border = BorderStroke(1.dp, Color.Gray.copy(0.6F)),
         shape = RoundedCornerShape(6.dp),
@@ -72,6 +83,20 @@ fun RatioBtn(modifier: Modifier = Modifier,text: String, onClick: () -> Unit, se
                         trackColor = Color.Gray
                     )
                 }
+
+                val tags = remember { tag() }
+                if (tags.first) {
+                    Text(
+                        tags.second,
+                        Modifier.background(if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary /*if (selected) Color.Blue.copy(0.5f) else MaterialTheme.colorScheme.onSecondary*/ ,
+                            shape = RoundedCornerShape(0.dp, 6.dp, 0.dp,6.dp))
+                            .align(Alignment.TopEnd)
+                            .border(1.dp, Color.Gray)
+                            .padding(3.dp)
+                            , maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        color = if (selected) Color.White else MaterialTheme.colorScheme.onSecondary /*if(selected) Color.Black else Color.White*/,
+                    )
+                }
             }
         }
     }
@@ -84,7 +109,7 @@ fun RatioBtnPreview() {
         Column {
 //            RatioBtn("测试", onClick = {}, true, loading = true)
 //            Spacer(Modifier.size(15.dp))
-//            RatioBtn("测试2", onClick = {}, false, loading = true)
+            RatioBtn(Modifier, "测试2", onClick = {}, false, loading = true)
         }
     }
 }

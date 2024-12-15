@@ -1,11 +1,13 @@
 package upnp
 
 import com.corner.dlna.TVConnectionManagerService
+import com.corner.dlna.TvMAudioRenderingControlService
 import org.jupnp.binding.annotations.AnnotationLocalServiceBinder
 import org.jupnp.model.DefaultServiceManager
 import org.jupnp.model.meta.*
 import org.jupnp.model.types.UDADeviceType
 import org.jupnp.model.types.UDN
+import org.jupnp.support.renderingcontrol.AbstractAudioRenderingControl
 
 
 class TVMDevice
@@ -15,13 +17,13 @@ class TVMDevice
     ),
     UDADeviceType("tvm"),
     DeviceDetails("TV Multiplatform"),
-    createICons(),
+    createIcons(),
     createService(),
 ) {
 
 }
 
-fun createICons(): Array<Icon> {
+fun createIcons(): Array<Icon> {
     val list = arrayListOf<Icon>()
     list.add(
         Icon(
@@ -56,27 +58,51 @@ fun createICons(): Array<Icon> {
     return list.toTypedArray()
 }
 
+@Suppress("UNCHECKED_CAST")
 fun createService(): Array<LocalService<out Any>?>{
-    val services = arrayOfNulls<LocalService<out Any>>(2)
     val service = AnnotationLocalServiceBinder().read(TVConnectionManagerService::class.java) as LocalService<TVConnectionManagerService>
-    service.manager = object: DefaultServiceManager<TVConnectionManagerService>(service, TVConnectionManagerService::class.java){
+    service.manager = object : DefaultServiceManager<TVConnectionManagerService>(service, null){
         override fun getLockTimeoutMillis(): Int {
-            return 1000
+            return LOCK_TIMEOUT
         }
 
         override fun createServiceInstance(): TVConnectionManagerService {
             return TVConnectionManagerService()
         }
     }
-    services[0] = service
+//    services[0] = service
 
     val transport =
         AnnotationLocalServiceBinder().read(TvAvTransportService::class.java) as LocalService<TvAvTransportService>
-    transport.manager = object:DefaultServiceManager<TvAvTransportService>(transport, TvAvTransportService::class.java){
+
+    transport.manager = object : DefaultServiceManager<TvAvTransportService>(transport, null){
+
+        override fun getLockTimeoutMillis(): Int {
+            return LOCK_TIMEOUT
+        }
+
         override fun createServiceInstance(): TvAvTransportService {
             return TvAvTransportService()
         }
     }
-    services[1] = transport
-    return services
+
+    return arrayOf(service, transport, createRenderingControl())
+}
+
+private const val LOCK_TIMEOUT = 5000
+
+@Suppress("UNCHECKED_CAST")
+private fun createRenderingControl(): LocalService<AbstractAudioRenderingControl> {
+    val renderingControlService: LocalService<AbstractAudioRenderingControl> = AnnotationLocalServiceBinder().read(AbstractAudioRenderingControl::class.java) as LocalService<AbstractAudioRenderingControl>
+    renderingControlService.setManager(object :
+        DefaultServiceManager<AbstractAudioRenderingControl>(renderingControlService, null) {
+        override fun getLockTimeoutMillis(): Int {
+            return LOCK_TIMEOUT
+        }
+
+        override fun createServiceInstance(): AbstractAudioRenderingControl {
+            return TvMAudioRenderingControlService()
+        }
+    })
+    return renderingControlService
 }

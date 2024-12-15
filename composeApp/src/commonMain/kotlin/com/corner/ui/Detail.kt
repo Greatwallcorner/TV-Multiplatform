@@ -28,6 +28,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -39,6 +42,7 @@ import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
 import com.corner.catvodcore.bean.v
+import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.vlcj.VlcjFrameController
@@ -147,21 +151,32 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
                     Box(
                         Modifier.fillMaxWidth(videoWidth.value).fillMaxHeight().background(Color.Black)
                     ) {
-                        Text(
-                            "使用外部播放器",
-                            modifier = Modifier.align(Alignment.Center).focusRequester(focus),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = TextUnit(23f, TextUnitType.Sp),
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                        Column(
+                            Modifier.fillMaxSize().align(Alignment.Center),
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Image(
+                                modifier = Modifier.align(Alignment.CenterHorizontally),
+                                painter = painterResource("/pic/TV-icon-x.png"),
+                                contentDescription = "nothing here",
+                                contentScale = ContentScale.Crop
+                            )
+                            Text(
+                                "使用外部播放器",
+                                modifier = Modifier.align(Alignment.CenterHorizontally).focusRequester(focus),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = TextUnit(23f, TextUnitType.Sp),
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
                     }
                 }
                 AnimatedVisibility(!isFullScreen.value, modifier = Modifier.fillMaxSize()) {
                     EpChooser(
                         component, Modifier.fillMaxSize().background(
-                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
-                                shape = RoundedCornerShape(4.dp)
-                            ).padding(horizontal = 5.dp)
+                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
+                            shape = RoundedCornerShape(4.dp)
+                        ).padding(horizontal = 5.dp)
                     )
                 }
             }
@@ -216,13 +231,14 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
             }
         }
         val showEpChooserDialog = derivedStateOf { isFullScreen.value && model.value.showEpChooserDialog }
-        Dialog(Modifier.align(Alignment.CenterEnd).fillMaxWidth(0.3f).fillMaxHeight(0.8f).padding(end = 20.dp),
+        Dialog(
+            Modifier.align(Alignment.CenterEnd).fillMaxWidth(0.3f).fillMaxHeight(0.8f).padding(end = 20.dp),
             showDialog = showEpChooserDialog.value,
             onClose = { component.model.update { it.copy(showEpChooserDialog = false) } }) {
             EpChooser(
                 component, Modifier.fillMaxSize().background(
-                        MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(8.dp)
-                    ).padding(horizontal = 5.dp)
+                    MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(8.dp)
+                ).padding(horizontal = 5.dp)
             )
         }
 
@@ -256,11 +272,11 @@ private fun flags(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     state = state,
                     modifier = Modifier.padding(bottom = 10.dp).fillMaxWidth().onPointerEvent(PointerEventType.Scroll) {
-                            scope.launch {
+                        scope.launch {
 //                                            if(it.changes.size == 0) return@launch
-                                state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
-                            }
-                        },
+                            state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
+                        }
+                    },
                 ) {
                     val flagList = derivedStateOf { detail.value?.vodFlags?.toList() ?: listOf() }
                     items(flagList.value) {
@@ -421,7 +437,8 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                     for (i in 0 until epSize.value step Constants.EpSize) {
                         item {
                             RatioBtn(
-                                selected = detail.value?.currentTabIndex == (i / Constants.EpSize), onClick = {
+                                selected = detail.value?.currentTabIndex == (i / Constants.EpSize),
+                                onClick = {
                                     detail.value?.currentTabIndex = i / Constants.EpSize
                                     val dt = detail.value?.copy(
                                         subEpisode = detail.value?.currentFlag?.episodes?.getPage(
@@ -429,7 +446,8 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                                         )?.toMutableList()
                                     )
                                     component.model.update { it.copy(detail = dt) }
-                                }, text = "${i + 1}-${if ((i + Constants.EpSize) > epSize.value) epSize.value else i + Constants.EpSize}"
+                                },
+                                text = "${i + 1}-${if ((i + Constants.EpSize) > epSize.value) epSize.value else i + Constants.EpSize}"
                             )
                         }
                     }
@@ -446,6 +464,7 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
         val videoLoading = remember { mutableStateOf(false) }
         val epList = derivedStateOf { detail.value?.subEpisode ?: listOf() }
         val state = rememberLazyGridState()
+        val openUri = LocalUriHandler.current
         Box {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(1),
@@ -467,45 +486,62 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                             }
                         }, delayMillis = 600
                     ) {
-                        RatioBtn(text = it.name, onClick = {
-                            videoLoading.value = true
-                            SiteViewModel.viewModelScope.launch {
-                                for (i in detail.value?.currentFlag?.episodes ?: listOf()) {
-                                    i.activated = (i.name == it.name)
-                                    if (i.activated) {
-                                        component.model.update { model ->
-                                            if (model.currentEp?.name != it.name) {
-                                                component.controller.doWithHistory { it.copy(position = 0L) }
+                        RatioBtn(
+                            text = it.name, onClick = {
+                                videoLoading.value = true
+                                SiteViewModel.viewModelScope.launch {
+                                    val isDownloadLink = Utils.isDownloadLink(it.url)
+                                    for (i in detail.value?.currentFlag?.episodes ?: listOf()) {
+                                        i.activated = (i.name == it.name)
+                                        if (i.activated) {
+                                            component.model.update { model ->
+                                                if (!isDownloadLink) {
+                                                    if (model.currentEp?.name != it.name) {
+                                                        component.controller.doWithHistory { it.copy(position = 0L) }
+                                                    }
+                                                    component.controller.doWithHistory {
+                                                        it.copy(
+                                                            episodeUrl = i.url, vodRemarks = i.name
+                                                        )
+                                                    }
+                                                }
+                                                model.copy(currentEp = i)
                                             }
-                                            component.controller.doWithHistory {
-                                                it.copy(
-                                                    episodeUrl = i.url, vodRemarks = i.name
-                                                )
-                                            }
-                                            model.copy(currentEp = i)
                                         }
                                     }
+                                    if (isDownloadLink) {
+                                        openUri.openUri(it.url)
+                                        return@launch
+                                    } else {
+                                        val dt = detail.value?.copy(
+                                            subEpisode = detail.value?.currentFlag?.episodes?.getPage(
+                                                detail.value!!.currentTabIndex
+                                            )?.toMutableList()?.toList()?.toMutableList(),
+                                        )
+                                        component.model.update { it.copy(detail = dt) }
+                                        val result = SiteViewModel.playerContent(
+                                            detail.value?.site?.key ?: "", detail.value?.currentFlag?.flag ?: "", it.url
+                                        )
+                                        component.model.update { it.copy(currentUrl = result?.url) }
+                                        val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
+                                        if (internalPlayer) {
+                                            component.play(result)
+                                        } else {
+                                            Play.start(result?.url?.v() ?: "", model.value.currentEp?.name)
+                                        }
+                                    }
+                                }.invokeOnCompletion {
+                                    videoLoading.value = false
                                 }
-                                val dt = detail.value?.copy(
-                                    subEpisode = detail.value?.currentFlag?.episodes?.getPage(
-                                        detail.value!!.currentTabIndex
-                                    )?.toMutableList()?.toList()?.toMutableList(),
-                                )
-                                component.model.update { it.copy(detail = dt) }
-                                val result = SiteViewModel.playerContent(
-                                    detail.value?.site?.key ?: "", detail.value?.currentFlag?.flag ?: "", it.url
-                                )
-                                component.model.update { it.copy(currentUrl = result?.url) }
-                                val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
-                                if (internalPlayer) {
-                                    component.play(result)
+                            }, selected = it.activated,
+                            loading = it.activated && videoLoading.value,
+                            tag = {
+                                if (Utils.isDownloadLink(it.url)) {
+                                    true to "下载"
                                 } else {
-                                    Play.start(result?.url?.v() ?: "", model.value.currentEp?.name)
+                                    false to ""
                                 }
-                            }.invokeOnCompletion {
-                                videoLoading.value = false
-                            }
-                        }, selected = it.activated, loading = it.activated && videoLoading.value)
+                            })
                     }
                 }
             }

@@ -10,6 +10,15 @@ import java.security.MessageDigest
 import java.util.*
 
 object Utils {
+
+    // 可下载
+    private val prefix = listOf("magnet")
+
+    fun isDownloadLink(str:String):Boolean{
+        prefix.forEach { if(str.startsWith(it)) return true }
+        return false
+    }
+
     fun md5(str:String):String{
         try {
             if(StringUtils.isBlank(str)) return ""
@@ -29,7 +38,7 @@ object Utils {
         return md5(Paths.jar(name)).equals(md5, ignoreCase = true)
     }
 
-    fun md5(file: File?): String {
+    fun md5(file: File): String {
         try {
             val digest = MessageDigest.getInstance("MD5")
             val fis = FileInputStream(file)

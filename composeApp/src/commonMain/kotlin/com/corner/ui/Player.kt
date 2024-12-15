@@ -86,6 +86,7 @@ fun Player(
 
     DisposableEffect(videoFullScreen.value, showControllerBar.value){
         try {
+            log.debug("robot cancle")
             keepScreenOnJob?.cancel()
             if(videoFullScreen.value && !showControllerBar.value){
                 var time = 1
@@ -97,8 +98,10 @@ fun Player(
                         val v = if (time % 2 == 0) 1 else -1
                         robot.mouseMove((mousePosition.x + v).toInt(), mousePosition.y.toInt())
                         time++
+                        log.debug("robot moveMouse")
                     }, 0, 6000L)
                 } else {
+                    log.debug("robot cancle")
                     keepScreenOnJob?.cancel()
                 }
             }

@@ -42,6 +42,7 @@ private val log = LoggerFactory.getLogger("main")
 fun main() {
     launchErrorCatcher()
     printSystemInfo()
+//    System.setProperty("java.net.useSystemProxies", "true");
     application {
         val lifecycle = LifecycleRegistry()
         val root = SwingUtil.runOnUiThread {
