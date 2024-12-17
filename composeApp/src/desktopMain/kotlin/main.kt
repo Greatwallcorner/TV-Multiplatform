@@ -42,6 +42,10 @@ private val log = LoggerFactory.getLogger("main")
 fun main() {
     launchErrorCatcher()
     printSystemInfo()
+    Runtime.getRuntime().addShutdownHook(Thread {
+        println("Performing cleanup before exiting...")
+        Init.stop()
+    })
 //    System.setProperty("java.net.useSystemProxies", "true");
     application {
         val lifecycle = LifecycleRegistry()
@@ -86,7 +90,6 @@ fun main() {
                     try {
                         window.isVisible = false
                         SettingStore.write()
-                        Init.stop()
                     }catch(e: Exception){
                         log.error("关闭应用异常", e)
                     } finally {
