@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowScope
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.jetbrains.pages.Pages
 import com.arkivanov.decompose.extensions.compose.jetbrains.pages.PagesScrollAnimation
@@ -46,7 +48,7 @@ enum class SearchPageType {
 
 @OptIn(ExperimentalDecomposeApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
+fun WindowScope.SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
     Pages(
         component.pages,
         onPageSelected = component::selectPage,
@@ -78,7 +80,7 @@ fun SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Un
 //}
 
 @Composable
-private fun SearchResult(
+private fun WindowScope.SearchResult(
     component: DefaultSearchComponent,
     onClickBack: () -> Unit,
     onClickItem: (Vod) -> Unit
@@ -98,9 +100,9 @@ private fun SearchResult(
         }
     }
 
-    DisposableEffect(result.value){
+    DisposableEffect(result.value) {
         println("result 更改")
-        onDispose {  }
+        onDispose { }
     }
 
     DisposableEffect(searchText.value) {
@@ -110,32 +112,34 @@ private fun SearchResult(
     }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-//        TopBar
-            ControlBar(leading = {
-                IconButton(
-                    modifier = Modifier
-                        .padding(start = 20.dp, end = 20.dp),
-                    onClick = {
-                        component.clear()
-                        onClickBack()
-                    }
+            WindowDraggableArea {
+                //        TopBar
+                ControlBar(leading = {
+                    IconButton(
+                        modifier = Modifier
+                            .padding(start = 20.dp, end = 20.dp),
+                        onClick = {
+                            component.clear()
+                            onClickBack()
+                        }
 
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "back to video home",
-                        tint = MaterialTheme.colorScheme.onBackground
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "back to video home",
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                    SearchBar(
+                        Modifier,
+                        remember { FocusRequester() },
+                        searchText.value,
+                        onSearch = { s ->
+                            GlobalModel.keyword.update { s }
+                        }, model.value.isSearching
                     )
-                }
-                SearchBar(
-                    Modifier,
-                    remember { FocusRequester() },
-                    searchText.value,
-                    onSearch = { s ->
-                        GlobalModel.keyword.update { s }
-                    }, model.value.isSearching
-                )
-            }) {  }
+                }) { }
+            }
 //        Content
             Row {
                 Box(Modifier.fillMaxWidth(0.2f).fillMaxHeight()) {
@@ -161,9 +165,15 @@ private fun SearchResult(
                         }
                     }
                     Surface(Modifier.align(Alignment.BottomCenter).padding(vertical = 10.dp, horizontal = 8.dp)) {
-                        RatioBtn(Modifier.height(45.dp), text = if (showLoadMore.value) "加载更多" else "没有更多", onClick = {
-                            component.search( searchText.value, true)
-                        }, selected = false, loading = model.value.isSearching)
+                        RatioBtn(
+                            Modifier.height(45.dp),
+                            text = if (showLoadMore.value) "加载更多" else "没有更多",
+                            onClick = {
+                                component.search(searchText.value, true)
+                            },
+                            selected = false,
+                            loading = model.value.isSearching
+                        )
                     }
                 }
                 Box(modifier = Modifier.fillMaxSize()) {

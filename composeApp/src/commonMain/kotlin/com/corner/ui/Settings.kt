@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.window.WindowScope
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
@@ -56,7 +58,7 @@ import java.io.File
 import java.net.URI
 
 @Composable
-fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
+fun WindowScope.SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
     var showAboutDialog by remember { mutableStateOf(false) }
     DisposableEffect("setting") {
@@ -76,29 +78,31 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column(Modifier.fillMaxSize()) {
-            ControlBar(leading = {
-                BackRow(Modifier.align(Alignment.Start), onClickBack = { onClickBack() }) {
-                    Row(
-                        Modifier.fillMaxSize(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "设置",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                        )
+            WindowDraggableArea {
+                ControlBar(leading = {
+                    BackRow(Modifier.align(Alignment.Start), onClickBack = { onClickBack() }) {
+                        Row(
+                            Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "设置",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
+                        }
                     }
-                }
-            }, actions = {
-                OutlinedButton(
-                    onClick = { Desktop.getDesktop().open(Paths.userDataRoot()) },
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                ) {
-                    Text("打开用户数据目录")
-                }
-            })
+                }, actions = {
+                    OutlinedButton(
+                        onClick = { Desktop.getDesktop().open(Paths.userDataRoot()) },
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    ) {
+                        Text("打开用户数据目录")
+                    }
+                })
+            }
             LazyColumn(contentPadding = PaddingValues(8.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 item {
                     val focusRequester = remember { FocusRequester() }
@@ -152,7 +156,8 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                                 properties = PopupProperties(focusable = false)
                             ) {
                                 vodConfigList.forEach {
-                                    DropdownMenuItem(modifier = Modifier.fillMaxWidth(),
+                                    DropdownMenuItem(
+                                        modifier = Modifier.fillMaxWidth(),
                                         text = { Text(it?.url ?: "") },
                                         onClick = {
                                             setConfig(it?.url)
@@ -184,10 +189,10 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                 item {
                     SettingItemTemplate("播放器") {
                         val playerSetting = derivedStateOf {
-                                var parseValueToList =
-                                    model.value.settingList.getSetting(SettingType.PLAYER)?.parseValueToList()
-                            if(parseValueToList?.size == 1){
-                                parseValueToList = listOf("false" , parseValueToList[0])
+                            var parseValueToList =
+                                model.value.settingList.getSetting(SettingType.PLAYER)?.parseValueToList()
+                            if (parseValueToList?.size == 1) {
+                                parseValueToList = listOf("false", parseValueToList[0])
                             }
                             parseValueToList ?: listOf()
                         }
@@ -195,10 +200,10 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                             Row {
                                 Switch(
                                     playerSetting.value[0].toBoolean(), onCheckedChange = {
-                                    SettingStore.setValue(SettingType.PLAYER, "$it#${playerSetting.value[1]}")
-                                    if (it) SnackBar.postMsg("使用内置播放器") else SnackBar.postMsg("使用外部播放器 请配置播放器路径")
-                                    component.sync()
-                                }, Modifier.width(100.dp).padding(end = 20.dp).align(Alignment.CenterVertically),
+                                        SettingStore.setValue(SettingType.PLAYER, "$it#${playerSetting.value[1]}")
+                                        if (it) SnackBar.postMsg("使用内置播放器") else SnackBar.postMsg("使用外部播放器 请配置播放器路径")
+                                        component.sync()
+                                    }, Modifier.width(100.dp).padding(end = 20.dp).align(Alignment.CenterVertically),
                                     thumbContent = {
                                         Box(Modifier.size(80.dp)) {
                                             Text(
@@ -214,8 +219,8 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                                     onValueChange = {
                                         SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value[0]}#$it")
                                         SiteViewModel.viewModelScope.launch {
-                                            if(playerSetting.value[0].toBoolean()){
-                                                if(File(it).exists()){
+                                            if (playerSetting.value[0].toBoolean()) {
+                                                if (File(it).exists()) {
                                                     VlcJInit.init(true)
                                                 }
                                             }
@@ -299,12 +304,14 @@ fun LogButtonList(component: DefaultSettingComponent, onClick: (String) -> Unit)
                             onClick(it)
                         }
                     }
+
                     logLevel.size - 1 -> {
                         SideButton(current.value == t, text = t, type = SideButtonType.RIGHT) {
                             onClick(it)
 
                         }
                     }
+
                     else -> {
                         SideButton(current.value == t, text = t) {
                             onClick(it)
@@ -423,7 +430,8 @@ fun setConfig(textFieldValue: String?) {
 @Composable
 fun AboutDialog(modifier: Modifier, showAboutDialog: Boolean, onClose: () -> Unit) {
     var visible by remember { mutableStateOf(false) }
-    Dialog(modifier, showAboutDialog,
+    Dialog(
+        modifier, showAboutDialog,
         onClose = {
             visible = false
             onClose()

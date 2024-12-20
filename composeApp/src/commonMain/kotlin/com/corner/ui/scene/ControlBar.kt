@@ -35,8 +35,8 @@ fun ControlBar(
 ) {
     val isFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
     if (!isFullScreen.value) {
-        Column(modifier = modifier.fillMaxWidth()){
-            Box(Modifier.fillMaxWidth()){
+        Column(modifier = modifier.fillMaxWidth()) {
+            Box(Modifier.fillMaxWidth()) {
                 if (leading != null) {
                     Row(Modifier.align(alignment = Alignment.CenterStart)) {
                         leading()
@@ -97,7 +97,7 @@ fun CustomActionButton(
     onClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    var isHover by remember{mutableStateOf(0)}
+    var isHover by remember { mutableStateOf(0) }
     val hoverColor = Color.Gray.copy(alpha = 0.8f)
     val clickColor = Color.Gray.copy(alpha = 0.6f)
     Box(
