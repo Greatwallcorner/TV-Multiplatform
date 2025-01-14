@@ -1,7 +1,7 @@
 package com.corner.init
 
-import com.corner.catvodcore.util.KtorHeaderUrlFetcher
 import com.corner.catvodcore.util.Paths
+import com.corner.util.KtorHeaderUrlFetcher
 import com.seiko.imageloader.ImageLoader
 import com.seiko.imageloader.intercept.bitmapMemoryCacheConfig
 import com.seiko.imageloader.intercept.imageMemoryCacheConfig

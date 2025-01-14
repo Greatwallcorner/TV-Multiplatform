@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import com.corner.bean.Suggest
-import com.corner.catvodcore.util.KtorClient
+import com.corner.util.KtorClient
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
