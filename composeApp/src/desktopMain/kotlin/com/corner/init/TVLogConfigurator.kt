@@ -81,8 +81,8 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
 
     private fun consoleAppender(context: LoggerContext?): ConsoleAppender<ILoggingEvent> {
         val ca = ConsoleAppender<ILoggingEvent>()
-        ca.setContext(context)
-        ca.setName("console")
+        ca.context = context
+        ca.name = "console"
         val encoder = LayoutWrappingEncoder<ILoggingEvent>()
         encoder.context = context
         // same as
@@ -92,8 +92,8 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
         val layout = TTLLLayout()
         layout.context = context
         layout.start()
-        encoder.setLayout(layout)
-        ca.setEncoder(encoder)
+        encoder.layout = layout
+        ca.encoder = encoder
         ca.start()
         return ca
     }

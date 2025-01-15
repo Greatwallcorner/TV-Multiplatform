@@ -40,7 +40,7 @@ import androidx.compose.ui.window.WindowScope
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
-import com.corner.bean.parseValueToList
+import com.corner.bean.parseAsSettingEnable
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.util.Paths
@@ -189,25 +189,20 @@ fun WindowScope.SettingScene(component: DefaultSettingComponent, onClickBack: ()
                 item {
                     SettingItemTemplate("播放器") {
                         val playerSetting = derivedStateOf {
-                            var parseValueToList =
-                                model.value.settingList.getSetting(SettingType.PLAYER)?.parseValueToList()
-                            if (parseValueToList?.size == 1) {
-                                parseValueToList = listOf("false", parseValueToList[0])
-                            }
-                            parseValueToList ?: listOf()
+                                model.value.settingList.getSetting(SettingType.PLAYER)?.value!!.parseAsSettingEnable()
                         }
                         Box {
                             Row {
                                 Switch(
-                                    playerSetting.value[0].toBoolean(), onCheckedChange = {
-                                        SettingStore.setValue(SettingType.PLAYER, "$it#${playerSetting.value[1]}")
+                                    playerSetting.value.isEnabled, onCheckedChange = {
+                                        SettingStore.setValue(SettingType.PLAYER, "$it#${playerSetting.value.value}")
                                         if (it) SnackBar.postMsg("使用内置播放器") else SnackBar.postMsg("使用外部播放器 请配置播放器路径")
                                         component.sync()
                                     }, Modifier.width(100.dp).padding(end = 20.dp).align(Alignment.CenterVertically),
                                     thumbContent = {
                                         Box(Modifier.size(80.dp)) {
                                             Text(
-                                                if (playerSetting.value[0].toBoolean()) "内置" else "外置",
+                                                if (playerSetting.value.isEnabled) "内置" else "外置",
                                                 Modifier.fillMaxSize().align(Alignment.Center)
                                             )
                                         }
@@ -215,11 +210,11 @@ fun WindowScope.SettingScene(component: DefaultSettingComponent, onClickBack: ()
                                 // 只有外部播放器时展示
 //                                if (!(playerSetting.value[0] as Boolean)) {
                                 TextField(
-                                    value = playerSetting.value[1],
+                                    value = playerSetting.value.value,
                                     onValueChange = {
-                                        SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value[0]}#$it")
+                                        SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value.value}#$it")
                                         SiteViewModel.viewModelScope.launch {
-                                            if (playerSetting.value[0].toBoolean()) {
+                                            if (playerSetting.value.isEnabled) {
                                                 if (File(it).exists()) {
                                                     VlcJInit.init(true)
                                                 }
@@ -234,6 +229,24 @@ fun WindowScope.SettingScene(component: DefaultSettingComponent, onClickBack: ()
                                 )
 //                                }
                             }
+                        }
+                    }
+                }
+                item{
+                    SettingItemTemplate("代理"){
+                        val proxySetting = derivedStateOf {
+                            model.value.settingList.getSetting(SettingType.PROXY)?.value!!.parseAsSettingEnable()
+                        }
+                        Row{
+                            Switch(proxySetting.value.isEnabled, onCheckedChange = {
+                                SettingStore.setValue(SettingType.PROXY, "$it#${proxySetting.value.value}")
+                                component.sync()
+                            })
+                            Spacer(Modifier.width(5.dp))
+                            TextField(proxySetting.value.value, onValueChange = {
+                                SettingStore.setValue(SettingType.PROXY, "${proxySetting.value.isEnabled}#$it")
+                                component.sync()
+                            }, modifier = Modifier.fillMaxWidth())
                         }
                     }
                 }

@@ -1,13 +1,12 @@
 package com.github.catvod.net;
 
+import com.corner.util.KtorClient;
 import com.github.catvod.crawler.Spider;
+import com.github.catvod.crawler.SpiderDebug;
 import okhttp3.*;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.URI;
-import java.net.URL;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -39,11 +38,6 @@ public class OkHttp {
         return get().client = getBuilder().build();
     }
 
-    public static void setProxy(String url) {
-        URI uri = URI.create(url);
-        get().proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(uri.getHost(), uri.getPort()));
-    }
-
     public static void clearClient() {
         get().client = null;
     }
@@ -70,6 +64,7 @@ public class OkHttp {
     }
 
     public static String string(String url) {
+        SpiderDebug.log("proxy string http");
         return string(url, null);
     }
 
@@ -128,7 +123,7 @@ public class OkHttp {
 
     public static OkHttpClient.Builder getBuilder() {
         return new OkHttpClient.Builder()
-                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("localhost",8080)))
+                .proxy(KtorClient.Companion.getProxy())
                 .addInterceptor(new OkhttpInterceptor()).dns(dns()).connectTimeout(3, TimeUnit.SECONDS)
                 .readTimeout(5, TimeUnit.SECONDS)
                 .writeTimeout(5, TimeUnit.SECONDS)

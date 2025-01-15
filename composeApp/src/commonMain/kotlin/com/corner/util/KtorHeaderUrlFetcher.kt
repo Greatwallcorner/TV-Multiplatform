@@ -7,7 +7,6 @@ import com.seiko.imageloader.component.fetcher.FetchResult
 import com.seiko.imageloader.component.fetcher.Fetcher
 import com.seiko.imageloader.option.Options
 import io.ktor.client.*
-import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -65,7 +64,7 @@ class KtorHeaderUrlFetcher private constructor(
     companion object {
 
         val CustomUrlFetcher = Factory {
-            HttpClient(OkHttp){
+            KtorClient.createHttpClient(){
                 engine{
                     config {
                         callTimeout(Duration.parse("2s"))

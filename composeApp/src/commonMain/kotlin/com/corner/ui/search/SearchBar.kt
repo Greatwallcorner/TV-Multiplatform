@@ -78,7 +78,7 @@ fun SearchBar(
                 isGettingSuggestion = true
                 try {
                     val response =
-                        KtorClient.client.get("https://suggest.video.iqiyi.com/?if=mobile&key=$searchText")
+                        KtorClient.createHttpClient {  }.get("https://suggest.video.iqiyi.com/?if=mobile&key=$searchText")
                     if (response.status == HttpStatusCode.OK) {
                         suggestions = Suggest.objectFrom(response.bodyAsText())
                     }

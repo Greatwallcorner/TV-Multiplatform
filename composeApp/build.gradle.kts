@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.serialization)
     alias(libs.plugins.sqldelight)
+    id("java")
 //    alias(libs.plugins.conveyor)
 }
 
@@ -17,11 +18,13 @@ sqldelight {
     }
 }
 
+
 kotlin {
     jvm("desktop")
 
     sourceSets {
         val desktopMain by getting
+
 
         commonMain.dependencies {
             val ktorVer = "3.0.1"
