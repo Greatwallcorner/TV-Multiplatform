@@ -19,6 +19,18 @@ object Utils {
         return false
     }
 
+    fun substring(text: String?): String? {
+        return substring(text, 1)
+    }
+
+    fun substring(text: String?, num: Int): String? {
+        return if (text != null && text.length > num) {
+            text.substring(0, text.length - num)
+        } else {
+            text
+        }
+    }
+
     fun md5(str:String):String{
         try {
             if(StringUtils.isBlank(str)) return ""

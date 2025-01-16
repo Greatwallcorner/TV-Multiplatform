@@ -32,6 +32,7 @@ kotlin {
             val imageLoader = "1.9.0"
             val hutoolVer = "5.8.27"
 //            val kotlinVersion = extra["kotlin.version"] as String
+//            implementation(project(":CatVod"))
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)

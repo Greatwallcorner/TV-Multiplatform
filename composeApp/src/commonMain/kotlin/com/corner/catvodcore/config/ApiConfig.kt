@@ -1,8 +1,8 @@
 package com.corner.catvodcore.config
 
-import com.corner.catvod.enum.bean.Api
 import com.corner.catvod.enum.bean.Rule
 import com.corner.catvod.enum.bean.Site
+import com.corner.catvodcore.bean.Api
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.loader.JarLoader
 import com.corner.catvodcore.util.Http

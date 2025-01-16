@@ -32,12 +32,12 @@ class KtorClient {
 
         fun getProxy():Proxy{
             val settingEnable = SettingStore.getSettingItem(SettingType.PROXY).parseAsSettingEnable()
-            if(!settingEnable.isEnabled) Proxy.NO_PROXY
+            if(!settingEnable.isEnabled) return Proxy.NO_PROXY
             val uri = try {
                 URI.create(settingEnable.value)
             } catch (e: Exception) {
                 log.error("解析代理url异常 不使用代理",e)
-                return Proxy.NO_PROXY;
+                return Proxy.NO_PROXY
             }
             var type:Proxy.Type = Proxy.Type.HTTP
             when(uri.scheme){

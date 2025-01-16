@@ -1,7 +1,11 @@
-package com.corner.catvod.enum.bean
+package com.corner.catvodcore.bean
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.corner.catvod.enum.bean.Live
+import com.corner.catvod.enum.bean.Parse
+import com.corner.catvod.enum.bean.Rule
+import com.corner.catvod.enum.bean.Site
 import com.corner.database.Config
 import com.github.catvod.bean.Doh
 import kotlinx.serialization.Serializable
