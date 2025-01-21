@@ -156,7 +156,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         override fun timeChanged(mediaPlayer: MediaPlayer, newTime: Long) {
             scope.launch {
                 if (history.value == null) {
-                    println("histiry is null")
+                    println("history is null")
                     return@launch
                 }
                 if (history.value?.ending != null && history.value?.ending != -1L && history.value?.ending!! <= newTime) component.nextEP()
