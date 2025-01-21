@@ -49,3 +49,4 @@
 
 # 引用
 player: https://github.com/numq/jetpack-compose-desktop-media-player
+animeko: https://github.com/open-ani/animeko?tab=readme-ov-file
