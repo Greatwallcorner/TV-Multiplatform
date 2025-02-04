@@ -11,6 +11,7 @@ actual class DriverFactory {
     actual fun createDriver(): SqlDriver {
         return JdbcSqliteDriver(Paths.db()).also {
             Database.Schema.create(it)
+//            Database.Schema.migrate(it)
         }
 
     }

@@ -12,8 +12,10 @@ import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Config
 import com.corner.database.Db
 import com.corner.ui.scene.SnackBar
+import com.corner.util.createCoroutineScope
 import com.corner.util.isEmpty
 import com.github.catvod.crawler.Spider
+import kotlinx.coroutines.launch
 import okio.Path.Companion.toPath
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -23,6 +25,7 @@ import java.nio.file.Paths
 private val log = LoggerFactory.getLogger("apiConfig")
 
 object ApiConfig{
+    private val scope = createCoroutineScope()
     var api: Api = Api(spider = "")
 
     fun clear(){
@@ -48,6 +51,9 @@ object ApiConfig{
             setHome(api.sites.find { it.key == cfg.home })
         }else{
             setHome(api.sites.first())
+        }
+        scope.launch {
+            Db.Site.sync(cfg, api)
         }
         log.info("parseConfig end")
         return apiConfig

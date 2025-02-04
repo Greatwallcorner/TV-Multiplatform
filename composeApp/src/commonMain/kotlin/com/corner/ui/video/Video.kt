@@ -608,24 +608,31 @@ fun ChooseHomeDialog(
             .defaultMinSize(minWidth = 100.dp)
             .padding(20.dp), onClose = { onClose() }, showDialog = showDialog
     ) {
-        Box() {
+        Box{
             val lazyListState = rememberLazyListState(0)
             LazyColumn(
                 modifier = Modifier.padding(20.dp).wrapContentHeight(Alignment.CenterVertically),
                 state = lazyListState
             ) {
                 items(items = ApiConfig.api.sites.toList()) { item ->
-                    OutlinedButton(
-                        modifier = Modifier.width(180.dp),
-                        onClick = {
-                            SiteViewModel.viewModelScope.launch {
-                                ApiConfig.setHome(item)
-                                model.value.homeLoaded = false
-                                Db.Config.setHome(ApiConfig.api.url, ConfigType.SITE.ordinal, item.key)
-                            }
-                            onClick(item)
-                        }) {
-                        Text(item.name, textAlign = TextAlign.Center)
+                    Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        OutlinedButton(
+                            modifier = Modifier.width(180.dp),
+                            onClick = {
+                                SiteViewModel.viewModelScope.launch {
+                                    ApiConfig.setHome(item)
+                                    model.value.homeLoaded = false
+                                    Db.Config.setHome(ApiConfig.api.url, ConfigType.SITE.ordinal, item.key)
+                                }
+                                onClick(item)
+                            }) {
+                            Text(item.name, textAlign = TextAlign.Center)
+                        }
+                        IconButton(onClick = {
+
+                        }){
+
+                        }
                     }
                 }
             }

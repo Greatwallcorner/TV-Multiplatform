@@ -5,3 +5,9 @@ find:
 SELECT * FROM
 Site
 WHERE key = ?;
+
+
+getAllByConfigId:
+SELECT * FROM
+Site
+WHERE key = ?;
