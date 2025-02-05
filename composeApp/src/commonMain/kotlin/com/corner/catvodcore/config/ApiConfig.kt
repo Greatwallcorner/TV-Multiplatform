@@ -1,5 +1,6 @@
 package com.corner.catvodcore.config
 
+import SiteViewModel
 import com.corner.catvod.enum.bean.Rule
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvodcore.bean.Api
@@ -9,8 +10,8 @@ import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Urls
 import com.corner.catvodcore.viewmodel.GlobalModel
-import com.corner.database.Config
 import com.corner.database.Db
+import com.corner.database.entity.Config
 import com.corner.ui.scene.SnackBar
 import com.corner.util.createCoroutineScope
 import com.corner.util.isEmpty
@@ -53,7 +54,7 @@ object ApiConfig{
             setHome(api.sites.first())
         }
         scope.launch {
-            Db.Site.sync(cfg, api)
+//            Db.Site.sync(cfg, api)
         }
         log.info("parseConfig end")
         return apiConfig
@@ -164,6 +165,8 @@ fun Api.initSite() {
     }
     if (GlobalModel.home.value.isEmpty() && sites.size > 0) {
         GlobalModel.home.value = sites.first()
-        Db.Config.setHome(url, ConfigType.SITE.ordinal, GlobalModel.home.value.toString())
+        SiteViewModel.viewModelScope.launch {
+            Db.Config.setHome(url, ConfigType.SITE.ordinal, GlobalModel.home.value.toString())
+        }
     }
 }

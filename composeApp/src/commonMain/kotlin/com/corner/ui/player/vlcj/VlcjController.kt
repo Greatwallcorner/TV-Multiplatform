@@ -4,7 +4,7 @@ import com.corner.bean.PlayerStateCache
 import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.viewmodel.GlobalModel
-import com.corner.database.History
+import com.corner.database.entity.History
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.MediaInfo
 import com.corner.ui.player.PlayState
@@ -170,7 +170,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             _state.update { it.copy(state = PlayState.ERROR, msg = "播放错误") }
             component.nextFlag()
             scope.launch {
-                component.updateHistory(history.value)
+                history.value?.let { component.updateHistory(it) }
                 try {
                     if (checkEnd(mediaPlayer)) {
                         return@launch

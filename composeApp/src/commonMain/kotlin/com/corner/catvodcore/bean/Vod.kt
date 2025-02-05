@@ -2,7 +2,7 @@ package com.corner.catvod.enum.bean
 
 import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.Flag
-import com.corner.database.History
+import com.corner.database.entity.History
 import com.corner.util.Constants
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

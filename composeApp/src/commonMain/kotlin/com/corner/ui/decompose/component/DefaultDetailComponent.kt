@@ -14,7 +14,8 @@ import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
-import com.corner.database.History
+import com.corner.database.entity.History
+import com.corner.ui.decompose.BaseComponent
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.getPlayerSetting
 import com.corner.ui.player.vlcj.VlcjFrameController
@@ -29,7 +30,7 @@ import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CopyOnWriteArrayList
 
-class DefaultDetailComponent(componentContext: ComponentContext) : DetailComponent,
+class DefaultDetailComponent(componentContext: ComponentContext) : DetailComponent, BaseComponent(Dispatchers.IO),
     ComponentContext by componentContext {
     private val _model = MutableValue(DetailComponent.Model())
 
@@ -63,7 +64,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
             override fun onStop() {
                 log.info("Detail onStop")
-                updateHistory(controller.history.value)
+                controller.history.value?.let { updateHistory(it) }
                 super.onStop()
             }
 
@@ -82,18 +83,22 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     }
 
-    override fun updateHistory(it: History?) {
-        if (it != null && StringUtils.isNotBlank(model.value.detail?.site?.key)) {
-            Db.History.updateSome(
-                it.vodFlag ?: "",
-                it.vodRemarks ?: "",
-                it.episodeUrl ?: "",
-                it.position ?: -1,
-                it.speed?.toFloat() ?: 1f,
-                it.opening ?: -1L,
-                it.ending ?: -1L,
-                Utils.getHistoryKey(model.value.detail?.site?.key!!, model.value.detail?.vodId!!)
-            )
+    override fun updateHistory(it: History) {
+        if (StringUtils.isNotBlank(model.value.detail?.site?.key)) {
+            scope.launch {
+                Db.History.update(it)
+            }
+            //todo 清理
+//            Db.History.(
+//                it.vodFlag ?: "",
+//                it.vodRemarks ?: "",
+//                it.episodeUrl ?: "",
+//                it.position ?: -1,
+//                it.speed?.toFloat() ?: 1f,
+//                it.opening ?: -1L,
+//                it.ending ?: -1L,
+//                Utils.getHistoryKey(model.value.detail?.site?.key!!, model.value.detail?.vodId!!)
+//            )
         }
     }
 
@@ -253,9 +258,10 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         model.update { it.copy(currentPlayUrl = result.url.v(), playResult = result) }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun startPlay() {
         if (model.value.detail != null && model.value.detail?.isEmpty() == false) {
-            if (controller.isPlaying() == true && !model.value.shouldPlay) {
+            if (controller.isPlaying() && !model.value.shouldPlay) {
                 log.info("视频播放中 返回")
                 return
             }
@@ -266,8 +272,12 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
             val detail = model.value.detail
             var findEp: Episode? = null
             if (detail == null || detail.isEmpty()) return
-            var history = Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId))
-            if (history == null) Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!)
+            val historyDeferred = scope.async { Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId)) }
+            runBlocking {
+                historyDeferred.await()
+            }
+            var history = historyDeferred.getCompleted()
+            if (history == null) scope.launch { Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!) }
             else {
                 if (model.value.currentEp != null && !model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null) {
                     history = history.copy(position = 0L)
@@ -277,9 +287,15 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 findEp = detail.findAndSetEpByName(history)
                 model.update { it.copy(detail = detail) }
             }
-            val findHistory = Db.History.findHistory(
-                Utils.getHistoryKey(detail.site?.key!!, detail.vodId)
-            )
+            val findHistoryDeferred = scope.async {
+                Db.History.findHistory(
+                    Utils.getHistoryKey(detail.site?.key!!, detail.vodId)
+                )
+            }
+            runBlocking {
+                findHistoryDeferred.await()
+            }
+            val findHistory = findHistoryDeferred.getCompleted()
             if (findHistory != null) {
                 controller.setControllerHistory(findHistory)
             }
@@ -365,17 +381,22 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     override fun syncHistory() {
         val detail = model.value.detail ?: return
-        var history = Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId))
-        if (history == null) Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!)
-        else {
-            if (!model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null) {
-                history = history.copy(position = 0L)
-            }
-            controller.setControllerHistory(history)
-            controller.setStartEnd(history.opening ?: -1, history.ending ?: -1)
+        scope.launch {
+            var history= Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId))
+            if (history == null) Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!)
+            else {
+                if (!model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null) {
+                    history = history.copy(position = 0L)
+                }
+                controller.setControllerHistory(history)
+                controller.setStartEnd(history.opening ?: -1, history.ending ?: -1)
 
-            val findEp = detail.findAndSetEpByName(history)
-            model.update { it.copy(detail = detail, currentEp = findEp, currentPlayUrl = findEp?.url ?: "") }
+                val findEp = detail.findAndSetEpByName(history)
+                withContext(Dispatchers.Default){
+                    model.update { it.copy(detail = detail, currentEp = findEp, currentPlayUrl = findEp?.url ?: "") }
+                }
+            }
         }
+
     }
 }

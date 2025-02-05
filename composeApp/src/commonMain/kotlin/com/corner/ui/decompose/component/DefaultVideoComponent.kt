@@ -243,5 +243,4 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
         }
     }
 
-//    fun
 }

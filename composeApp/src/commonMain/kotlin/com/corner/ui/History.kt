@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
@@ -29,9 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.corner.catvod.enum.bean.Vod
-import com.corner.database.Db
-import com.corner.database.History
-import com.corner.database.repository.buildVod
+import com.corner.database.dao.buildVod
+import com.corner.database.entity.History
 import com.corner.ui.decompose.component.DefaultHistoryComponent
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.ControlBar
@@ -134,7 +133,7 @@ fun WindowScope.HistoryScene(component: DefaultHistoryComponent, onClickItem: (V
                             modifier = Modifier.align(Alignment.CenterVertically)
                                 .padding(end = 20.dp)
                                 .size(80.dp), onClick = {
-                                Db.History.deleteAll()
+                                component.clearHistory()
                                 component.fetchHistoryList()
                             }) {
                             Row(modifier = Modifier.padding(2.dp)) {
@@ -154,11 +153,11 @@ fun WindowScope.HistoryScene(component: DefaultHistoryComponent, onClickItem: (V
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 userScrollEnabled = true,
             ) {
-                items(model.value.historyList) {
+                itemsIndexed(items = model.value.historyList) { _:Int, it:History ->
                     HistoryItem(
                         Modifier,
                         it, showSite = false, onDelete = { key ->
-                            Db.History.deleteBatch(listOf(key))
+                            component.deleteBatchHistory(listOf(key))
                             component.fetchHistoryList()
                         }) {
                         onClickItem(it.buildVod())

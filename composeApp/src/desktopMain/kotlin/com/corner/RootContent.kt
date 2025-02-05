@@ -52,6 +52,7 @@ fun WindowScope.RootContent(
         }
 
     }
+    System.setProperty("native.encoding", "UTF-8")
 //    val isDebug = derivedStateOf { System.getProperty("org.gradle.project.buildType") == "debug" }
 
 

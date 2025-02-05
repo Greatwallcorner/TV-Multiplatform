@@ -44,8 +44,8 @@ import com.corner.bean.parseAsSettingEnable
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.util.Paths
-import com.corner.database.Config
 import com.corner.database.Db
+import com.corner.database.entity.Config
 import com.corner.init.initConfig
 import com.corner.ui.decompose.component.DefaultSettingComponent
 import com.corner.ui.decompose.component.getSetting
@@ -108,12 +108,10 @@ fun WindowScope.SettingScene(component: DefaultSettingComponent, onClickBack: ()
                     val focusRequester = remember { FocusRequester() }
                     val isExpand = remember { mutableStateOf(false) }
                     val setting = derivedStateOf { model.value.settingList.getSetting(SettingType.VOD) }
-                    val vodConfigList = remember { mutableStateListOf<Config?>(null) }
+                    val vodConfigList = derivedStateOf { model.value.dbConfigList }
                     LaunchedEffect(isExpand.value) {
                         if (isExpand.value) {
-                            val list: List<Config> = Db.Config.getAll()
-                            vodConfigList.clear()
-                            vodConfigList.addAll(list)
+                            component.getConfigAll()
                             focusRequester.requestFocus()
                         }
                     }
@@ -155,19 +153,16 @@ fun WindowScope.SettingScene(component: DefaultSettingComponent, onClickBack: ()
                                 modifier = Modifier.fillMaxWidth(0.8f),
                                 properties = PopupProperties(focusable = false)
                             ) {
-                                vodConfigList.forEach {
+                                vodConfigList.value.forEach {
                                     DropdownMenuItem(
                                         modifier = Modifier.fillMaxWidth(),
-                                        text = { Text(it?.url ?: "") },
+                                        text = { Text(it.url ?: "") },
                                         onClick = {
-                                            setConfig(it?.url)
+                                            setConfig(it.url)
                                             isExpand.value = false
                                         }, trailingIcon = {
                                             IconButton(onClick = {
-                                                SiteViewModel.viewModelScope.launch {
-                                                    Db.Config.deleteById(it?.id)
-                                                }
-                                                vodConfigList.remove(it)
+                                                component.deleteHistoryById(it)
                                             }) {
                                                 Icon(Icons.Default.Close, "delete the config")
                                             }
@@ -424,16 +419,19 @@ fun setConfig(textFieldValue: String?) {
             return@launch
         }
         SettingStore.setValue(SettingType.VOD, textFieldValue)
-        val config = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
-        if (config == null) {
-            Db.Config.save(
-                type = ConfigType.SITE.ordinal.toLong(),
-                url = textFieldValue
-            )
-        } else {
-            Db.Config.updateUrl(config.id, textFieldValue)
+        Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong()).collect{
+            if (it == null) {
+                Db.Config.save(Config(
+                    type = ConfigType.SITE.ordinal.toLong(),
+                    url = textFieldValue)
+                )
+            } else {
+                Db.Config.updateUrl(it.id, textFieldValue)
+            }
         }
-        ApiConfig.api.cfg.value = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
+        Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong()).collect{
+            ApiConfig.api.cfg.value = it
+        }
         initConfig()
     }.invokeOnCompletion {
         hideProgress()

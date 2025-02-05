@@ -13,9 +13,9 @@ import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.util.copyAdd
+import com.corner.util.createCoroutineScope
 import com.github.catvod.crawler.Spider
 import io.ktor.http.*
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
@@ -35,7 +35,7 @@ object SiteViewModel {
     val quickSearch: MutableState<CopyOnWriteArrayList<Collect>> = mutableStateOf(CopyOnWriteArrayList(listOf(Collect.all())))
 
     private val supervisorJob = SupervisorJob()
-    val viewModelScope = CoroutineScope(Dispatchers.IO + supervisorJob)
+    val viewModelScope = createCoroutineScope(Dispatchers.IO)
 
     fun cancelAll(){
         supervisorJob.cancelChildren()

@@ -5,17 +5,40 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.serialization)
-    alias(libs.plugins.sqldelight)
+//    alias(libs.plugins.sqldelight)
+    alias(libs.plugins.room)
+    alias(libs.plugins.ksp)
     id("java")
 //    alias(libs.plugins.conveyor)
 }
 
-sqldelight {
-    databases {
-        create("Database") {
-            packageName.set("com.corner.database")
-        }
-    }
+//sqldelight {
+//    databases {
+//        create("Database") {
+//            packageName.set("com.corner.database")
+//        }
+//    }
+//}
+
+room {
+    schemaDirectory("$projectDir/comminMain/schemas")
+}
+
+dependencies {
+//    listOf(
+////        "kspAndroid",
+////        "kspJvm",
+////        "kspIosSimulatorArm64",
+////        "kspIosX64",
+////        "kspIosArm64",
+//        "kspCommonMainMetadata",
+//    ).forEach {
+//        add(it, libs.roomCompiler)
+//    }
+    ksp(libs.roomCompiler)
+//    add("ksp", libs.roomCompiler)
+//    add("kspJvm", libs.roomCompiler)
+//    add("kspMingwX64", libs.roomCompiler)
 }
 
 
@@ -40,6 +63,13 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(compose.materialIconsExtended)
+
+//            implementation(libs.roomCompiler)
+            // room database access
+            implementation(libs.roomRuntime)
+            implementation(libs.roomGuava)
+            implementation(libs.roomKtx)
+            implementation(libs.roomBundled)
 
             api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
