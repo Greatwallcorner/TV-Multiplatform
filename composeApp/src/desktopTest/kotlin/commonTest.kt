@@ -39,6 +39,11 @@ class commonTest {
     }
 
     @Test
+    fun test(){
+        var a:Int = 1
+    }
+
+    @Test
     fun proxyTest(){
         println(System.getProperty("http.proxyHost"))
     }

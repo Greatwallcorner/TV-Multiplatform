@@ -16,6 +16,8 @@ import com.corner.ui.scene.SnackBar
 import com.corner.util.createCoroutineScope
 import com.corner.util.isEmpty
 import com.github.catvod.crawler.Spider
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okio.Path.Companion.toPath
 import org.apache.commons.lang3.StringUtils
@@ -27,10 +29,15 @@ private val log = LoggerFactory.getLogger("apiConfig")
 
 object ApiConfig{
     private val scope = createCoroutineScope()
-    var api: Api = Api(spider = "")
+    var apiFlow = MutableStateFlow(Api(spider = ""))
+    var api = apiFlow.value
 
     fun clear(){
-        api = Api(spider = "")
+        apiFlow.value = Api(spider = "")
+    }
+
+    fun updateApi(action: (Api)->Api){
+        apiFlow.value = action(api).apply { ref+=1 }
     }
 
     fun parseConfig(cfg: Config, isJson: Boolean): Api {
@@ -43,10 +50,7 @@ object ApiConfig{
             return api
         }
         val apiConfig = Jsons.decodeFromString<Api>(data)
-        api = apiConfig
-        api.url = cfg.url
-        api.data = data
-        api.cfg.value = cfg
+        apiFlow.update { ap ->  ap.copy(url = cfg.url, data = data, cfg = cfg, ref = ap.ref+1)}
         JarLoader.loadJar("", api.spider)
         if(cfg.home?.isNotBlank() == true) {
             setHome(api.sites.find { it.key == cfg.home })
@@ -54,7 +58,7 @@ object ApiConfig{
             setHome(api.sites.first())
         }
         scope.launch {
-//            Db.Site.sync(cfg, api)
+            api.sites = Db.Site.update(cfg, api)
         }
         log.info("parseConfig end")
         return apiConfig

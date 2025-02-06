@@ -87,7 +87,7 @@ object Utils {
     }
 
     fun getHistoryKey(key:String, id:String): String {
-        return key + Db.SYMBOL + id + Db.SYMBOL + ApiConfig.api.cfg.value?.id!!
+        return key + Db.SYMBOL + id + Db.SYMBOL + ApiConfig.api.cfg?.id!!
     }
 
     fun formatMilliseconds(milliseconds: Long): String {

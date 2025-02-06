@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class Site(
     @PrimaryKey
-    val key: String,
+    val key: String = "",
     val name: String?,
     val searchable: Long?,
     val changeable: Long?,

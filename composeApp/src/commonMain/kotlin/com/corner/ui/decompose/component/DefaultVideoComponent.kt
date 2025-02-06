@@ -6,25 +6,31 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.backhandler.BackHandlerOwner
 import com.arkivanov.essenty.lifecycle.Lifecycle
+import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Filter
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.Type
+import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.catvodcore.viewmodel.GlobalModel.home
+import com.corner.database.Db
+import com.corner.ui.decompose.BaseComponent
 import com.corner.ui.decompose.VideoComponent
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
 import com.corner.util.isEmpty
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
-class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent, ComponentContext by componentContext,
+class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent, BaseComponent(),
+    ComponentContext by componentContext,
     BackHandlerOwner {
 
     private val _log = LoggerFactory.getLogger("Video")
@@ -153,7 +159,11 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
         showProgress()
         SiteViewModel.viewModelScope.launch {
             val result = loadCate(vod.vodId)
-            model.update { it.copy(homeVodResult = result.list.toMutableSet(), dirPaths = mutableListOf<String>().apply { addAll(vod.vodId.split("/")) }) }
+            model.update {
+                it.copy(
+                    homeVodResult = result.list.toMutableSet(),
+                    dirPaths = mutableListOf<String>().apply { addAll(vod.vodId.split("/")) })
+            }
         }.invokeOnCompletion {
             hideProgress()
         }
@@ -189,7 +199,7 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
         }
     }
 
-    override fun loadCate(cate: String):Result {
+    override fun loadCate(cate: String): Result {
         val extend = HashMap<String, String>()
         model.value.currentFilters.forEach {
             if (it.key!!.isNotBlank() && it.init.isNotBlank()) {
@@ -243,4 +253,26 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
         }
     }
 
+    fun changeSite(action: () -> Site) {
+        scope.launch {
+            val site = action()
+            Db.Site.update(site.toDbSite(ApiConfig.api.cfg?.id ?: 0L))
+            ApiConfig.apiFlow.update { api ->
+                api.copy(sites = api.sites.apply {
+                    first { site.key == it.key }.run {
+                        changeable = site.changeable
+                        searchable = site.searchable
+                    }
+                }, ref=api.ref+1) }
+//            ApiConfig.updateApi { api ->
+//                api.copy(sites = api.sites.apply {
+//                    first { site.key == it.key }.run {
+//                        changeable = site.changeable
+//                        searchable = site.searchable
+//                    }
+//                })
+//            }
+        }
+
+    }
 }

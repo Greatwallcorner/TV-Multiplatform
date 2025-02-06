@@ -26,4 +26,12 @@ data class Site(
             return Site(key, name, -1, "")
         }
     }
+
+    fun toDbSite(configId:Long):com.corner.database.entity.Site{
+        return com.corner.database.entity.Site(key, name, searchable?.toLong(), changeable?.toLong(), recordable = 0, configId)
+    }
+
+    fun isSearchable():Boolean = searchable == 1
+
+    fun isChangeable():Boolean = changeable == 1
 }

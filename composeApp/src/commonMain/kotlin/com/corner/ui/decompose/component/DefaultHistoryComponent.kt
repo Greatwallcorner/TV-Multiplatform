@@ -22,7 +22,7 @@ class DefaultHistoryComponent(componentContext: ComponentContext) : HistoryCompo
 
     override val model: MutableValue<HistoryComponent.Model> = _model
     override fun fetchHistoryList() {
-        val listFlow = Db.History.findAll(ApiConfig.api.cfg.value?.id)
+        val listFlow = Db.History.findAll(ApiConfig.api.cfg?.id)
         scope.launch {
             val list = listFlow.firstOrNull() ?: emptyList<History>()
             _model.update { it.copy(historyList = list.toMutableList()) }

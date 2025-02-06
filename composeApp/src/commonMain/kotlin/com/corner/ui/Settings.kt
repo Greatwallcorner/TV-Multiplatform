@@ -351,8 +351,8 @@ fun SideButton(
         .drawWithCache {
 //            val width = size.width * 1.1f
 //            val height = size.height * 1.1f
-            val width = size.width
-            val height = size.height
+            val width = size.width + 5
+            val height = size.height + 5
             val color = if (choosen) buttonColors.containerColor else buttonColors.disabledContainerColor
 
             onDrawBehind {
@@ -432,7 +432,7 @@ fun setConfig(textFieldValue: String?) {
             Db.Config.updateUrl(config.id, textFieldValue)
         }
 
-        ApiConfig.api.cfg.value = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong()).firstOrNull()
+        ApiConfig.api.cfg = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong()).firstOrNull()
         initConfig()
     }.invokeOnCompletion {
         hideProgress()

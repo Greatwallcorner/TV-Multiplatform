@@ -21,7 +21,7 @@ interface HistoryDao {
     suspend fun save(history: History)
 
     suspend fun create(vod:Vod, flag:String, vodRemarks: String){
-        val historyKey = vod.site?.key + Db.SYMBOL + vod.vodId + Db.SYMBOL + ApiConfig.api.cfg.value?.id!!
+        val historyKey = vod.site?.key + Db.SYMBOL + vod.vodId + Db.SYMBOL + ApiConfig.api.cfg?.id!!
         val history = findHistory(historyKey)
         if(history == null){
             save(History(key = historyKey,
@@ -30,7 +30,7 @@ interface HistoryDao {
                 vodFlag = flag,
                 vodRemarks = vodRemarks,
                 episodeUrl = vod.vodPlayUrl!!,
-                cid = ApiConfig.api.cfg.value?.id!!))
+                cid = ApiConfig.api.cfg?.id!!))
         }
     }
 

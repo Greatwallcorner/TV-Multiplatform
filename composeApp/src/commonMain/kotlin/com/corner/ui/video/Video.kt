@@ -15,6 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -55,7 +57,6 @@ import com.corner.util.isScrollingUp
 import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import javax.swing.Box
 
 @Composable
 fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> Unit) {
@@ -601,6 +602,12 @@ fun ChooseHomeDialog(
     onClick: (Site) -> Unit
 ) {
     val model = component.model.subscribeAsState()
+    val apiState = ApiConfig.apiFlow.collectAsState()
+//    val siteList by remember { mutableStateOf(ApiConfig.api.sites.toList()) }
+//    val sitesFlow = remember { MutableStateFlow(ApiConfig.api.sites.toList()) }
+//    val sites by sitesFlow.collectAsState()
+    val sites by derivedStateOf { apiState.value.sites.toList() }
+
     Dialog(
         Modifier
             .wrapContentWidth(Alignment.CenterHorizontally)
@@ -608,13 +615,13 @@ fun ChooseHomeDialog(
             .defaultMinSize(minWidth = 100.dp)
             .padding(20.dp), onClose = { onClose() }, showDialog = showDialog
     ) {
-        Box{
+        Box {
             val lazyListState = rememberLazyListState(0)
             LazyColumn(
                 modifier = Modifier.padding(20.dp).wrapContentHeight(Alignment.CenterVertically),
                 state = lazyListState
             ) {
-                items(items = ApiConfig.api.sites.toList()) { item ->
+                items(items = sites) { item ->
                     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                         OutlinedButton(
                             modifier = Modifier.width(180.dp),
@@ -629,10 +636,22 @@ fun ChooseHomeDialog(
                             Text(item.name, textAlign = TextAlign.Center)
                         }
                         IconButton(onClick = {
-
-                        }){
-
+                            component.changeSite {
+                                if (item.isSearchable()) {
+                                    item.searchable = 0
+                                } else {
+                                    item.searchable = 1
+                                }
+                                return@changeSite item
+                            }
+                        }) {
+                            if (item.isSearchable()) {
+                                Icon(Icons.Default.Search, contentDescription = "enable search")
+                            } else {
+                                Icon(Icons.Default.SearchOff, contentDescription = "enable search")
+                            }
                         }
+
                     }
                 }
             }
