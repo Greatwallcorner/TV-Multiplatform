@@ -30,14 +30,20 @@ private val log = LoggerFactory.getLogger("apiConfig")
 object ApiConfig{
     private val scope = createCoroutineScope()
     var apiFlow = MutableStateFlow(Api(spider = ""))
-    var api = apiFlow.value
+    var api:Api = apiFlow.value
+
+    init {
+        collectApi()
+    }
+
+    private fun collectApi(){
+        scope.launch {
+            apiFlow.collect{api = it}
+        }
+    }
 
     fun clear(){
         apiFlow.value = Api(spider = "")
-    }
-
-    fun updateApi(action: (Api)->Api){
-        apiFlow.value = action(api).apply { ref+=1 }
     }
 
     fun parseConfig(cfg: Config, isJson: Boolean): Api {
@@ -50,8 +56,9 @@ object ApiConfig{
             return api
         }
         val apiConfig = Jsons.decodeFromString<Api>(data)
+        apiFlow.update { apiConfig }
         apiFlow.update { ap ->  ap.copy(url = cfg.url, data = data, cfg = cfg, ref = ap.ref+1)}
-        JarLoader.loadJar("", api.spider)
+        JarLoader.loadJar("", apiConfig.spider)
         if(cfg.home?.isNotBlank() == true) {
             setHome(api.sites.find { it.key == cfg.home })
         }else{

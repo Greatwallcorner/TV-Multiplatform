@@ -14,9 +14,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -594,6 +592,7 @@ fun previewClassRow() {
 //    }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChooseHomeDialog(
     component: DefaultVideoComponent,
@@ -635,20 +634,40 @@ fun ChooseHomeDialog(
                             }) {
                             Text(item.name, textAlign = TextAlign.Center)
                         }
-                        IconButton(onClick = {
-                            component.changeSite {
-                                if (item.isSearchable()) {
-                                    item.searchable = 0
-                                } else {
-                                    item.searchable = 1
+                        TooltipArea(tooltip = {Text("开启/禁用搜索", Modifier.background(MaterialTheme.colorScheme.background))}, delayMillis = 1000){
+                            IconButton(onClick = {
+                                component.changeSite {
+                                    if (item.isSearchable()) {
+                                        item.searchable = 0
+                                    } else {
+                                        item.searchable = 1
+                                    }
+                                    return@changeSite item
                                 }
-                                return@changeSite item
+                            }) {
+                                if (item.isSearchable()) {
+                                    Icon(Icons.Default.Search, contentDescription = "enable search")
+                                } else {
+                                    Icon(Icons.Default.SearchOff, contentDescription = "disable search")
+                                }
                             }
-                        }) {
-                            if (item.isSearchable()) {
-                                Icon(Icons.Default.Search, contentDescription = "enable search")
-                            } else {
-                                Icon(Icons.Default.SearchOff, contentDescription = "enable search")
+                        }
+                        TooltipArea(tooltip = {Text("开启/禁用换源", Modifier.background(MaterialTheme.colorScheme.background))}, delayMillis = 1000){
+                            IconButton(onClick = {
+                                component.changeSite {
+                                    if (item.isChangeable()) {
+                                        item.changeable = 0
+                                    } else {
+                                        item.changeable = 1
+                                    }
+                                    return@changeSite item
+                                }
+                            }) {
+                                if (item.isChangeable()) {
+                                    Icon(Icons.Default.Sync, contentDescription = "enable change")
+                                } else {
+                                    Icon(Icons.Default.SyncDisabled, contentDescription = "disable change")
+                                }
                             }
                         }
 

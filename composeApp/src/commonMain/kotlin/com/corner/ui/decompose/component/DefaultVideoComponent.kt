@@ -264,14 +264,6 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
                         searchable = site.searchable
                     }
                 }, ref=api.ref+1) }
-//            ApiConfig.updateApi { api ->
-//                api.copy(sites = api.sites.apply {
-//                    first { site.key == it.key }.run {
-//                        changeable = site.changeable
-//                        searchable = site.searchable
-//                    }
-//                })
-//            }
         }
 
     }
