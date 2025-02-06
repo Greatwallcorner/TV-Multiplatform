@@ -75,7 +75,7 @@ fun ControlBar(
                     }
                     CustomActionButton(modifier = Modifier.fillMaxHeight(), onClick = {
                         GlobalModel.closeApp.value = true
-                    }) {
+                    }, color = Color.Red) {
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "close",
@@ -95,11 +95,12 @@ fun ControlBar(
 fun CustomActionButton(
     modifier: Modifier = Modifier.wrapContentWidth(),
     onClick: () -> Unit,
+    color: Color = Color.Gray,
     content: @Composable () -> Unit
 ) {
     var isHover by remember { mutableStateOf(0) }
-    val hoverColor = Color.Gray.copy(alpha = 0.8f)
-    val clickColor = Color.Gray.copy(alpha = 0.6f)
+    val hoverColor = color.copy(alpha = 0.8f)
+    val clickColor = color.copy(alpha = 0.6f)
     Box(
         modifier = modifier
             .onClick(onClick = onClick)

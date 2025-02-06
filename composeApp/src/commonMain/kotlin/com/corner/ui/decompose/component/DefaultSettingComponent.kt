@@ -11,9 +11,12 @@ import com.corner.database.entity.Config
 import com.corner.ui.decompose.BaseComponent
 import com.corner.ui.decompose.SettingComponent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class DefaultSettingComponent(componentContext: ComponentContext):SettingComponent,BaseComponent(Dispatchers.IO), ComponentContext by componentContext {
+class DefaultSettingComponent(componentContext: ComponentContext) : SettingComponent, BaseComponent(Dispatchers.IO),
+    ComponentContext by componentContext {
     private val _model = MutableValue(SettingComponent.Model())
 
     override val model: MutableValue<SettingComponent.Model> = _model
@@ -23,12 +26,8 @@ class DefaultSettingComponent(componentContext: ComponentContext):SettingCompone
 
     fun getConfigAll() {
         scope.launch {
-            val flow = Db.Config.getAll()
-            flow.collect( {
-                li ->
-                _model.update { it.copy(dbConfigList = li.toMutableList()) }
-            }
-            )
+            val flow = Db.Config.getAll().firstOrNull() ?: emptyList()
+            _model.update { it.copy(dbConfigList = flow.toMutableList()) }
         }
     }
 
@@ -37,11 +36,13 @@ class DefaultSettingComponent(componentContext: ComponentContext):SettingCompone
             Db.Config.deleteById(config.id)
             val dbConfigList = _model.value.dbConfigList
             dbConfigList.remove(config)
-            _model.update { it.copy(dbConfigList = dbConfigList) }
+            withContext(Dispatchers.Main) {
+                _model.update { it.copy(dbConfigList = dbConfigList) }
+            }
         }
     }
 }
 
-fun List<Setting>.getSetting(type:SettingType):Setting?{
+fun List<Setting>.getSetting(type: SettingType): Setting? {
     return this.find { it.id == type.id }
 }

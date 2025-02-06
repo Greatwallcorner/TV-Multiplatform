@@ -9,6 +9,7 @@ import com.corner.database.entity.History
 import com.corner.ui.decompose.BaseComponent
 import com.corner.ui.decompose.HistoryComponent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class DefaultHistoryComponent(componentContext: ComponentContext) : HistoryComponent, BaseComponent(Dispatchers.IO),
@@ -21,11 +22,10 @@ class DefaultHistoryComponent(componentContext: ComponentContext) : HistoryCompo
 
     override val model: MutableValue<HistoryComponent.Model> = _model
     override fun fetchHistoryList() {
-        val list = Db.History.findAll(ApiConfig.api.cfg.value?.id)
+        val listFlow = Db.History.findAll(ApiConfig.api.cfg.value?.id)
         scope.launch {
-            list.collect({ li ->
-                _model.update { it.copy(historyList = li.toMutableList()) }
-            })
+            val list = listFlow.firstOrNull() ?: emptyList<History>()
+            _model.update { it.copy(historyList = list.toMutableList()) }
         }
     }
 

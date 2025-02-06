@@ -52,6 +52,7 @@ import com.corner.ui.decompose.component.getSetting
 import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.scene.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.awt.Desktop
 import java.io.File
@@ -184,7 +185,7 @@ fun WindowScope.SettingScene(component: DefaultSettingComponent, onClickBack: ()
                 item {
                     SettingItemTemplate("播放器") {
                         val playerSetting = derivedStateOf {
-                                model.value.settingList.getSetting(SettingType.PLAYER)?.value!!.parseAsSettingEnable()
+                            model.value.settingList.getSetting(SettingType.PLAYER)?.value!!.parseAsSettingEnable()
                         }
                         Box {
                             Row {
@@ -227,12 +228,12 @@ fun WindowScope.SettingScene(component: DefaultSettingComponent, onClickBack: ()
                         }
                     }
                 }
-                item{
-                    SettingItemTemplate("代理"){
+                item {
+                    SettingItemTemplate("代理") {
                         val proxySetting = derivedStateOf {
                             model.value.settingList.getSetting(SettingType.PROXY)?.value!!.parseAsSettingEnable()
                         }
-                        Row{
+                        Row {
                             Switch(proxySetting.value.isEnabled, onCheckedChange = {
                                 SettingStore.setValue(SettingType.PROXY, "$it#${proxySetting.value.value}")
                                 component.sync()
@@ -419,19 +420,19 @@ fun setConfig(textFieldValue: String?) {
             return@launch
         }
         SettingStore.setValue(SettingType.VOD, textFieldValue)
-        Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong()).collect{
-            if (it == null) {
-                Db.Config.save(Config(
+        val config = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong()).firstOrNull()
+        if (config == null) {
+            Db.Config.save(
+                Config(
                     type = ConfigType.SITE.ordinal.toLong(),
-                    url = textFieldValue)
+                    url = textFieldValue
                 )
-            } else {
-                Db.Config.updateUrl(it.id, textFieldValue)
-            }
+            )
+        } else {
+            Db.Config.updateUrl(config.id, textFieldValue)
         }
-        Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong()).collect{
-            ApiConfig.api.cfg.value = it
-        }
+
+        ApiConfig.api.cfg.value = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong()).firstOrNull()
         initConfig()
     }.invokeOnCompletion {
         hideProgress()

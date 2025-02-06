@@ -33,8 +33,8 @@ interface ConfigDao {
     @Query("SELECT * from Config")
     fun getAll(): Flow<List<Config>>
 
-    @Query("DELETE FROM Config where id = :id")
-    suspend fun deleteById(id: Long?):Int
+    @Query("DELETE FROM Config where id =:id")
+    suspend fun deleteById(id: Long):Int
 }
 
 //class ConfigRepositoryImpl : ConfigDao, KoinComponent {
