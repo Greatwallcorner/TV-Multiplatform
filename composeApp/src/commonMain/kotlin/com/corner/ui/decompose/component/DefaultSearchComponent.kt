@@ -11,15 +11,14 @@ import com.corner.bean.SettingStore.getHistoryList
 import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.ui.decompose.BaseComponent
 import com.corner.ui.decompose.SearchComponent
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CopyOnWriteArrayList
 
-class DefaultSearchComponent(componentContext: ComponentContext) : SearchComponent,
+open class DefaultSearchComponent(componentContext: ComponentContext) : SearchComponent,
+    BaseComponent(Dispatchers.IO.limitedParallelism(12)),
     ComponentContext by componentContext, BackHandlerOwner {
     private var searchedText: String = ""
 
@@ -37,12 +36,33 @@ class DefaultSearchComponent(componentContext: ComponentContext) : SearchCompone
     override val model: MutableValue<SearchComponent.Model> = _models
 
     init {
-        lifecycle.subscribe(object :Lifecycle.Callbacks{
+        lifecycle.subscribe(object : Lifecycle.Callbacks {
+            override fun onCreate() {
+                model.value.searchableSites.addAll(ApiConfig.api.sites.filter {
+                    it.searchable == 1 && !model.value.searchCompleteSites.contains(
+                        it.key
+                    )
+                }.shuffled().map { it.copy() })
+                model.value.searchBarText = getSearchBarText(model.value)
+            }
+
             override fun onDestroy() {
                 log.debug("search onDestroy")
                 model.value.searchScope.cancel("onDestroy")
             }
         })
+
+        scope.launch {
+            model.observe {
+                model.update { it.copy(searchBarText = getSearchBarText(model.value)) }
+            }
+        }
+    }
+
+    fun getSearchBarText(model: SearchComponent.Model): String {
+        val size = model.searchableSites.filter { it.isSearchable() }.size
+        if (model.isSearching) return "${model.searchCompleteSites.size}/$size"
+        return "$size"
     }
 
     /**
@@ -68,7 +88,8 @@ class DefaultSearchComponent(componentContext: ComponentContext) : SearchCompone
         SiteViewModel.viewModelScope.launch {
             SettingStore.addSearchHistory(searchText)
             var searchableSites =
-                ApiConfig.api.sites.filter { it.searchable == 1 && !model.value.searchCompleteSites.contains(it.key) }.shuffled()
+                model.value.searchableSites.filter { it.searchable == 1 && !model.value.searchCompleteSites.contains(it.key) }
+                    .shuffled()
             searchableSites = searchableSites.subList(0, onceSearchSiteNum.coerceAtMost(searchableSites.size))
             log.info("站源：{}", searchableSites.map { it.name })
             searchableSites.forEach {
@@ -78,9 +99,9 @@ class DefaultSearchComponent(componentContext: ComponentContext) : SearchCompone
                 }
                 job.invokeOnCompletion { e ->
                     if (e != null) {
-                        if(e is CancellationException){
+                        if (e is CancellationException) {
                             log.debug("搜索被取消 msg:${e.message}")
-                        }else{
+                        } else {
                             log.error("搜索执行 异常 msg:{}", e.message)
                         }
                     }
@@ -113,6 +134,12 @@ class DefaultSearchComponent(componentContext: ComponentContext) : SearchCompone
         model.value.currentVodList.value = CopyOnWriteArrayList(item.list)
 //        model.update { it.copy(currentVodList = CopyOnWriteArrayList(item.getList())) }
 
+    }
+
+    fun updateModel(function: (SearchComponent.Model) -> Unit) {
+        function(model.value)
+        val searchBarText = getSearchBarText(model.value)
+        _models.update { it.copy(ref = it.ref + 1, searchBarText = searchBarText) }
     }
 
 }

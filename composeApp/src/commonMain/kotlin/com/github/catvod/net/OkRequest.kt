@@ -17,13 +17,13 @@ internal class OkRequest private constructor(
     private val method: String,
     private var url: String,
     private val json: String?,
-    private val params: Map<String, String>,
+    private val params: Map<String, String>?,
     private val header: Map<String, String>?
 ) {
     private var request: Request? = null
     private var tag: Any? = null
 
-    constructor(method: String, url: String, params: Map<String, String>, header: Map<String, String>?) : this(
+    constructor(method: String, url: String, params: Map<String, String>?, header: Map<String, String>?) : this(
         method,
         url,
         null,
@@ -31,7 +31,7 @@ internal class OkRequest private constructor(
         header
     )
 
-    constructor(method: String, url: String, json: String, header: Map<String, String>) : this(
+    constructor(method: String, url: String, json: String, header: Map<String, String>?) : this(
         method,
         url,
         json,
@@ -64,13 +64,17 @@ internal class OkRequest private constructor(
         get() {
             if (!StringUtils.isEmpty(json)) return json!!.toRequestBody("application/json; charset=utf-8".toMediaType())
             val formBody = FormBody.Builder()
-            for (key in params.keySet()) formBody.add(key, params[key]!!)
+            if(params?.isEmpty == false){
+                for (key in params.keySet()) formBody.add(key, params[key]!!)
+            }
             return formBody.build()
         }
 
     private fun setParams() {
         url = "$url?"
-        for (key in params.keySet()) url = url + key + "=" + params[key] + "&"
+        if(params?.isEmpty == false){
+            for (key in params.keySet()) url = url + key + "=" + params[key] + "&"
+        }
         url = Utils.substring(url) ?: ""
     }
 

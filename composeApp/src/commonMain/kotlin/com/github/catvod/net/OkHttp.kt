@@ -133,22 +133,22 @@ object OkHttp {
     }
 
     @JvmStatic
-    fun post(url: String, json: String): String {
+    fun post(url: String, json: String = "{}"): String {
         return post(url, json, HashMap<String, String>() as Map<String, String>).body
     }
 
     @JvmStatic
-    fun post(url: String, json: String, header: Map<String, String>): OkResult {
+    fun post(url: String, json: String = "{}", header: Map<String, String>?): OkResult {
         return post(client(), url, json, header)
     }
 
     @JvmStatic
-    fun post(client: OkHttpClient, url: String, json: String, header: Map<String, String>): OkResult {
+    fun post(client: OkHttpClient, url: String, json: String = "{}", header: Map<String, String>?): OkResult {
         return OkRequest(POST, url, json, header).execute(client)
     }
 
     @JvmStatic
-    fun get(url: String, params: Map<String, String>, header: Map<String, String>): OkResult {
+    fun get(url: String, params: Map<String, String>?, header: Map<String, String>?): OkResult {
         return OkRequest(GET, url, params, header).execute(client())
     }
 
@@ -178,7 +178,7 @@ object OkHttp {
         get() = OkHttpClient.Builder()
             .proxy(getProxy())
             .addInterceptor(OkhttpInterceptor()).dns(dns())
-            .connectTimeout(3, TimeUnit.SECONDS)
+            .connectTimeout(2, TimeUnit.SECONDS)
             .readTimeout(5, TimeUnit.SECONDS)
             .writeTimeout(5, TimeUnit.SECONDS)
             .sslSocketFactory(SSLSocketClient.sSLSocketFactory, SSLSocketClient.x509TrustManager)

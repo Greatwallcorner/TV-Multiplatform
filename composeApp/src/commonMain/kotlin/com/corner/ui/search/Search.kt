@@ -56,17 +56,16 @@ fun WindowScope.SearchScene(component: DefaultSearchPagesComponent, onClickItem:
         scrollAnimation = PagesScrollAnimation.Default
     ) { _, p ->
         when (p) {
-            is DefaultSearchComponent -> SearchResult(
-                p, onClickBack = { onClickBack() },
-            ) {
-                onClickItem(it)
-            }
-
             is DefaultSearchPageComponent -> SearchPage(p, onClickBack = {
                 onClickBack()
             }, onSearch = { s ->
                 component.onSearch(s)
             })
+            is DefaultSearchComponent -> SearchResult(
+                p, onClickBack = { onClickBack() },
+            ) {
+                onClickItem(it)
+            }
         }
     }
 }
@@ -122,7 +121,6 @@ private fun WindowScope.SearchResult(
                             component.clear()
                             onClickBack()
                         }
-
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -131,6 +129,7 @@ private fun WindowScope.SearchResult(
                         )
                     }
                     SearchBar(
+                        component,
                         Modifier,
                         remember { FocusRequester() },
                         searchText.value,
@@ -172,7 +171,8 @@ private fun WindowScope.SearchResult(
                                 component.search(searchText.value, true)
                             },
                             selected = false,
-                            loading = model.value.isSearching
+                            loading = model.value.isSearching,
+                            enableTooltip = false
                         )
                     }
                 }

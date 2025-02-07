@@ -48,6 +48,7 @@ data class Vod(
             return org.apache.commons.lang3.StringUtils.isBlank(vodId) || vodFlags.isEmpty()
         }
         fun Vod.setCurrentFlag(idx: Int) {
+            if(vodFlags.isEmpty()) return
             currentFlag = vodFlags[idx]
             currentFlag?.activated = true
         }

@@ -30,40 +30,41 @@ fun RatioBtn(
     onClick: () -> Unit,
     selected: Boolean,
     loading: Boolean = false,
-    tag: () -> Pair<Boolean, String> = { false to "" }
+    tag: () -> Pair<Boolean, String> = { false to "" },
+    enableTooltip: Boolean = true
 ) {
-    Surface(
-        border = BorderStroke(1.dp, Color.Gray.copy(0.6F)),
-        shape = RoundedCornerShape(6.dp),
-        modifier = modifier
-            .shadow(1.dp)
-            .background(
-                if (selected) MaterialTheme.colorScheme.secondary else Color.Transparent,
+    TooltipArea(
+        tooltip = {
+            // composable tooltip content
+            Surface(
+                modifier = Modifier.shadow(4.dp),
+                color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(4.dp)
-            )
-            .clickable(
-                onClick = { onClick() },
-                enabled = !loading
-            ),
-    ) {
-        Box() {
-            TooltipArea(
-                tooltip = {
-                    // composable tooltip content
-                    Surface(
-                        modifier = Modifier.shadow(4.dp),
-                        color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Text(
-                            text = text,
-                            modifier = Modifier.padding(10.dp),
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                },
-                delayMillis = 600
             ) {
+                Text(
+                    text = if(enableTooltip) "" else text,
+                    modifier = Modifier.padding(10.dp),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        },
+        delayMillis = 600
+    ) {
+        Surface(
+            border = BorderStroke(1.dp, Color.Gray.copy(0.6F)),
+            shape = RoundedCornerShape(6.dp),
+            modifier = modifier
+                .shadow(1.dp)
+                .background(
+                    if (selected) MaterialTheme.colorScheme.secondary else Color.Transparent,
+                    shape = RoundedCornerShape(4.dp)
+                )
+                .clickable(
+                    onClick = { onClick() },
+                    enabled = !loading
+                ),
+        ) {
+            Box() {
                 Text(
                     text,
                     modifier = Modifier.background(if (selected) MaterialTheme.colorScheme.secondary else Color.Transparent)
@@ -88,13 +89,15 @@ fun RatioBtn(
                 if (tags.first) {
                     Text(
                         tags.second,
-                        Modifier.background(if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary /*if (selected) Color.Blue.copy(0.5f) else MaterialTheme.colorScheme.onSecondary*/ ,
-                            shape = RoundedCornerShape(0.dp, 6.dp, 0.dp,6.dp))
+                        Modifier.background(
+                            if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary /*if (selected) Color.Blue.copy(0.5f) else MaterialTheme.colorScheme.onSecondary*/,
+                            shape = RoundedCornerShape(0.dp, 6.dp, 0.dp, 6.dp)
+                        )
                             .align(Alignment.TopEnd)
                             .border(1.dp, Color.Gray)
-                            .padding(3.dp)
-                            , maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        color = if (selected) Color.White else MaterialTheme.colorScheme.onSecondary /*if(selected) Color.Black else Color.White*/,
+                            .padding(3.dp),
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        color = if (selected) Color.White else MaterialTheme.colorScheme.onSecondary, /*if(selected) Color.Black else Color.White*/
                     )
                 }
             }
