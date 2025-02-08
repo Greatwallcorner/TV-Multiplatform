@@ -133,17 +133,17 @@ object OkHttp {
     }
 
     @JvmStatic
-    fun post(url: String, json: String = "{}"): String {
+    fun post(url: String, json: String): String {
         return post(url, json, HashMap<String, String>() as Map<String, String>).body
     }
 
     @JvmStatic
-    fun post(url: String, json: String = "{}", header: Map<String, String>?): OkResult {
+    fun post(url: String, json: String, header: Map<String, String>?): OkResult {
         return post(client(), url, json, header)
     }
 
     @JvmStatic
-    fun post(client: OkHttpClient, url: String, json: String = "{}", header: Map<String, String>?): OkResult {
+    fun post(client: OkHttpClient, url: String, json: String, header: Map<String, String>?): OkResult {
         return OkRequest(POST, url, json, header).execute(client)
     }
 

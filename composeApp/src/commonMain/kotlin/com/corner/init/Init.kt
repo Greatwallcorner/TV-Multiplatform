@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
+import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.slf4j.LoggerFactory
 
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory
 private val log = LoggerFactory.getLogger("Init")
 class Init {
     companion object {
+        private lateinit var instance: KoinApplication
         suspend fun start() {
             showProgress()
             try {
@@ -48,11 +50,13 @@ class Init {
 
         fun stop(){
             KtorD.stop()
+            VlcJInit.release()
+            instance.close()
         }
 
 
         private fun initKoin() {
-            startKoin {
+            instance = startKoin {
 //                logger()
                 modules(appModule)
             }

@@ -14,16 +14,6 @@ import java.io.File
 
 class CustomDirectoryDiscovery:DiscoveryDirectoryProvider {
     private val log = thisLogger()
-//    private val resPath = System.getProperty(Constants.resPathKey) ?: ""
-//
-//    private var vlcPath:String? = null
-//
-//    init {
-//        if(resPath.isNotBlank()){
-//            vlcPath = File(resPath).resolve("lib").path
-//        }
-//    }
-//
     override fun priority(): Int {
         return 99999
     }
@@ -45,14 +35,20 @@ class CustomDirectoryDiscovery:DiscoveryDirectoryProvider {
             if(!File(path).exists()) return arrayOf.toTypedArray()
             arrayOf.add(File(path).parent)
         }
-        println("自定义vlc播放器路径：$arrayOf")
+        log.info("自定义vlc播放器路径：$arrayOf")
         return arrayOf.toTypedArray()
     }
 
-    fun getOsArchName():String{
+    private fun getOsArchName():String{
         val osName = SysVerUtil.getOsName()
-        return if(SysVerUtil.getOsName() == SysVerUtil.System.WINDOWS) osName.name.lowercase()
+        return if(SysVerUtil.getOsName() == SysVerUtil.System.WINDOWS) "${osName.name.lowercase()}-${getArchName()}"
         else "${osName.name.lowercase()}-${SystemUtil.getOsInfo().arch}"
+    }
+
+    private fun getArchName():String{
+        val arch = SystemUtil.getOsInfo().arch
+        return if(arch == "amd64") "x86"
+        else arch
     }
 
     override fun supported(): Boolean {

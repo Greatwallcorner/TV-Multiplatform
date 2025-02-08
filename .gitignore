@@ -18,4 +18,4 @@ cache
 **/*.log
 
 /desktopApp/data/
-/composeApp/src/desktopMain/resources/res
+#/composeApp/src/desktopMain/resources/res

@@ -18,6 +18,7 @@ import com.corner.database.entity.History
 import com.corner.ui.decompose.BaseComponent
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.getPlayerSetting
+import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.player.vlcj.VlcjFrameController
 import com.corner.ui.scene.SnackBar
 import com.corner.ui.scene.hideProgress
@@ -52,7 +53,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
 
     override val model: MutableValue<DetailComponent.Model> = _model
 
-    override val controller: VlcjFrameController = VlcjFrameController(this)
+    override val controller: VlcjFrameController = VlcjFrameController(this).apply { VlcJInit.setController(this) }
 
     init {
         lifecycle.subscribe(object : Lifecycle.Callbacks {

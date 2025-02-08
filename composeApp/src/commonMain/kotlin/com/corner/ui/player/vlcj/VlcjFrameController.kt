@@ -50,7 +50,7 @@ class VlcjFrameController constructor(
     private val _bytes = MutableStateFlow<ByteArray?>(null)
     override val bytes = _bytes.asStateFlow()
 
-    val callbackSurFace = CallbackVideoSurface(object : BufferFormatCallback {
+    private val callbackSurFace = CallbackVideoSurface(object : BufferFormatCallback {
         override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
             info = ImageInfo.makeN32(sourceWidth, sourceHeight, ColorAlphaType.OPAQUE)
             return RV32BufferFormat(sourceWidth, sourceHeight)
@@ -134,6 +134,10 @@ class VlcjFrameController constructor(
 
     fun getPlayer(): MediaPlayer? {
         return controller.player
+    }
+
+    fun release() {
+        controller.factory.release()
     }
 
 }
