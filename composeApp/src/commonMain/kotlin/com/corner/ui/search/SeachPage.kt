@@ -63,7 +63,7 @@ fun WindowScope.SearchPage(component: DefaultSearchPageComponent, onClickBack: (
                                 tint = MaterialTheme.colorScheme.onBackground
                             )
                         }
-                        SearchBar(component, Modifier, focusRequester, "", onSearch, false)
+                        SearchBar(component.getSearchComponent(), Modifier, focusRequester, "", onSearch, false)
                     }
                 }, center = {})
             }

@@ -1,7 +1,8 @@
 package com.corner.ui.decompose.component
 
-import com.arkivanov.decompose.ComponentContext
+import com.corner.ui.decompose.SearchComponent
 
 
-class DefaultSearchPageComponent(componentContext:ComponentContext): DefaultSearchComponent(componentContext){
+class DefaultSearchPageComponent(private val searchComponent: DefaultSearchComponent):SearchComponent by searchComponent {
+    fun getSearchComponent(): DefaultSearchComponent = searchComponent
 }

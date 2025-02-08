@@ -18,6 +18,8 @@ class DefaultSearchPagesComponent(component: ComponentContext):SearchPagesCompon
 
     override val model: MutableValue<SearchPagesComponent.Model> = _model
 
+    val sharedComponent = DefaultSearchComponent(component)
+
     override val pages: Value<ChildPages<*, SearchComponent>> =
         childPages(
             key = "DefaultSearchChild",
@@ -26,8 +28,8 @@ class DefaultSearchPagesComponent(component: ComponentContext):SearchPagesCompon
             initialPages = {Pages(items = listOf(SearchPageType.SearchPage, SearchPageType.SearchResult), selectedIndex = 0)},
             handleBackButton = true){ type,childComponentContext->
             when(type){
-                is SearchPageType.SearchPage -> DefaultSearchPageComponent(childComponentContext)
-                is SearchPageType.SearchResult -> DefaultSearchComponent(childComponentContext)
+                is SearchPageType.SearchPage -> DefaultSearchPageComponent(sharedComponent)
+                is SearchPageType.SearchResult -> sharedComponent
             }
 
         }
