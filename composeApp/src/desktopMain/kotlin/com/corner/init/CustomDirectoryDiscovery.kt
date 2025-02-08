@@ -23,7 +23,7 @@ class CustomDirectoryDiscovery:DiscoveryDirectoryProvider {
         val arrayOf = mutableListOf<String>()
         System.getProperty(Constants.resPathKey)?.run {
             log.debug("resPath: $this")
-            arrayOf.add(this.trimBlankChar())
+            arrayOf.add(this.trimBlankChar() + "/lib")
         }
         val debugPath = File(System.getProperty("user.dir")).resolve("src/desktopMain/resources/res/${getOsArchName()}/lib")
         if(StringUtils.isNotBlank(debugPath.toString())){
@@ -48,9 +48,9 @@ class CustomDirectoryDiscovery:DiscoveryDirectoryProvider {
     private fun getArchName():String {
         System.getProperty("os.arch").lowercase().let {
             return when {
-                "x86" in it || "x64" in it || "amd64" in it -> "x86"
+                "x86" in it || "x64" in it || "amd64" in it -> "x64"
                 "arm" in it || "aarch" in it -> "arm64"
-                else -> "x86"
+                else -> "x64"
             }
         }
     }
