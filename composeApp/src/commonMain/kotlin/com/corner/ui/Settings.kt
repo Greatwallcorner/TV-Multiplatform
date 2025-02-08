@@ -58,6 +58,7 @@ import java.awt.Desktop
 import java.io.File
 import java.net.URI
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WindowScope.SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
@@ -175,11 +176,27 @@ fun WindowScope.SettingScene(component: DefaultSettingComponent, onClickBack: ()
                 }
                 item {
                     SettingItemTemplate("日志") {
-                        LogButtonList(component) {
-                            SettingStore.setValue(SettingType.LOG, it)
-                            component.sync()
-                            SnackBar.postMsg("重启生效")
+                        val current = derivedStateOf { model.value.settingList.getSetting(SettingType.LOG)?.value ?: logLevel[0] }
+                        SingleChoiceSegmentedButtonRow {
+                            logLevel.forEachIndexed { index, label ->
+                                SegmentedButton(
+                                    shape = SegmentedButtonDefaults.itemShape(
+                                        index = index,
+                                        count = logLevel.size
+                                    ),
+                                    onClick = { SettingStore.setValue(SettingType.LOG, label)
+                                        component.sync()
+                                        SnackBar.postMsg("重启生效") },
+                                    selected = label == current.value,
+                                    label = { Text(label) }
+                                )
+                            }
                         }
+//                        LogButtonList(component) {
+//                            SettingStore.setValue(SettingType.LOG, it)
+//                            component.sync()
+//                            SnackBar.postMsg("重启生效")
+//                        }
                     }
                 }
                 item {

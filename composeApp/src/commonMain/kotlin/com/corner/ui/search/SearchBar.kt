@@ -196,7 +196,7 @@ fun SearchBar(
             Modifier.padding(horizontal = 5.dp, vertical = 5.dp)
                 .clip(shape = RoundedCornerShape(5.dp))
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                 Text("全选")
                 TriStateCheckbox(state = parentState.value, onClick = {
                     component.updateModel {

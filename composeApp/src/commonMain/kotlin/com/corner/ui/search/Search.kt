@@ -99,11 +99,6 @@ private fun WindowScope.SearchResult(
         }
     }
 
-    DisposableEffect(result.value) {
-        println("result 更改")
-        onDispose { }
-    }
-
     DisposableEffect(searchText.value) {
         component.search(searchText.value, false)
         onDispose {
