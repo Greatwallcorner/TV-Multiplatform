@@ -153,20 +153,20 @@ compose.desktop {
             vendor = "TV Multiplatform"
 
             modules(
-                "java.compiler",
-                "java.instrument",
+//                "java.compiler",
+//                "java.instrument",
                 "java.management",
-                "java.naming",
+//                "java.naming",
                 "java.net.http",
-                "java.rmi",
-                "java.security.jgss",
-                "java.sql",
-                "jdk.httpserver",
+//                "java.rmi",
+//                "java.security.jgss",
+//                "java.sql",
+//                "jdk.httpserver",
                 "jdk.unsupported",
             )
-            val dir = project.layout.projectDirectory.dir("src/desktopMain/resources/res")
+            val dir = project.layout.projectDirectory.dir("src/desktopMain/appResources")
             println(dir)
-            appResourcesRootDir.set(project.layout.projectDirectory.dir("src/desktopMain/resources/res"))
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("src/desktopMain/appResources"))
 //            app icons https://github.com/JetBrains/compose-multiplatform/tree/master/tutorials/Native_distributions_and_local_execution#app-icon
             windows {
                 iconFile.set(project.file("src/commonMain/resources/pic/icon-s.ico"))

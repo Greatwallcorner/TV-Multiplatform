@@ -30,11 +30,12 @@ interface HistoryDao {
                 vodFlag = flag,
                 vodRemarks = vodRemarks,
                 episodeUrl = vod.vodPlayUrl!!,
-                cid = ApiConfig.api.cfg?.id!!))
+                cid = ApiConfig.api.cfg?.id!!,
+                createTime = System.currentTimeMillis(),))
         }
     }
 
-    @Query("SELECT * FROM History where cid = :cId")
+    @Query("SELECT * FROM History where cid = :cId order by createTime desc")
     fun findAll(cId: Long?): Flow<List<History>>
 
     @Query("DELETE FROM History WHERE `key` in (:ids)")
