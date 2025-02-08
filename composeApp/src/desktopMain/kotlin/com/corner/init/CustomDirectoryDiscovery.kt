@@ -45,10 +45,14 @@ class CustomDirectoryDiscovery:DiscoveryDirectoryProvider {
         else "${osName.name.lowercase()}-${SystemUtil.getOsInfo().arch}"
     }
 
-    private fun getArchName():String{
-        val arch = SystemUtil.getOsInfo().arch
-        return if(arch == "amd64") "x86"
-        else arch
+    private fun getArchName():String {
+        System.getProperty("os.arch").lowercase().let {
+            return when {
+                "x86" in it || "x64" in it || "amd64" in it -> "x86"
+                "arm" in it || "aarch" in it -> "arm64"
+                else -> "x86"
+            }
+        }
     }
 
     override fun supported(): Boolean {

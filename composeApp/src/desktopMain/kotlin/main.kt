@@ -43,7 +43,7 @@ fun main() {
     launchErrorCatcher()
     printSystemInfo()
     Runtime.getRuntime().addShutdownHook(Thread {
-        println("Performing cleanup before exiting...")
+        log.info("Performing cleanup before exiting...")
         Init.stop()
     })
 //    System.setProperty("java.net.useSystemProxies", "true");
