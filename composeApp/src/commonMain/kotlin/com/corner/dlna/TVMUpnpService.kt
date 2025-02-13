@@ -7,7 +7,7 @@ import org.jupnp.protocol.ProtocolFactory
 import org.jupnp.registry.Registry
 
 
-class TVMUpnpService: UpnpServiceImpl(DefaultUpnpServiceConfiguration(12367/*NetUtil.getUsableLocalPort()*/)) {
+class TVMUpnpService: UpnpServiceImpl(DefaultUpnpServiceConfiguration(/*NetUtil.getUsableLocalPort()*/)) {
     private var localDevice: LocalDevice? = null
 
     override fun createRegistry(protocolFactory: ProtocolFactory?): Registry {

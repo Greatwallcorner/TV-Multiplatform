@@ -114,8 +114,8 @@ kotlin {
 
 
             // DLNA
-            implementation("org.jupnp.bom:org.jupnp.bom.compile:3.0.2")
-            implementation("org.jupnp:org.jupnp.support:3.0.2")
+            implementation(libs.jupnp.bom)
+            implementation(libs.jupnp)
 
             api("com.arkivanov.decompose:decompose:2.2.2")
             api("com.arkivanov.decompose:extensions-compose-jetbrains:2.2.2")
