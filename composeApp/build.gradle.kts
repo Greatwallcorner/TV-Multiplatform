@@ -72,6 +72,7 @@ kotlin {
             implementation(libs.roomBundled)
 
             api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+//            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
 
             // tool
             api("com.google.guava:guava:31.1-jre")

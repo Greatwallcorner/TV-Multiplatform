@@ -191,7 +191,7 @@ private class FrameContainerSizeCalculator(){
         val imageRatio = imageSize.width.toFloat() / imageSize.height.toFloat()
         var finalWidth = containerSize.width
         var finalHeight = containerSize.width / imageRatio
-        if(imageRatio == 0.0f){
+        if(imageRatio == 0.0f || imageSize == IntSize.Zero){
             finalHeight = containerSize.height
         }else if(finalHeight > containerSize.height) {
             finalHeight = containerSize.height
