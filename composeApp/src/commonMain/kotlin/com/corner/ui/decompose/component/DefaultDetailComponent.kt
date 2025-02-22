@@ -278,7 +278,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 historyDeferred.await()
             }
             var history = historyDeferred.getCompleted()
-            if (history == null) scope.launch { Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!) }
+            if (history == null) scope.launch { Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName?:"") }
             else {
                 if (model.value.currentEp != null && !model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null) {
                     history = history.copy(position = 0L)
