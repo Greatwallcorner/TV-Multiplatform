@@ -35,6 +35,7 @@ interface SiteDao{
                 filter?.apply {
                     site.searchable = searchable?.toInt()
                     site.changeable = changeable?.toInt()
+                    site.id = id
                 }
             }
         }

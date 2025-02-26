@@ -2,6 +2,7 @@ package com.corner.catvod.enum.bean
 
 import com.corner.catvodcore.util.ToStringSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class Site(
@@ -21,6 +22,9 @@ data class Site(
     var jar: String? = null,
     var header: Map<String, String> = mutableMapOf()
 ) {
+    @Transient
+    var id:Int = 0
+
     companion object {
         fun get(key: String, name: String): Site {
             return Site(key, name, -1, "")
@@ -35,7 +39,7 @@ data class Site(
             changeable?.toLong(),
             recordable = 0,
             configId
-        )
+        ).also { it.id = this.id }
     }
 
     fun isSearchable(): Boolean = searchable == 1
