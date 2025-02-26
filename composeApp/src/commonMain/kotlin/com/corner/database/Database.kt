@@ -33,7 +33,7 @@ object Db:KoinComponent{
     val History:HistoryDao by lazy { database.getHistoryDao() }
 }
 
-@Database(entities = [Config::class, History::class, Keep::class, Site::class], version = 1)
+@Database(entities = [Config::class, History::class, Keep::class, Site::class], version = 2)
 @ConstructedBy(TvDatabaseConstructor::class)
 abstract class TvDatabase: RoomDatabase(){
     abstract fun getConfigDao(): ConfigDao

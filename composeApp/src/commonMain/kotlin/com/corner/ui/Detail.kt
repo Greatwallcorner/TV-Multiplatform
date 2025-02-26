@@ -76,13 +76,13 @@ fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit)
         component.load()
     }
 
-    DisposableEffect(model.value.isLoading) {
+    LaunchedEffect(model.value.isLoading) {
         if (model.value.isLoading) {
             showProgress()
         } else {
             hideProgress()
         }
-        onDispose { }
+//        onDispose { }
     }
 
     val focus = remember { FocusRequester() }

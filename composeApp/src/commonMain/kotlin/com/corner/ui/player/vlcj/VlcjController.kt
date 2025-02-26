@@ -223,8 +223,11 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             SnackBar.postMsg("播放地址为空")
             return this
         }
+//        val optionsList = mutableListOf("http-user-agent=${Constants.ChromeUserAgent}", "http-referrer=www.bing.com")
+
+
         catch {
-            player?.media()?.prepare(url, ":http-user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.33")
+            player?.media()?.prepare(url, *arrayOf())
         }
         return this
     }

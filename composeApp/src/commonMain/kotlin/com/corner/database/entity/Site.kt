@@ -5,11 +5,13 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Site(
-    @PrimaryKey
     val key: String = "",
     val name: String?,
     val searchable: Long?,
     val changeable: Long?,
     val recordable: Long?,
     val configId: Long?,
-)
+){
+    @PrimaryKey(autoGenerate = true)
+    var id:Int = 0
+}

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "92e55be2d0a857196e3cb72d29f007ee",
+    "identityHash": "290c5f1780150eb72c339c2223fb2578",
     "entities": [
       {
         "tableName": "Config",
@@ -210,8 +210,14 @@
       },
       {
         "tableName": "Site",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `name` TEXT, `searchable` INTEGER, `changeable` INTEGER, `recordable` INTEGER, `configId` INTEGER, PRIMARY KEY(`key`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `key` TEXT NOT NULL, `name` TEXT, `searchable` INTEGER, `changeable` INTEGER, `recordable` INTEGER, `configId` INTEGER)",
         "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "key",
             "columnName": "key",
@@ -245,16 +251,16 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": false,
+          "autoGenerate": true,
           "columnNames": [
-            "key"
+            "id"
           ]
         }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '92e55be2d0a857196e3cb72d29f007ee')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '290c5f1780150eb72c339c2223fb2578')"
     ]
   }
 }

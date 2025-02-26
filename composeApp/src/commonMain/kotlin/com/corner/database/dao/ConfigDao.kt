@@ -24,8 +24,8 @@ interface ConfigDao {
     @Query("UPDATE Config SET json = :json, home = :home, parse = :parse where id = :id ")
     suspend fun updateSome( id:Int, json: String? = null, home: String? = null, parse: String? = null)
 
-    @Query("UPDATE Config SET url = :textFieldValue where id = :id ")
-    suspend fun updateUrl(id: Long, textFieldValue: String)
+    @Query("UPDATE Config SET url = :textFieldValue, time = :time where id = :id ")
+    suspend fun updateUrl(id: Long, textFieldValue: String, time: Long = System.currentTimeMillis())
 
     @Query("UPDATE Config SET home = :key where type = :type and url = :url ")
     suspend fun setHome(url: String?, type: Int, key: String)
