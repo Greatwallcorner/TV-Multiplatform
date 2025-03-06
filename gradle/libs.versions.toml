@@ -25,6 +25,7 @@ roomGuava = { module = "androidx.room:room-guava", version.ref = "room" }
 roomKtx = { module = "androidx.room:room-ktx", version.ref = "room" }
 roomBundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "room-sqlite-bundled" }
 jupnp-bom = { module = "org.jupnp.bom:org.jupnp.bom.compile", version.ref = "jupnp" }
+jupnp-tool = { module = "org.jupnp.pom:tools", version.ref = "jupnp"}
 jupnp = { module = "org.jupnp:org.jupnp.support", version.ref = "jupnp" }
 
 
