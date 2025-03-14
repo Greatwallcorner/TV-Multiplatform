@@ -259,6 +259,31 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
         model.update { it.copy(currentPlayUrl = result.url.v(), playResult = result) }
     }
 
+    override fun playEp(detail: Vod, ep: Episode) {
+        if(Utils.isDownloadLink(ep.url)) return
+        val result = SiteViewModel.playerContent(
+            detail.site?.key ?: "",
+            detail.currentFlag?.flag ?: "",
+            ep.url
+        )
+        model.update { it.copy(currentUrl = result?.url) }
+        if (result == null || result.playResultIsEmpty()) {
+            nextFlag()
+            return
+        }
+        controller.doWithHistory { it.copy(episodeUrl = ep.url) }
+        val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
+        if (internalPlayer) {
+            model.update { it.copy(currentPlayUrl = result.url.v(), currentEp = ep) }
+        }
+        detail.subEpisode?.parallelStream()?.forEach {
+            it.activated = it == ep
+        }
+        if (!internalPlayer) {
+            SnackBar.postMsg("上次看到" + ": ${ep.name}")
+        }
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun startPlay() {
         if (model.value.detail != null && model.value.detail?.isEmpty() == false) {
@@ -304,31 +329,6 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 val ep = findEp ?: first()
                 playEp(detail, ep)
             }
-        }
-    }
-
-    override fun playEp(detail: Vod, ep: Episode) {
-        if(Utils.isDownloadLink(ep.url)) return
-        val result = SiteViewModel.playerContent(
-            detail.site?.key ?: "",
-            detail.currentFlag?.flag ?: "",
-            ep.url
-        )
-        model.update { it.copy(currentUrl = result?.url) }
-        if (result == null || result.playResultIsEmpty()) {
-            nextFlag()
-            return
-        }
-        controller.doWithHistory { it.copy(episodeUrl = ep.url) }
-        val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
-        if (internalPlayer) {
-            model.update { it.copy(currentPlayUrl = result.url.v(), currentEp = ep) }
-        }
-        detail.subEpisode?.parallelStream()?.forEach {
-            it.activated = it == ep
-        }
-        if (!internalPlayer) {
-            SnackBar.postMsg("上次看到" + ": ${ep.name}")
         }
     }
 
@@ -383,7 +383,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     override fun syncHistory() {
         val detail = model.value.detail ?: return
         scope.launch {
-            var history= Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId))
+            var history = Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId))
             if (history == null) Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName!!)
             else {
                 if (!model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null) {

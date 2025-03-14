@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.corner.bean.Suggest
 import com.corner.ui.decompose.component.DefaultSearchComponent
 import com.corner.util.KtorClient
@@ -131,7 +131,6 @@ fun SearchBar(
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done,
                 keyboardType = KeyboardType.Text,
-                autoCorrect = true
             ),
             colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = Color.Transparent, // 焦点时下划线颜色

@@ -46,15 +46,15 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
     var isLoading = AtomicBoolean(false)
 
     init {
-        GlobalModel.home.observe {
+        GlobalModel.home.subscribe {
             homeLoad()
         }
-        GlobalModel.clear.observe {
+        GlobalModel.clear.subscribe {
             log.debug("清空")
             clear()
         }
-        GlobalModel.hotList.observe {
-            if (it.isEmpty()) return@observe
+        GlobalModel.hotList.subscribe {
+            if (it.isEmpty()) return@subscribe
             searchBarPrompt()
         }
 

@@ -17,7 +17,7 @@ import androidx.compose.ui.window.rememberWindowState
 import cn.hutool.core.util.SystemPropsUtil
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.extensions.compose.jetbrains.lifecycle.LifecycleController
+import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.corner.RootContent
 import com.corner.bean.SettingStore
@@ -85,7 +85,7 @@ fun main() {
             ) {
                 RootContent(component = root, modifier = Modifier.fillMaxSize())
             }
-            GlobalModel.closeApp.observe {
+            GlobalModel.closeApp.subscribe {
                 if(it){
                     try {
                         window.isVisible = false
@@ -99,7 +99,7 @@ fun main() {
             }
         }
 
-
+ 
     }
 }
 

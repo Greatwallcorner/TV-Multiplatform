@@ -12,14 +12,6 @@ plugins {
 //    alias(libs.plugins.conveyor)
 }
 
-//sqldelight {
-//    databases {
-//        create("Database") {
-//            packageName.set("com.corner.database")
-//        }
-//    }
-//}
-
 room {
     schemaDirectory("$projectDir/comminMain/schemas")
 }
@@ -118,15 +110,14 @@ kotlin {
             implementation(libs.jupnp.bom)
             implementation(libs.jupnp)
 
-            api("com.arkivanov.decompose:decompose:2.2.2")
-            api("com.arkivanov.decompose:extensions-compose-jetbrains:2.2.2")
+            api("com.arkivanov.decompose:decompose:3.3.0")
+            api("com.arkivanov.decompose:extensions-compose:3.3.0")
             // Add the dependency, typically under the commonMain source set
-            api("com.arkivanov.essenty:lifecycle:1.3.0")
+            api("com.arkivanov.essenty:lifecycle:2.5.0")
         }
 
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
-            implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
             // Player
             implementation(libs.vlcj)
         }
@@ -141,7 +132,7 @@ compose.desktop {
         buildTypes.release.proguard {
 //            obfuscate.set(true)
             isEnabled.set(true)
-            version.set("7.4.0")
+            version.set("7.6.1")
             configurationFiles.from(project.file("src/desktopMain/rules.pro"))
         }
 

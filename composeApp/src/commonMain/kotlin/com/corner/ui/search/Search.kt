@@ -26,9 +26,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.extensions.compose.jetbrains.pages.Pages
-import com.arkivanov.decompose.extensions.compose.jetbrains.pages.PagesScrollAnimation
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.arkivanov.decompose.extensions.compose.pages.ChildPages
+import com.arkivanov.decompose.extensions.compose.pages.PagesScrollAnimation
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.value.update
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
@@ -49,7 +49,7 @@ enum class SearchPageType {
 @OptIn(ExperimentalDecomposeApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun WindowScope.SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
-    Pages(
+    ChildPages(
         component.pages,
         onPageSelected = component::selectPage,
         modifier = Modifier.fillMaxSize(),

@@ -1,6 +1,5 @@
 [versions]
-compose = "1.7.1"
-compose-plugin = "1.6.11"
+compose = "1.7.3"
 junit = "4.13.2"
 kotlin = "2.1.10"
 vlcj = "4.8.3"
@@ -30,7 +29,7 @@ jupnp = { module = "org.jupnp:org.jupnp.support", version.ref = "jupnp" }
 
 
 [plugins]
-jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

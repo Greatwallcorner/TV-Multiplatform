@@ -53,7 +53,7 @@ open class DefaultSearchComponent(componentContext: ComponentContext) : SearchCo
         })
 
         scope.launch {
-            model.observe {
+            model.subscribe {
                 model.update { it.copy(searchBarText = getSearchBarText(model.value)) }
             }
         }
