@@ -12,8 +12,8 @@ import io.ktor.server.routing.*
 import okhttp3.Response
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
-import java.io.ByteArrayInputStream
 import java.io.IOException
+import java.io.InputStream
 
 fun Application.configureRouting() {
     val log = LoggerFactory.getLogger("Routing")
@@ -60,10 +60,14 @@ fun Application.configureRouting() {
                 } else if (HttpStatusCode.Found.value == objects[0]) {
                     call.respondRedirect(Url(objects[2] as String), false)
                 } else {
-                    call.respondBytes(
-                        ContentType.parse(objects[1].toString()),
-                        HttpStatusCode.fromValue(objects[0] as Int)
-                    ) { (objects[2] as ByteArrayInputStream).readBytes() }
+                    if(objects.size == 4){
+                        (objects[3] as HashMap<String,String>).forEach { t, u ->
+                            call.response.headers.append(t, u)
+                        }
+                    }
+                    call.respondOutputStream(ContentType.parse(objects[1].toString()),HttpStatusCode.fromValue(objects[0] as Int)){
+                        (objects[2] as InputStream).transferTo(this)
+                    }
                 }
             }catch (ignore:IOException){
             } catch (e: Exception) {
