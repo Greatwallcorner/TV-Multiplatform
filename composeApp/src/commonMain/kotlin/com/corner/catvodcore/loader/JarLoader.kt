@@ -114,7 +114,7 @@ object JarLoader {
     fun proxyInvoke(params: Map<String, String>): Array<Any>? {
         return try {
             val md5 = Utils.md5(recent ?: "")
-            val proxy = methods.get(md5)
+            val proxy = methods[md5]
             proxy?.invoke(null, params) as Array<Any>
         } catch (e: Exception) {
             e.printStackTrace()

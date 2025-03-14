@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material3.*
@@ -36,7 +37,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import androidx.compose.ui.window.WindowScope
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.value.update
 import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
@@ -56,7 +58,7 @@ import org.apache.commons.lang3.StringUtils
 
 
 @Composable
-fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
+fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
     val scope = rememberCoroutineScope()
 
@@ -74,13 +76,13 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
         component.load()
     }
 
-    DisposableEffect(model.value.isLoading) {
+    LaunchedEffect(model.value.isLoading) {
         if (model.value.isLoading) {
             showProgress()
         } else {
             hideProgress()
         }
-        onDispose { }
+//        onDispose { }
     }
 
     val focus = remember { FocusRequester() }
@@ -93,41 +95,43 @@ fun DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
     ) {
         Column(Modifier) {
             if (!isFullScreen.value) {
-                ControlBar(leading = {
-                    BackRow(Modifier, onClickBack = {
-                        onClickBack()
-                    }) {
-                        Row(
-                            Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(horizontalArrangement = Arrangement.Start) {
-                                ToolTipText(
-                                    detail?.vodName ?: "",
-                                    textStyle = MaterialTheme.typography.headlineMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                                    modifier = Modifier.padding(start = 50.dp)
-                                )
+                WindowDraggableArea {
+                    ControlBar(leading = {
+                        BackRow(Modifier, onClickBack = {
+                            onClickBack()
+                        }) {
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(horizontalArrangement = Arrangement.Start) {
+                                    ToolTipText(
+                                        detail?.vodName ?: "",
+                                        textStyle = MaterialTheme.typography.headlineMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+                                        modifier = Modifier.padding(start = 50.dp)
+                                    )
+                                }
                             }
                         }
-                    }
-                }, actions = {
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                component.clear()
-                                component.quickSearch()
-                                SnackBar.postMsg("重新加载")
-                            }
-                        }, enabled = !model.value.isLoading
-                    ) {
-                        Icon(
-                            Icons.Default.Autorenew,
-                            contentDescription = "renew",
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
-                })
+                    }, actions = {
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    component.clear()
+                                    component.quickSearch()
+                                    SnackBar.postMsg("重新加载")
+                                }
+                            }, enabled = !model.value.isLoading
+                        ) {
+                            Icon(
+                                Icons.Default.Autorenew,
+                                contentDescription = "renew",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    })
+                }
             }
             val mrl = derivedStateOf { model.value.currentPlayUrl }
             Row(

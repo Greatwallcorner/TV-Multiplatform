@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
@@ -35,28 +36,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import androidx.compose.ui.window.WindowScope
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
-import com.corner.bean.parseValueToList
+import com.corner.bean.parseAsSettingEnable
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.util.Paths
-import com.corner.database.Config
 import com.corner.database.Db
+import com.corner.database.entity.Config
 import com.corner.init.initConfig
 import com.corner.ui.decompose.component.DefaultSettingComponent
 import com.corner.ui.decompose.component.getSetting
 import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.scene.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.awt.Desktop
 import java.io.File
 import java.net.URI
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
+fun WindowScope.SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
     var showAboutDialog by remember { mutableStateOf(false) }
     DisposableEffect("setting") {
@@ -76,40 +80,40 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column(Modifier.fillMaxSize()) {
-            ControlBar(leading = {
-                BackRow(Modifier.align(Alignment.Start), onClickBack = { onClickBack() }) {
-                    Row(
-                        Modifier.fillMaxSize(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "设置",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                        )
+            WindowDraggableArea {
+                ControlBar(leading = {
+                    BackRow(Modifier.align(Alignment.Start), onClickBack = { onClickBack() }) {
+                        Row(
+                            Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "设置",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
+                        }
                     }
-                }
-            }, actions = {
-                OutlinedButton(
-                    onClick = { Desktop.getDesktop().open(Paths.userDataRoot()) },
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                ) {
-                    Text("打开用户数据目录")
-                }
-            })
+                }, actions = {
+                    OutlinedButton(
+                        onClick = { Desktop.getDesktop().open(Paths.userDataRoot()) },
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    ) {
+                        Text("打开用户数据目录")
+                    }
+                })
+            }
             LazyColumn(contentPadding = PaddingValues(8.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 item {
                     val focusRequester = remember { FocusRequester() }
                     val isExpand = remember { mutableStateOf(false) }
                     val setting = derivedStateOf { model.value.settingList.getSetting(SettingType.VOD) }
-                    val vodConfigList = remember { mutableStateListOf<Config?>(null) }
+                    val vodConfigList = derivedStateOf { model.value.dbConfigList }
                     LaunchedEffect(isExpand.value) {
                         if (isExpand.value) {
-                            val list: List<Config> = Db.Config.getAll()
-                            vodConfigList.clear()
-                            vodConfigList.addAll(list)
+                            component.getConfigAll()
                             focusRequester.requestFocus()
                         }
                     }
@@ -151,18 +155,16 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                                 modifier = Modifier.fillMaxWidth(0.8f),
                                 properties = PopupProperties(focusable = false)
                             ) {
-                                vodConfigList.forEach {
-                                    DropdownMenuItem(modifier = Modifier.fillMaxWidth(),
-                                        text = { Text(it?.url ?: "") },
+                                vodConfigList.value.forEach {
+                                    DropdownMenuItem(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        text = { Text(it.url ?: "") },
                                         onClick = {
-                                            setConfig(it?.url)
+                                            setConfig(it.url)
                                             isExpand.value = false
                                         }, trailingIcon = {
                                             IconButton(onClick = {
-                                                SiteViewModel.viewModelScope.launch {
-                                                    Db.Config.deleteById(it?.id)
-                                                }
-                                                vodConfigList.remove(it)
+                                                component.deleteHistoryById(it)
                                             }) {
                                                 Icon(Icons.Default.Close, "delete the config")
                                             }
@@ -174,35 +176,46 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                 }
                 item {
                     SettingItemTemplate("日志") {
-                        LogButtonList(component) {
-                            SettingStore.setValue(SettingType.LOG, it)
-                            component.sync()
-                            SnackBar.postMsg("重启生效")
+                        val current = derivedStateOf { model.value.settingList.getSetting(SettingType.LOG)?.value ?: logLevel[0] }
+                        SingleChoiceSegmentedButtonRow {
+                            logLevel.forEachIndexed { index, label ->
+                                SegmentedButton(
+                                    shape = SegmentedButtonDefaults.itemShape(
+                                        index = index,
+                                        count = logLevel.size
+                                    ),
+                                    onClick = { SettingStore.setValue(SettingType.LOG, label)
+                                        component.sync()
+                                        SnackBar.postMsg("重启生效") },
+                                    selected = label == current.value,
+                                    label = { Text(label) }
+                                )
+                            }
                         }
+//                        LogButtonList(component) {
+//                            SettingStore.setValue(SettingType.LOG, it)
+//                            component.sync()
+//                            SnackBar.postMsg("重启生效")
+//                        }
                     }
                 }
                 item {
                     SettingItemTemplate("播放器") {
                         val playerSetting = derivedStateOf {
-                                var parseValueToList =
-                                    model.value.settingList.getSetting(SettingType.PLAYER)?.parseValueToList()
-                            if(parseValueToList?.size == 1){
-                                parseValueToList = listOf("false" , parseValueToList[0])
-                            }
-                            parseValueToList ?: listOf()
+                            model.value.settingList.getSetting(SettingType.PLAYER)?.value!!.parseAsSettingEnable()
                         }
                         Box {
                             Row {
                                 Switch(
-                                    playerSetting.value[0].toBoolean(), onCheckedChange = {
-                                    SettingStore.setValue(SettingType.PLAYER, "$it#${playerSetting.value[1]}")
-                                    if (it) SnackBar.postMsg("使用内置播放器") else SnackBar.postMsg("使用外部播放器 请配置播放器路径")
-                                    component.sync()
-                                }, Modifier.width(100.dp).padding(end = 20.dp).align(Alignment.CenterVertically),
+                                    playerSetting.value.isEnabled, onCheckedChange = {
+                                        SettingStore.setValue(SettingType.PLAYER, "$it#${playerSetting.value.value}")
+                                        if (it) SnackBar.postMsg("使用内置播放器") else SnackBar.postMsg("使用外部播放器 请配置播放器路径")
+                                        component.sync()
+                                    }, Modifier.width(100.dp).padding(end = 20.dp).align(Alignment.CenterVertically),
                                     thumbContent = {
                                         Box(Modifier.size(80.dp)) {
                                             Text(
-                                                if (playerSetting.value[0].toBoolean()) "内置" else "外置",
+                                                if (playerSetting.value.isEnabled) "内置" else "外置",
                                                 Modifier.fillMaxSize().align(Alignment.Center)
                                             )
                                         }
@@ -210,12 +223,12 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                                 // 只有外部播放器时展示
 //                                if (!(playerSetting.value[0] as Boolean)) {
                                 TextField(
-                                    value = playerSetting.value[1],
+                                    value = playerSetting.value.value,
                                     onValueChange = {
-                                        SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value[0]}#$it")
+                                        SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value.value}#$it")
                                         SiteViewModel.viewModelScope.launch {
-                                            if(playerSetting.value[0].toBoolean()){
-                                                if(File(it).exists()){
+                                            if (playerSetting.value.isEnabled) {
+                                                if (File(it).exists()) {
                                                     VlcJInit.init(true)
                                                 }
                                             }
@@ -229,6 +242,24 @@ fun SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
                                 )
 //                                }
                             }
+                        }
+                    }
+                }
+                item {
+                    SettingItemTemplate("代理") {
+                        val proxySetting = derivedStateOf {
+                            model.value.settingList.getSetting(SettingType.PROXY)?.value!!.parseAsSettingEnable()
+                        }
+                        Row {
+                            Switch(proxySetting.value.isEnabled, onCheckedChange = {
+                                SettingStore.setValue(SettingType.PROXY, "$it#${proxySetting.value.value}")
+                                component.sync()
+                            })
+                            Spacer(Modifier.width(5.dp))
+                            TextField(proxySetting.value.value, onValueChange = {
+                                SettingStore.setValue(SettingType.PROXY, "${proxySetting.value.isEnabled}#$it")
+                                component.sync()
+                            }, modifier = Modifier.fillMaxWidth())
                         }
                     }
                 }
@@ -299,12 +330,14 @@ fun LogButtonList(component: DefaultSettingComponent, onClick: (String) -> Unit)
                             onClick(it)
                         }
                     }
+
                     logLevel.size - 1 -> {
                         SideButton(current.value == t, text = t, type = SideButtonType.RIGHT) {
                             onClick(it)
 
                         }
                     }
+
                     else -> {
                         SideButton(current.value == t, text = t) {
                             onClick(it)
@@ -335,8 +368,8 @@ fun SideButton(
         .drawWithCache {
 //            val width = size.width * 1.1f
 //            val height = size.height * 1.1f
-            val width = size.width
-            val height = size.height
+            val width = size.width + 5
+            val height = size.height + 5
             val color = if (choosen) buttonColors.containerColor else buttonColors.disabledContainerColor
 
             onDrawBehind {
@@ -404,16 +437,19 @@ fun setConfig(textFieldValue: String?) {
             return@launch
         }
         SettingStore.setValue(SettingType.VOD, textFieldValue)
-        val config = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
+        val config = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong()).firstOrNull()
         if (config == null) {
             Db.Config.save(
-                type = ConfigType.SITE.ordinal.toLong(),
-                url = textFieldValue
+                Config(
+                    type = ConfigType.SITE.ordinal.toLong(),
+                    url = textFieldValue
+                )
             )
         } else {
             Db.Config.updateUrl(config.id, textFieldValue)
         }
-        ApiConfig.api.cfg.value = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong())
+
+        ApiConfig.api.cfg = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong()).firstOrNull()
         initConfig()
     }.invokeOnCompletion {
         hideProgress()
@@ -423,7 +459,8 @@ fun setConfig(textFieldValue: String?) {
 @Composable
 fun AboutDialog(modifier: Modifier, showAboutDialog: Boolean, onClose: () -> Unit) {
     var visible by remember { mutableStateOf(false) }
-    Dialog(modifier, showAboutDialog,
+    Dialog(
+        modifier, showAboutDialog,
         onClose = {
             visible = false
             onClose()

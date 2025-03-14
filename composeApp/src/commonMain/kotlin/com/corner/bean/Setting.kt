@@ -85,14 +85,16 @@ enum class SettingType(val id: String) {
     PLAYER("player"),
     VOD("vod"),
     LOG("log"),
-    SEARCHHISTORY("searchHistory")
+    SEARCHHISTORY("searchHistory"),
+    PROXY("proxy"),
 }
 
 object SettingStore {
     private val defaultList = listOf(
         Setting("vod", "点播", ""),
         Setting("log", "日志级别", Level.DEBUG.levelStr),
-        Setting("player", "播放器", "false#")
+        Setting("player", "播放器", "false#"),
+        Setting("proxy", "代理", "false#")
     )
 
     private var settingFile = SettingFile(mutableListOf<Setting>(), mutableMapOf())
@@ -102,6 +104,10 @@ object SettingStore {
     }
     fun getSettingItem(s: String): String {
         return settingFile.list.find { it.id == s }?.value ?: ""
+    }
+
+    fun getSettingItem(type: SettingType):String{
+        return getSettingItem(type.id)
     }
 
     fun getSettingList(): MutableList<Setting> {
@@ -171,5 +177,22 @@ object SettingStore {
             getCache(SettingType.SEARCHHISTORY.id)!!.add(s)
             write()
         }
+    }
+}
+
+data class SettingEnable(
+    val isEnabled: Boolean,
+    val value: String
+)
+
+/**
+ * boolean#字符串 转换为数组
+ */
+fun String.parseAsSettingEnable():SettingEnable{
+    val split = this.split("#")
+    return if(split.size == 1){
+        SettingEnable(split.first().toBoolean(), "")
+    }else{
+        SettingEnable(split.first().toBoolean(), split.last())
     }
 }

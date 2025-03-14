@@ -5,7 +5,7 @@ import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.Url
-import com.corner.database.History
+import com.corner.database.entity.History
 import com.corner.ui.player.vlcj.VlcjFrameController
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -45,7 +45,7 @@ interface DetailComponent {
     fun startPlay()
     fun nextEP()
     fun playEp(detail: Vod, ep: Episode)
-    fun updateHistory(it:History?)
+    fun updateHistory(it: History)
     fun nextFlag()
     fun syncHistory()
 }

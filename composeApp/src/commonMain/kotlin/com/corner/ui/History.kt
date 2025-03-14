@@ -6,8 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -25,11 +26,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import androidx.compose.ui.window.WindowScope
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.corner.catvod.enum.bean.Vod
-import com.corner.database.Db
-import com.corner.database.History
-import com.corner.database.repository.buildVod
+import com.corner.database.dao.buildVod
+import com.corner.database.entity.History
 import com.corner.ui.decompose.component.DefaultHistoryComponent
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.ControlBar
@@ -57,7 +58,8 @@ fun HistoryItem(
             })
         }) {
             Box(modifier = modifier) {
-                AutoSizeImage(url = history.vodPic!!,
+                AutoSizeImage(
+                    url = history.vodPic!!,
                     modifier = Modifier.height(220.dp),
                     contentDescription = history.vodName,
                     contentScale = ContentScale.Crop,
@@ -91,7 +93,7 @@ fun HistoryItem(
 }
 
 @Composable
-fun HistoryScene(component: DefaultHistoryComponent, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
+fun WindowScope.HistoryScene(component: DefaultHistoryComponent, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
     val model = component.model.subscribeAsState()
     var chooseHistory by remember { mutableStateOf<History?>(null) }
     LaunchedEffect(Unit) {
@@ -109,34 +111,38 @@ fun HistoryScene(component: DefaultHistoryComponent, onClickItem: (Vod) -> Unit,
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column {
-            ControlBar(leading = {
-                BackRow(modifier = Modifier.align(Alignment.Start), { onClickBack() }) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "历史记录", style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                        )
-                    }
-                }
-            },
-                actions = {
-                    IconButton(modifier = Modifier.align(Alignment.CenterVertically)
-                        .padding(end = 20.dp)
-                        .size(80.dp), onClick = {
-                        Db.History.deleteAll()
-                        component.fetchHistoryList()
-                    }) {
-                        Row(modifier = Modifier.padding(2.dp)) {
-                            Icon(Icons.Default.Delete, "delete all", tint = MaterialTheme.colorScheme.onSurface)
-                            Text("清空", color = MaterialTheme.colorScheme.onSurface)
+            WindowDraggableArea {
+                ControlBar(
+                    leading = {
+                        BackRow(modifier = Modifier.align(Alignment.Start), { onClickBack() }) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "历史记录", style = MaterialTheme.typography.headlineMedium,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    modifier = Modifier.align(Alignment.CenterVertically)
+                                )
+                            }
                         }
-                    }
-                })
+                    },
+                    actions = {
+                        IconButton(
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                                .padding(end = 20.dp)
+                                .size(80.dp), onClick = {
+                                component.clearHistory()
+                                component.fetchHistoryList()
+                            }) {
+                            Row(modifier = Modifier.padding(2.dp)) {
+                                Icon(Icons.Default.Delete, "delete all", tint = MaterialTheme.colorScheme.onSurface)
+                                Text("清空", color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    })
+            }
             val gridState = remember { LazyGridState() }
             LazyVerticalGrid(
                 modifier = Modifier.padding(horizontal = 10.dp),
@@ -147,10 +153,11 @@ fun HistoryScene(component: DefaultHistoryComponent, onClickItem: (Vod) -> Unit,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 userScrollEnabled = true,
             ) {
-                items(model.value.historyList) {
-                    HistoryItem(Modifier,
+                itemsIndexed(items = model.value.historyList) { _:Int, it:History ->
+                    HistoryItem(
+                        Modifier,
                         it, showSite = false, onDelete = { key ->
-                            Db.History.deleteBatch(listOf(key))
+                            component.deleteBatchHistory(listOf(key))
                             component.fetchHistoryList()
                         }) {
                         onClickItem(it.buildVod())

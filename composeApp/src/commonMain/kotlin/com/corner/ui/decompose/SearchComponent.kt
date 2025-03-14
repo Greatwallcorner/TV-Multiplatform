@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.value.MutableValue
 import com.corner.bean.HotData
+import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
 import com.corner.ui.search.SearchPageType
@@ -15,12 +16,15 @@ interface SearchComponent {
     data class Model(
         val hotList:List<HotData>,
         val historyList:Set<String>,
-        val searchScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob()),
+        val searchScope: CoroutineScope = CoroutineScope(Dispatchers.Default.limitedParallelism(8) + SupervisorJob()),
         var isSearching: Boolean = false,
         var jobList: MutableList<Job> = mutableListOf<Job>(),
         var currentVodList:MutableState<MutableList<Vod>> = mutableStateOf(mutableListOf()),
         var currentPage:SearchPageType = SearchPageType.page,
-        var searchCompleteSites:CopyOnWriteArraySet<String> = CopyOnWriteArraySet()
+        var searchCompleteSites:CopyOnWriteArraySet<String> = CopyOnWriteArraySet(),
+        var searchableSites:CopyOnWriteArraySet<Site> = CopyOnWriteArraySet(),
+        var searchBarText: String = "",
+        var ref:Int = 0
     ) {
         fun cancelJobAndClear() {
             jobList.forEach { i -> i.cancel("search clear") }
@@ -40,6 +44,10 @@ interface SearchComponent {
             if (jobList != other.jobList) return false
             if (currentVodList != other.currentVodList) return false
             if (currentPage != other.currentPage) return false
+            if (searchBarText != other.searchBarText) return false
+            if (searchableSites != other.searchableSites) return false
+            if (searchCompleteSites != other.searchCompleteSites) return false
+            if (ref != other.ref) return false
 
             return true
         }
@@ -53,6 +61,9 @@ interface SearchComponent {
             currentVodList.value.forEach { result += 31 * it.hashCode() }
             result = 31 * result + currentVodList.hashCode()
             result = 31 * result + currentPage.hashCode()
+            result = 31 * result + ref.hashCode()
+            result = 31 * result + searchCompleteSites.hashCode()
+            result = 31 * result + searchableSites.hashCode()
             return result
         }
 

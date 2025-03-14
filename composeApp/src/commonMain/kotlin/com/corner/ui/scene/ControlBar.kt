@@ -21,7 +21,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPlacement
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.util.FirefoxGray
 
@@ -35,8 +35,8 @@ fun ControlBar(
 ) {
     val isFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
     if (!isFullScreen.value) {
-        Column(modifier = modifier.fillMaxWidth()){
-            Box(Modifier.fillMaxWidth()){
+        Column(modifier = modifier.fillMaxWidth()) {
+            Box(Modifier.fillMaxWidth()) {
                 if (leading != null) {
                     Row(Modifier.align(alignment = Alignment.CenterStart)) {
                         leading()
@@ -75,7 +75,7 @@ fun ControlBar(
                     }
                     CustomActionButton(modifier = Modifier.fillMaxHeight(), onClick = {
                         GlobalModel.closeApp.value = true
-                    }) {
+                    }, color = Color.Red) {
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "close",
@@ -95,11 +95,12 @@ fun ControlBar(
 fun CustomActionButton(
     modifier: Modifier = Modifier.wrapContentWidth(),
     onClick: () -> Unit,
+    color: Color = Color.Gray,
     content: @Composable () -> Unit
 ) {
-    var isHover by remember{mutableStateOf(0)}
-    val hoverColor = Color.Gray.copy(alpha = 0.8f)
-    val clickColor = Color.Gray.copy(alpha = 0.6f)
+    var isHover by remember { mutableStateOf(0) }
+    val hoverColor = color.copy(alpha = 0.8f)
+    val clickColor = color.copy(alpha = 0.6f)
     Box(
         modifier = modifier
             .onClick(onClick = onClick)

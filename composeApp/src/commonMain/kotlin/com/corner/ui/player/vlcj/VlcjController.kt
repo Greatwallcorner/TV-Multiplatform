@@ -4,7 +4,7 @@ import com.corner.bean.PlayerStateCache
 import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.viewmodel.GlobalModel
-import com.corner.database.History
+import com.corner.database.entity.History
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.MediaInfo
 import com.corner.ui.player.PlayState
@@ -49,10 +49,10 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         "--no-autoscale",                  // 禁用自动缩放
         "--no-disable-screensaver",        // 禁用屏保
         "--avcodec-fast",                  // 使用快速解码模式
-        "--network-caching=10000",          // 设置网络缓存为 10000ms
-        "--file-caching=3000",             // 设置文件缓存为 3000ms
-        "--live-caching=3000",             // 设置直播缓存为 3000ms
-        "--sout-mux-caching=10000"          // 设置输出缓存为 3000ms
+//        "--network-caching=5000",          // 设置网络缓存为 10000ms
+//        "--file-caching=3000",             // 设置文件缓存为 3000ms
+//        "--live-caching=3000",             // 设置直播缓存为 3000ms
+//        "--sout-mux-caching=10000"          // 设置输出缓存为 3000ms
     )
 
     internal lateinit var factory:MediaPlayerFactory
@@ -156,7 +156,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         override fun timeChanged(mediaPlayer: MediaPlayer, newTime: Long) {
             scope.launch {
                 if (history.value == null) {
-                    println("histiry is null")
+                    println("history is null")
                     return@launch
                 }
                 if (history.value?.ending != null && history.value?.ending != -1L && history.value?.ending!! <= newTime) component.nextEP()
@@ -170,7 +170,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             _state.update { it.copy(state = PlayState.ERROR, msg = "播放错误") }
             component.nextFlag()
             scope.launch {
-                component.updateHistory(history.value)
+                history.value?.let { component.updateHistory(it) }
                 try {
                     if (checkEnd(mediaPlayer)) {
                         return@launch
@@ -223,8 +223,11 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             SnackBar.postMsg("播放地址为空")
             return this
         }
+//        val optionsList = mutableListOf("http-user-agent=${Constants.ChromeUserAgent}", "http-referrer=www.bing.com")
+
+
         catch {
-            player?.media()?.prepare(url, ":http-user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.33")
+            player?.media()?.prepare(url, *arrayOf())
         }
         return this
     }

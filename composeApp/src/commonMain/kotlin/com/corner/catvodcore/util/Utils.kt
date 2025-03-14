@@ -2,10 +2,13 @@ package com.corner.catvodcore.util
 
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.database.Db
+import com.corner.util.Constants
+import com.google.common.net.HttpHeaders
 import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.io.FileInputStream
 import java.math.BigInteger
+import java.net.URI
 import java.security.MessageDigest
 import java.util.*
 
@@ -17,6 +20,18 @@ object Utils {
     fun isDownloadLink(str:String):Boolean{
         prefix.forEach { if(str.startsWith(it)) return true }
         return false
+    }
+
+    fun substring(text: String?): String? {
+        return substring(text, 1)
+    }
+
+    fun substring(text: String?, num: Int): String? {
+        return if (text != null && text.length > num) {
+            text.substring(0, text.length - num)
+        } else {
+            text
+        }
     }
 
     fun md5(str:String):String{
@@ -33,6 +48,45 @@ object Utils {
         }
 
     }
+
+    var webHttpHeaderMap: HashMap<String, String> = HashMap()
+    /**
+     * @param referer
+     * @param cookie 多个cookie name=value;name2=value2
+     * @return
+     */
+    fun webHeaders(referer: String, cookie: String): HashMap<String, String> {
+        val map = webHeaders(referer)
+        map[HttpHeaders.COOKIE] = cookie
+        return map
+    }
+
+    fun webHeaders(referer: String): HashMap<String, String> {
+        if (webHttpHeaderMap.isEmpty()) {
+                if (webHttpHeaderMap.isEmpty()) {
+                    webHttpHeaderMap = HashMap<String, String>()
+                    //                    webHttpHeaderMap.put(HttpHeaders.CONTENT_TYPE, ContentType.Application.INSTANCE.getJson().getContentType());
+//                    webHttpHeaderMap.put(HttpHeaders.ACCEPT_LANGUAGE, "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2");
+                    webHttpHeaderMap.put(
+                        org.apache.http.HttpHeaders.CONNECTION,
+                        "keep-alive"
+                    )
+                    webHttpHeaderMap.put(
+                        org.apache.http.HttpHeaders.USER_AGENT,
+                        Constants.ChromeUserAgent
+                    )
+                    webHttpHeaderMap.put(org.apache.http.HttpHeaders.ACCEPT, "*/*")
+                }
+        }
+        if(StringUtils.isNotBlank(referer)) {
+            val uri = URI.create(referer)
+            val u = uri.scheme + "://" + uri.host
+            webHttpHeaderMap[org.apache.http.HttpHeaders.REFERER] = u
+            webHttpHeaderMap[io.ktor.http.HttpHeaders.Origin] = u
+        }
+        return webHttpHeaderMap
+    }
+
 
     fun equals(name: String, md5: String): Boolean {
         return md5(Paths.jar(name)).equals(md5, ignoreCase = true)
@@ -75,7 +129,7 @@ object Utils {
     }
 
     fun getHistoryKey(key:String, id:String): String {
-        return key + Db.SYMBOL + id + Db.SYMBOL + ApiConfig.api.cfg.value?.id!!
+        return key + Db.SYMBOL + id + Db.SYMBOL + ApiConfig.api.cfg?.id!!
     }
 
     fun formatMilliseconds(milliseconds: Long): String {

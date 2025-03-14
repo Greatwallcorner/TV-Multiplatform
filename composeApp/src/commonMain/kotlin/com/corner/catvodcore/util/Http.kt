@@ -1,5 +1,6 @@
 package com.corner.catvodcore.util
 
+import com.corner.util.KtorClient
 import com.github.catvod.bean.Doh
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -76,6 +77,7 @@ class Http {
             get(){
                 val dispatcher = Dispatcher()
                 return OkHttpClient().newBuilder().connectTimeout(10, TimeUnit.SECONDS)
+                    .proxy(KtorClient.getProxy())
                     .readTimeout(10, TimeUnit.SECONDS).writeTimeout(10, TimeUnit.SECONDS)
                     .followRedirects(true)
                     .sslSocketFactory(getSSLSocketFactory(), getX509TrustManager()!!)

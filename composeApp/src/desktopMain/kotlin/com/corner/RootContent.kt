@@ -14,10 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.Children
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.fade
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.stackAnimation
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.arkivanov.decompose.extensions.compose.stack.Children
+import com.arkivanov.decompose.extensions.compose.stack.animation.fade
+import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.DetailScene
@@ -52,6 +52,7 @@ fun WindowScope.RootContent(
         }
 
     }
+    System.setProperty("native.encoding", "UTF-8")
 //    val isDebug = derivedStateOf { System.getProperty("org.gradle.project.buildType") == "debug" }
 
 
@@ -60,11 +61,6 @@ fun WindowScope.RootContent(
         Column(
             modifier = modifierVar.value
         ) {
-//            Button(onClick = {
-//                url.openUri("magnet:?xt=urn:btih:c2452263a6f43fdf9b0ef584d0c9dbe96c21d8a7&dn=%E9%9A%8F%E8%BA%AB%E5%8D%B1%E6%9C%BA.6v%E7%94%B5%E5%BD%B1%20%E5%9C%B0%E5%9D%80%E5%8F%91%E5%B8%83%E9%A1%B5%20www.6v123.net%20%E6%94%B6%E8%97%8F%E4%B8%8D%E8%BF%B7%E8%B7%AF")
-//            }){
-//                Text("下载")
-//            }
             Children(stack = component.childStack, modifier = modifier.background(Color.Transparent), animation = stackAnimation(fade())) {
                 when (val child = it.instance) {
                     is RootComponent.Child.VideoChild -> VideoScene(

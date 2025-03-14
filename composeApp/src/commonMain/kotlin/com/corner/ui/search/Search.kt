@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
@@ -23,10 +24,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowScope
 import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.extensions.compose.jetbrains.pages.Pages
-import com.arkivanov.decompose.extensions.compose.jetbrains.pages.PagesScrollAnimation
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.arkivanov.decompose.extensions.compose.pages.ChildPages
+import com.arkivanov.decompose.extensions.compose.pages.PagesScrollAnimation
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.value.update
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
@@ -46,25 +48,24 @@ enum class SearchPageType {
 
 @OptIn(ExperimentalDecomposeApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
-    Pages(
+fun WindowScope.SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
+    ChildPages(
         component.pages,
         onPageSelected = component::selectPage,
         modifier = Modifier.fillMaxSize(),
         scrollAnimation = PagesScrollAnimation.Default
     ) { _, p ->
         when (p) {
-            is DefaultSearchComponent -> SearchResult(
-                p, onClickBack = { onClickBack() },
-            ) {
-                onClickItem(it)
-            }
-
             is DefaultSearchPageComponent -> SearchPage(p, onClickBack = {
                 onClickBack()
             }, onSearch = { s ->
                 component.onSearch(s)
             })
+            is DefaultSearchComponent -> SearchResult(
+                p, onClickBack = { onClickBack() },
+            ) {
+                onClickItem(it)
+            }
         }
     }
 }
@@ -78,7 +79,7 @@ fun SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Un
 //}
 
 @Composable
-private fun SearchResult(
+private fun WindowScope.SearchResult(
     component: DefaultSearchComponent,
     onClickBack: () -> Unit,
     onClickItem: (Vod) -> Unit
@@ -98,11 +99,6 @@ private fun SearchResult(
         }
     }
 
-    DisposableEffect(result.value){
-        println("result 更改")
-        onDispose {  }
-    }
-
     DisposableEffect(searchText.value) {
         component.search(searchText.value, false)
         onDispose {
@@ -110,32 +106,34 @@ private fun SearchResult(
     }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-//        TopBar
-            ControlBar(leading = {
-                IconButton(
-                    modifier = Modifier
-                        .padding(start = 20.dp, end = 20.dp),
-                    onClick = {
-                        component.clear()
-                        onClickBack()
+            WindowDraggableArea {
+                //        TopBar
+                ControlBar(leading = {
+                    IconButton(
+                        modifier = Modifier
+                            .padding(start = 20.dp, end = 20.dp),
+                        onClick = {
+                            component.clear()
+                            onClickBack()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "back to video home",
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
                     }
-
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "back to video home",
-                        tint = MaterialTheme.colorScheme.onBackground
+                    SearchBar(
+                        component,
+                        Modifier,
+                        remember { FocusRequester() },
+                        searchText.value,
+                        onSearch = { s ->
+                            GlobalModel.keyword.update { s }
+                        }, model.value.isSearching
                     )
-                }
-                SearchBar(
-                    Modifier,
-                    remember { FocusRequester() },
-                    searchText.value,
-                    onSearch = { s ->
-                        GlobalModel.keyword.update { s }
-                    }, model.value.isSearching
-                )
-            }) {  }
+                }) { }
+            }
 //        Content
             Row {
                 Box(Modifier.fillMaxWidth(0.2f).fillMaxHeight()) {
@@ -161,9 +159,16 @@ private fun SearchResult(
                         }
                     }
                     Surface(Modifier.align(Alignment.BottomCenter).padding(vertical = 10.dp, horizontal = 8.dp)) {
-                        RatioBtn(Modifier.height(45.dp), text = if (showLoadMore.value) "加载更多" else "没有更多", onClick = {
-                            component.search( searchText.value, true)
-                        }, selected = false, loading = model.value.isSearching)
+                        RatioBtn(
+                            Modifier.height(45.dp),
+                            text = if (showLoadMore.value) "加载更多" else "没有更多",
+                            onClick = {
+                                component.search(searchText.value, true)
+                            },
+                            selected = false,
+                            loading = model.value.isSearching,
+                            enableTooltip = false
+                        )
                     }
                 }
                 Box(modifier = Modifier.fillMaxSize()) {

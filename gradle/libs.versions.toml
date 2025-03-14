@@ -1,12 +1,15 @@
 [versions]
-compose = "1.7.1"
-compose-plugin = "1.6.11"
+compose = "1.7.3"
 junit = "4.13.2"
-kotlin = "2.0.21"
+kotlin = "2.1.10"
 vlcj = "4.8.3"
 app-version = "1.2.5"
 sqldelight = "2.0.2"
 conveyor = "2.1"
+room = "2.7.0-alpha13"
+room-sqlite-bundled = "2.5.0-alpha13"
+ksp = "2.1.10-1.0.29"
+jupnp = "3.0.3"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -14,12 +17,23 @@ kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
-vlcj = {module = "uk.co.caprica:vlcj", version.ref = "vlcj"}
+vlcj = { module = "uk.co.caprica:vlcj", version.ref = "vlcj" }
+roomRuntime = { module = "androidx.room:room-runtime", version.ref = "room" }
+roomCompiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+roomGuava = { module = "androidx.room:room-guava", version.ref = "room" }
+roomKtx = { module = "androidx.room:room-ktx", version.ref = "room" }
+roomBundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "room-sqlite-bundled" }
+jupnp-bom = { module = "org.jupnp.bom:org.jupnp.bom.compile", version.ref = "jupnp" }
+jupnp-tool = { module = "org.jupnp.pom:tools", version.ref = "jupnp"}
+jupnp = { module = "org.jupnp:org.jupnp.support", version.ref = "jupnp" }
+
 
 [plugins]
-jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
-conveyor = { id = "dev.hydraulic.conveyor", version.ref = "conveyor"}
+conveyor = { id = "dev.hydraulic.conveyor", version.ref = "conveyor" }
+room = { id = "androidx.room", version.ref = "room" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

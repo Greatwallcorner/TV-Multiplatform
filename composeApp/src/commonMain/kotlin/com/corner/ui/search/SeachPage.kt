@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.*
@@ -22,7 +23,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import androidx.compose.ui.window.WindowScope
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.corner.bean.HotData
 import com.corner.ui.decompose.component.DefaultSearchPageComponent
 import com.corner.ui.scene.ControlBar
@@ -33,7 +35,7 @@ import com.corner.ui.scene.ExpandedText
  *热门推荐
  */
 @Composable
-fun SearchPage(component: DefaultSearchPageComponent, onClickBack: () -> Unit, onSearch: (String) -> Unit) {
+fun WindowScope.SearchPage(component: DefaultSearchPageComponent, onClickBack: () -> Unit, onSearch: (String) -> Unit) {
     val focusRequester = remember { FocusRequester() }
     val model = component.model.subscribeAsState()
 
@@ -44,22 +46,27 @@ fun SearchPage(component: DefaultSearchPageComponent, onClickBack: () -> Unit, o
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(modifier = Modifier.align(alignment = Alignment.TopStart)) {
             // TopBar
-            ControlBar(leading = {
-                Row(modifier = Modifier.align(Alignment.Start)/*.background(MaterialTheme.colors.background)*/.height(80.dp)) {
-                    IconButton(
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                            .padding(start = 20.dp, end = 20.dp),
-                        onClick = { onClickBack() }
+            WindowDraggableArea {
+                ControlBar(leading = {
+                    Row(
+                        modifier = Modifier.align(Alignment.Start)/*.background(MaterialTheme.colors.background)*/
+                            .height(80.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "back to video home",
-                            tint = MaterialTheme.colorScheme.onBackground
-                        )
+                        IconButton(
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                                .padding(start = 20.dp, end = 20.dp),
+                            onClick = { onClickBack() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                contentDescription = "back to video home",
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                        SearchBar(component.getSearchComponent(), Modifier, focusRequester, "", onSearch, false)
                     }
-                    SearchBar(Modifier, focusRequester, "", onSearch, false)
-                }
-            }, center = {})
+                }, center = {})
+            }
             Column(Modifier.fillMaxSize()) {
                 if (model.value.historyList.isNotEmpty()) {
                     Box(modifier = Modifier.fillMaxHeight(0.4f)) {
@@ -112,7 +119,13 @@ fun HotPanel(modifier: Modifier, hots: List<HotData>, onClick: (HotData) -> Unit
 @Composable
 fun HotItem(modifier: Modifier, hotData: HotData, onClick: (HotData) -> Unit) {
     TooltipArea(tooltip = {
-        Surface(modifier = Modifier.border(width = 2.dp, Color.Gray.copy(blue = 0.6f), shape = RoundedCornerShape(5.dp))) {
+        Surface(
+            modifier = Modifier.border(
+                width = 2.dp,
+                Color.Gray.copy(blue = 0.6f),
+                shape = RoundedCornerShape(5.dp)
+            )
+        ) {
             Column(
                 modifier = Modifier.fillMaxWidth(0.5f)
                     .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(5.dp))
@@ -120,7 +133,7 @@ fun HotItem(modifier: Modifier, hotData: HotData, onClick: (HotData) -> Unit) {
                     .clip(RoundedCornerShape(5.dp))
                     .padding(15.dp)
             ) {
-                if(hotData.comment.isNotEmpty()){
+                if (hotData.comment.isNotEmpty()) {
                     Text(hotData.comment, style = MaterialTheme.typography.headlineMedium)
                 }
                 Text(
@@ -141,7 +154,10 @@ fun HotItem(modifier: Modifier, hotData: HotData, onClick: (HotData) -> Unit) {
             Column(
                 modifier = modifier.padding(10.dp).wrapContentWidth(Alignment.CenterHorizontally).wrapContentHeight()
             ) {
-                Text(hotData.title, style = MaterialTheme.typography.headlineMedium.copy(fontSize = TextUnit(15f, TextUnitType.Sp)))
+                Text(
+                    hotData.title,
+                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = TextUnit(15f, TextUnitType.Sp))
+                )
                 ExpandedText(hotData.upinfo.trim(), 1, MaterialTheme.typography.bodyMedium)
             }
         }
@@ -193,7 +209,7 @@ fun HistoryPanel(modifier: Modifier, histories: Set<String>, onClick: (String) -
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.headlineMedium
         )
-        Box(){
+        Box() {
             val state = rememberLazyStaggeredGridState()
             LazyHorizontalStaggeredGrid(
                 rows = StaggeredGridCells.Adaptive(55.dp),

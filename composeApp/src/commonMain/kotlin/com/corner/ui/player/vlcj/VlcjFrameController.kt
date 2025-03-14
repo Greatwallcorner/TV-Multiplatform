@@ -4,7 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
-import com.corner.database.History
+import com.corner.database.entity.History
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.PlayerController
 import com.corner.ui.player.frame.FrameRenderer
@@ -50,7 +50,7 @@ class VlcjFrameController constructor(
     private val _bytes = MutableStateFlow<ByteArray?>(null)
     override val bytes = _bytes.asStateFlow()
 
-    val callbackSurFace = CallbackVideoSurface(object : BufferFormatCallback {
+    private val callbackSurFace = CallbackVideoSurface(object : BufferFormatCallback {
         override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
             info = ImageInfo.makeN32(sourceWidth, sourceHeight, ColorAlphaType.OPAQUE)
             return RV32BufferFormat(sourceWidth, sourceHeight)
@@ -114,7 +114,9 @@ class VlcjFrameController constructor(
         historyCollectJob = controller.scope.launch {
             delay(10)
             controller.history.collect {
-                controller.component.updateHistory(it)
+                if (it != null) {
+                    controller.component.updateHistory(it)
+                }
             }
         }
     }
@@ -132,6 +134,10 @@ class VlcjFrameController constructor(
 
     fun getPlayer(): MediaPlayer? {
         return controller.player
+    }
+
+    fun release() {
+        controller.factory.release()
     }
 
 }

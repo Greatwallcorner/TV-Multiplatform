@@ -1,7 +1,7 @@
 package com.corner.server.logic
 
 import com.corner.catvodcore.loader.JarLoader
-import com.corner.catvodcore.util.KtorClient
+import com.corner.util.KtorClient
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*

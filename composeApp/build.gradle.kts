@@ -5,17 +5,34 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.serialization)
-    alias(libs.plugins.sqldelight)
+//    alias(libs.plugins.sqldelight)
+    alias(libs.plugins.room)
+    alias(libs.plugins.ksp)
+    id("java")
 //    alias(libs.plugins.conveyor)
 }
 
-sqldelight {
-    databases {
-        create("Database") {
-            packageName.set("com.corner.database")
-        }
-    }
+room {
+    schemaDirectory("$projectDir/comminMain/schemas")
 }
+
+dependencies {
+//    listOf(
+////        "kspAndroid",
+////        "kspJvm",
+////        "kspIosSimulatorArm64",
+////        "kspIosX64",
+////        "kspIosArm64",
+//        "kspCommonMainMetadata",
+//    ).forEach {
+//        add(it, libs.roomCompiler)
+//    }
+    ksp(libs.roomCompiler)
+//    add("ksp", libs.roomCompiler)
+//    add("kspJvm", libs.roomCompiler)
+//    add("kspMingwX64", libs.roomCompiler)
+}
+
 
 kotlin {
     jvm("desktop")
@@ -23,12 +40,14 @@ kotlin {
     sourceSets {
         val desktopMain by getting
 
+
         commonMain.dependencies {
             val ktorVer = "3.0.1"
             val logbackVer = "1.3.14"
             val imageLoader = "1.9.0"
             val hutoolVer = "5.8.27"
 //            val kotlinVersion = extra["kotlin.version"] as String
+//            implementation(project(":CatVod"))
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -37,7 +56,15 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(compose.materialIconsExtended)
 
+//            implementation(libs.roomCompiler)
+            // room database access
+            implementation(libs.roomRuntime)
+            implementation(libs.roomGuava)
+            implementation(libs.roomKtx)
+            implementation(libs.roomBundled)
+
             api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+//            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
 
             // tool
             api("com.google.guava:guava:31.1-jre")
@@ -80,18 +107,17 @@ kotlin {
 
 
             // DLNA
-            implementation("org.jupnp.bom:org.jupnp.bom.compile:3.0.2")
-            implementation("org.jupnp:org.jupnp.support:3.0.2")
+            implementation(libs.jupnp.bom)
+            implementation(libs.jupnp)
 
-            api("com.arkivanov.decompose:decompose:2.2.2")
-            api("com.arkivanov.decompose:extensions-compose-jetbrains:2.2.2")
+            api("com.arkivanov.decompose:decompose:3.3.0")
+            api("com.arkivanov.decompose:extensions-compose:3.3.0")
             // Add the dependency, typically under the commonMain source set
-            api("com.arkivanov.essenty:lifecycle:1.3.0")
+            api("com.arkivanov.essenty:lifecycle:2.5.0")
         }
 
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
-            implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
             // Player
             implementation(libs.vlcj)
         }
@@ -106,7 +132,7 @@ compose.desktop {
         buildTypes.release.proguard {
 //            obfuscate.set(true)
             isEnabled.set(true)
-            version.set("7.4.0")
+            version.set("7.6.1")
             configurationFiles.from(project.file("src/desktopMain/rules.pro"))
         }
 
@@ -119,20 +145,20 @@ compose.desktop {
             vendor = "TV Multiplatform"
 
             modules(
-                "java.compiler",
-                "java.instrument",
+//                "java.compiler",
+//                "java.instrument",
                 "java.management",
-                "java.naming",
+//                "java.naming",
                 "java.net.http",
-                "java.rmi",
-                "java.security.jgss",
-                "java.sql",
-                "jdk.httpserver",
+//                "java.rmi",
+//                "java.security.jgss",
+//                "java.sql",
+//                "jdk.httpserver",
                 "jdk.unsupported",
             )
-            val dir = project.layout.projectDirectory.dir("src/desktopMain/resources/res")
+            val dir = project.layout.projectDirectory.dir("src/desktopMain/appResources")
             println(dir)
-            appResourcesRootDir.set(project.layout.projectDirectory.dir("src/desktopMain/resources/res"))
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("src/desktopMain/appResources"))
 //            app icons https://github.com/JetBrains/compose-multiplatform/tree/master/tutorials/Native_distributions_and_local_execution#app-icon
             windows {
                 iconFile.set(project.file("src/commonMain/resources/pic/icon-s.ico"))

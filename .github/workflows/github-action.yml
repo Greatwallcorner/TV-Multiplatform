@@ -104,6 +104,19 @@ jobs:
             **/*.dmg
             **/*.msi
           tag_name: ${{ needs.set-tag.outputs.tag }}
+      - name: Set up S3cmd cli tool
+        uses: s3-actions/s3cmd@v1.9.0
+        with:
+          provider: Cloudflare # default is linode
+          region: 'eu-central-1'
+          access_key: ${{ secrets.S3_ACCESS_KEY }}
+          secret_key: ${{ secrets.S3_SECRET_KEY }}
+      - name: set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: upload to s3 storage
+        run:
       - name: send telegram message
         uses: appleboy/telegram-action@master
         with:

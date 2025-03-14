@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.zIndex
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.value.update
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
@@ -55,7 +55,6 @@ import com.corner.util.isScrollingUp
 import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import javax.swing.Box
 
 @Composable
 fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> Unit) {
@@ -593,6 +592,7 @@ fun previewClassRow() {
 //    }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChooseHomeDialog(
     component: DefaultVideoComponent,
@@ -601,6 +601,12 @@ fun ChooseHomeDialog(
     onClick: (Site) -> Unit
 ) {
     val model = component.model.subscribeAsState()
+    val apiState = ApiConfig.apiFlow.collectAsState()
+//    val siteList by remember { mutableStateOf(ApiConfig.api.sites.toList()) }
+//    val sitesFlow = remember { MutableStateFlow(ApiConfig.api.sites.toList()) }
+//    val sites by sitesFlow.collectAsState()
+    val sites by derivedStateOf { apiState.value.sites.toList() }
+
     Dialog(
         Modifier
             .wrapContentWidth(Alignment.CenterHorizontally)
@@ -608,24 +614,63 @@ fun ChooseHomeDialog(
             .defaultMinSize(minWidth = 100.dp)
             .padding(20.dp), onClose = { onClose() }, showDialog = showDialog
     ) {
-        Box() {
+        Box {
             val lazyListState = rememberLazyListState(0)
             LazyColumn(
                 modifier = Modifier.padding(20.dp).wrapContentHeight(Alignment.CenterVertically),
                 state = lazyListState
             ) {
-                items(items = ApiConfig.api.sites.toList()) { item ->
-                    OutlinedButton(
-                        modifier = Modifier.width(180.dp),
-                        onClick = {
-                            SiteViewModel.viewModelScope.launch {
-                                ApiConfig.setHome(item)
-                                model.value.homeLoaded = false
-                                Db.Config.setHome(ApiConfig.api.url, ConfigType.SITE.ordinal, item.key)
+                items(items = sites) { item ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        OutlinedButton(
+                            modifier = Modifier.width(180.dp),
+                            onClick = {
+                                SiteViewModel.viewModelScope.launch {
+                                    ApiConfig.setHome(item)
+                                    model.value.homeLoaded = false
+                                    Db.Config.setHome(ApiConfig.api.url, ConfigType.SITE.ordinal, item.key)
+                                }
+                                onClick(item)
+                            }) {
+                            Text(item.name, textAlign = TextAlign.Center)
+                        }
+                        TooltipArea(tooltip = {Text("开启/禁用搜索", Modifier.background(MaterialTheme.colorScheme.background))}, delayMillis = 1000){
+                            IconButton(onClick = {
+                                component.changeSite {
+                                    if (item.isSearchable()) {
+                                        item.searchable = 0
+                                    } else {
+                                        item.searchable = 1
+                                    }
+                                    return@changeSite item
+                                }
+                            }) {
+                                if (item.isSearchable()) {
+                                    Icon(Icons.Default.Search, contentDescription = "enable search")
+                                } else {
+                                    Icon(Icons.Default.SearchOff, contentDescription = "disable search")
+                                }
                             }
-                            onClick(item)
-                        }) {
-                        Text(item.name, textAlign = TextAlign.Center)
+                        }
+                        TooltipArea(tooltip = {Text("开启/禁用换源", Modifier.background(MaterialTheme.colorScheme.background))}, delayMillis = 1000){
+                            IconButton(onClick = {
+                                component.changeSite {
+                                    if (item.isChangeable()) {
+                                        item.changeable = 0
+                                    } else {
+                                        item.changeable = 1
+                                    }
+                                    return@changeSite item
+                                }
+                            }) {
+                                if (item.isChangeable()) {
+                                    Icon(Icons.Default.Sync, contentDescription = "enable change")
+                                } else {
+                                    Icon(Icons.Default.SyncDisabled, contentDescription = "disable change")
+                                }
+                            }
+                        }
+
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package upnp
 
+import com.corner.util.play.Play
 import org.jupnp.model.types.UnsignedIntegerFourBytes
 import org.jupnp.support.avtransport.AbstractAVTransportService
 import org.jupnp.support.model.*
@@ -13,6 +14,7 @@ class TvAvTransportService: AbstractAVTransportService() {
     }
 
     override fun setAVTransportURI(instanceId: UnsignedIntegerFourBytes, currentURI: String, currentURIMetaData: String) {
+        Play.start(currentURI, "test")
         log.info("setAvTransportURI instance id: $instanceId currentURI: $currentURI currentURIMetaData: $currentURIMetaData")
     }
 

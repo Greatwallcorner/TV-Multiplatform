@@ -5,18 +5,40 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.update
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.database.Db
-import com.corner.database.History
+import com.corner.database.entity.History
+import com.corner.ui.decompose.BaseComponent
 import com.corner.ui.decompose.HistoryComponent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 
-class DefaultHistoryComponent(componentContext: ComponentContext):HistoryComponent, ComponentContext by componentContext {
-    private val _model = MutableValue(HistoryComponent.Model(
-        emptyList<History>().toMutableList()
-    ))
+class DefaultHistoryComponent(componentContext: ComponentContext) : HistoryComponent, BaseComponent(Dispatchers.IO),
+    ComponentContext by componentContext {
+    private val _model = MutableValue(
+        HistoryComponent.Model(
+            emptyList<History>().toMutableList()
+        )
+    )
 
     override val model: MutableValue<HistoryComponent.Model> = _model
     override fun fetchHistoryList() {
-        val list = Db.History.findAll(ApiConfig.api.cfg.value?.id)
-        _model.update { it.copy(historyList = list.toMutableList()) }
+        val listFlow = Db.History.findAll(ApiConfig.api.cfg?.id)
+        scope.launch {
+            val list = listFlow.firstOrNull() ?: emptyList<History>()
+            _model.update { it.copy(historyList = list.toMutableList()) }
+        }
+    }
+
+    fun clearHistory() {
+        scope.launch {
+            Db.History.deleteAll()
+        }
+    }
+
+    fun deleteBatchHistory(listOf: List<String>) {
+        scope.launch {
+            Db.History.deleteBatch(listOf)
+        }
     }
 
 

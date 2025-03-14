@@ -30,73 +30,81 @@ fun RatioBtn(
     onClick: () -> Unit,
     selected: Boolean,
     loading: Boolean = false,
-    tag: () -> Pair<Boolean, String> = { false to "" }
+    tag: () -> Pair<Boolean, String> = { false to "" },
+    enableTooltip: Boolean = true
+) {
+    if (enableTooltip) {
+        TooltipArea(
+            tooltip = {
+                // composable tooltip content
+                Surface(
+                    modifier = Modifier.shadow(4.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        text = text,
+                        modifier = Modifier.padding(10.dp),
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }, delayMillis = 600
+        ) {
+            ratioBtnContent(modifier, selected, onClick, loading, text, tag)
+        }
+    } else {
+        ratioBtnContent(modifier, selected, onClick, loading, text, tag)
+    }
+}
+
+@Composable
+private fun ratioBtnContent(
+    modifier: Modifier,
+    selected: Boolean,
+    onClick: () -> Unit,
+    loading: Boolean,
+    text: String,
+    tag: () -> Pair<Boolean, String>
 ) {
     Surface(
         border = BorderStroke(1.dp, Color.Gray.copy(0.6F)),
         shape = RoundedCornerShape(6.dp),
-        modifier = modifier
-            .shadow(1.dp)
-            .background(
+        modifier = modifier.shadow(1.dp).background(
                 if (selected) MaterialTheme.colorScheme.secondary else Color.Transparent,
                 shape = RoundedCornerShape(4.dp)
-            )
-            .clickable(
-                onClick = { onClick() },
-                enabled = !loading
+            ).clickable(
+                onClick = { onClick() }, enabled = !loading
             ),
     ) {
         Box() {
-            TooltipArea(
-                tooltip = {
-                    // composable tooltip content
-                    Surface(
-                        modifier = Modifier.shadow(4.dp),
-                        color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Text(
-                            text = text,
-                            modifier = Modifier.padding(10.dp),
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                },
-                delayMillis = 600
-            ) {
-                Text(
-                    text,
-                    modifier = Modifier.background(if (selected) MaterialTheme.colorScheme.secondary else Color.Transparent)
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp, horizontal = 10.dp),
-                    color = if (selected) MaterialTheme.colorScheme.onSecondary else Color.White,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
+            Text(
+                text,
+                modifier = Modifier.background(if (selected) MaterialTheme.colorScheme.secondary else Color.Transparent)
+                    .fillMaxWidth().padding(vertical = 8.dp, horizontal = 10.dp),
+                color = if (selected) MaterialTheme.colorScheme.onSecondary else Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
+            )
+            if (loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.CenterStart).padding(1.dp),
+                    color = Color.White,
+                    trackColor = Color.Gray
                 )
-                if (loading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .padding(1.dp),
-                        color = Color.White,
-                        trackColor = Color.Gray
-                    )
-                }
+            }
 
-                val tags = remember { tag() }
-                if (tags.first) {
-                    Text(
-                        tags.second,
-                        Modifier.background(if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary /*if (selected) Color.Blue.copy(0.5f) else MaterialTheme.colorScheme.onSecondary*/ ,
-                            shape = RoundedCornerShape(0.dp, 6.dp, 0.dp,6.dp))
-                            .align(Alignment.TopEnd)
-                            .border(1.dp, Color.Gray)
-                            .padding(3.dp)
-                            , maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        color = if (selected) Color.White else MaterialTheme.colorScheme.onSecondary /*if(selected) Color.Black else Color.White*/,
-                    )
-                }
+            val tags = remember { tag() }
+            if (tags.first) {
+                Text(
+                    tags.second,
+                    Modifier.background(
+                        if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary /*if (selected) Color.Blue.copy(0.5f) else MaterialTheme.colorScheme.onSecondary*/,
+                        shape = RoundedCornerShape(0.dp, 6.dp, 0.dp, 6.dp)
+                    ).align(Alignment.TopEnd).border(1.dp, Color.Gray).padding(3.dp),
+                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    color = if (selected) Color.White else MaterialTheme.colorScheme.onSecondary, /*if(selected) Color.Black else Color.White*/
+                )
             }
         }
     }

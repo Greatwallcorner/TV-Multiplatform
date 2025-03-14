@@ -48,8 +48,9 @@ object Paths {
     }
 
     fun db():String{
-        val path = userDataRoot().resolve("db").check().resolve("db.db")
-        return "jdbc:sqlite:${path}"
+        val path = userDataRoot().resolve("db").check().resolve("tv.db")
+        return path.path
+//        return "jdbc:sqlite:${path}"
     }
 
     fun local(jar: String): File {

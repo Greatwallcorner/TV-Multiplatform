@@ -1,7 +1,7 @@
 package com.corner.init
 
-import com.corner.catvodcore.util.KtorHeaderUrlFetcher
 import com.corner.catvodcore.util.Paths
+import com.corner.util.KtorHeaderUrlFetcher
 import com.seiko.imageloader.ImageLoader
 import com.seiko.imageloader.intercept.bitmapMemoryCacheConfig
 import com.seiko.imageloader.intercept.imageMemoryCacheConfig
@@ -24,11 +24,11 @@ fun generateImageLoader(): ImageLoader {
             }
             // cache 50 image
             imageMemoryCacheConfig {
-                maxSize(250)
+                maxSize(50)
             }
             // cache 50 painter
             painterMemoryCacheConfig {
-                maxSize(250)
+                maxSize(50)
             }
 
             diskCacheConfig {

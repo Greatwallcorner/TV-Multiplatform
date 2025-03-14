@@ -11,11 +11,16 @@ import com.corner.catvodcore.loader.JarLoader
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.database.Db
 import com.corner.database.appModule
+import com.corner.database.entity.Config
 import com.corner.server.KtorD
 import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
+import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.slf4j.LoggerFactory
 
@@ -23,6 +28,7 @@ import org.slf4j.LoggerFactory
 private val log = LoggerFactory.getLogger("Init")
 class Init {
     companion object {
+        private var instance: KoinApplication? = null
         suspend fun start() {
             showProgress()
             try {
@@ -44,13 +50,15 @@ class Init {
 
         fun stop(){
             KtorD.stop()
+            VlcJInit.release()
+            instance?.close()
         }
 
 
         private fun initKoin() {
-            startKoin {
+            instance = startKoin {
 //                logger()
-                modules(appModule())
+                modules(appModule)
             }
         }
     }
@@ -66,13 +74,17 @@ fun initConfig() {
 
     val vod = SettingStore.getSettingItem(SettingType.VOD.id)
     if(StringUtils.isBlank(vod)) return
+    var siteConfig:Config?
     // todo 清空点播设置后 仍然可以在数据库中查询到旧的配置
-    val siteConfig = Db.Config.findOneByType(ConfigType.SITE.ordinal.toLong()) ?: return
+    runBlocking { withContext(Dispatchers.IO){
+        siteConfig = Db.Config.findOneByType(ConfigType.SITE.ordinal.toLong())
+    } }
+    if(siteConfig == null) return
     try {
-        ApiConfig.parseConfig(siteConfig, false).init()
+        ApiConfig.parseConfig(siteConfig!!, false).init()
     } catch (e: Exception) {
         log.error("initConfig error 尝试使用json解析", e)
-        ApiConfig.parseConfig(siteConfig, true).init()
+        ApiConfig.parseConfig(siteConfig!!, true).init()
     }
     log.info("initConfig end")
 }

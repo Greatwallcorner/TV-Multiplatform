@@ -9,8 +9,14 @@ import com.corner.catvod.enum.bean.Site
 import io.ktor.util.*
 import kotlinx.coroutines.Job
 import org.apache.commons.lang3.StringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
+
+fun Any.thisLogger():Logger{
+    return LoggerFactory.getLogger(this::class.java)
+}
 
 fun Site.isEmpty():Boolean{
     return key.isEmpty() || name.isEmpty()
