@@ -19,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,7 +30,10 @@ import com.corner.catvodcore.util.Utils
 import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.vlcj.VlcjFrameController
 import com.corner.util.formatTimestamp
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import tv_multiplatform.composeapp.generated.resources.Res
+import tv_multiplatform.composeapp.generated.resources.speed
 import kotlin.math.roundToLong
 
 @Composable
@@ -154,7 +156,7 @@ fun Speed(
             fontSize = TextUnit(12f, TextUnitType.Sp)),
         leadingIcon = {
             Icon(
-                painter = painterResource("pic/speed.svg"),
+                painter = painterResource(Res.drawable.speed),
                 contentDescription = "Speed",
                 modifier = Modifier.size(18.dp),
                 tint = MaterialTheme.colorScheme.primary

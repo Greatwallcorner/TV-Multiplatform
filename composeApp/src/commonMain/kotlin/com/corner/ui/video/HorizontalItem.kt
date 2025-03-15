@@ -11,11 +11,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.corner.catvod.enum.bean.Vod
 import com.seiko.imageloader.ui.AutoSizeImage
+import org.jetbrains.compose.resources.painterResource
+import tv_multiplatform.composeapp.generated.resources.Res
+import tv_multiplatform.composeapp.generated.resources.empty
 
 @Composable
 fun HorizontalItem(modifier: Modifier, vod:Vod, onClick:(Vod)->Unit){
@@ -29,8 +31,8 @@ fun HorizontalItem(modifier: Modifier, vod:Vod, onClick:(Vod)->Unit){
                 modifier = Modifier/*.height(150.dp).width(130.dp)*/,
                 contentDescription = vod.vodName,
                 contentScale = ContentScale.Fit,
-                placeholderPainter = { painterResource("/pic/empty.png") },
-                errorPainter = { painterResource("/pic/empty.png") })
+                placeholderPainter = { painterResource(Res.drawable.empty) },
+                errorPainter = { painterResource(Res.drawable.empty) })
             Spacer(Modifier.size(15.dp))
             Text(vod.vodName ?: "", modifier = Modifier
                 .align(Alignment.CenterVertically)

@@ -1,6 +1,7 @@
 package com.corner.catvodcore.bean
 
 import com.corner.catvod.enum.bean.Vod
+import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
 import com.corner.catvodcore.util.JsonStrToMapSerializer
 import com.corner.catvodcore.util.ToStringSerializer
 import kotlinx.serialization.SerialName
@@ -56,7 +57,9 @@ class Result {
 }
 
 fun Result.detailIsEmpty():Boolean{
-    return list.isEmpty() || list[0].vodFlags[0]?.episodes?.isEmpty() == true
+    if(list.isEmpty()){return true}
+    if(list[0].isEmpty()) return false // 应对提供ID的token验证场景
+    return list[0].vodFlags[0]?.episodes?.isEmpty() == true
 }
 
 fun Result.playResultIsEmpty():Boolean{

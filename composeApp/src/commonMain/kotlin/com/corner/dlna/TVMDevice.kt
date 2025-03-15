@@ -32,7 +32,7 @@ fun createIcons(): Array<Icon> {
             68,
             24,
             "images/icon-s.png",
-            TVMDevice::class.java.getResourceAsStream("/pic/TV-icon-s.png")
+            TVMDevice::class.java.getResourceAsStream("/composeResources/drawable/TV-icon-s.png")
         )
     )
     list.add(
@@ -42,7 +42,7 @@ fun createIcons(): Array<Icon> {
             248,
             24,
             "images/icon-x.png",
-            TVMDevice::class.java.getResourceAsStream("/pic/TV-icon-x.png")
+            TVMDevice::class.java.getResourceAsStream("/composeResources/drawable/TV-icon-x.png")
         )
     )
     list.add(
@@ -52,7 +52,7 @@ fun createIcons(): Array<Icon> {
             40,
             24,
             "images/icon-xs.png",
-            TVMDevice::class.java.getResourceAsStream("/pic/TV-icon-xs.png")
+            TVMDevice::class.java.getResourceAsStream("/composeResources/drawable/TV-icon-xs.png")
         )
     )
     return list.toTypedArray()

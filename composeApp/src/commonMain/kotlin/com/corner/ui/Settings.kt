@@ -30,7 +30,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -54,6 +53,9 @@ import com.corner.ui.scene.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
+import tv_multiplatform.composeapp.generated.resources.Res
+import tv_multiplatform.composeapp.generated.resources.avatar
 import java.awt.Desktop
 import java.io.File
 import java.net.URI
@@ -478,7 +480,7 @@ fun AboutDialog(modifier: Modifier, showAboutDialog: Boolean, onClose: () -> Uni
                 ) {
                     Column {
                         Image(
-                            painter = painterResource("/pic/avatar.png"),
+                            painter = painterResource(Res.drawable.avatar),
                             contentDescription = "avatar",
                             contentScale = ContentScale.Fit,
                             modifier = Modifier.padding(8.dp)

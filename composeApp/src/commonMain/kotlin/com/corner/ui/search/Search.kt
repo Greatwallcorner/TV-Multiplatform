@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import com.arkivanov.decompose.ExperimentalDecomposeApi
@@ -40,6 +39,9 @@ import com.corner.ui.decompose.component.DefaultSearchPagesComponent
 import com.corner.ui.scene.ControlBar
 import com.corner.ui.scene.RatioBtn
 import com.corner.ui.video.VideoItem
+import org.jetbrains.compose.resources.painterResource
+import tv_multiplatform.composeapp.generated.resources.Res
+import tv_multiplatform.composeapp.generated.resources.nothing
 
 enum class SearchPageType {
     page,
@@ -175,7 +177,7 @@ private fun WindowScope.SearchResult(
                     if (currentVodList.value.isEmpty()) {
                         Image(
                             modifier = Modifier.align(Alignment.Center),
-                            painter = painterResource("/pic/nothing.png"),
+                            painter = painterResource(Res.drawable.nothing),
                             contentDescription = "nothing here",
                             contentScale = ContentScale.Crop
                         )
