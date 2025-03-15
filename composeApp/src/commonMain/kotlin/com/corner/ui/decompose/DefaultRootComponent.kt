@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.*
 import com.arkivanov.decompose.value.Value
 import com.corner.catvod.enum.bean.Vod
+import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
 import com.corner.catvodcore.viewmodel.GlobalModel
 import com.corner.ui.decompose.component.*
 import kotlinx.serialization.Serializable
@@ -60,6 +61,7 @@ class DefaultRootComponent(componentContext: ComponentContext): RootComponent, C
     }
 
     override fun showDetail(vod: Vod, fromSearch:Boolean) {
+        if(vod.isEmpty()) return
         GlobalModel.chooseVod.value = vod
         GlobalModel.detailFromSearch = fromSearch
         navigation.bringToFront(Config.Detail)
