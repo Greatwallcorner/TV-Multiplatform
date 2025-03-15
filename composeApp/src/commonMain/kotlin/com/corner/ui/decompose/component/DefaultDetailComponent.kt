@@ -118,6 +118,8 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 model.update { it.copy(isLoading = true) }
                 val dt = SiteViewModel.detailContent(chooseVod.site?.key ?: "", chooseVod.vodId)
                 model.update { it.copy(isLoading = false) }
+                // id为空不执行后续代码
+                if(chooseVod.vodId.isBlank()) return@launch
                 if (dt == null || dt.detailIsEmpty()) {
                     quickSearch()
                 } else {

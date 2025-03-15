@@ -140,10 +140,11 @@ class DefaultVideoComponent(componentContext: ComponentContext) : VideoComponent
                             homeVodResult = list,
                             currentClass = currentClass,
                             classList = classList,
-                            filtersMap = filtersMap
+                            filtersMap = filtersMap,
+                            currentFilters = getFilters(currentClass!!)
                         )
                     }
-                    _model.update { it.copy(currentFilters = getFilters(currentClass!!)) }
+//                    _model.update { it.copy(currentFilters = getFilters(currentClass!!)) }
                 }
             } catch (e: Exception) {
                 log.error("homeLoad", e)
