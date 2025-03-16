@@ -188,7 +188,7 @@ fun WindowScope.VideoScene(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
                             itemsIndexed(list.value, key = { i, item -> item.vodId + item.vodName + i }) { _, item ->
-                                VideoItem(Modifier.animateItemPlacement(), item, false) {
+                                VideoItem(Modifier.animateItem(), item, false) {
                                     if (item.isFolder()) {
                                         component.clickFolder(it)
                                     } else {

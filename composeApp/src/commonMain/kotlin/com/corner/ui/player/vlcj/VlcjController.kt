@@ -74,7 +74,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         defferredEffects.clear()
     }
 
-    val stateListener = object : MediaPlayerEventAdapter() {
+    private val stateListener = object : MediaPlayerEventAdapter() {
         override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
             log.info("播放器初始化完成")
             playerReady = true
@@ -164,6 +164,8 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             }
             _state.update { it.copy(timestamp = newTime) }
         }
+
+//        over
 
         override fun error(mediaPlayer: MediaPlayer?) {
             log.error("播放错误: ${mediaPlayer?.media()?.info()?.mrl()}")
