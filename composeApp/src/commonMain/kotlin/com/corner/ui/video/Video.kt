@@ -29,7 +29,6 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -55,6 +54,10 @@ import com.corner.util.isScrollingUp
 import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
+import tv_multiplatform.composeapp.generated.resources.Res
+import tv_multiplatform.composeapp.generated.resources.empty
+import tv_multiplatform.composeapp.generated.resources.folder_back
 
 @Composable
 fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> Unit) {
@@ -69,7 +72,7 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
             if (vod.isFolder()) {
                 Image(
                     modifier = modifier,
-                    painter = painterResource("/pic/folder-back.png"),
+                    painter = painterResource(Res.drawable.folder_back),
                     contentDescription = "This is a folder ${vod.vodName}",
                     contentScale = ContentScale.Fit
                 )
@@ -79,8 +82,8 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
                     modifier = picModifier,
                     contentDescription = vod.vodName,
                     contentScale = ContentScale.Crop,
-                    placeholderPainter = { painterResource("/pic/empty.png") },
-                    errorPainter = { painterResource("/pic/empty.png") })
+                    placeholderPainter = { painterResource(Res.drawable.empty) },
+                    errorPainter = { painterResource(Res.drawable.empty) })
             }
             Box(Modifier.align(Alignment.BottomCenter)) {
                 ToolTipText(
@@ -185,7 +188,7 @@ fun WindowScope.VideoScene(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
                             itemsIndexed(list.value, key = { i, item -> item.vodId + item.vodName + i }) { _, item ->
-                                VideoItem(Modifier.animateItemPlacement(), item, false) {
+                                VideoItem(Modifier.animateItem(), item, false) {
                                     if (item.isFolder()) {
                                         component.clickFolder(it)
                                     } else {

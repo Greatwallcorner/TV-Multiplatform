@@ -60,6 +60,7 @@ class DefaultRootComponent(componentContext: ComponentContext): RootComponent, C
     }
 
     override fun showDetail(vod: Vod, fromSearch:Boolean) {
+        if(vod.vodId.isBlank()) return
         GlobalModel.chooseVod.value = vod
         GlobalModel.detailFromSearch = fromSearch
         navigation.bringToFront(Config.Detail)

@@ -1,5 +1,5 @@
 [versions]
-compose = "1.7.3"
+compose = "1.8.0-alpha04"
 junit = "4.13.2"
 kotlin = "2.1.10"
 vlcj = "4.8.3"

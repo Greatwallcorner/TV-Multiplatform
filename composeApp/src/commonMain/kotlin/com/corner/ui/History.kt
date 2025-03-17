@@ -20,7 +20,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -38,6 +37,9 @@ import com.corner.ui.scene.hideProgress
 import com.corner.ui.scene.showProgress
 import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
+import tv_multiplatform.composeapp.generated.resources.Res
+import tv_multiplatform.composeapp.generated.resources.empty
 
 @Composable
 fun HistoryItem(
@@ -63,8 +65,8 @@ fun HistoryItem(
                     modifier = Modifier.height(220.dp),
                     contentDescription = history.vodName,
                     contentScale = ContentScale.Crop,
-                    placeholderPainter = { painterResource("/pic/empty.png") },
-                    errorPainter = { painterResource("/pic/empty.png") })
+                    placeholderPainter = { painterResource(Res.drawable.empty) },
+                    errorPainter = { painterResource(Res.drawable.empty) })
                 Text(
                     text = history.vodName!!,
                     modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))

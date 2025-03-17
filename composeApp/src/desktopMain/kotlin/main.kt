@@ -9,7 +9,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
@@ -32,7 +31,10 @@ import com.corner.util.SysVerUtil
 import com.seiko.imageloader.LocalImageLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
 import org.slf4j.LoggerFactory
+import tv_multiplatform.composeapp.generated.resources.Res
+import tv_multiplatform.composeapp.generated.resources.TV_icon_s
 import java.awt.Dimension
 
 
@@ -73,7 +75,7 @@ fun main() {
         val contextMenuRepresentation =
             if (isSystemInDarkTheme()) DarkDefaultContextMenuRepresentation else LightDefaultContextMenuRepresentation
         Window(
-            onCloseRequest = ::exitApplication, icon = painterResource("pic/TV-icon-s.png"), title = "TV",
+            onCloseRequest = ::exitApplication, icon = painterResource(Res.drawable.TV_icon_s), title = "TV",
             state = windowState,
             undecorated = true,
             transparent = false,

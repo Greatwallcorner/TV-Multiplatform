@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -29,6 +28,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.corner.catvodcore.enum.Menu
+import org.jetbrains.compose.resources.painterResource
+import tv_multiplatform.composeapp.generated.resources.Res
+import tv_multiplatform.composeapp.generated.resources.nothing
 
 private var showProgress by mutableStateOf(false)
 
@@ -80,8 +82,8 @@ fun emptyShow(modifier: Modifier = Modifier, onRefresh: (() -> Unit)? = null) {
     Column(modifier.fillMaxWidth()/*.align(Alignment.CenterHorizontally)*/) {
         Image(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            painter = painterResource("/pic/nothing.png"),
-            contentDescription = "/icon/nothing here",
+            painter = painterResource(Res.drawable.nothing),
+            contentDescription = "nothing here",
             contentScale = ContentScale.Fit
         )
         onRefresh?.let {

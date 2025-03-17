@@ -31,7 +31,6 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -55,6 +54,9 @@ import com.corner.util.play.Play
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
+import org.jetbrains.compose.resources.painterResource
+import tv_multiplatform.composeapp.generated.resources.Res
+import tv_multiplatform.composeapp.generated.resources.TV_icon_x
 
 
 @Composable
@@ -161,7 +163,7 @@ fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit)
                         ) {
                             Image(
                                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                                painter = painterResource("/pic/TV-icon-x.png"),
+                                painter = painterResource(Res.drawable.TV_icon_x),
                                 contentDescription = "nothing here",
                                 contentScale = ContentScale.Crop
                             )
