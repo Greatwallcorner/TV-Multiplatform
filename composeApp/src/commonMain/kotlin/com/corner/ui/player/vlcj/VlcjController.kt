@@ -43,19 +43,9 @@ class VlcjController(val component: DetailComponent) : PlayerController {
     override var tip = MutableStateFlow("")
     override var history: MutableStateFlow<History?> = MutableStateFlow(null)
     var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    private val vlcjArgs = listOf(
-        "--no-video-title-show",           // 禁用视频标题显示
-        "--no-snapshot-preview",           // 禁用快照预览
-        "--no-autoscale",                  // 禁用自动缩放
-        "--no-disable-screensaver",        // 禁用屏保
-        "--avcodec-fast",                  // 使用快速解码模式
-//        "--network-caching=5000",          // 设置网络缓存为 10000ms
-//        "--file-caching=3000",             // 设置文件缓存为 3000ms
-//        "--live-caching=3000",             // 设置直播缓存为 3000ms
-//        "--sout-mux-caching=10000"          // 设置输出缓存为 3000ms
-    )
+    private val vlcjArgs = listOf("-v")
 
-    internal lateinit var factory:MediaPlayerFactory
+    internal lateinit var factory: MediaPlayerFactory
 
     override fun doWithMediaPlayer(block: (MediaPlayer) -> Unit) {
         player?.let {
@@ -84,15 +74,23 @@ class VlcjController(val component: DetailComponent) : PlayerController {
 
         override fun videoOutput(mediaPlayer: MediaPlayer?, newCount: Int) {
             val trackInfo = mediaPlayer?.media()?.info()?.videoTracks()?.first()
-            if(trackInfo != null){
-                _state.update { it.copy(mediaInfo = MediaInfo(url = mediaPlayer.media()?.info()?.mrl() ?: "", height = trackInfo.height(), width = trackInfo.width())) }
+            if (trackInfo != null) {
+                _state.update {
+                    it.copy(
+                        mediaInfo = MediaInfo(
+                            url = mediaPlayer.media()?.info()?.mrl() ?: "",
+                            height = trackInfo.height(),
+                            width = trackInfo.width()
+                        )
+                    )
+                }
             }
         }
 
         override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
-            if(newCache != 100F){
+            if (newCache != 100F) {
                 _state.update { it.copy(state = PlayState.BUFFERING, bufferProgression = newCache) }
-            }else{
+            } else {
                 _state.update { it.copy(state = PlayState.PLAY, bufferProgression = newCache) }
             }
         }
@@ -188,7 +186,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             try {
                 val len = mediaPlayer?.status()?.length() ?: 0
                 println("playable: " + mediaPlayer?.status()?.isPlayable)
-                if(mediaPlayer?.status()?.isPlayable == false){
+                if (mediaPlayer?.status()?.isPlayable == false) {
                     return true
                 }
 //                if (len <= 0 /*|| mediaPlayer?.status()?.time() != len*/ || mediaPlayer?.status()?.isPlayable == false) {
@@ -226,10 +224,14 @@ class VlcjController(val component: DetailComponent) : PlayerController {
             return this
         }
 //        val optionsList = mutableListOf("http-user-agent=${Constants.ChromeUserAgent}", "http-referrer=www.bing.com")
+        val optionsList = mutableListOf("http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0")
 
 
         catch {
-            player?.media()?.prepare(url, *arrayOf())
+            player?.media()?.prepare(url, *buildList {
+                add("http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0")
+                add("http-referrer=https://www.cfkj86.com")
+            }.toTypedArray())
         }
         return this
     }
