@@ -230,7 +230,6 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         catch {
             player?.media()?.prepare(url, *buildList {
                 add("http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0")
-                add("http-referrer=https://www.cfkj86.com")
             }.toTypedArray())
         }
         return this
