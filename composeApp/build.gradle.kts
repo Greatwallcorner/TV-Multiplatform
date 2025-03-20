@@ -136,7 +136,7 @@ compose.desktop {
             configurationFiles.from(project.file("src/desktopMain/rules.pro"))
         }
 
-        jvmArgs("-Dfile.encoding=UTF-8")
+        jvmArgs("-Dfile.encoding=UTF-8 -Dsun.net.http.allowRestrictedHeaders=true")
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
