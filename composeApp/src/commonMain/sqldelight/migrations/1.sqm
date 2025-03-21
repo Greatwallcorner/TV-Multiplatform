@@ -1,1 +1,0 @@
-ALTER TABLE Site ADD COLUMN config_id INTEGER;
