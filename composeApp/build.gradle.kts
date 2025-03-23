@@ -5,32 +5,17 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.serialization)
-//    alias(libs.plugins.sqldelight)
     alias(libs.plugins.room)
     alias(libs.plugins.ksp)
-    id("java")
 //    alias(libs.plugins.conveyor)
 }
 
 room {
-    schemaDirectory("$projectDir/comminMain/schemas")
+    schemaDirectory("$projectDir/src/commonMain/schemas")
 }
 
 dependencies {
-//    listOf(
-////        "kspAndroid",
-////        "kspJvm",
-////        "kspIosSimulatorArm64",
-////        "kspIosX64",
-////        "kspIosArm64",
-//        "kspCommonMainMetadata",
-//    ).forEach {
-//        add(it, libs.roomCompiler)
-//    }
     ksp(libs.roomCompiler)
-//    add("ksp", libs.roomCompiler)
-//    add("kspJvm", libs.roomCompiler)
-//    add("kspMingwX64", libs.roomCompiler)
 }
 
 
