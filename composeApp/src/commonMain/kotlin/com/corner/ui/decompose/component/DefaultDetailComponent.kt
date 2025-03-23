@@ -27,6 +27,7 @@ import com.corner.util.Constants
 import com.corner.util.cancelAll
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.datetime.Clock
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CopyOnWriteArrayList
@@ -87,7 +88,7 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
     override fun updateHistory(it: History) {
         if (StringUtils.isNotBlank(model.value.detail?.site?.key)) {
             scope.launch {
-                Db.History.update(it)
+                Db.History.update(it.copy(createTime = Clock.System.now().toEpochMilliseconds()))
             }
             //todo 清理
 //            Db.History.(
@@ -305,7 +306,11 @@ class DefaultDetailComponent(componentContext: ComponentContext) : DetailCompone
                 historyDeferred.await()
             }
             var history = historyDeferred.getCompleted()
-            if (history == null) scope.launch { Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName?:"") }
+            if (history == null) {
+                scope.launch {
+                    controller.setControllerHistory(Db.History.create(detail, detail.currentFlag?.flag!!, detail.vodName?:""))
+                }
+            }
             else {
                 if (model.value.currentEp != null && !model.value.currentEp?.name.equals(history.vodRemarks) && history.position != null) {
                     history = history.copy(position = 0L)

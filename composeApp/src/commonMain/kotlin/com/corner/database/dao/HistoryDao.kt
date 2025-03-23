@@ -20,19 +20,23 @@ interface HistoryDao {
     @Insert
     suspend fun save(history: History)
 
-    suspend fun create(vod:Vod, flag:String, vodRemarks: String){
+    suspend fun create(vod:Vod, flag:String, vodRemarks: String): History {
         val historyKey = vod.site?.key + Db.SYMBOL + vod.vodId + Db.SYMBOL + ApiConfig.api.cfg?.id!!
-        val history = findHistory(historyKey)
+        var history = findHistory(historyKey)
         if(history == null){
-            save(History(key = historyKey,
-                vodPic =vod.vodPic ?:"",
+            history = History(
+                key = historyKey,
+                vodPic = vod.vodPic ?: "",
                 vodName = vod.vodName!!,
                 vodFlag = flag,
                 vodRemarks = vodRemarks,
                 episodeUrl = vod.vodPlayUrl!!,
                 cid = ApiConfig.api.cfg?.id!!,
-                createTime = System.currentTimeMillis(),))
+                createTime = System.currentTimeMillis(),
+            )
+            save(history)
         }
+        return history
     }
 
     @Query("SELECT * FROM History where cid = :cId order by createTime desc")
