@@ -47,6 +47,9 @@ kotlin {
             implementation(libs.roomGuava)
             implementation(libs.roomKtx)
             implementation(libs.roomBundled)
+            implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.androidx.navigation.compose)
 
             api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 //            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
