@@ -112,7 +112,6 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WindowScope.VideoScene(
     vm: VideoViewModel,

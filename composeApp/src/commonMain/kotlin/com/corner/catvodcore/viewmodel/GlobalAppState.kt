@@ -8,7 +8,6 @@ import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import org.jupnp.UpnpService
 
 object GlobalAppState{
     val showProgress = MutableStateFlow(false)
@@ -21,7 +20,7 @@ object GlobalAppState{
     val closeApp = MutableStateFlow<Boolean>(false)
     var videoFullScreen = MutableStateFlow<Boolean>(false)
         private set
-    var upnpService = mutableStateOf<UpnpService?>(null)
+//    var upnpService = mutableStateOf<UpnpService?>(null)
 
     fun clearHome(){
         home.value = Site.get("","")

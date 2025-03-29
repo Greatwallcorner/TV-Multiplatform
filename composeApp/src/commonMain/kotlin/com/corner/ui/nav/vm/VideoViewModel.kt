@@ -20,7 +20,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
@@ -50,8 +49,8 @@ class VideoViewModel: BaseViewModel() {
         }
 
         scope.launch {
-            GlobalAppState.hotList.onEach {
-                if (it.isEmpty()) return@onEach
+            GlobalAppState.hotList.collect {
+                if (it.isEmpty()) return@collect
                 searchBarPrompt()
             }
         }

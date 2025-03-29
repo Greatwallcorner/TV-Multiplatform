@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.window.WindowScope
+import com.corner.bean.SettingEnable
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.bean.parseAsSettingEnable
@@ -61,13 +62,13 @@ import java.awt.Desktop
 import java.io.File
 import java.net.URI
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WindowScope.SettingScene(component: SettingViewModel, onClickBack: () -> Unit) {
-    val model = component.state.collectAsState()
+fun WindowScope.SettingScene(vm: SettingViewModel, onClickBack: () -> Unit) {
+    val model = vm.state.collectAsState()
     var showAboutDialog by remember { mutableStateOf(false) }
+
     DisposableEffect("setting") {
-        component.sync()
+        vm.sync()
         onDispose {
             SettingStore.write()
         }
@@ -116,7 +117,7 @@ fun WindowScope.SettingScene(component: SettingViewModel, onClickBack: () -> Uni
                     val vodConfigList = derivedStateOf { model.value.dbConfigList }
                     LaunchedEffect(isExpand.value) {
                         if (isExpand.value) {
-                            component.getConfigAll()
+                            vm.getConfigAll()
                             focusRequester.requestFocus()
                         }
                     }
@@ -130,7 +131,7 @@ fun WindowScope.SettingScene(component: SettingViewModel, onClickBack: () -> Uni
                                     onValueChange = {
                                         SettingStore.setValue(SettingType.VOD, it)
                                         focusRequester.requestFocus()
-                                        component.sync()
+                                        vm.sync()
                                     },
                                     maxLines = 1,
                                     enabled = true,
@@ -167,7 +168,7 @@ fun WindowScope.SettingScene(component: SettingViewModel, onClickBack: () -> Uni
                                             isExpand.value = false
                                         }, trailingIcon = {
                                             IconButton(onClick = {
-                                                component.deleteHistoryById(it)
+                                                vm.deleteHistoryById(it)
                                             }) {
                                                 Icon(Icons.Default.Close, "delete the config")
                                             }
@@ -188,7 +189,7 @@ fun WindowScope.SettingScene(component: SettingViewModel, onClickBack: () -> Uni
                                         count = logLevel.size
                                     ),
                                     onClick = { SettingStore.setValue(SettingType.LOG, label)
-                                        component.sync()
+                                        vm.sync()
                                         SnackBar.postMsg("重启生效") },
                                     selected = label == current.value,
                                     label = { Text(label) }
@@ -205,7 +206,7 @@ fun WindowScope.SettingScene(component: SettingViewModel, onClickBack: () -> Uni
                 item {
                     SettingItemTemplate("播放器") {
                         val playerSetting = derivedStateOf {
-                            model.value.settingList.getSetting(SettingType.PLAYER)?.value!!.parseAsSettingEnable()
+                            model.value.settingList.getSetting(SettingType.PLAYER)?.value?.parseAsSettingEnable() ?: SettingEnable.Default()
                         }
                         Box {
                             Row {
@@ -213,7 +214,7 @@ fun WindowScope.SettingScene(component: SettingViewModel, onClickBack: () -> Uni
                                     playerSetting.value.isEnabled, onCheckedChange = {
                                         SettingStore.setValue(SettingType.PLAYER, "$it#${playerSetting.value.value}")
                                         if (it) SnackBar.postMsg("使用内置播放器") else SnackBar.postMsg("使用外部播放器 请配置播放器路径")
-                                        component.sync()
+                                        vm.sync()
                                     }, Modifier.width(100.dp).padding(end = 20.dp).align(Alignment.CenterVertically),
                                     thumbContent = {
                                         Box(Modifier.size(80.dp)) {
@@ -236,7 +237,7 @@ fun WindowScope.SettingScene(component: SettingViewModel, onClickBack: () -> Uni
                                                 }
                                             }
                                         }
-                                        component.sync()
+                                        vm.sync()
                                     },
                                     maxLines = 1,
                                     enabled = true,
@@ -251,17 +252,17 @@ fun WindowScope.SettingScene(component: SettingViewModel, onClickBack: () -> Uni
                 item {
                     SettingItemTemplate("代理") {
                         val proxySetting = derivedStateOf {
-                            model.value.settingList.getSetting(SettingType.PROXY)?.value!!.parseAsSettingEnable()
+                            model.value.settingList.getSetting(SettingType.PROXY)?.value?.parseAsSettingEnable() ?: SettingEnable.Default()
                         }
                         Row {
                             Switch(proxySetting.value.isEnabled, onCheckedChange = {
                                 SettingStore.setValue(SettingType.PROXY, "$it#${proxySetting.value.value}")
-                                component.sync()
+                                vm.sync()
                             })
                             Spacer(Modifier.width(5.dp))
                             TextField(proxySetting.value.value, onValueChange = {
                                 SettingStore.setValue(SettingType.PROXY, "${proxySetting.value.isEnabled}#$it")
-                                component.sync()
+                                vm.sync()
                             }, modifier = Modifier.fillMaxWidth())
                         }
                     }
@@ -271,7 +272,7 @@ fun WindowScope.SettingScene(component: SettingViewModel, onClickBack: () -> Uni
                         ElevatedButton(
                             onClick = {
                                 SettingStore.reset()
-                                component.sync()
+                                vm.sync()
                                 SnackBar.postMsg("重置设置 重启生效")
                             }, Modifier.fillMaxWidth(0.8f)
                                 .align(Alignment.Center)

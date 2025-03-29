@@ -141,17 +141,17 @@ compose.desktop {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("src/desktopMain/appResources"))
 //            app icons https://github.com/JetBrains/compose-multiplatform/tree/master/tutorials/Native_distributions_and_local_execution#app-icon
             windows {
-                iconFile.set(project.file("src/commonMain/resources/pic/icon-s.ico"))
+                iconFile.set(project.file("src/commonMain/composeResources/drawable/icon-s.ico"))
                 dirChooser = true
                 upgradeUuid = "161FA5A0-A30B-4568-9E84-B3CD637CC8FE"
             }
 
             linux {
-                iconFile.set(project.file("src/commonMain/resources/pic/TV-icon-s.png"))
+                iconFile.set(project.file("src/commonMain/composeResources/drawable/TV-icon-s.png"))
             }
 
             macOS {
-                iconFile.set(project.file("src/commonMain/resources/pic/icon.icns"))
+                iconFile.set(project.file("src/commonMain/composeResources/drawable/icon.icns"))
             }
 
         }

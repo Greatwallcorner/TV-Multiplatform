@@ -42,6 +42,12 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
         focusRequester.requestFocus()
     }
 
+    DisposableEffect(Unit){
+        vm.onCreate()
+        onDispose {
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(modifier = Modifier.align(alignment = Alignment.TopStart)) {
             // TopBar

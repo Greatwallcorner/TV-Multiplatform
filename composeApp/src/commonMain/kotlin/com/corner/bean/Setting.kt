@@ -183,7 +183,13 @@ object SettingStore {
 data class SettingEnable(
     val isEnabled: Boolean,
     val value: String
-)
+){
+    companion object{
+        fun Default():SettingEnable{
+            return SettingEnable(false, "")
+        }
+    }
+}
 
 /**
  * boolean#字符串 转换为数组

@@ -92,6 +92,7 @@ private fun WindowScope.SearchResult(
     DisposableEffect(searchText.value) {
         vm.search(searchText.value, false)
         onDispose {
+            vm.onPause()
         }
     }
     Box(modifier = Modifier.fillMaxSize()) {

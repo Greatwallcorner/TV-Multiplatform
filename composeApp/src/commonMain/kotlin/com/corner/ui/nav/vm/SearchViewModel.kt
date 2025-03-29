@@ -4,12 +4,13 @@ import SiteViewModel
 import com.corner.bean.SettingStore
 import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.config.ApiConfig
+import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.ui.nav.BaseViewModel
 import com.corner.ui.nav.data.SearchScreenState
+import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -28,21 +29,24 @@ class SearchViewModel: BaseViewModel() {
     }
 
     fun onCreate() {
+        log.debug("onCreate called")
         _state.value.searchableSites.addAll(ApiConfig.api.sites.filter {
             it.searchable == 1 && !_state.value.searchCompleteSites.contains(
                 it.key
             )
         }.shuffled().map { it.copy() })
-        _state.value.searchBarText = getSearchBarText(_state.value)
+        _state.update { it.copy(hotList = GlobalAppState.hotList.value, historyList = SettingStore.getHistoryList()) }
 
-        _state.onEach {
-            _state.update { it.copy(searchBarText = getSearchBarText(_state.value)) }
+        scope.launch {
+            _state.collect() {
+                _state.update { it.copy(searchBarText = getSearchBarText(_state.value)) }
+            }
         }
     }
 
-    fun onDestroy() {
-        log.debug("search onDestroy")
-        supervisorJob.cancel("onDestroy")
+    fun onPause() {
+        log.debug("search onPause")
+        supervisorJob.cancelChildren(CancellationException("onDestroy"))
     }
 
     private fun getSearchBarText(model: SearchScreenState): String {
@@ -78,10 +82,11 @@ class SearchViewModel: BaseViewModel() {
                     .shuffled()
             searchableSites = searchableSites.subList(0, _state.value.onceSearchSiteNum.coerceAtMost(searchableSites.size))
             log.info("站源：{}", searchableSites.map { it.name })
-            searchableSites.forEach {
+            searchableSites.forEach { site ->
                 val job = searchScope.launch {
-                    _state.value.searchCompleteSites.add(it.key)
-                    SiteViewModel.searchContent(it, searchText, false)
+                    _state.value.searchCompleteSites.add(site.key)
+                    _state.update { it.copy(searchCompleteSites = it.searchCompleteSites) }
+                    SiteViewModel.searchContent(site, searchText, false)
                 }
                 job.invokeOnCompletion { e ->
                     if (e != null) {
@@ -104,7 +109,7 @@ class SearchViewModel: BaseViewModel() {
     }
 
     private fun cancelJobAndClear() {
-        supervisorJob.cancelChildren()
+        supervisorJob.cancelChildren(CancellationException("clear"))
         jobList.forEach { i -> i.cancel("search clear") }
         jobList.clear()
     }
