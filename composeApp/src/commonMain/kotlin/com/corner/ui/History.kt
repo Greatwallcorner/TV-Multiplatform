@@ -26,15 +26,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
+import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
 import com.corner.database.dao.buildVod
 import com.corner.database.entity.History
-import com.corner.ui.decompose.component.DefaultHistoryComponent
+import com.corner.ui.nav.vm.HistoryViewModel
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.ControlBar
-import com.corner.ui.scene.hideProgress
-import com.corner.ui.scene.showProgress
 import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -95,8 +94,8 @@ fun HistoryItem(
 }
 
 @Composable
-fun WindowScope.HistoryScene(component: DefaultHistoryComponent, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
-    val model = component.model.subscribeAsState()
+fun WindowScope.HistoryScene(component: HistoryViewModel, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
+    val model = component.state.collectAsState()
     var chooseHistory by remember { mutableStateOf<History?>(null) }
     LaunchedEffect(Unit) {
         showProgress()

@@ -1,6 +1,5 @@
 package com.corner.init
 
-import com.arkivanov.decompose.value.update
 import com.corner.bean.Hot
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
@@ -8,15 +7,16 @@ import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.config.init
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.loader.JarLoader
-import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.catvodcore.viewmodel.GlobalAppState
+import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
+import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
 import com.corner.database.Db
 import com.corner.database.appModule
 import com.corner.database.entity.Config
 import com.corner.server.KtorD
 import com.corner.ui.player.vlcj.VlcJInit
-import com.corner.ui.scene.hideProgress
-import com.corner.ui.scene.showProgress
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
@@ -70,7 +70,7 @@ fun initConfig() {
     log.info("initConfig start")
     JarLoader.clear()
     ApiConfig.clear()
-    GlobalModel.clear.update {!it}
+    GlobalAppState.clear.update {!it}
 
     val vod = SettingStore.getSettingItem(SettingType.VOD.id)
     if(StringUtils.isBlank(vod)) return

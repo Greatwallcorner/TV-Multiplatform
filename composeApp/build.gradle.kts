@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.room)
     alias(libs.plugins.ksp)
-//    alias(libs.plugins.conveyor)
 }
 
 room {
@@ -98,10 +97,10 @@ kotlin {
             implementation(libs.jupnp.bom)
             implementation(libs.jupnp)
 
-            api("com.arkivanov.decompose:decompose:3.3.0")
-            api("com.arkivanov.decompose:extensions-compose:3.3.0")
-            // Add the dependency, typically under the commonMain source set
-            api("com.arkivanov.essenty:lifecycle:2.5.0")
+//            api("com.arkivanov.decompose:decompose:3.3.0")
+//            api("com.arkivanov.decompose:extensions-compose:3.3.0")
+//            // Add the dependency, typically under the commonMain source set
+//            api("com.arkivanov.essenty:lifecycle:2.5.0")
         }
 
         desktopMain.dependencies {
@@ -133,15 +132,8 @@ compose.desktop {
             vendor = "TV Multiplatform"
 
             modules(
-//                "java.compiler",
-//                "java.instrument",
                 "java.management",
-//                "java.naming",
                 "java.net.http",
-//                "java.rmi",
-//                "java.security.jgss",
-//                "java.sql",
-//                "jdk.httpserver",
                 "jdk.unsupported",
             )
             val dir = project.layout.projectDirectory.dir("src/desktopMain/appResources")

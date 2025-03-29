@@ -38,17 +38,15 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.zIndex
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.arkivanov.decompose.value.update
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Type
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.enum.Menu
-import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.database.Db
-import com.corner.ui.decompose.component.DefaultVideoComponent
+import com.corner.ui.nav.vm.VideoViewModel
 import com.corner.ui.scene.*
 import com.corner.util.isScrollingUp
 import com.seiko.imageloader.ui.AutoSizeImage
@@ -117,14 +115,14 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WindowScope.VideoScene(
-    component: DefaultVideoComponent,
+    vm: VideoViewModel,
     modifier: Modifier,
     onClickItem: (Vod) -> Unit,
     onClickSwitch: (Menu) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val state = rememberLazyGridState()
-    val model = component.model.subscribeAsState()
+    val model = vm.state.collectAsState()
     val result = derivedStateOf { model.value.homeVodResult }
     val list = derivedStateOf { result.value.toTypedArray() }
 
@@ -136,7 +134,7 @@ fun WindowScope.VideoScene(
                     val lastVisibleItem = visibleItemsInfo.last()
                     val isEnd = lastVisibleItem.index == layoutInfo.totalItemsCount - 1
                     if (isEnd && (model.value.currentClass?.failTime ?: 0) < 2) {
-                        component.loadMore()
+                        vm.loadMore()
                     }
                 }
             }
@@ -149,7 +147,7 @@ fun WindowScope.VideoScene(
         topBar = {
             WindowDraggableArea {
                 VideoTopBar(
-                    component = component,
+                    vm = vm,
                     onClickSearch = { onClickSwitch(Menu.SEARCH) },
                     onClickChooseHome = { showChooseHome = true },
                     onClickSetting = { onClickSwitch(Menu.SETTING) },
@@ -157,7 +155,7 @@ fun WindowScope.VideoScene(
             }
         },
         floatingActionButton = {
-            FloatButton(component, state, scope, showFiltersDialog) {
+            FloatButton(vm, state, scope, showFiltersDialog) {
                 showFiltersDialog = !showFiltersDialog
             }
         }
@@ -166,9 +164,8 @@ fun WindowScope.VideoScene(
             Column {
                 val classIsEmpty = derivedStateOf { model.value.classList.isNotEmpty() }
                 if (classIsEmpty.value) {
-                    ClassRow(component) {
-                        component.model.update { it.copy(homeVodResult = SiteViewModel.result.value.list.toMutableSet()) }
-                        model.value.page.set(1)
+                    ClassRow(vm) {
+                        vm.setClassData()
                         scope.launch {
                             state.animateScrollToItem(0)
                         }
@@ -176,7 +173,7 @@ fun WindowScope.VideoScene(
                 }
                 val listEmpty = derivedStateOf { model.value.homeVodResult.isEmpty() }
                 if (listEmpty.value) {
-                    emptyShow(onRefresh = { component.homeLoad() })
+                    emptyShow(onRefresh = { vm.homeLoad() })
                 } else {
                     Box {
                         LazyVerticalGrid(
@@ -190,7 +187,7 @@ fun WindowScope.VideoScene(
                             itemsIndexed(list.value, key = { i, item -> item.vodId + item.vodName + i }) { _, item ->
                                 VideoItem(Modifier.animateItem(), item, false) {
                                     if (item.isFolder()) {
-                                        component.clickFolder(it)
+                                        vm.clickFolder(it)
                                     } else {
                                         onClickItem(it)
                                     }
@@ -200,15 +197,15 @@ fun WindowScope.VideoScene(
                     }
                 }
             }
-            ChooseHomeDialog(component, showChooseHome, onClose = { showChooseHome = false }) {
+            ChooseHomeDialog(vm, showChooseHome, onClose = { showChooseHome = false }) {
                 showChooseHome = false
-                component.clear()
+                vm.clear()
                 scope.launch {
                     state.animateScrollToItem(0)
                 }
             }
 
-            FiltersDialog(Modifier.align(Alignment.BottomCenter), showFiltersDialog, component) {
+            FiltersDialog(Modifier.align(Alignment.BottomCenter), showFiltersDialog, vm) {
                 showFiltersDialog = false
             }
             val show = derivedStateOf {
@@ -228,7 +225,7 @@ fun WindowScope.VideoScene(
                             items(model.value.dirPaths) {
                                 HoverableText(text = it) {
                                     SiteViewModel.viewModelScope.launch {
-                                        component.clickFolder(
+                                        vm.clickFolder(
                                             Vod(
                                                 vodId = model.value.dirPaths.subList(
                                                     0,
@@ -245,15 +242,15 @@ fun WindowScope.VideoScene(
                 }
             }
 
-//            DirPath(component = component)
+//            DirPath(vm = vm)
         }
     }
 }
 
 //@OptIn(ExperimentalAnimationApi::class)
 //@Composable
-//fun DirPath(showDialog: Boolean = false, component: DefaultVideoComponent){
-//    val state = component.model.subscribeAsState()
+//fun DirPath(showDialog: Boolean = false, vm: VideoViewModel){
+//    val state = vm.model.subscribeAsState()
 //    val show = derivedStateOf {
 //        state.value.dirPaths.size > 1
 //    }
@@ -268,7 +265,7 @@ fun WindowScope.VideoScene(
 //                items(state.value.dirPaths){
 //                    HoverableText(text = it){
 //                        SiteViewModel.viewModelScope.launch {
-//                            component.clickFolder(Vod(vodId = state.value.dirPaths.subList(0, state.value.dirPaths.indexOf(it)).joinToString("/")))
+//                            vm.clickFolder(Vod(vodId = state.value.dirPaths.subList(0, state.value.dirPaths.indexOf(it)).joinToString("/")))
 //                        }
 //                    }
 //                }
@@ -282,11 +279,11 @@ fun WindowScope.VideoScene(
 private fun FiltersDialog(
     modifier: Modifier,
     showFiltersDialog: Boolean,
-    component: DefaultVideoComponent,
+    vm: VideoViewModel,
     onClose: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val model = component.model.subscribeAsState()
+    val model = vm.state.collectAsState()
     Dialog(
         modifier
             .fillMaxWidth(0.7f)
@@ -306,7 +303,7 @@ private fun FiltersDialog(
             ) {
                 items(model.value.currentFilters) { filter ->
                     val state = rememberLazyListState(0)
-                    val f = rememberUpdatedState(filter)
+                    val f by rememberUpdatedState(filter)
                     LazyRow(
                         state = state, horizontalArrangement = Arrangement.spacedBy(5.dp),
                         modifier = Modifier.onPointerEvent(PointerEventType.Scroll) {
@@ -314,15 +311,16 @@ private fun FiltersDialog(
                                 state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
                             }
                         }) {
-                        items(f.value.value ?: listOf()) {
+                        items(f.value ?: listOf()) {
                             RatioBtn(text = it.n ?: "", onClick = {
-                                scope.launch {
-                                    f.value.init = it.v ?: ""
-                                    f.value.value?.filter { i -> i.n != it.n }?.map { t -> t.selected = false }
-                                    it.selected = true
-                                    component.model.update { it.copy(currentFilters = model.value.currentFilters) }
-                                }
-                                component.chooseCate(it.v ?: "")
+                                vm.chooseFilter(f, it)
+//                                scope.launch {
+//                                    f.init = it.v ?: ""
+//                                    f.value?.filter { i -> i.n != it.n }?.map { t -> t.selected = false }
+//                                    it.selected = true
+//                                    vm.model.update { it.copy(currentFilters = model.value.currentFilters) }
+//                                }
+                                vm.chooseCate(it.v ?: "")
                             }, selected = it.selected, loading = false)
                         }
                     }
@@ -343,15 +341,15 @@ private fun FiltersDialog(
 
 @Composable
 fun FloatButton(
-    component: DefaultVideoComponent,
+    vm: VideoViewModel,
     state: LazyGridState,
     scope: CoroutineScope,
     showFiltersDialog: Boolean,
     onClickFilter: () -> Unit
 ) {
-    val show = derivedStateOf { GlobalModel.chooseVod.value.isFolder() }
-    val model = component.model.subscribeAsState()
-    val showButton = derivedStateOf { !model.value.currentFilters.isEmpty() || state.firstVisibleItemIndex > 8 }
+    val show = derivedStateOf { GlobalAppState.chooseVod.value.isFolder() }
+    val model = vm.state.collectAsState()
+    val showButton = derivedStateOf { model.value.currentFilters.isNotEmpty() || state.firstVisibleItemIndex > 8 }
     AnimatedVisibility(
         showButton.value,
         enter = slideInVertically(
@@ -417,14 +415,14 @@ fun FloatButton(
 
 @Composable
 fun VideoTopBar(
-    component: DefaultVideoComponent,
+    vm: VideoViewModel,
     onClickSearch: () -> Unit,
     onClickChooseHome: () -> Unit,
     onClickSetting: () -> Unit,
     onClickHistory: () -> Unit
 ) {
-    val home = GlobalModel.home.subscribeAsState()
-    val model = component.model.subscribeAsState()
+    val home = GlobalAppState.home.collectAsState()
+    val model = vm.state.collectAsState()
 
     ControlBar(
         title = {},
@@ -516,8 +514,8 @@ fun previewImageItem() {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
-    val model = component.model.subscribeAsState()
+fun ClassRow(vm: VideoViewModel, onCLick: (Type) -> Unit) {
+    val model = vm.state.collectAsState()
     val state = rememberLazyListState(0)
     val scope = rememberCoroutineScope()
     val visible = derivedStateOf { state.layoutInfo.visibleItemsInfo.size < model.value.classList.size }
@@ -538,41 +536,8 @@ fun ClassRow(component: DefaultVideoComponent, onCLick: (Type) -> Unit) {
             val list = derivedStateOf { model.value.classList.toList() }
             items(list.value) { type ->
                 RatioBtn(text = type.typeName, onClick = {
-                    if (component.isLoading.get()) return@RatioBtn
-                    component.isLoading.set(true)
-                    SiteViewModel.viewModelScope.launch {
-                        showProgress()
-                        for (tp in model.value.classList) {
-                            tp.selected = type.typeId == tp.typeId
-                        }
-                        component.model.update {
-                            it.copy(
-                                currentClass = type,
-                                classList = model.value.classList,
-                                currentFilters = component.getFilters(type),
-                                dirPaths = mutableListOf()
-                            )
-                        }
-                        SiteViewModel.cancelAll()
-                        if (type.typeId == "home") {
-                            SiteViewModel.homeContent()
-                        } else {
-                            model.value.page.set(1)
-                            val result = SiteViewModel.categoryContent(
-                                GlobalModel.home.value.key,
-                                type.typeId,
-                                model.value.page.get().toString(),
-                                false,
-                                HashMap()
-                            )
-                            if (!result.isSuccess) {
-                                model.value.currentClass?.failTime?.plus(1)
-                            }
-                        }
-                    }.invokeOnCompletion {
+                    vm.chooseClass(type){
                         onCLick(type)
-                        component.isLoading.set(false)
-                        hideProgress()
                     }
                 }, selected = type.selected)
             }
@@ -598,12 +563,12 @@ fun previewClassRow() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChooseHomeDialog(
-    component: DefaultVideoComponent,
+    vm: VideoViewModel,
     showDialog: Boolean,
     onClose: () -> Unit,
     onClick: (Site) -> Unit
 ) {
-    val model = component.model.subscribeAsState()
+    val model = vm.state.collectAsState()
     val apiState = ApiConfig.apiFlow.collectAsState()
 //    val siteList by remember { mutableStateOf(ApiConfig.api.sites.toList()) }
 //    val sitesFlow = remember { MutableStateFlow(ApiConfig.api.sites.toList()) }
@@ -639,7 +604,7 @@ fun ChooseHomeDialog(
                         }
                         TooltipArea(tooltip = {Text("开启/禁用搜索", Modifier.background(MaterialTheme.colorScheme.background))}, delayMillis = 1000){
                             IconButton(onClick = {
-                                component.changeSite {
+                                vm.changeSite {
                                     if (item.isSearchable()) {
                                         item.searchable = 0
                                     } else {
@@ -657,7 +622,7 @@ fun ChooseHomeDialog(
                         }
                         TooltipArea(tooltip = {Text("开启/禁用换源", Modifier.background(MaterialTheme.colorScheme.background))}, delayMillis = 1000){
                             IconButton(onClick = {
-                                component.changeSite {
+                                vm.changeSite {
                                     if (item.isChangeable()) {
                                         item.changeable = 0
                                     } else {

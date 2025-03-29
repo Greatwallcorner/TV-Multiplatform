@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.ui.player.PlayState
 import com.corner.ui.player.vlcj.VlcjFrameController
 import org.jetbrains.compose.resources.painterResource
@@ -91,7 +91,7 @@ fun FrameContainer(
                 Key.Spacebar -> if (k.type == KeyEventType.KeyDown) controller.togglePlayStatus()
                 Key.DirectionUp -> if (k.type == KeyEventType.KeyDown) controller.volumeUp()
                 Key.DirectionDown -> if (k.type == KeyEventType.KeyDown) controller.volumeDown()
-                Key.Escape -> if (k.type == KeyEventType.KeyDown && GlobalModel.videoFullScreen.value) controller.toggleFullscreen()
+                Key.Escape -> if (k.type == KeyEventType.KeyDown && GlobalAppState.videoFullScreen.value) controller.toggleFullscreen()
             }
             true
         }, contentAlignment = Alignment.Center
@@ -106,7 +106,6 @@ fun FrameContainer(
                     frameSizeCalculator.calculate(imageSize, size)
                     drawImage(it, dstOffset = frameSizeCalculator.dstOffset, dstSize = frameSizeCalculator.dstSize,filterQuality = FilterQuality.High,)
                 }
-//                Image(bitmap = it, contentDescription = "Video", modifier = Modifier.fillMaxSize())
             }
             when (playerState.value.state) {
                 PlayState.BUFFERING -> {

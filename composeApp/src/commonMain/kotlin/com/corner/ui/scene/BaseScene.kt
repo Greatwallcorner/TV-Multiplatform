@@ -28,23 +28,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.corner.catvodcore.enum.Menu
+import com.corner.catvodcore.viewmodel.GlobalAppState.isShowProgress
 import org.jetbrains.compose.resources.painterResource
 import tv_multiplatform.composeapp.generated.resources.Res
 import tv_multiplatform.composeapp.generated.resources.nothing
-
-private var showProgress by mutableStateOf(false)
-
-fun showProgress() {
-    showProgress = true
-}
-
-fun hideProgress() {
-    showProgress = false
-}
-
-fun isShowProgress(): Boolean {
-    return showProgress
-}
 
 @Composable
 fun ExpandedText(text: String, maxLine: Int, textStyle: TextStyle = TextStyle()) {

@@ -3,7 +3,7 @@ package com.corner.bean
 import SiteViewModel
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
-import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.catvodcore.viewmodel.GlobalAppState
 import io.ktor.http.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -32,7 +32,7 @@ data class Hot(val data: List<HotData>) {
                 }
 
                 if (response?.isSuccessful == true)
-                    GlobalModel.hotList.value = Jsons.decodeFromStream<Hot>(response.body.byteStream()).data
+                    GlobalAppState.hotList.value = Jsons.decodeFromStream<Hot>(response.body.byteStream()).data
             }
         }
     }

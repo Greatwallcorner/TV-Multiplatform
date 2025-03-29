@@ -3,10 +3,7 @@ import androidx.compose.foundation.LightDefaultContextMenuRepresentation
 import androidx.compose.foundation.LocalContextMenuRepresentation
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Window
@@ -14,18 +11,12 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import cn.hutool.core.util.SystemPropsUtil
-import com.arkivanov.decompose.DefaultComponentContext
-import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
-import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.corner.RootContent
 import com.corner.bean.SettingStore
-import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.init.Init
 import com.corner.init.generateImageLoader
-import com.corner.ui.SwingUtil
 import com.corner.ui.Util
-import com.corner.ui.decompose.DefaultRootComponent
 import com.corner.ui.scene.SnackBar
 import com.corner.util.SysVerUtil
 import com.seiko.imageloader.LocalImageLoader
@@ -40,7 +31,6 @@ import java.awt.Dimension
 
 private val log = LoggerFactory.getLogger("main")
 
-@OptIn(ExperimentalDecomposeApi::class)
 fun main() {
     launchErrorCatcher()
     printSystemInfo()
@@ -50,17 +40,10 @@ fun main() {
     })
 //    System.setProperty("java.net.useSystemProxies", "true");
     application {
-        val lifecycle = LifecycleRegistry()
-        val root = SwingUtil.runOnUiThread {
-            DefaultRootComponent(
-                componentContext = DefaultComponentContext(lifecycle = lifecycle),
-            )
-        }
-
         val windowState = rememberWindowState(
             size = Util.getPreferWindowSize(600, 500), position = WindowPosition.Aligned(Alignment.Center)
         )
-        GlobalModel.windowState = windowState
+        GlobalAppState.windowState = windowState
 
         LaunchedEffect(Unit) {
             launch(Dispatchers.Default) {
@@ -68,9 +51,8 @@ fun main() {
             }
         }
 
-        LifecycleController(lifecycle, windowState)
-
         val transparent = rememberUpdatedState(!SysVerUtil.isWin10())
+        val scope = rememberCoroutineScope()
 
         val contextMenuRepresentation =
             if (isSystemInDarkTheme()) DarkDefaultContextMenuRepresentation else LightDefaultContextMenuRepresentation
@@ -83,19 +65,21 @@ fun main() {
             window.minimumSize = Dimension(700, 600)
             CompositionLocalProvider(
                 LocalImageLoader provides remember { generateImageLoader() },
-                LocalContextMenuRepresentation provides remember { contextMenuRepresentation }
+                LocalContextMenuRepresentation provides remember { contextMenuRepresentation },
             ) {
-                RootContent(component = root, modifier = Modifier.fillMaxSize())
+                RootContent(modifier = Modifier.fillMaxSize())
             }
-            GlobalModel.closeApp.subscribe {
-                if(it){
-                    try {
-                        window.isVisible = false
-                        SettingStore.write()
-                    }catch(e: Exception){
-                        log.error("关闭应用异常", e)
-                    } finally {
-                        exitApplication()
+            scope.launch {
+                GlobalAppState.closeApp.collect{
+                    if(it){
+                        try {
+                            window.isVisible = false
+                            SettingStore.write()
+                        }catch(e: Exception){
+                            log.error("关闭应用异常", e)
+                        } finally {
+                            exitApplication()
+                        }
                     }
                 }
             }

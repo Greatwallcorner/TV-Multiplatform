@@ -28,11 +28,10 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.corner.bean.PlayerStateCache
 import com.corner.bean.SettingStore
-import com.corner.catvodcore.viewmodel.GlobalModel
-import com.corner.ui.decompose.DetailComponent
+import com.corner.catvodcore.viewmodel.GlobalAppState
+import com.corner.ui.nav.vm.DetailViewModel
 import com.corner.ui.player.DefaultControls
 import com.corner.ui.player.PlayerState
 import com.corner.ui.player.frame.FrameContainer
@@ -63,7 +62,7 @@ fun Player(
     mrl: String,
     controller: VlcjFrameController,
     modifier: Modifier,
-    component: DetailComponent,
+    vm: DetailViewModel,
     focusRequester: FocusRequester
 ) {
     val scope = rememberCoroutineScope()
@@ -75,7 +74,7 @@ fun Player(
     var mousePosition by remember { mutableStateOf(Offset.Zero) }
     val showTip = controller.showTip.collectAsState()
     val tip = controller.tip.collectAsState()
-    val videoFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
+    val videoFullScreen = GlobalAppState.videoFullScreen.collectAsState()
     val showMediaInfoDialog = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit){
@@ -170,8 +169,10 @@ fun Player(
             DefaultControls(
                 Modifier.background(Color.Gray.copy(alpha = 0.45f))
                     .height(80.dp)
-                    .align(Alignment.BottomEnd), controller, component
-            )
+                    .align(Alignment.BottomEnd), controller, vm.state.value.detail
+            ){
+                vm.clickShowEp()
+            }
         }
         LaunchedEffect(tip.value){
             delay(1500)

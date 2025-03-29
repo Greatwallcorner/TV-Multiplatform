@@ -9,7 +9,7 @@ import com.corner.catvodcore.loader.JarLoader
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Urls
-import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.database.Db
 import com.corner.database.entity.Config
 import com.corner.ui.scene.SnackBar
@@ -72,7 +72,7 @@ object ApiConfig{
     }
 
     fun setHome(home:Site?){
-        GlobalModel.home.value = home ?: Site.get("","")
+        GlobalAppState.home.value = home ?: Site.get("","")
     }
 
     fun getSpider(site: Site): Spider {
@@ -174,10 +174,10 @@ fun Api.initSite() {
         site.api = ApiConfig.parseApi(site.api)
         site.ext = ApiConfig.parseExt(site.ext)
     }
-    if (GlobalModel.home.value.isEmpty() && sites.size > 0) {
-        GlobalModel.home.value = sites.first()
+    if (GlobalAppState.home.value.isEmpty() && sites.size > 0) {
+        GlobalAppState.home.value = sites.first()
         SiteViewModel.viewModelScope.launch {
-            Db.Config.setHome(url, ConfigType.SITE.ordinal, GlobalModel.home.value.toString())
+            Db.Config.setHome(url, ConfigType.SITE.ordinal, GlobalAppState.home.value.toString())
         }
     }
 }

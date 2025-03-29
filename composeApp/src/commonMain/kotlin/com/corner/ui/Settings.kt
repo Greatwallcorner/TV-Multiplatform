@@ -36,20 +36,21 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.window.WindowScope
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.bean.parseAsSettingEnable
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.util.Paths
+import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
+import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
 import com.corner.database.Db
 import com.corner.database.entity.Config
 import com.corner.init.initConfig
-import com.corner.ui.decompose.component.DefaultSettingComponent
-import com.corner.ui.decompose.component.getSetting
+import com.corner.ui.nav.vm.SettingViewModel
 import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.scene.*
+import com.corner.util.getSetting
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -62,8 +63,8 @@ import java.net.URI
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WindowScope.SettingScene(component: DefaultSettingComponent, onClickBack: () -> Unit) {
-    val model = component.model.subscribeAsState()
+fun WindowScope.SettingScene(component: SettingViewModel, onClickBack: () -> Unit) {
+    val model = component.state.collectAsState()
     var showAboutDialog by remember { mutableStateOf(false) }
     DisposableEffect("setting") {
         component.sync()
@@ -316,40 +317,40 @@ fun SettingItemTemplate(title: String, content: @Composable () -> Unit) {
 
 private val logLevel = listOf("INFO", "DEBUG")
 
-@Composable
-fun LogButtonList(component: DefaultSettingComponent, onClick: (String) -> Unit) {
-    val model = component.model.subscribeAsState()
-    val current = derivedStateOf { model.value.settingList.getSetting(SettingType.LOG)?.value ?: logLevel[0] }
-    Box(
-        Modifier.padding(horizontal = 10.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Row {
-            logLevel.forEachIndexed { i, t ->
-                when (i) {
-                    0 -> {
-                        SideButton(current.value == t, text = t, type = SideButtonType.LEFT) {
-                            onClick(it)
-                        }
-                    }
-
-                    logLevel.size - 1 -> {
-                        SideButton(current.value == t, text = t, type = SideButtonType.RIGHT) {
-                            onClick(it)
-
-                        }
-                    }
-
-                    else -> {
-                        SideButton(current.value == t, text = t) {
-                            onClick(it)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+//@Composable
+//fun LogButtonList(component: DefaultSettingComponent, onClick: (String) -> Unit) {
+//    val model = component.model.subscribeAsState()
+//    val current = derivedStateOf { model.value.settingList.getSetting(SettingType.LOG)?.value ?: logLevel[0] }
+//    Box(
+//        Modifier.padding(horizontal = 10.dp),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        Row {
+//            logLevel.forEachIndexed { i, t ->
+//                when (i) {
+//                    0 -> {
+//                        SideButton(current.value == t, text = t, type = SideButtonType.LEFT) {
+//                            onClick(it)
+//                        }
+//                    }
+//
+//                    logLevel.size - 1 -> {
+//                        SideButton(current.value == t, text = t, type = SideButtonType.RIGHT) {
+//                            onClick(it)
+//
+//                        }
+//                    }
+//
+//                    else -> {
+//                        SideButton(current.value == t, text = t) {
+//                            onClick(it)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
 
 enum class SideButtonType {
     LEFT, MID, RIGHT

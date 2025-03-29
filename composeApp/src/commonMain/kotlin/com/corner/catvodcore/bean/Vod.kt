@@ -29,33 +29,38 @@ data class Vod(
     @SerialName("circle") var circle: String? = null,
     @SerialName("ratio") var ratio: String? = null,
     @Transient
-    var vodFlags: MutableList<Flag?> = mutableListOf(),
+    var vodFlags: MutableList<Flag> = mutableListOf(),
     @Transient
     var site: Site? = null,
     @Transient
-    var currentFlag: Flag? = null,
+    var currentFlag: Flag = Flag(),
     @Transient
-    var subEpisode: MutableList<Episode>? = mutableListOf(),
+    var subEpisode: MutableList<Episode> = mutableListOf(),
     @Transient
     var currentTabIndex: Int = 0,
 ) {
     companion object {
 
-        fun Vod.getEpisode():Episode?{
-            return subEpisode?.find { it.activated }
-        }
-        fun Vod.isEmpty():Boolean{
-            return org.apache.commons.lang3.StringUtils.isBlank(vodId) || vodFlags.isEmpty()
-        }
-        fun Vod.setCurrentFlag(idx: Int) {
-            if(vodFlags.isEmpty()) return
-            currentFlag = vodFlags[idx]
-            currentFlag?.activated = true
+        fun Vod.getEpisode(): Episode? {
+            return subEpisode.find { it.activated }
         }
 
-        fun Vod.setCurrentFlag(flag: Flag?) {
+        fun Vod.isEmpty(): Boolean {
+            return org.apache.commons.lang3.StringUtils.isBlank(vodId) || vodFlags.isEmpty()
+        }
+
+        fun Vod.setCurrentFlag(idx: Int) {
+            if (vodFlags.isEmpty()) return
+            val flag = vodFlags[idx]
+            if (flag != null) {
+                currentFlag = vodFlags[idx]
+                currentFlag.activated = true
+            }
+        }
+
+        fun Vod.setCurrentFlag(flag: Flag) {
             currentFlag = flag
-            currentFlag?.activated = true
+            currentFlag.activated = true
         }
 
         fun Vod.setVodFlags() {
@@ -71,7 +76,7 @@ data class Vod(
                 }
             }
             for (item in vodFlags) {
-                if (item?.urls == null) continue
+                if (item.urls == null) continue
                 item.createEpisode(item.urls)
             }
             setCurrentFlag(0)
@@ -86,31 +91,35 @@ data class Vod(
         }
     }
 
-    fun isFolder():Boolean{
+    fun isFolder(): Boolean {
         return VodTag.Folder.called == vodTag
     }
 
     fun findAndSetEpByName(history: History): Episode? {
         if (history.vodRemarks.isNullOrBlank()) return null
-            currentFlag = vodFlags.find { it?.flag == history.vodFlag }
-            val episode = currentFlag?.find(history.vodRemarks, true)
-            if(episode != null){
-                episode.activated = true
-                val indexOf = currentFlag?.episodes?.indexOf(episode)
-                // 32 15 16
-                currentTabIndex = (indexOf?.plus(1))!! / Constants.EpSize
-                subEpisode = currentFlag?.episodes?.getPage(currentTabIndex)!!
-            }
-            return episode
+        val flag = vodFlags.find { it.flag == history.vodFlag }
+        if (flag == null) {
+            return null
+        }
+        currentFlag = flag
+        val episode = currentFlag.find(history.vodRemarks, true)
+        if (episode != null) {
+            episode.activated = true
+            val indexOf = currentFlag.episodes.indexOf(episode)
+            // 32 15 16
+            currentTabIndex = (indexOf.plus(1)) / Constants.EpSize
+            subEpisode = currentFlag.episodes.getPage(currentTabIndex)
+        }
+        return episode
     }
 
-    fun nextFlag():Flag?{
-        val find = vodFlags.find { it?.activated ?: false }
+    fun nextFlag(): Flag {
+        val find = vodFlags.find { it.activated }
         val indexOf = vodFlags.indexOf(find)
-        if(indexOf + 1 >= vodFlags.size) return null
+        if (indexOf + 1 >= vodFlags.size) return find ?: Flag()
         val flag = vodFlags[indexOf + 1]
-        vodFlags.forEach{
-            it?.activated = flag?.flag == it?.flag
+        vodFlags.forEach {
+            it.activated = flag.flag == it.flag
         }
 //        flag.episodes.indexOf()
         return flag
@@ -170,8 +179,8 @@ data class Vod(
         result = 31 * result + (ratio?.hashCode() ?: 0)
         vodFlags.forEach { result += 31 * result + it.hashCode() }
         result = 31 * result + (site?.hashCode() ?: 0)
-        result = 31 * result + (currentFlag?.hashCode() ?: 0)
-        result = 31 * result + (subEpisode?.hashCode() ?: 0)
+        result = 31 * result + (currentFlag.hashCode() )
+        result = 31 * result + (subEpisode.hashCode())
         result = 31 * result + currentTabIndex
         return result
     }

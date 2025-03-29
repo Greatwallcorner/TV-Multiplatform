@@ -41,9 +41,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
-import com.arkivanov.decompose.value.update
+import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.util.Utils
-import com.corner.ui.decompose.DetailComponent
 import com.corner.ui.player.vlcj.VlcjFrameController
 import com.corner.util.formatTimestamp
 import org.jetbrains.compose.resources.painterResource
@@ -54,7 +53,7 @@ import kotlin.math.roundToLong
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameController, component: DetailComponent) {
+fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameController, vod: Vod, onClickChooseEp: () -> Unit) {
 
     val playerState by controller.state.collectAsState()
 
@@ -123,10 +122,10 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameControll
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButtonTransparent(if (playerState.opening == -1L) "片头" else Utils.formatMilliseconds(playerState.opening)) {
-                    controller.updateOpening(component.model.value.detail)
+                    controller.updateOpening(vod)
                 }
                 TextButtonTransparent(if (playerState.ending == -1L) "片尾" else Utils.formatMilliseconds(playerState.ending)) {
-                    controller.updateEnding(component.model.value.detail)
+                    controller.updateEnding(vod)
                 }
 
                 Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
@@ -197,7 +196,7 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: VlcjFrameControll
                             )
                         }
                         TextButtonTransparent("选集") {
-                            component.model.update { it.copy(showEpChooserDialog = !component.model.value.showEpChooserDialog) }
+                            onClickChooseEp()
                         }
                     }
                 }

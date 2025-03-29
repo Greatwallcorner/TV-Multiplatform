@@ -37,20 +37,18 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.arkivanov.decompose.value.update
 import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
-import com.corner.catvod.enum.bean.Vod.Companion.getPage
-import com.corner.catvodcore.bean.v
+import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
 import com.corner.catvodcore.util.Utils
-import com.corner.catvodcore.viewmodel.GlobalModel
-import com.corner.ui.decompose.DetailComponent
-import com.corner.ui.player.vlcj.VlcjFrameController
+import com.corner.catvodcore.viewmodel.GlobalAppState
+import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
+import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
+import com.corner.ui.nav.data.DetailScreenState
+import com.corner.ui.nav.vm.DetailViewModel
 import com.corner.ui.scene.*
 import com.corner.ui.video.QuickSearchItem
 import com.corner.util.Constants
-import com.corner.util.play.Play
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
@@ -60,22 +58,29 @@ import tv_multiplatform.composeapp.generated.resources.TV_icon_x
 
 
 @Composable
-fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit) {
-    val model = component.model.subscribeAsState()
+fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
+    val model = vm.state.collectAsState()
     val scope = rememberCoroutineScope()
 
     val detail by rememberUpdatedState(model.value.detail)
 
-    val controller = rememberUpdatedState(component.controller)
+    val controller = rememberUpdatedState(vm.controller)
 
-    val isFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
+    val isFullScreen = GlobalAppState.videoFullScreen.collectAsState()
 
     val videoHeight = derivedStateOf { if (isFullScreen.value) 1f else 0.6f }
     val videoWidth = derivedStateOf { if (isFullScreen.value) 1f else 0.7f }
 
 
-    LaunchedEffect("detail") {
-        component.load()
+//    LaunchedEffect(Unit){
+//    }
+
+    DisposableEffect(Unit) {
+        vm.load()
+        onDispose {
+            vm.clear()
+        }
+
     }
 
     LaunchedEffect(model.value.isLoading) {
@@ -84,7 +89,6 @@ fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit)
         } else {
             hideProgress()
         }
-//        onDispose { }
     }
 
     val focus = remember { FocusRequester() }
@@ -109,7 +113,7 @@ fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit)
                             ) {
                                 Row(horizontalArrangement = Arrangement.Start) {
                                     ToolTipText(
-                                        detail?.vodName ?: "",
+                                        detail.vodName ?: "",
                                         textStyle = MaterialTheme.typography.headlineMedium.copy(color = MaterialTheme.colorScheme.onBackground),
                                         modifier = Modifier.padding(start = 50.dp)
                                     )
@@ -120,8 +124,8 @@ fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit)
                         IconButton(
                             onClick = {
                                 scope.launch {
-                                    component.clear()
-                                    component.quickSearch()
+                                    vm.clear()
+                                    vm.quickSearch()
                                     SnackBar.postMsg("重新加载")
                                 }
                             }, enabled = !model.value.isLoading
@@ -150,7 +154,7 @@ fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit)
                         mrl.value,
                         controller.value,
                         Modifier.fillMaxWidth(videoWidth.value).focusable(),
-                        component,
+                        vm,
                         focusRequester = focus
                     )
                 } else {
@@ -179,7 +183,7 @@ fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit)
                 }
                 AnimatedVisibility(!isFullScreen.value, modifier = Modifier.fillMaxSize()) {
                     EpChooser(
-                        component, Modifier.fillMaxSize().background(
+                        vm, Modifier.fillMaxSize().background(
                             MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
                             shape = RoundedCornerShape(4.dp)
                         ).padding(horizontal = 5.dp)
@@ -192,21 +196,21 @@ fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit)
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Spacer(Modifier.size(15.dp))
                         Column(Modifier.fillMaxWidth(0.3f)) {
-                            quickSearchResult(model, searchResultList, component)
+                            quickSearchResult(model, searchResultList, vm)
                         }
                         Column(
                             modifier = Modifier.padding(start = 10.dp).fillMaxSize()
                         ) {
-                            if (model.value.detail == null) {
-                                emptyShow(onRefresh = { component.load() })
+                            if (model.value.detail.isEmpty()) {
+                                emptyShow(onRefresh = { vm.load() })
                             } else {
-                                vodInfo(detail)
+                                VodInfo(detail)
                             }
                             Spacer(modifier = Modifier.size(15.dp))
                             // 线路
-                            flags(scope, controller.value, component)
+                            Flags(scope, vm)
                             Spacer(Modifier.size(15.dp))
-                            val urls = rememberUpdatedState(component.model.value.currentUrl)
+                            val urls = rememberUpdatedState(vm.state.value.currentUrl)
                             val showUrl = derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
                             if (showUrl.value) {
                                 Row {
@@ -219,12 +223,7 @@ fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit)
                                     LazyRow(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                                         itemsIndexed(urls.value?.values ?: listOf()) { i, item ->
                                             RatioBtn(text = item.n ?: (i + 1).toString(), onClick = {
-                                                component.model.update {
-                                                    it.copy(
-                                                        currentUrl = urls.value?.copy(position = i),
-                                                        currentPlayUrl = item.v ?: ""
-                                                    )
-                                                }
+                                                vm.chooseLevel(urls.value?.copy(position = i), item.v)
                                             }, selected = i == urls.value?.position!!)
                                         }
                                     }
@@ -240,9 +239,9 @@ fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit)
         Dialog(
             Modifier.align(Alignment.CenterEnd).fillMaxWidth(0.3f).fillMaxHeight(0.8f).padding(end = 20.dp),
             showDialog = showEpChooserDialog.value,
-            onClose = { component.model.update { it.copy(showEpChooserDialog = false) } }) {
+            onClose = { vm.showEpChooser() }) {
             EpChooser(
-                component, Modifier.fillMaxSize().background(
+                vm, Modifier.fillMaxSize().background(
                     MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(8.dp)
                 ).padding(horizontal = 5.dp)
             )
@@ -254,10 +253,10 @@ fun WindowScope.DetailScene(component: DetailComponent, onClickBack: () -> Unit)
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun flags(
-    scope: CoroutineScope, controller: VlcjFrameController, component: DetailComponent
+private fun Flags(
+    scope: CoroutineScope, vm: DetailViewModel
 ) {
-    val model = component.model.subscribeAsState()
+    val model = vm.state.collectAsState()
     val detail = derivedStateOf { model.value.detail }
     LaunchedEffect(detail.value) {
         println("detail detail 修改")
@@ -270,8 +269,8 @@ private fun flags(
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(Modifier.size(10.dp))
-        val detailIsNotEmpty = derivedStateOf { detail.value?.vodFlags?.isNotEmpty() }
-        if (detailIsNotEmpty.value == true) {
+        val detailIsNotEmpty = derivedStateOf { detail.value.vodFlags.isNotEmpty() }
+        if (detailIsNotEmpty.value) {
             val state = rememberLazyListState(0)
             Box() {
                 LazyRow(
@@ -279,45 +278,19 @@ private fun flags(
                     state = state,
                     modifier = Modifier.padding(bottom = 10.dp).fillMaxWidth().onPointerEvent(PointerEventType.Scroll) {
                         scope.launch {
-//                                            if(it.changes.size == 0) return@launch
                             state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
                         }
                     },
                 ) {
-                    val flagList = derivedStateOf { detail.value?.vodFlags?.toList() ?: listOf() }
+                    val flagList = derivedStateOf { detail.value.vodFlags.toList() }
                     items(flagList.value) {
-                        RatioBtn(text = it?.show ?: "", onClick = {
-                            scope.launch {
-                                for (vodFlag in detail.value!!.vodFlags) {
-                                    if (it?.show == vodFlag?.show) {
-                                        it?.activated = true
-                                        detail.value!!.currentFlag = it
-                                    } else {
-                                        vodFlag?.activated = false
-                                    }
-                                }
-                                val dt = detail.value!!.copy(
-                                    currentFlag = it,
-                                    subEpisode = it?.episodes?.getPage(detail.value!!.currentTabIndex)?.toMutableList()
-                                )
-                                controller.doWithHistory { it.copy(vodFlag = detail.value!!.currentFlag?.flag) }
-                                val history = controller.history.value
-                                if (history != null) {
-                                    val findEp = detail.value!!.findAndSetEpByName(controller.history.value!!)
-                                    if (findEp != null) component.playEp(dt, findEp)
-                                }
-                                component.model.update { model ->
-                                    model.copy(
-                                        detail = dt,
-                                        shouldPlay = true,
-                                    )
-                                }
-                            }
-                        }, selected = it?.activated ?: false)
+                        RatioBtn(text = it.show ?: "", onClick = {
+                            vm.chooseFlag(detail.value, it)
+                        }, selected = it.activated)
                     }
                 }
                 val showScrollBar =
-                    derivedStateOf { state.layoutInfo.visibleItemsInfo.size < (detail.value!!.vodFlags.size) }
+                    derivedStateOf { state.layoutInfo.visibleItemsInfo.size < (detail.value.vodFlags.size) }
                 if (showScrollBar.value) {
                     HorizontalScrollbar(
                         rememberScrollbarAdapter(state), style = defaultScrollbarStyle().copy(
@@ -332,7 +305,7 @@ private fun flags(
 
 @Composable
 private fun quickSearchResult(
-    model: State<DetailComponent.Model>, searchResultList: State<List<Vod>>, component: DetailComponent
+    model: State<DetailScreenState>, searchResultList: State<List<Vod>>, component: DetailViewModel
 ) {
     if (model.value.quickSearchResult.isNotEmpty()) {
         val quickState = rememberLazyGridState()
@@ -363,7 +336,7 @@ private fun quickSearchResult(
 }
 
 @Composable
-private fun vodInfo(detail: Vod?) {
+private fun VodInfo(detail: Vod?) {
     Column(Modifier.padding(10.dp)) {
         Row() {
             if (detail?.site?.name?.isNotBlank() == true) {
@@ -405,8 +378,8 @@ private fun vodInfo(detail: Vod?) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun EpChooser(component: DetailComponent, modifier: Modifier) {
-    val model = component.model.subscribeAsState()
+fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
+    val model = vm.state.collectAsState()
     val detail = rememberUpdatedState(model.value.detail)
     Column(modifier = modifier) {
         Row(Modifier.padding(vertical = 3.dp, horizontal = 8.dp)) {
@@ -418,18 +391,18 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
             )
             Spacer(Modifier.size(10.dp))
             val show = derivedStateOf {
-                detail.value?.currentFlag != null && (detail.value?.currentFlag?.episodes?.size ?: 0) > 0
+                (detail.value.currentFlag.episodes.size) > 0
             }
             if (show.value) {
                 Text(
-                    "共${detail.value?.currentFlag?.episodes?.size}集",
+                    "共${detail.value.currentFlag.episodes.size}集",
                     textAlign = TextAlign.End,
                     fontSize = TextUnit(15F, TextUnitType.Sp),
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
-        val epSize = derivedStateOf { detail.value?.currentFlag?.episodes?.size ?: 0 }
+        val epSize = derivedStateOf { detail.value.currentFlag.episodes.size }
 
         val scrollState = rememberLazyListState(0)
         val scrollBarAdapter = rememberScrollbarAdapter(scrollState)
@@ -443,15 +416,9 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                     for (i in 0 until epSize.value step Constants.EpSize) {
                         item {
                             RatioBtn(
-                                selected = detail.value?.currentTabIndex == (i / Constants.EpSize),
+                                selected = detail.value.currentTabIndex == (i / Constants.EpSize),
                                 onClick = {
-                                    detail.value?.currentTabIndex = i / Constants.EpSize
-                                    val dt = detail.value?.copy(
-                                        subEpisode = detail.value?.currentFlag?.episodes?.getPage(
-                                            detail.value!!.currentTabIndex
-                                        )?.toMutableList()
-                                    )
-                                    component.model.update { it.copy(detail = dt) }
+                                    vm.chooseEpBatch(i)
                                 },
                                 text = "${i + 1}-${if ((i + Constants.EpSize) > epSize.value) epSize.value else i + Constants.EpSize}"
                             )
@@ -467,10 +434,10 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                 )
             }
         }
-        val videoLoading = remember { mutableStateOf(false) }
-        val epList = derivedStateOf { detail.value?.subEpisode ?: listOf() }
+
+        val uriHandler = LocalUriHandler.current
+        val epList = derivedStateOf { detail.value.subEpisode }
         val state = rememberLazyGridState()
-        val openUri = LocalUriHandler.current
         Box {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(1),
@@ -494,53 +461,11 @@ fun EpChooser(component: DetailComponent, modifier: Modifier) {
                     ) {
                         RatioBtn(
                             text = it.name, onClick = {
-                                videoLoading.value = true
-                                SiteViewModel.viewModelScope.launch {
-                                    val isDownloadLink = Utils.isDownloadLink(it.url)
-                                    for (i in detail.value?.currentFlag?.episodes ?: listOf()) {
-                                        i.activated = (i.name == it.name)
-                                        if (i.activated) {
-                                            component.model.update { model ->
-                                                if (!isDownloadLink) {
-                                                    if (model.currentEp?.name != it.name) {
-                                                        component.controller.doWithHistory { it.copy(position = 0L) }
-                                                    }
-                                                    component.controller.doWithHistory {
-                                                        it.copy(
-                                                            episodeUrl = i.url, vodRemarks = i.name
-                                                        )
-                                                    }
-                                                }
-                                                model.copy(currentEp = i)
-                                            }
-                                        }
-                                    }
-                                    if (isDownloadLink) {
-                                        openUri.openUri(it.url)
-                                        return@launch
-                                    } else {
-                                        val dt = detail.value?.copy(
-                                            subEpisode = detail.value?.currentFlag?.episodes?.getPage(
-                                                detail.value!!.currentTabIndex
-                                            )?.toMutableList()?.toList()?.toMutableList(),
-                                        )
-                                        component.model.update { it.copy(detail = dt) }
-                                        val result = SiteViewModel.playerContent(
-                                            detail.value?.site?.key ?: "", detail.value?.currentFlag?.flag ?: "", it.url
-                                        )
-                                        component.model.update { it.copy(currentUrl = result?.url) }
-                                        val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
-                                        if (internalPlayer) {
-                                            component.play(result)
-                                        } else {
-                                            Play.start(result?.url?.v() ?: "", model.value.currentEp?.name)
-                                        }
-                                    }
-                                }.invokeOnCompletion {
-                                    videoLoading.value = false
+                                vm.chooseEp(it) {
+                                    uriHandler.openUri(it)
                                 }
                             }, selected = it.activated,
-                            loading = it.activated && videoLoading.value,
+                            loading = it.activated && vm.videoLoading.value,
                             tag = {
                                 if (Utils.isDownloadLink(it.url)) {
                                     true to "下载"

@@ -24,18 +24,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
-import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.extensions.compose.pages.ChildPages
-import com.arkivanov.decompose.extensions.compose.pages.PagesScrollAnimation
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.arkivanov.decompose.value.update
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.config.ApiConfig
-import com.corner.catvodcore.viewmodel.GlobalModel
-import com.corner.ui.decompose.component.DefaultSearchComponent
-import com.corner.ui.decompose.component.DefaultSearchPageComponent
-import com.corner.ui.decompose.component.DefaultSearchPagesComponent
+import com.corner.ui.nav.vm.SearchViewModel
+import com.corner.ui.navigation.SearchScreen
 import com.corner.ui.scene.ControlBar
 import com.corner.ui.scene.RatioBtn
 import com.corner.ui.video.VideoItem
@@ -48,26 +41,21 @@ enum class SearchPageType {
     content
 }
 
-@OptIn(ExperimentalDecomposeApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun WindowScope.SearchScene(component: DefaultSearchPagesComponent, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
-    ChildPages(
-        component.pages,
-        onPageSelected = component::selectPage,
-        modifier = Modifier.fillMaxSize(),
-        scrollAnimation = PagesScrollAnimation.Default
-    ) { _, p ->
-        when (p) {
-            is DefaultSearchPageComponent -> SearchPage(p, onClickBack = {
-                onClickBack()
-            }, onSearch = { s ->
-                component.onSearch(s)
-            })
-            is DefaultSearchComponent -> SearchResult(
-                p, onClickBack = { onClickBack() },
-            ) {
-                onClickItem(it)
-            }
+fun WindowScope.SearchScene(vm: SearchViewModel, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
+    var selectPage by remember { mutableStateOf(SearchScreen.Search) }
+
+    when(selectPage) {
+         SearchScreen.Search -> SearchPage(vm, onClickBack = {
+            onClickBack()
+        }, onSearch = { s ->
+            vm.onSearch(s)
+             selectPage = SearchScreen.SearchResult
+        })
+        SearchScreen.SearchResult -> SearchResult(
+            vm, onClickBack = { onClickBack() },
+        ) {
+            onClickItem(it)
         }
     }
 }
@@ -82,12 +70,12 @@ fun WindowScope.SearchScene(component: DefaultSearchPagesComponent, onClickItem:
 
 @Composable
 private fun WindowScope.SearchResult(
-    component: DefaultSearchComponent,
+    vm: SearchViewModel,
     onClickBack: () -> Unit,
     onClickItem: (Vod) -> Unit
 ) {
-    val model = component.model.subscribeAsState()
-    val searchText = GlobalModel.keyword.subscribeAsState()
+    val model = vm.state.collectAsState()
+    val searchText = remember { derivedStateOf { model.value.keyword } }
     val result = remember { SiteViewModel.search }
     var currentCollect by remember { mutableStateOf<Collect?>(SiteViewModel.search.value[0]) }
     val currentVodList by rememberUpdatedState(model.value.currentVodList)
@@ -102,7 +90,7 @@ private fun WindowScope.SearchResult(
     }
 
     DisposableEffect(searchText.value) {
-        component.search(searchText.value, false)
+        vm.search(searchText.value, false)
         onDispose {
         }
     }
@@ -115,7 +103,7 @@ private fun WindowScope.SearchResult(
                         modifier = Modifier
                             .padding(start = 20.dp, end = 20.dp),
                         onClick = {
-                            component.clear()
+                            vm.clear()
                             onClickBack()
                         }
                     ) {
@@ -126,12 +114,12 @@ private fun WindowScope.SearchResult(
                         )
                     }
                     SearchBar(
-                        component,
+                        vm,
                         Modifier,
                         remember { FocusRequester() },
                         searchText.value,
                         onSearch = { s ->
-                            GlobalModel.keyword.update { s }
+                            vm.onSearch(s)
                         }, model.value.isSearching
                     )
                 }) { }
@@ -151,7 +139,7 @@ private fun WindowScope.SearchResult(
                                 text = item.site?.name ?: "",
                                 onClick = {
                                     currentCollect = item
-                                    component.onClickCollection(item)
+                                    vm.onClickCollection(item)
                                     result.value.forEach { i ->
                                         i.activated.value = (i.site?.key == item.site?.key)
                                     }
@@ -165,7 +153,7 @@ private fun WindowScope.SearchResult(
                             Modifier.height(45.dp),
                             text = if (showLoadMore.value) "加载更多" else "没有更多",
                             onClick = {
-                                component.search(searchText.value, true)
+                                vm.search(searchText.value, true)
                             },
                             selected = false,
                             loading = model.value.isSearching,

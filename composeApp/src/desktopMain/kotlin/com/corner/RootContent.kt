@@ -4,29 +4,31 @@ import AppTheme
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
-import com.arkivanov.decompose.extensions.compose.stack.Children
-import com.arkivanov.decompose.extensions.compose.stack.animation.fade
-import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.enum.Menu
-import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.ui.DetailScene
 import com.corner.ui.HistoryScene
 import com.corner.ui.SettingScene
-import com.corner.ui.decompose.RootComponent
+import com.corner.ui.nav.vm.*
+import com.corner.ui.navigation.TVScreen
 import com.corner.ui.scene.LoadingIndicator
 import com.corner.ui.scene.SnackBar
-import com.corner.ui.scene.isShowProgress
 import com.corner.ui.search.SearchScene
 import com.corner.ui.video.VideoScene
 import com.corner.util.FirefoxGray
@@ -34,10 +36,15 @@ import com.corner.util.FirefoxGray
 
 @Composable
 fun WindowScope.RootContent(
-    component: RootComponent,
     modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController()
 ) {
-    val isFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
+    val toDetail = fun(it: Vod) {
+        GlobalAppState.chooseVod.value = it
+        navController.navigate(TVScreen.DetailScreen.name)
+    }
+
+    val isFullScreen = GlobalAppState.videoFullScreen.collectAsState()
     val modifierVar = derivedStateOf {
         if (isFullScreen.value) {
             Modifier.fillMaxSize().border(border = BorderStroke(0.dp, Color.Transparent))
@@ -57,42 +64,55 @@ fun WindowScope.RootContent(
 
 
     AppTheme(useDarkTheme = true) {
-        val url = LocalUriHandler.current
-        Column(
-            modifier = modifierVar.value
+        Box(
+            modifier = modifierVar.value.background(Color.Black)
         ) {
-            Children(stack = component.childStack, modifier = modifier.background(Color.Transparent), animation = stackAnimation(fade())) {
-                when (val child = it.instance) {
-                    is RootComponent.Child.VideoChild -> VideoScene(
-                        child.component,
+            NavHost(
+                navController,
+                startDestination = TVScreen.VideoScreen.name
+            ) {
+                composable(TVScreen.VideoScreen.name) {
+                    VideoScene(
+                        viewModel { VideoViewModel() },
                         modifier = Modifier,
-                        { component.showDetail(it) }) { menu ->
+                        { toDetail(it) }) { menu ->
                         when (menu) {
-                            Menu.SEARCH -> component.onClickSearch()
-                            Menu.HOME -> component.backToHome()
-                            Menu.SETTING -> component.onClickSetting()
-                            Menu.HISTORY -> component.onClickHistory()
+                            Menu.SEARCH -> navController.navigate(TVScreen.SearchScreen.name)
+                            Menu.HOME -> navController.navigate(TVScreen.VideoScreen.name)
+                            Menu.SETTING -> navController.navigate(TVScreen.SettingsScreen.name)
+                            Menu.HISTORY -> navController.navigate(TVScreen.HistoryScreen.name)
                         }
                     }
-
-                    is RootComponent.Child.SearchChild -> SearchScene(
-                        child.component,
-                        { component.showDetail(it, true) }) { component.onClickBack() }
-
-                    is RootComponent.Child.HistoryChild -> HistoryScene(
-                        child.component,
-                        { component.showDetail(it) }) { component.onClickBack() }
-
-                    is RootComponent.Child.SettingChild -> SettingScene(child.component) { component.onClickBack() }
-                    is RootComponent.Child.DetailChild -> DetailScene(child.component) { component.onClickBack() }
                 }
 
-                SnackBar.SnackBarList()
-                LoadingIndicator(showProgress = isShowProgress())
+                composable(TVScreen.DetailScreen.name) {
+                    DetailScene(
+                        viewModel { DetailViewModel() }
+                    ) { navController.popBackStack() }
+                }
+
+                composable(TVScreen.SearchScreen.name) {
+                    SearchScene(
+                        viewModel { SearchViewModel() },
+                        { toDetail(it) }) { navController.popBackStack() }
+                }
+
+                composable(TVScreen.HistoryScreen.name) {
+                    HistoryScene(
+                        viewModel { HistoryViewModel() },
+                        { toDetail(it) }) { navController.popBackStack() }
+                }
+
+                composable(TVScreen.SettingsScreen.name) {
+                    SettingScene(viewModel { SettingViewModel() }) { navController.popBackStack() }
+                }
             }
+            SnackBar.SnackBarList()
+            val showProgress = GlobalAppState.showProgress.collectAsState()
+            LoadingIndicator(showProgress = showProgress.value)
         }
+    }
 //        if(isDebug.value){
 //            FpsMonitor(Modifier)
 //        }
-    }
 }

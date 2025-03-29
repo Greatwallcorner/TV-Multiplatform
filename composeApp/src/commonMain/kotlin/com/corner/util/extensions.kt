@@ -5,6 +5,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import cn.hutool.core.collection.CollectionUtil
 import cn.hutool.core.util.CharUtil
+import com.corner.bean.Setting
+import com.corner.bean.SettingType
 import com.corner.catvod.enum.bean.Site
 import io.ktor.util.*
 import kotlinx.coroutines.Job
@@ -100,4 +102,8 @@ fun <E> CopyOnWriteArrayList<E>.copyAdd(item: E? = null, list: CopyOnWriteArrayL
         if(item != null) it.add(item)
         if(CollectionUtil.isNotEmpty(list)) it.addAll(list!!)
     }
+}
+
+fun List<Setting>.getSetting(type: SettingType): Setting? {
+    return this.find { it.id == type.id }
 }

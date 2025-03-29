@@ -11,7 +11,7 @@ import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Utils
-import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.util.copyAdd
 import com.corner.util.createCoroutineScope
 import com.github.catvod.crawler.Spider
@@ -46,7 +46,7 @@ object SiteViewModel {
     }
 
     fun homeContent(): Result {
-        val site: Site = GlobalModel.home.value
+        val site: Site = GlobalAppState.home.value
         result.value = Result()
         try {
             when (site.type) {

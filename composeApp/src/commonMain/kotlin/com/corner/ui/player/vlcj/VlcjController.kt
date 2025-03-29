@@ -3,9 +3,9 @@ package com.corner.ui.player.vlcj
 import com.corner.bean.PlayerStateCache
 import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
-import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.database.entity.History
-import com.corner.ui.decompose.DetailComponent
+import com.corner.ui.nav.vm.DetailViewModel
 import com.corner.ui.player.MediaInfo
 import com.corner.ui.player.PlayState
 import com.corner.ui.player.PlayerController
@@ -29,7 +29,7 @@ import kotlin.time.DurationUnit
 
 private val log = LoggerFactory.getLogger("PlayerController")
 
-class VlcjController(val component: DetailComponent) : PlayerController {
+class VlcjController(val vm: DetailViewModel) : PlayerController {
     var player: EmbeddedMediaPlayer? = null
         private set
     private val defferredEffects = mutableListOf<(MediaPlayer) -> Unit>()
@@ -131,7 +131,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
                     if (checkEnd(mediaPlayer)) {
                         return@launch
                     }
-                    component.nextEP()
+                    vm.nextEP()
                 } catch (e: Exception) {
                     log.error("finished error", e)
                 }
@@ -163,7 +163,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
                     println("history is null")
                     return@launch
                 }
-                if (history.value?.ending != null && history.value?.ending != -1L && history.value?.ending!! <= newTime) component.nextEP()
+                if (history.value?.ending != null && history.value?.ending != -1L && history.value?.ending!! <= newTime) vm.nextEP()
                 if ((newTime / 1000 % 25).toInt() == 0) history.emit(history.value?.copy(position = newTime))
             }
             _state.update { it.copy(timestamp = newTime) }
@@ -174,9 +174,9 @@ class VlcjController(val component: DetailComponent) : PlayerController {
         override fun error(mediaPlayer: MediaPlayer?) {
             log.error("播放错误: ${mediaPlayer?.media()?.info()?.mrl()}")
             _state.update { it.copy(state = PlayState.ERROR, msg = "播放错误") }
-            component.nextFlag()
+            vm.nextFlag()
             scope.launch {
-                history.value?.let { component.updateHistory(it) }
+                history.value?.let { vm.updateHistory(it) }
                 try {
                     if (checkEnd(mediaPlayer)) {
                         return@launch
@@ -251,7 +251,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
                 val mrl = player?.media()?.info()?.mrl()
                 if (StringUtils.isNotBlank(mrl)) {
                     load(mrl!!)
-                    component.syncHistory()
+                    vm.syncHistory()
                 } else {
                     log.error("视频播放完毕或者播放错误， 重新加载时 url为空")
                 }
@@ -335,7 +335,7 @@ class VlcjController(val component: DetailComponent) : PlayerController {
     }
 
     override fun toggleFullscreen() = catch {
-        val videoFullScreen = GlobalModel.toggleVideoFullScreen()
+        val videoFullScreen = GlobalAppState.toggleVideoFullScreen()
         runBlocking {
             if (videoFullScreen) showTips("[ESC]退出全屏")
         }

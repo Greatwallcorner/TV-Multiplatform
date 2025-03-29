@@ -31,9 +31,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.corner.bean.Suggest
-import com.corner.ui.decompose.component.DefaultSearchComponent
+import com.corner.ui.nav.vm.SearchViewModel
 import com.corner.util.KtorClient
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -45,14 +44,14 @@ import org.apache.commons.lang3.StringUtils
 
 @Composable
 fun SearchBar(
-    component: DefaultSearchComponent,
+    vm: SearchViewModel,
     modifier: Modifier,
     focusRequester: FocusRequester = remember { FocusRequester() },
     initValue: String,
     onSearch: (String) -> Unit,
     isSearching: Boolean
 ) {
-    val modelState = component.model.subscribeAsState()
+    val modelState = vm.state.collectAsState()
     var searchText by remember { mutableStateOf(initValue) }
     val searching by rememberUpdatedState(isSearching)
     var isGettingSuggestion by remember { mutableStateOf(false) }
@@ -198,7 +197,7 @@ fun SearchBar(
             Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                 Text("全选")
                 TriStateCheckbox(state = parentState.value, onClick = {
-                    component.updateModel {
+                    vm.updateModel {
                         val newState = parentState.value != ToggleableState.On
                         it.searchableSites.forEachIndexed { _, site ->
                             if (newState) {
@@ -225,7 +224,7 @@ fun SearchBar(
                     ) {
                         Text(site.name)
                         Checkbox(site.isSearchable(), onCheckedChange = {
-                            component.updateModel {
+                            vm.updateModel {
                                 it.searchableSites.first { iSite -> iSite.key == site.key }
                                     ?.apply { toggleSearchable() }
                             }

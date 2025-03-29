@@ -3,22 +3,23 @@ package com.corner.catvodcore.viewmodel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
-import com.arkivanov.decompose.value.MutableValue
 import com.corner.bean.HotData
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import org.jupnp.UpnpService
 
-object GlobalModel {
+object GlobalAppState{
+    val showProgress = MutableStateFlow(false)
     var windowState:WindowState? = null
-    val hotList = MutableValue(listOf<HotData>())
+    val hotList = MutableStateFlow(listOf<HotData>())
     val chooseVod = mutableStateOf<Vod>(Vod())
     var detailFromSearch = false
-    val home = MutableValue<Site>(Site.get("",""))
-    val clear = MutableValue<Boolean>(false)
-    val closeApp = MutableValue<Boolean>(false)
-    var keyword = MutableValue<String>("")
-    var videoFullScreen = MutableValue<Boolean>(false)
+    val home = MutableStateFlow<Site>(Site.get("",""))
+    val clear = MutableStateFlow<Boolean>(false)
+    val closeApp = MutableStateFlow<Boolean>(false)
+    var videoFullScreen = MutableStateFlow<Boolean>(false)
         private set
     var upnpService = mutableStateOf<UpnpService?>(null)
 
@@ -38,5 +39,17 @@ object GlobalModel {
         }else{
             windowState?.placement = WindowPlacement.Fullscreen
         }
+    }
+
+    fun showProgress(){
+        showProgress.update { true }
+    }
+
+    fun hideProgress(){
+        showProgress.update { false }
+    }
+
+    fun isShowProgress():Boolean{
+        return showProgress.value
     }
 }

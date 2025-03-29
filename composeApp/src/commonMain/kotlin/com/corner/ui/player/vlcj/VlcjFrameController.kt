@@ -5,11 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
 import com.corner.database.entity.History
-import com.corner.ui.decompose.DetailComponent
+import com.corner.ui.nav.vm.DetailViewModel
 import com.corner.ui.player.PlayerController
 import com.corner.ui.player.frame.FrameRenderer
-import com.corner.ui.scene.hideProgress
-import com.corner.ui.scene.showProgress
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,8 +29,8 @@ import java.nio.ByteBuffer
 import kotlin.math.max
 
 
-class VlcjFrameController constructor(
-    component: DetailComponent,
+class VlcjFrameController(
+    component: DetailViewModel,
     private val controller: VlcjController = VlcjController(component),
 ) : FrameRenderer, PlayerController by controller {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -56,14 +54,22 @@ class VlcjFrameController constructor(
             return RV32BufferFormat(sourceWidth, sourceHeight)
         }
 
+        override fun newFormatSize(bufferWidth: Int, bufferHeight: Int, displayWidth: Int, displayHeight: Int) {
+        }
+
         override fun allocatedBuffers(buffers: Array<out ByteBuffer>) {
             byteArray = ByteArray(buffers[0].limit())
         }
     }, object : RenderCallback {
+        override fun lock(mediaPlayer: MediaPlayer?) {
+        }
+
         override fun display(
             mediaPlayer: MediaPlayer,
             nativeBuffers: Array<out ByteBuffer>,
-            bufferFormat: BufferFormat?
+            bufferFormat: BufferFormat,
+            displayWidth: Int,
+            displayHeight: Int
         ) {
             val byteBuffer = nativeBuffers[0]
 
@@ -74,6 +80,9 @@ class VlcjFrameController constructor(
             bmp.allocPixels(info!!)
             bmp.installPixels(byteArray)
             imageBitmapState.value = bmp.asComposeImageBitmap()
+        }
+
+        override fun unlock(mediaPlayer: MediaPlayer?) {
         }
     }, true,
         VideoSurfaceAdapters.getVideoSurfaceAdapter()
@@ -92,10 +101,8 @@ class VlcjFrameController constructor(
 
     override fun init() {
         log.info("播放器初始化")
-        showProgress()
         controller.init()
         controller.player?.videoSurface()?.set(callbackSurFace)
-        hideProgress()
     }
 
     fun isPlaying(): Boolean {
@@ -115,7 +122,7 @@ class VlcjFrameController constructor(
             delay(10)
             controller.history.collect {
                 if (it != null) {
-                    controller.component.updateHistory(it)
+                    controller.vm.updateHistory(it)
                 }
             }
         }
@@ -137,6 +144,8 @@ class VlcjFrameController constructor(
     }
 
     fun release() {
+        controller.player?.controls()?.stop()
+        controller.player?.release()
         controller.factory.release()
     }
 

@@ -21,8 +21,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPlacement
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.util.FirefoxGray
 
 @Composable
@@ -33,7 +32,7 @@ fun ControlBar(
     center: @Composable() (() -> Unit?)? = null,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
-    val isFullScreen = GlobalModel.videoFullScreen.subscribeAsState()
+    val isFullScreen = GlobalAppState.videoFullScreen.collectAsState()
     if (!isFullScreen.value) {
         Column(modifier = modifier.fillMaxWidth()) {
             Box(Modifier.fillMaxWidth()) {
@@ -53,7 +52,7 @@ fun ControlBar(
                 Row(Modifier.align(alignment = Alignment.CenterEnd)) {
                     actions()
                     CustomActionButton(modifier = Modifier.fillMaxHeight(), onClick = {
-                        GlobalModel.windowState?.isMinimized = !GlobalModel.windowState?.isMinimized!!
+                        GlobalAppState.windowState?.isMinimized = !GlobalAppState.windowState?.isMinimized!!
                     }) {
                         Icon(
                             Icons.Default.Minimize,
@@ -63,8 +62,8 @@ fun ControlBar(
                         )
                     }
                     CustomActionButton(modifier = Modifier.fillMaxHeight(), onClick = {
-                        GlobalModel.windowState?.placement =
-                            if (WindowPlacement.Maximized == GlobalModel.windowState?.placement) WindowPlacement.Floating else WindowPlacement.Maximized
+                        GlobalAppState.windowState?.placement =
+                            if (WindowPlacement.Maximized == GlobalAppState.windowState?.placement) WindowPlacement.Floating else WindowPlacement.Maximized
                     }) {
                         Icon(
                             Icons.Default.KeyboardArrowUp,
@@ -74,7 +73,7 @@ fun ControlBar(
                         )
                     }
                     CustomActionButton(modifier = Modifier.fillMaxHeight(), onClick = {
-                        GlobalModel.closeApp.value = true
+                        GlobalAppState.closeApp.value = true
                     }, color = Color.Red) {
                         Icon(
                             Icons.Default.Close,

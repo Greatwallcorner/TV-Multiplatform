@@ -24,9 +24,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.corner.bean.HotData
-import com.corner.ui.decompose.component.DefaultSearchPageComponent
+import com.corner.ui.nav.vm.SearchViewModel
 import com.corner.ui.scene.ControlBar
 import com.corner.ui.scene.ExpandedText
 
@@ -35,9 +34,9 @@ import com.corner.ui.scene.ExpandedText
  *热门推荐
  */
 @Composable
-fun WindowScope.SearchPage(component: DefaultSearchPageComponent, onClickBack: () -> Unit, onSearch: (String) -> Unit) {
+fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearch: (String) -> Unit) {
     val focusRequester = remember { FocusRequester() }
-    val model = component.model.subscribeAsState()
+    val model = vm.state.collectAsState()
 
     LaunchedEffect("focus") {
         focusRequester.requestFocus()
@@ -63,7 +62,7 @@ fun WindowScope.SearchPage(component: DefaultSearchPageComponent, onClickBack: (
                                 tint = MaterialTheme.colorScheme.onBackground
                             )
                         }
-                        SearchBar(component.getSearchComponent(), Modifier, focusRequester, "", onSearch, false)
+                        SearchBar(vm, Modifier, focusRequester, "", onSearch, false)
                     }
                 }, center = {})
             }
@@ -106,8 +105,8 @@ fun HotPanel(modifier: Modifier, hots: List<HotData>, onClick: (HotData) -> Unit
             modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally),
             userScrollEnabled = true
         ) {
-            items(hotList.toList(), key = { i -> i.title + i.hashCode() }) {
-                HotItem(Modifier.wrapContentHeight(), it) {
+            items(hotList.toList(), key = { i -> i.title + i.hashCode() }) { hotData ->
+                HotItem(Modifier.wrapContentHeight(), hotData) {
                     onClick(it)
                 }
             }
