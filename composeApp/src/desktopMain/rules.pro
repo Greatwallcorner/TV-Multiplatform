@@ -87,6 +87,9 @@
 -keep class androidx.compose.material3.** {*;}
 -keep class androidx.compose.ui.** {*;}
 -keep class androidx.compose.runtime.** {*;}
+# 保留 javax.naming 及其子包的所有类
+-keep class javax.naming.** { *; }
+
 
 
 

@@ -135,6 +135,7 @@ compose.desktop {
                 "java.management",
                 "java.net.http",
                 "jdk.unsupported",
+                "java.naming"
             )
             val dir = project.layout.projectDirectory.dir("src/desktopMain/appResources")
             println(dir)

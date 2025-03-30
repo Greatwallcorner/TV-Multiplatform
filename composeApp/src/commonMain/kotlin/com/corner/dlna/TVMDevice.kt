@@ -37,7 +37,6 @@ fun createIcons(): Array<Icon> {
             24,
             "images/icon-s.png",
             runBlocking { Res.readBytes("drawable/TV-icon-s.png") }
-//            TVMDevice::class.java.getResourceAsStream("composeResources/drawable/TV-icon-s.png")
         )
     )
     list.add(
@@ -48,7 +47,6 @@ fun createIcons(): Array<Icon> {
             24,
             "images/icon-x.png",
             runBlocking { Res.readBytes("drawable/TV-icon-x.png") }
-//            TVMDevice::class.java.getResourceAsStream("composeResources/drawable/TV-icon-x.png")
         )
     )
     list.add(
@@ -59,7 +57,6 @@ fun createIcons(): Array<Icon> {
             24,
             "images/icon-xs.png",
             runBlocking { Res.readBytes("drawable/TV-icon-xs.png") }
-//            TVMDevice::class.java.getResourceAsStream("composeResources/drawable/TV-icon-xs.png")
         )
     )
     return list.toTypedArray()
