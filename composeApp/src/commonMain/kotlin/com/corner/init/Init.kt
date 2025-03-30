@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.slf4j.LoggerFactory
+import upnp.TVMUpnpService
 
 
 private val log = LoggerFactory.getLogger("Init")
@@ -39,10 +40,10 @@ class Init {
                 initPlatformSpecify()
                 Hot.getHotList()
                 VlcJInit.init()
-//                GlobalModel.upnpService.value = TVMUpnpService().apply {
-//                    startup()
-//                    sendAlive()
-//                }
+                GlobalAppState.upnpService.value = TVMUpnpService().apply {
+                    startup()
+                    sendAlive()
+                }
             } finally {
                 hideProgress()
             }

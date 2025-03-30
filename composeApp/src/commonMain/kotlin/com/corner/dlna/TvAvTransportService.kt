@@ -1,20 +1,29 @@
 package upnp
 
-import com.corner.util.play.Play
+import com.corner.catvodcore.viewmodel.GlobalAppState
+import kotlinx.coroutines.runBlocking
 import org.jupnp.model.types.UnsignedIntegerFourBytes
 import org.jupnp.support.avtransport.AbstractAVTransportService
 import org.jupnp.support.model.*
 import org.slf4j.LoggerFactory
 
 
-class TvAvTransportService: AbstractAVTransportService() {
+class TvAvTransportService : AbstractAVTransportService() {
     private val log = LoggerFactory.getLogger(this::class.java)
     override fun getCurrentInstanceIds(): Array<UnsignedIntegerFourBytes> {
         return arrayOf(UnsignedIntegerFourBytes(0x01))
     }
 
-    override fun setAVTransportURI(instanceId: UnsignedIntegerFourBytes, currentURI: String, currentURIMetaData: String) {
-        Play.start(currentURI, "test")
+    override fun setAVTransportURI(
+        instanceId: UnsignedIntegerFourBytes,
+        currentURI: String,
+        currentURIMetaData: String
+    ) {
+
+        runBlocking {
+            GlobalAppState.DLNAUrl.emit(currentURI)
+        }
+//        Play.start(currentURI, "test")
         log.info("setAvTransportURI instance id: $instanceId currentURI: $currentURI currentURIMetaData: $currentURIMetaData")
     }
 

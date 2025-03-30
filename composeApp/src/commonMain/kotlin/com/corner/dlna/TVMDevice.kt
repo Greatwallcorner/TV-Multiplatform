@@ -2,12 +2,15 @@ package upnp
 
 import com.corner.dlna.TVConnectionManagerService
 import com.corner.dlna.TvMAudioRenderingControlService
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jupnp.binding.annotations.AnnotationLocalServiceBinder
 import org.jupnp.model.DefaultServiceManager
 import org.jupnp.model.meta.*
 import org.jupnp.model.types.UDADeviceType
 import org.jupnp.model.types.UDN
 import org.jupnp.support.renderingcontrol.AbstractAudioRenderingControl
+import tv_multiplatform.composeapp.generated.resources.Res
 
 
 class TVMDevice
@@ -23,6 +26,7 @@ class TVMDevice
 
 }
 
+@OptIn(ExperimentalResourceApi::class)
 fun createIcons(): Array<Icon> {
     val list = arrayListOf<Icon>()
     list.add(
@@ -32,7 +36,8 @@ fun createIcons(): Array<Icon> {
             68,
             24,
             "images/icon-s.png",
-            TVMDevice::class.java.getResourceAsStream("/composeResources/drawable/TV-icon-s.png")
+            runBlocking { Res.readBytes("drawable/TV-icon-s.png") }
+//            TVMDevice::class.java.getResourceAsStream("composeResources/drawable/TV-icon-s.png")
         )
     )
     list.add(
@@ -42,7 +47,8 @@ fun createIcons(): Array<Icon> {
             248,
             24,
             "images/icon-x.png",
-            TVMDevice::class.java.getResourceAsStream("/composeResources/drawable/TV-icon-x.png")
+            runBlocking { Res.readBytes("drawable/TV-icon-x.png") }
+//            TVMDevice::class.java.getResourceAsStream("composeResources/drawable/TV-icon-x.png")
         )
     )
     list.add(
@@ -52,7 +58,8 @@ fun createIcons(): Array<Icon> {
             40,
             24,
             "images/icon-xs.png",
-            TVMDevice::class.java.getResourceAsStream("/composeResources/drawable/TV-icon-xs.png")
+            runBlocking { Res.readBytes("drawable/TV-icon-xs.png") }
+//            TVMDevice::class.java.getResourceAsStream("composeResources/drawable/TV-icon-xs.png")
         )
     )
     return list.toTypedArray()

@@ -94,14 +94,14 @@ fun HistoryItem(
 }
 
 @Composable
-fun WindowScope.HistoryScene(component: HistoryViewModel, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
-    val model = component.state.collectAsState()
+fun WindowScope.HistoryScene(vm: HistoryViewModel, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
+    val model = vm.state.collectAsState()
     var chooseHistory by remember { mutableStateOf<History?>(null) }
     LaunchedEffect(Unit) {
         showProgress()
         SiteViewModel.viewModelScope.launch {
             try {
-                component.fetchHistoryList()
+                vm.fetchHistoryList()
             } finally {
                 hideProgress()
             }
@@ -134,8 +134,8 @@ fun WindowScope.HistoryScene(component: HistoryViewModel, onClickItem: (Vod) -> 
                             modifier = Modifier.align(Alignment.CenterVertically)
                                 .padding(end = 20.dp)
                                 .size(80.dp), onClick = {
-                                component.clearHistory()
-                                component.fetchHistoryList()
+                                vm.clearHistory()
+                                vm.fetchHistoryList()
                             }) {
                             Row(modifier = Modifier.padding(2.dp)) {
                                 Icon(Icons.Default.Delete, "delete all", tint = MaterialTheme.colorScheme.onSurface)
@@ -158,8 +158,8 @@ fun WindowScope.HistoryScene(component: HistoryViewModel, onClickItem: (Vod) -> 
                     HistoryItem(
                         Modifier,
                         it, showSite = false, onDelete = { key ->
-                            component.deleteBatchHistory(listOf(key))
-                            component.fetchHistoryList()
+                            vm.deleteBatchHistory(listOf(key))
+                            vm.fetchHistoryList()
                         }) {
                         onClickItem(it.buildVod())
                         chooseHistory = it

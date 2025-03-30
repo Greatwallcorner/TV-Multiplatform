@@ -9,6 +9,7 @@ import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
 import com.corner.catvodcore.bean.*
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.util.Utils
+import com.corner.catvodcore.viewmodel.DetailFromPage
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
 import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
@@ -68,7 +69,7 @@ class DetailViewModel:BaseViewModel(){
         _state.update { it.copy(detail = chooseVod) }
         currentSiteKey.value = chooseVod.site?.key ?: ""
         SiteViewModel.viewModelScope.launch {
-            if (GlobalAppState.detailFromSearch) {
+            if (GlobalAppState.detailFrom == DetailFromPage.SEARCH) {
                 val list = SiteViewModel.getSearchResultActive().list
                 _state.update { it.copy(quickSearchResult = CopyOnWriteArrayList(list), detail = chooseVod) }
                 fromSearchLoadJob = SiteViewModel.viewModelScope.launch {
@@ -473,5 +474,9 @@ class DetailViewModel:BaseViewModel(){
         }.invokeOnCompletion {
             videoLoading.value = false
         }
+    }
+
+    fun setPlayUrl(string:String){
+        _state.update { it.copy(currentPlayUrl = string) }
     }
 }

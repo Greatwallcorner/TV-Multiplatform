@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -21,7 +22,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.enum.Menu
+import com.corner.catvodcore.viewmodel.DetailFromPage
 import com.corner.catvodcore.viewmodel.GlobalAppState
+import com.corner.ui.DLNAPlayer
 import com.corner.ui.DetailScene
 import com.corner.ui.HistoryScene
 import com.corner.ui.SettingScene
@@ -32,6 +35,7 @@ import com.corner.ui.scene.SnackBar
 import com.corner.ui.search.SearchScene
 import com.corner.ui.video.VideoScene
 import com.corner.util.FirefoxGray
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -39,8 +43,9 @@ fun WindowScope.RootContent(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
-    val toDetail = fun(it: Vod) {
+    val toDetail = fun(it: Vod, from:DetailFromPage) {
         GlobalAppState.chooseVod.value = it
+        GlobalAppState.detailFrom = from
         navController.navigate(TVScreen.DetailScreen.name)
     }
 
@@ -59,8 +64,17 @@ fun WindowScope.RootContent(
         }
 
     }
-    System.setProperty("native.encoding", "UTF-8")
+//    System.setProperty("native.encoding", "UTF-8")
 //    val isDebug = derivedStateOf { System.getProperty("org.gradle.project.buildType") == "debug" }
+
+    val scope = rememberCoroutineScope()
+    scope.launch{
+        GlobalAppState.DLNAUrl.collect{
+            if(it.isNullOrBlank()) return@collect
+            navController.navigate(TVScreen.DLNAPlayerScreen.name)
+
+        }
+    }
 
 
     AppTheme(useDarkTheme = true) {
@@ -75,7 +89,7 @@ fun WindowScope.RootContent(
                     VideoScene(
                         viewModel { VideoViewModel() },
                         modifier = Modifier,
-                        { toDetail(it) }) { menu ->
+                        { toDetail(it, DetailFromPage.HOME) }) { menu ->
                         when (menu) {
                             Menu.SEARCH -> navController.navigate(TVScreen.SearchScreen.name)
                             Menu.HOME -> navController.navigate(TVScreen.VideoScreen.name)
@@ -94,17 +108,25 @@ fun WindowScope.RootContent(
                 composable(TVScreen.SearchScreen.name) {
                     SearchScene(
                         viewModel { SearchViewModel() },
-                        { toDetail(it) }) { navController.popBackStack() }
+                        { toDetail(it, DetailFromPage.SEARCH) }) { navController.popBackStack() }
                 }
 
                 composable(TVScreen.HistoryScreen.name) {
                     HistoryScene(
                         viewModel { HistoryViewModel() },
-                        { toDetail(it) }) { navController.popBackStack() }
+                        { toDetail(it, DetailFromPage.HOME) }) { navController.popBackStack() }
                 }
 
                 composable(TVScreen.SettingsScreen.name) {
                     SettingScene(viewModel { SettingViewModel() }) { navController.popBackStack() }
+                }
+
+                composable(TVScreen.DLNAPlayerScreen.name) {
+                    val viewModel = viewModel { DetailViewModel() }
+                    viewModel.setPlayUrl(GlobalAppState.DLNAUrl.value ?: "")
+                    DLNAPlayer(viewModel){
+                        navController.popBackStack()
+                    }
                 }
             }
             SnackBar.SnackBarList()

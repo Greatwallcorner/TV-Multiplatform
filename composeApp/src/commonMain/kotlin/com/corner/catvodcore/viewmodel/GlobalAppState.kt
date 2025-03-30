@@ -8,19 +8,21 @@ import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import org.jupnp.UpnpService
 
 object GlobalAppState{
     val showProgress = MutableStateFlow(false)
     var windowState:WindowState? = null
     val hotList = MutableStateFlow(listOf<HotData>())
     val chooseVod = mutableStateOf<Vod>(Vod())
-    var detailFromSearch = false
+    var detailFrom  = DetailFromPage.HOME
     val home = MutableStateFlow<Site>(Site.get("",""))
     val clear = MutableStateFlow<Boolean>(false)
     val closeApp = MutableStateFlow<Boolean>(false)
     var videoFullScreen = MutableStateFlow<Boolean>(false)
         private set
-//    var upnpService = mutableStateOf<UpnpService?>(null)
+    var upnpService = mutableStateOf<UpnpService?>(null)
+    var DLNAUrl = MutableStateFlow<String?>(null)
 
     fun clearHome(){
         home.value = Site.get("","")
@@ -51,4 +53,8 @@ object GlobalAppState{
     fun isShowProgress():Boolean{
         return showProgress.value
     }
+}
+
+enum class DetailFromPage(){
+    SEARCH, DLNA, HOME
 }
