@@ -28,6 +28,10 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
         val ca = consoleAppender(context)
         val fa = fileAppender(context)
         val rootLogger = context?.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
+        val jupnpLogger = context?.getLogger("org.jupnp")
+        jupnpLogger?.level = Level.OFF
+        val jettyLogger = context?.getLogger("org.eclipse.jetty")
+        jettyLogger?.level = Level.OFF
         rootLogger?.level = Level.valueOf(SettingStore.getSettingItem("log") )
 //        System.setOut(createMyPrintStream(System.out))
 //        System.setErr(createMyPrintStream(System.err))
