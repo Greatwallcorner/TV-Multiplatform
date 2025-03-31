@@ -39,6 +39,9 @@ class VlcjFrameController(
     private var info: ImageInfo? = null
     val imageBitmapState: MutableState<ImageBitmap?> = mutableStateOf(null)
 
+    var isReleased = true
+    private set
+
     private var historyCollectJob: Job? = null
 
 
@@ -103,10 +106,11 @@ class VlcjFrameController(
         log.info("播放器初始化")
         controller.init()
         controller.player?.videoSurface()?.set(callbackSurFace)
+        isReleased = false
     }
 
     fun isPlaying(): Boolean {
-        return controller.player?.status()?.isPlayable == true && controller.player?.status()?.isPlaying == true
+        return !isReleased && controller.player?.status()?.isPlayable == true && controller.player?.status()?.isPlaying == true
     }
 
     fun setStartEnd(opening: Long, ending: Long) {
@@ -147,6 +151,6 @@ class VlcjFrameController(
         controller.player?.controls()?.stop()
         controller.player?.release()
         controller.factory.release()
+        isReleased = true
     }
-
 }

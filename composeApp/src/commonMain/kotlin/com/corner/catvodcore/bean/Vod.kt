@@ -113,10 +113,10 @@ data class Vod(
         return episode
     }
 
-    fun nextFlag(): Flag {
+    fun nextFlag(): Flag? {
         val find = vodFlags.find { it.activated }
         val indexOf = vodFlags.indexOf(find)
-        if (indexOf + 1 >= vodFlags.size) return find ?: Flag()
+        if (indexOf + 1 >= vodFlags.size) return null
         val flag = vodFlags[indexOf + 1]
         vodFlags.forEach {
             it.activated = flag.flag == it.flag

@@ -7,6 +7,7 @@
 #-keep class org.bouncycastle.** {*;}
 -keep class ch.qos.** {*;}
 -keep class org.eclipse.jetty.** {*;}
+-keep class io.netty.** {*;}
 #-keep class reactor.blockhound.** {*;}
 #-keep class com.oracle.svm.** {*;}
 #-keep class com.sun.activation.** {*;}
@@ -14,10 +15,11 @@
 -keep class com.sun.jna.** {*;}
 #-keep class javax.swing.** {*;}
 -keep class javax.servlet.** { *; }
+-keep class java.lang.invoke.** {*;}
 
 
 #tls 1.3
-#-keep class org.osgi.** {*;}
+-keep class org.osgi.** {*;}
 -keep class com.google.appengine.** {*;}
 -keep class com.google.apphosting.** {*;}
 -keep class com.google.zxing.** {*;}
@@ -25,14 +27,16 @@
 #ssl
 -keep class org.openjsse.** {*;}
 -keep class io.netty.** {*;}
+-keep interface io.netty.** {*;}
 # ssh
-#-keep class com.jcraft.** {*;}
+-keep class com.jcraft.** {*;}
 #压缩
-#-keep class com.aayushatharva.** {*;}
-#-keep class com.github.luben.** {*;}
+-keep class com.aayushatharva.** {*;}
+-keep class com.github.luben.** {*;}
 #-keep class com.ning.compress.** {*;}
 # lz4压缩
 #-keep class net.jpountz.** {*;}
+-keep class com.google.protobuf.** {*;}
 #jackson
 -keep class org.codehaus.** {*;}
 -keep class com.github.sardine.** {*;}
@@ -88,27 +92,29 @@
 -keep class androidx.compose.ui.** {*;}
 -keep class androidx.compose.runtime.** {*;}
 # 保留 javax.naming 及其子包的所有类
--keep class javax.naming.** { *; }
--keep org.jupnp.** {*;}
+#-keep class javax.naming.** { *; }
+-keep class kotlinx.io.** {*;}
+-keep class javax.ws.rs.** { *; }
+-keep class org.osgi.service.jaxrs.** { *; }
+
 
 
 
 -dontwarn org.jboss.marshalling.**
 -dontwarn org.conscrypt.**
--dontwarn org.eclipse.jetty.**
--dontwarn io.netty.internal.**
+#-dontwarn io.netty.internal.**
 -dontwarn reactor.blockhound.**
 -dontwarn org.apache.logging.**
 -dontwarn com.oracle.svm.**
 -dontwarn com.sun.activation.**
 -dontwarn org.graalvm.nativeimage.**
 -dontwarn org.bouncycastle.**
--dontwarn org.osgi.**
+#-dontwarn org.osgi.**
 -dontwarn com.google.appengine.**
 -dontwarn com.google.apphosting.**
 -dontwarn org.apache.**
 -dontwarn okhttp3.internal.platform.android.**
--dontwarn io.netty.**
+
 -dontwarn ch.qos.**
 -dontwarn com.github.sardine.**
 -dontwarn javax.servlet.**

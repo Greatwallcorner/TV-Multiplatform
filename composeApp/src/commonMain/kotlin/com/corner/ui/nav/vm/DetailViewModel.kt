@@ -34,7 +34,7 @@ import org.apache.commons.lang3.StringUtils
 import java.util.concurrent.CopyOnWriteArrayList
 
 
-class DetailViewModel:BaseViewModel(){
+class DetailViewModel : BaseViewModel() {
     private val _state = MutableStateFlow(DetailScreenState())
     val state: StateFlow<DetailScreenState> = _state
 
@@ -80,7 +80,7 @@ class DetailViewModel:BaseViewModel(){
                 val dt = SiteViewModel.detailContent(chooseVod.site?.key ?: "", chooseVod.vodId)
                 _state.update { it.copy(isLoading = false) }
                 // id为空不执行后续代码
-                if(chooseVod.vodId.isBlank()) return@launch
+                if (chooseVod.vodId.isBlank()) return@launch
                 if (dt == null || dt.detailIsEmpty()) {
                     quickSearch()
                 } else {
@@ -112,15 +112,16 @@ class DetailViewModel:BaseViewModel(){
                 log.info("请求详情为空 加载下一个")
                 nextSite(vod)
             } else {
-                var first = dt.list[0]
+                val first = dt.list[0]
                 log.info("加载详情完成 $first")
-                first = first.copy(
-                    subEpisode = first.vodFlags.first().episodes.getPage(first.currentTabIndex).toMutableList()
-                )
                 first.site = vod.site
-                setDetail(first)
-                supervisor.cancelChildren()
-                jobList.cancelAll().clear()
+                if(first.isEmpty()) {
+                    nextSite(vod)
+                }else{
+                    setDetail(first)
+                    supervisor.cancelChildren()
+                    jobList.cancelAll().clear()
+                }
             }
         } finally {
             launched = false
@@ -179,7 +180,7 @@ class DetailViewModel:BaseViewModel(){
         }
     }
 
-    fun nextSite(lastVod: Vod?) {
+    private fun nextSite(lastVod: Vod?) {
         if (_state.value.quickSearchResult.isEmpty()) {
             log.warn("nextSite 快搜结果为空 返回")
             return
@@ -199,19 +200,27 @@ class DetailViewModel:BaseViewModel(){
         launched = false
         jobList.forEach { it.cancel("detail clear") }
         jobList.clear()
-        _state.update { it.copy(quickSearchResult = CopyOnWriteArrayList(), detail = Vod(), showEpChooserDialog = false) }
+        _state.update {
+            it.copy(
+                quickSearchResult = CopyOnWriteArrayList(),
+                detail = Vod(),
+                showEpChooserDialog = false
+            )
+        }
         SiteViewModel.clearQuickSearch()
     }
 
-    fun getChooseVod(): Vod {
+    private fun getChooseVod(): Vod {
         return GlobalAppState.chooseVod.value
     }
 
-    fun setDetail(vod: Vod) {
+    private fun setDetail(vod: Vod) {
         if (currentSiteKey.value != vod.site?.key) {
             SnackBar.postMsg("正在切换站源至 [${vod.site!!.name}]")
         }
-        _state.update { it.copy(detail = vod) }
+        _state.update { it.copy(detail = vod.copy(
+            subEpisode = vod.vodFlags.first().episodes.getPage(vod.currentTabIndex).toMutableList()
+        )) }
         startPlay()
     }
 
@@ -224,8 +233,8 @@ class DetailViewModel:BaseViewModel(){
         _state.update { it.copy(currentPlayUrl = result.url.v(), playResult = result) }
     }
 
-    fun playEp(detail: Vod, ep: Episode) {
-        if(Utils.isDownloadLink(ep.url)) return
+    private fun playEp(detail: Vod, ep: Episode) {
+        if (Utils.isDownloadLink(ep.url)) return
         val result = SiteViewModel.playerContent(
             detail.site?.key ?: "",
             detail.currentFlag.flag ?: "",
@@ -251,29 +260,34 @@ class DetailViewModel:BaseViewModel(){
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun startPlay() {
-        if (_state.value.detail.isEmpty() == false) {
+        if (!_state.value.detail.isEmpty()) {
+            if(controller.isReleased) return
             if (controller.isPlaying() && !_state.value.shouldPlay) {
                 log.info("视频播放中 返回")
                 return
             }
             _state.value.shouldPlay = false
-//            val internalPlayer: Boolean = SettingStore.getPlayerSetting()[0] as Boolean
-//            if(!internalPlayer) return // 如果使用外部播放器直接返回
             log.info("start play")
             val detail = _state.value.detail
             var findEp: Episode? = null
             if (detail.isEmpty()) return
-            val historyDeferred = scope.async { Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId)) }
+            val historyDeferred =
+                scope.async { Db.History.findHistory(Utils.getHistoryKey(detail.site?.key!!, detail.vodId)) }
             runBlocking {
                 historyDeferred.await()
             }
             var history = historyDeferred.getCompleted()
             if (history == null) {
                 scope.launch {
-                    controller.setControllerHistory(Db.History.create(detail, detail.currentFlag.flag!!, detail.vodName?:""))
+                    controller.setControllerHistory(
+                        Db.History.create(
+                            detail,
+                            detail.currentFlag.flag!!,
+                            detail.vodName ?: ""
+                        )
+                    )
                 }
-            }
-            else {
+            } else {
                 if (_state.value.currentEp != null && !_state.value.currentEp?.name.equals(history.vodRemarks) && history.position != null) {
                     history = history.copy(position = 0L)
                 }
@@ -318,7 +332,7 @@ class DetailViewModel:BaseViewModel(){
             _state.update { it.copy(detail = detail.copy(subEpisode = detail.currentFlag.episodes.getPage(++detail.currentTabIndex))) }
         }
         val size = detail.currentFlag.episodes.size
-        if(size <= nextIndex) {
+        if (size <= nextIndex) {
 //            SnackBar.postMsg("没有更多了")
             return
         }
@@ -330,7 +344,12 @@ class DetailViewModel:BaseViewModel(){
     fun nextFlag() {
         log.info("nextFlag")
         var detail = _state.value.detail.copy()
-        detail.currentFlag = _state.value.detail.nextFlag()
+        val nextFlag = _state.value.detail.nextFlag()
+        if (nextFlag == null) {
+            log.info("没有更多线路")
+            return
+        }
+        detail.currentFlag = nextFlag
         if (detail.currentFlag.isEmpty()) {
             detail.vodId = "" // 清空id 快搜就会重新加载详情
             quickSearch()
@@ -342,7 +361,6 @@ class DetailViewModel:BaseViewModel(){
         GlobalAppState.chooseVod.value = _state.value.detail
         _state.update { it.copy(detail = detail) }
         val findEp = detail.findAndSetEpByName(controller.history.value!!)
-//        if(findEp == null)
         playEp(detail, findEp ?: detail.subEpisode.first())
     }
 
@@ -359,7 +377,7 @@ class DetailViewModel:BaseViewModel(){
                 controller.setStartEnd(history.opening ?: -1, history.ending ?: -1)
 
                 val findEp = detail.findAndSetEpByName(history)
-                withContext(Dispatchers.Default){
+                withContext(Dispatchers.Default) {
                     _state.update { it.copy(detail = detail, currentEp = findEp, currentPlayUrl = findEp?.url ?: "") }
                 }
             }
@@ -400,7 +418,7 @@ class DetailViewModel:BaseViewModel(){
         }
     }
 
-    fun chooseLevel(i: Url?, v: String?){
+    fun chooseLevel(i: Url?, v: String?) {
         _state.update {
             it.copy(
                 currentUrl = i,
@@ -476,7 +494,7 @@ class DetailViewModel:BaseViewModel(){
         }
     }
 
-    fun setPlayUrl(string:String){
+    fun setPlayUrl(string: String) {
         _state.update { it.copy(currentPlayUrl = string) }
     }
 }

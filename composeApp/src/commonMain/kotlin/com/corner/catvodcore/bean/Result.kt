@@ -59,7 +59,7 @@ class Result {
 fun Result.detailIsEmpty():Boolean{
     if(list.isEmpty()){return true}
     if(list[0].isEmpty()) return false // 应对提供ID的token验证场景
-    return list[0].vodFlags[0]?.episodes?.isEmpty() == true
+    return list[0].vodFlags[0].episodes.isEmpty()
 }
 
 fun Result.playResultIsEmpty():Boolean{

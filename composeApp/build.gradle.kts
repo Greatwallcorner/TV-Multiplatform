@@ -119,7 +119,7 @@ compose.desktop {
         buildTypes.release.proguard {
 //            obfuscate.set(true)
             isEnabled.set(true)
-            version.set("7.6.1")
+            version.set("7.7.0")
             configurationFiles.from(project.file("src/desktopMain/rules.pro"))
         }
 
@@ -135,7 +135,8 @@ compose.desktop {
                 "java.management",
                 "java.net.http",
                 "jdk.unsupported",
-                "java.naming"
+                "java.naming",
+                "java.base"
             )
             val dir = project.layout.projectDirectory.dir("src/desktopMain/appResources")
             println(dir)

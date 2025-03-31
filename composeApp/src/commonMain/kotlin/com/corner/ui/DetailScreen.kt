@@ -71,16 +71,11 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
     val videoHeight = derivedStateOf { if (isFullScreen.value) 1f else 0.6f }
     val videoWidth = derivedStateOf { if (isFullScreen.value) 1f else 0.7f }
 
-
-//    LaunchedEffect(Unit){
-//    }
-
     DisposableEffect(Unit) {
         vm.load()
         onDispose {
             vm.clear()
         }
-
     }
 
     LaunchedEffect(model.value.isLoading) {
