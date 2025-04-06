@@ -45,10 +45,10 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val vlcjArgs = listOf(
         "-v",
-        "--network-caching=5000",          // 设置网络缓存为 10000ms
-        "--file-caching=3000",             // 设置文件缓存为 3000ms
-        "--live-caching=3000",             // 设置直播缓存为 3000ms
-        "--sout-mux-caching=10000"          // 设置输出缓存为 3000ms
+//        "--network-caching=500",          // 设置网络缓存为 单位ms
+//        "--file-caching=500",             // 设置文件缓存为
+//        "--live-caching=500",             // 设置直播缓存为
+//        "--sout-mux-caching=500"          // 设置输出缓存为
     )
 
     internal lateinit var factory: MediaPlayerFactory

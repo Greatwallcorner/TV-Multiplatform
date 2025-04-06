@@ -7,7 +7,9 @@
 #-keep class org.bouncycastle.** {*;}
 -keep class ch.qos.** {*;}
 -keep class org.eclipse.jetty.** {*;}
--keep class io.netty.** {*;}
+-keep interface org.eclipse.jetty.** {*;}
+#-keep class io.netty.** {*;}
+
 #-keep class reactor.blockhound.** {*;}
 #-keep class com.oracle.svm.** {*;}
 #-keep class com.sun.activation.** {*;}
@@ -26,8 +28,8 @@
 -keep class org.apache.** {*;}
 #ssl
 -keep class org.openjsse.** {*;}
--keep class io.netty.** {*;}
--keep interface io.netty.** {*;}
+#-keep class io.netty.** {*;}
+#-keep interface io.netty.** {*;}
 # ssh
 -keep class com.jcraft.** {*;}
 #压缩
@@ -61,6 +63,7 @@
     public static ** of(...);
     public static ** create(...);
 }
+-keep class org.apache.logging.** {*;}
 -keep class org.slf4j.** {*;}
 -keep class kotlinx.serialization.** {*;}
 # disable optimisation for descriptor field because in some versions of ProGuard, optimization generates incorrect bytecode that causes a verification error
@@ -95,7 +98,11 @@
 #-keep class javax.naming.** { *; }
 -keep class kotlinx.io.** {*;}
 -keep class javax.ws.rs.** { *; }
--keep class org.osgi.service.jaxrs.** { *; }
+#-keep class org.osgi.service.jaxrs.** { *; }
+-keep class org.fourthline.cling.** { *; }
+-keep class javax.enterprise.** { *; }
+-keep class javax.inject.** { *; }
+-keep class javax.annotation.** { *; }
 
 
 
@@ -104,7 +111,7 @@
 -dontwarn org.conscrypt.**
 #-dontwarn io.netty.internal.**
 -dontwarn reactor.blockhound.**
--dontwarn org.apache.logging.**
+#-dontwarn org.apache.logging.**
 -dontwarn com.oracle.svm.**
 -dontwarn com.sun.activation.**
 -dontwarn org.graalvm.nativeimage.**
@@ -117,14 +124,29 @@
 
 -dontwarn ch.qos.**
 -dontwarn com.github.sardine.**
--dontwarn javax.servlet.**
+#-dontwarn javax.servlet.**
 -dontwarn javax.mail.**
 -dontwarn org.apache.tools.ant.**
 -dontwarn okhttp3.internal.platform.Android10Platform.**
 -dontwarn okhttp3.internal.platform.AndroidPlatform.**
 -dontwarn android.**
 -dontwarn org.openjsse.**
--dontwarn org.jupnp.**
+#-dontwarn org.jupnp.**
+-dontwarn io.netty.**
+-dontwarn org.netty.**
+-dontwarn org.eclipse.jetty.**
+-dontwarn java.lang.invoke.**
 -dontwarn cn.hutool.**
+# java.me
+-dontwarn javax.microedition.**
+-dontwarn javax.persistence.**
 -dontusemixedcaseclassnames
 -verbose
+
+-dontwarn org.xmlpull.**
+-dontwarn org.dbunit.**
+-dontwarn javax.enterprise.**
+-dontwarn org.hibernate.**
+-dontwarn javax.inject.**
+-dontwarn javax.ws.**
+

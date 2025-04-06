@@ -1,6 +1,7 @@
 package upnp
 
 import com.corner.catvodcore.viewmodel.GlobalAppState
+import com.corner.ui.scene.SnackBar
 import kotlinx.coroutines.runBlocking
 import org.jupnp.model.types.UnsignedIntegerFourBytes
 import org.jupnp.support.avtransport.AbstractAVTransportService
@@ -22,6 +23,7 @@ class TvAvTransportService : AbstractAVTransportService() {
 
         runBlocking {
             GlobalAppState.DLNAUrl.emit(currentURI)
+            SnackBar.postMsg("投屏：$currentURI")
         }
 //        Play.start(currentURI, "test")
         log.info("setAvTransportURI instance id: $instanceId currentURI: $currentURI currentURIMetaData: $currentURIMetaData")
@@ -32,62 +34,67 @@ class TvAvTransportService : AbstractAVTransportService() {
     }
 
     override fun getMediaInfo(p0: UnsignedIntegerFourBytes?): MediaInfo {
-        TODO("Not yet implemented")
+        log.debug("getMediaInfo instance id: {}", p0)
+        return MediaInfo()
     }
 
     override fun getTransportInfo(p0: UnsignedIntegerFourBytes?): TransportInfo {
-        TODO("Not yet implemented")
+        log.debug("getTransportInfo instance id: {}", p0)
+        return TransportInfo()
     }
 
     override fun getPositionInfo(p0: UnsignedIntegerFourBytes?): PositionInfo {
-        TODO("Not yet implemented")
+        log.debug("getPositionInfo instance id: {}", p0)
+        return PositionInfo()
     }
 
     override fun getDeviceCapabilities(p0: UnsignedIntegerFourBytes?): DeviceCapabilities {
-        TODO("Not yet implemented")
+        TODO()
     }
 
     override fun getTransportSettings(p0: UnsignedIntegerFourBytes?): TransportSettings {
-        TODO("Not yet implemented")
+        log.debug("getTransportSettings instance id: {}", p0)
+        return TransportSettings()
     }
 
     override fun stop(p0: UnsignedIntegerFourBytes?) {
-        TODO("Not yet implemented")
+        log.debug("stop instance id: {}", p0)
     }
 
     override fun play(p0: UnsignedIntegerFourBytes?, p1: String?) {
-        TODO("Not yet implemented")
+        log.debug("play instance id: {}", p0)
     }
 
     override fun pause(p0: UnsignedIntegerFourBytes?) {
-        TODO("Not yet implemented")
+        log.debug("pause instance id: {}", p0)
     }
 
     override fun record(p0: UnsignedIntegerFourBytes?) {
-        TODO("Not yet implemented")
+        log.debug("record instance id: {}", p0)
     }
 
     override fun seek(p0: UnsignedIntegerFourBytes?, p1: String?, p2: String?) {
-        TODO("Not yet implemented")
+        log.debug("seek instance id: {}", p0)
     }
 
     override fun next(p0: UnsignedIntegerFourBytes?) {
-        TODO("Not yet implemented")
+        log.debug("next instance id: {}", p0)
     }
 
     override fun previous(p0: UnsignedIntegerFourBytes?) {
-        TODO("Not yet implemented")
+        log.debug("previous instance id: {}", p0)
     }
 
     override fun setPlayMode(p0: UnsignedIntegerFourBytes?, p1: String?) {
-        TODO("Not yet implemented")
+        log.debug("setPlayMode instance id: {}", p0)
     }
 
     override fun setRecordQualityMode(p0: UnsignedIntegerFourBytes?, p1: String?) {
-        TODO("Not yet implemented")
+        log.debug("setRecordQualityMode instance id: {}", p0)
     }
 
     override fun getCurrentTransportActions(p0: UnsignedIntegerFourBytes?): Array<TransportAction> {
-        TODO("Not yet implemented")
+        log.debug("getCurrentTransportActions instance id: {}", p0)
+        return arrayOf()
     }
 }

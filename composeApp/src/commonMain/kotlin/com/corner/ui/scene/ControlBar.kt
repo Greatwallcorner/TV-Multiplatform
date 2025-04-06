@@ -34,7 +34,8 @@ fun ControlBar(
 ) {
     val isFullScreen = GlobalAppState.videoFullScreen.collectAsState()
     if (!isFullScreen.value) {
-        Column(modifier = modifier.fillMaxWidth()) {
+        Column(modifier = modifier.fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)) {
             Box(Modifier.fillMaxWidth()) {
                 if (leading != null) {
                     Row(Modifier.align(alignment = Alignment.CenterStart)) {

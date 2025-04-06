@@ -37,4 +37,3 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
-include("CatVod")

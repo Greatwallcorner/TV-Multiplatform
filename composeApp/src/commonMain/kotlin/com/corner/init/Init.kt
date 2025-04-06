@@ -13,6 +13,7 @@ import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
 import com.corner.database.Db
 import com.corner.database.appModule
 import com.corner.database.entity.Config
+import com.corner.dlna.TVMUpnpService
 import com.corner.server.KtorD
 import com.corner.ui.player.vlcj.VlcJInit
 import kotlinx.coroutines.Dispatchers
@@ -23,8 +24,6 @@ import org.apache.commons.lang3.StringUtils
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.slf4j.LoggerFactory
-import upnp.TVMUpnpService
-
 
 private val log = LoggerFactory.getLogger("Init")
 class Init {

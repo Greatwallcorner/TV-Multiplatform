@@ -112,6 +112,7 @@ private fun launchErrorCatcher() {
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
         SnackBar.postMsg("未知异常， 请查看日志")
         log.error("未知异常", e)
+        Init.stop()
 //        Dialog(Frame(), e.message ?: "Error").apply {
 //            log.error("启动异常", e)
 //            layout = FlowLayout()

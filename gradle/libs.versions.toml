@@ -1,5 +1,5 @@
 [versions]
-compose = "1.8.0-alpha04"
+compose = "1.8.0-beta01"
 androidx-lifecycle = "2.8.0-rc03"
 junit = "4.13.2"
 kotlin = "2.1.10"
@@ -12,6 +12,8 @@ room-sqlite-bundled = "2.5.0-alpha13"
 ksp = "2.1.10-1.0.29"
 jupnp = "3.0.3"
 androidx-navigation = "2.7.0-alpha06"
+jetty = "12.0.16"
+
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -25,9 +27,17 @@ roomCompiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 roomGuava = { module = "androidx.room:room-guava", version.ref = "room" }
 roomKtx = { module = "androidx.room:room-ktx", version.ref = "room" }
 roomBundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "room-sqlite-bundled" }
-jupnp-bom = { module = "org.jupnp.bom:org.jupnp.bom.compile", version.ref = "jupnp" }
-jupnp-tool = { module = "org.jupnp.pom:tools", version.ref = "jupnp"}
-jupnp = { module = "org.jupnp:org.jupnp.support", version.ref = "jupnp" }
+jupnp-bom-compile = { module = "org.jupnp.bom:org.jupnp.bom.compile", version.ref = "jupnp"}
+jupnp-bom = { module = "org.jupnp.bom:org.jupnp.bom", version.ref = "jupnp" }
+jupnp-osgi = { module = "org.jupnp:org.jupnp.osgi", version.ref = "jupnp" }
+#jupnp-tool = { module = "org.jupnp.pom:tools", version.ref = "jupnp"}
+jupnp-bom-runtime = { module = "org.jupnp:org.jupnp.runtime" }
+jupnp-bundles = { module = "org.jupnp.pom:bundles", version.ref = "jupnp" }
+jupnp = { module = "org.jupnp:jupnp", version.ref = "jupnp" }
+jupnp-support = { module = "org.jupnp:org.jupnp.support", version.ref = "jupnp" }
+jetty-servlet = { module = "org.eclipse.jetty.ee10:jetty-ee10-servlet", version.ref = "jetty"}
+jetty-server = { module = "org.eclipse.jetty.http2:jetty-http2-server", version.ref = "jetty"}
+jetty-client = { module = "org.eclipse.jetty:jetty-client", version.ref = "jetty"}
 androidx-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
@@ -42,3 +52,4 @@ sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 conveyor = { id = "dev.hydraulic.conveyor", version.ref = "conveyor" }
 room = { id = "androidx.room", version.ref = "room" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+platform = { id = "java-platform"}
