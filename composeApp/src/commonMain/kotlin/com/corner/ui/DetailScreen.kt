@@ -38,6 +38,9 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import com.corner.bean.SettingStore
+import com.corner.bean.SettingType
+import com.corner.bean.enums.PlayerType
+import com.corner.bean.getPlayerSetting
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
 import com.corner.catvodcore.util.Utils
@@ -139,8 +142,10 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                 modifier = Modifier.fillMaxHeight(videoHeight.value), horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 val internalPlayer = derivedStateOf {
-                    SettingStore.getPlayerSetting()[0] as Boolean
-                }
+                    val playerSetting =
+                        SettingStore.getSettingItem(SettingType.PLAYER).getPlayerSetting(detail.site?.playerType)
+                    playerSetting.first() == PlayerType.Innie.id
+                 }
                 if (internalPlayer.value) {
                     SideEffect {
                         focus.requestFocus()

@@ -15,7 +15,7 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        kotlin("jvm") version "2.1.10"
+        kotlin("jvm") version "2.1.20"
         id("com.google.devtools.ksp") version "2.1.10-1.0.29"
     }
 }
@@ -37,3 +37,4 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+include(":Web-Player")

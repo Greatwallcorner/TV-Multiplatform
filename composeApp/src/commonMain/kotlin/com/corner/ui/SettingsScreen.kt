@@ -36,10 +36,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.window.WindowScope
-import com.corner.bean.SettingEnable
-import com.corner.bean.SettingStore
-import com.corner.bean.SettingType
-import com.corner.bean.parseAsSettingEnable
+import com.corner.bean.*
+import com.corner.bean.enums.PlayerType
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.util.Paths
@@ -180,7 +178,8 @@ fun WindowScope.SettingScene(vm: SettingViewModel, onClickBack: () -> Unit) {
                 }
                 item {
                     SettingItemTemplate("日志") {
-                        val current = derivedStateOf { model.value.settingList.getSetting(SettingType.LOG)?.value ?: logLevel[0] }
+                        val current =
+                            derivedStateOf { model.value.settingList.getSetting(SettingType.LOG)?.value ?: logLevel[0] }
                         SingleChoiceSegmentedButtonRow {
                             logLevel.forEachIndexed { index, label ->
                                 SegmentedButton(
@@ -188,13 +187,16 @@ fun WindowScope.SettingScene(vm: SettingViewModel, onClickBack: () -> Unit) {
                                         index = index,
                                         count = logLevel.size
                                     ),
-                                    onClick = { SettingStore.setValue(SettingType.LOG, label)
+                                    onClick = {
+                                        SettingStore.setValue(SettingType.LOG, label)
                                         vm.sync()
-                                        SnackBar.postMsg("重启生效") },
+                                        SnackBar.postMsg("重启生效")
+                                    },
                                     selected = label == current.value,
                                     label = { Text(label) }
                                 )
                             }
+
                         }
 //                        LogButtonList(component) {
 //                            SettingStore.setValue(SettingType.LOG, it)
@@ -206,53 +208,76 @@ fun WindowScope.SettingScene(vm: SettingViewModel, onClickBack: () -> Unit) {
                 item {
                     SettingItemTemplate("播放器") {
                         val playerSetting = derivedStateOf {
-                            model.value.settingList.getSetting(SettingType.PLAYER)?.value?.parseAsSettingEnable() ?: SettingEnable.Default()
+                            val arr = model.value.settingList.getSetting(SettingType.PLAYER)?.value?.getPlayerSetting()?.toMutableList() ?: mutableListOf(PlayerType.Innie.id, "")
+//                            val arr = model.value.settingList.getSetting(SettingType.PLAYER)?.value?.split("#")
+//                                ?.toMutableList() ?: mutableListOf(PlayerType.Innie.id, "")
+                            if (listOf("true", "false").contains(arr[0])) {
+                                if (arr[0].toBoolean()) {
+                                    arr[0] = PlayerType.Innie.id
+                                } else {
+                                    arr[1] = PlayerType.Outie.id
+                                }
+                                SettingStore.setValue(
+                                    SettingType.PLAYER,
+                                    "${arr.first()}#${arr[1]}"
+                                )
+                            }
+                            arr
                         }
-                        Box {
-                            Row {
-                                Switch(
-                                    playerSetting.value.isEnabled, onCheckedChange = {
-                                        SettingStore.setValue(SettingType.PLAYER, "$it#${playerSetting.value.value}")
-                                        if (it) SnackBar.postMsg("使用内置播放器") else SnackBar.postMsg("使用外部播放器 请配置播放器路径")
-                                        vm.sync()
-                                    }, Modifier.width(100.dp).padding(end = 20.dp).align(Alignment.CenterVertically),
-                                    thumbContent = {
-                                        Box(Modifier.size(80.dp)) {
-                                            Text(
-                                                if (playerSetting.value.isEnabled) "内置" else "外置",
-                                                Modifier.fillMaxSize().align(Alignment.Center)
-                                            )
-                                        }
-                                    })
-                                // 只有外部播放器时展示
-//                                if (!(playerSetting.value[0] as Boolean)) {
-                                TextField(
-                                    value = playerSetting.value.value,
-                                    onValueChange = {
-                                        SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value.value}#$it")
-                                        SiteViewModel.viewModelScope.launch {
-                                            if (playerSetting.value.isEnabled) {
-                                                if (File(it).exists()) {
-                                                    VlcJInit.init(true)
-                                                }
-                                            }
+                        SingleChoiceSegmentedButtonRow {
+                            PlayerType.entries.filter { i -> i.id != PlayerType.Web.id }.forEach { type ->
+                                SegmentedButton(
+                                    playerSetting.value.first() == type.id,
+                                    onClick = {
+                                        SettingStore.setValue(
+                                            SettingType.PLAYER,
+                                            "${type.id}#${playerSetting.value[1]}"
+                                        )
+                                        when (type.id) {
+                                            PlayerType.Innie.id -> SnackBar.postMsg("使用内置播放器")
+                                            PlayerType.Outie.id -> SnackBar.postMsg("使用外部播放器 请配置播放器路径")
+                                            PlayerType.Web.id -> SnackBar.postMsg("使用浏览器播放器")
                                         }
                                         vm.sync()
                                     },
-                                    maxLines = 1,
-                                    enabled = true,
-                                    modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth()
-                                        .align(Alignment.CenterVertically)
+                                    shape = SegmentedButtonDefaults.itemShape(
+                                        index = type.ordinal,
+                                        count = PlayerType.entries.size
+                                    ),
+                                    label = { Text(type.display) },
                                 )
-//                                }
                             }
+
+
                         }
+                        TextField(
+                            value = playerSetting.value[1],
+                            onValueChange = {
+                                SettingStore.setValue(SettingType.PLAYER, "${playerSetting.value.first()}#$it")
+                                SiteViewModel.viewModelScope.launch {
+                                    if (playerSetting.value.first() == PlayerType.Innie.id) {
+                                        if (File(it).exists()) {
+                                            VlcJInit.init(true)
+                                        }
+                                    }
+                                }
+                                vm.sync()
+                            },
+                            maxLines = 1,
+                            enabled = true,
+                            modifier = Modifier
+                                .fillMaxHeight(0.8f)
+                                .fillMaxWidth()
+                                .padding(start = 8.dp)
+                                .align(Alignment.CenterHorizontally)
+                        )
                     }
                 }
                 item {
                     SettingItemTemplate("代理") {
                         val proxySetting = derivedStateOf {
-                            model.value.settingList.getSetting(SettingType.PROXY)?.value?.parseAsSettingEnable() ?: SettingEnable.Default()
+                            model.value.settingList.getSetting(SettingType.PROXY)?.value?.parseAsSettingEnable()
+                                ?: SettingEnable.Default()
                         }
                         Row {
                             Switch(proxySetting.value.isEnabled, onCheckedChange = {

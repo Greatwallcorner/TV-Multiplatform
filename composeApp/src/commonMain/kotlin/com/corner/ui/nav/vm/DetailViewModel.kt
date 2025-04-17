@@ -3,6 +3,9 @@ package com.corner.ui.nav.vm
 import SiteViewModel
 import androidx.compose.runtime.mutableStateOf
 import com.corner.bean.SettingStore
+import com.corner.bean.SettingType
+import com.corner.bean.enums.PlayerType
+import com.corner.bean.getPlayerSetting
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvod.enum.bean.Vod.Companion.getPage
 import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
@@ -15,7 +18,7 @@ import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
 import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
 import com.corner.database.Db
 import com.corner.database.entity.History
-import com.corner.ui.getPlayerSetting
+import com.corner.server.KtorD
 import com.corner.ui.nav.BaseViewModel
 import com.corner.ui.nav.data.DetailScreenState
 import com.corner.ui.player.vlcj.VlcJInit
@@ -115,9 +118,9 @@ class DetailViewModel : BaseViewModel() {
                 val first = dt.list[0]
                 log.info("加载详情完成 $first")
                 first.site = vod.site
-                if(first.isEmpty()) {
+                if (first.isEmpty()) {
                     nextSite(vod)
-                }else{
+                } else {
                     setDetail(first)
                     supervisor.cancelChildren()
                     jobList.cancelAll().clear()
@@ -218,9 +221,13 @@ class DetailViewModel : BaseViewModel() {
         if (currentSiteKey.value != vod.site?.key) {
             SnackBar.postMsg("正在切换站源至 [${vod.site!!.name}]")
         }
-        _state.update { it.copy(detail = vod.copy(
-            subEpisode = vod.vodFlags.first().episodes.getPage(vod.currentTabIndex).toMutableList()
-        )) }
+        _state.update {
+            it.copy(
+                detail = vod.copy(
+                    subEpisode = vod.vodFlags.first().episodes.getPage(vod.currentTabIndex).toMutableList()
+                )
+            )
+        }
         startPlay()
     }
 
@@ -246,7 +253,7 @@ class DetailViewModel : BaseViewModel() {
             return
         }
         controller.doWithHistory { it.copy(episodeUrl = ep.url) }
-        val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
+        val internalPlayer = SettingStore.getSettingItem(SettingType.PLAYER).getPlayerSetting(detail.site?.playerType).first() == PlayerType.Innie.id
         if (internalPlayer) {
             _state.update { it.copy(currentPlayUrl = result.url.v(), currentEp = ep) }
         }
@@ -261,7 +268,7 @@ class DetailViewModel : BaseViewModel() {
     @OptIn(ExperimentalCoroutinesApi::class)
     fun startPlay() {
         if (!_state.value.detail.isEmpty()) {
-            if(controller.isReleased) return
+            if (controller.isReleased) return
             if (controller.isPlaying() && !_state.value.shouldPlay) {
                 log.info("视频播放中 返回")
                 return
@@ -482,11 +489,12 @@ class DetailViewModel : BaseViewModel() {
                     detail.site?.key ?: "", detail.currentFlag.flag ?: "", it.url
                 )
                 _state.update { it.copy(currentUrl = result?.url) }
-                val internalPlayer = SettingStore.getPlayerSetting()[0] as Boolean
-                if (internalPlayer) {
-                    play(result)
-                } else {
-                    Play.start(result?.url?.v() ?: "", state.value.currentEp?.name)
+
+                val playerType = SettingStore.getSettingItem(SettingType.PLAYER.id).getPlayerSetting(detail.site?.playerType)
+                when (playerType.first()) {
+                    PlayerType.Innie.id -> play(result)
+                    PlayerType.Outie.id -> Play.start(result?.url?.v() ?: "", state.value.currentEp?.name)
+                    PlayerType.Web.id -> openUri(KtorD.getWebPlayerPath(result?.url?.v() ?: ""))
                 }
             }
         }.invokeOnCompletion {

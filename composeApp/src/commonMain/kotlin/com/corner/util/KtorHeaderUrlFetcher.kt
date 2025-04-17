@@ -1,7 +1,6 @@
 package com.corner.util
 
 import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.res.loadImageBitmap
 import com.corner.catvodcore.util.Jsons
 import com.seiko.imageloader.component.fetcher.FetchResult
 import com.seiko.imageloader.component.fetcher.Fetcher
@@ -12,7 +11,11 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.util.*
 import io.ktor.utils.io.jvm.javaio.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.jsonObject
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.decodeToImageBitmap
 import kotlin.time.Duration
 
 
@@ -23,6 +26,7 @@ class KtorHeaderUrlFetcher private constructor(
 
     private val httpClient by lazy(httpClient)
 
+    @OptIn(ExperimentalResourceApi::class)
     override suspend fun fetch(): FetchResult {
             var url = httpUrl.toString()
             val response = httpClient.request {
@@ -44,7 +48,11 @@ class KtorHeaderUrlFetcher private constructor(
             }
             if (response.status.isSuccess()) {
                 val ofSource = FetchResult.OfPainter(
-                    painter = BitmapPainter(loadImageBitmap(response.bodyAsChannel().toInputStream()))
+                    painter = BitmapPainter(
+                        withContext(Dispatchers.IO) {
+                            response.bodyAsChannel().toInputStream().readAllBytes()
+                        }.decodeToImageBitmap()
+                    )
                 )
                 return ofSource
             }

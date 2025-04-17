@@ -1,6 +1,6 @@
 package com.corner.server.plugins
 
-import com.corner.server.logic.multiThreadDownload
+import cn.hutool.core.io.file.FileNameUtil
 import com.corner.server.logic.proxy
 import com.corner.ui.scene.SnackBar
 import com.corner.util.toSingleValueMap
@@ -10,7 +10,6 @@ import io.ktor.server.http.content.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import okhttp3.Response
-import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.InputStream
@@ -18,7 +17,19 @@ import java.io.InputStream
 fun Application.configureRouting() {
     val log = LoggerFactory.getLogger("Routing")
     routing {
-        staticResources("/static", "assets")
+        staticResources("/static", "assets"){
+            contentType {
+                val suffix = FileNameUtil.getSuffix(it.path)
+                when(suffix){
+                   "js" -> ContentType.Text.JavaScript
+                    "jsx" -> ContentType.Application.JavaScript
+                    "html" -> ContentType.Text.Html
+                    "txt" -> ContentType.Text.Plain
+                    "htm" -> ContentType.Text.Html
+                    else -> null
+                }
+            }
+        }
 
 //        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
 
@@ -77,19 +88,19 @@ fun Application.configureRouting() {
             }
         }
 
-        get("/multi") {
-            val params = call.request.queryParameters
-            val url = params.get("url")
-            if (StringUtils.isEmpty(url) || url!!.startsWith("http")) {
-                errorResp(call, "url不合法")
-                return@get
-            }
-            var thread = 5
-            if (StringUtils.isNotEmpty(params.get("thread"))) {
-                thread = params.get("thread")!!.toInt()
-            }
-            multiThreadDownload(url, thread, call)
-        }
+//        get("/multi") {
+//            val params = call.request.queryParameters
+//            val url = params["url"]
+//            if (StringUtils.isEmpty(url) || url!!.startsWith("http")) {
+//                errorResp(call, "url不合法")
+//                return@get
+//            }
+//            var thread = 5
+//            if (StringUtils.isNotEmpty(params.get("thread"))) {
+//                thread = params.get("thread")!!.toInt()
+//            }
+//            multiThreadDownload(url, thread, call)
+//        }
     }
 }
 

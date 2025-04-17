@@ -43,6 +43,7 @@
 -keep class org.codehaus.** {*;}
 -keep class com.github.sardine.** {*;}
 -keep class io.ktor.** {*;}
+-keep class io.ktor*.** {*;}
 #-keep class com.corner.**{*;}
 -keep class org.jupnp.** {*;}
 -keep class uk.co.caprica.vlcj.** {*;}
@@ -104,9 +105,20 @@
 -keep class javax.inject.** { *; }
 -keep class javax.annotation.** { *; }
 
+# 保留 Ktor 网络相关的类和方法
+-keep class io.ktor.network.sockets.SocketBase { *; }
+-keep class io.ktor.utils.io.ChannelJob { *; }
+-keepclassmembers class io.ktor.network.sockets.SocketBase {
+    public <methods>;
+}
+
+# 保留 Kotlin 内部的部分
+-keep class kotlinx.atomicfu.AtomicRef { *; }
+-keep class kotlin.jvm.functions.Function0 { *; }
 
 
 
+-dontwarn io.ktor.**
 -dontwarn org.jboss.marshalling.**
 -dontwarn org.conscrypt.**
 #-dontwarn io.netty.internal.**

@@ -1,15 +1,16 @@
 package com.corner.bean
 
 import ch.qos.logback.classic.Level
+import com.corner.bean.enums.PlayerType
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Paths
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
+import org.apache.commons.lang3.StringUtils
 import java.nio.file.Files
 import kotlin.io.path.exists
 
 @Serializable
-data class Setting(val id: String, val label: String, var value: String?)
+data class Setting(val id: String, val label: String, var value: String = "")
 
 /**
  * 以井号分割的字符串
@@ -201,4 +202,16 @@ fun String.parseAsSettingEnable():SettingEnable{
     }else{
         SettingEnable(split.first().toBoolean(), split.last())
     }
+}
+
+
+
+fun String.getPlayerSetting(sitePlayerType: String? = ""): List<String>{
+    val internalPlayer = this.split("#")
+        // first is site, second app setting
+        val type = if (StringUtils.isNotBlank(
+                sitePlayerType
+            )
+        ) PlayerType.getById(sitePlayerType ?: "").id else internalPlayer.first()
+        return listOf(type, internalPlayer[1])
 }

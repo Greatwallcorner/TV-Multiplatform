@@ -1,9 +1,12 @@
 package com.corner.server
 
+import cn.hutool.core.codec.Base64
 import com.corner.server.plugins.configureRouting
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.cors.routing.*
 import io.netty.handler.codec.http.HttpServerCodec
 import org.slf4j.LoggerFactory
 
@@ -51,6 +54,10 @@ object KtorD {
         server?.stop()
     }
 
+    fun getWebPlayerPath(url: String): String {
+        return "http://localhost:$ports/static?url=${Base64.encode(url)}"
+    }
+
 }
 
 private fun Application.module() {
@@ -63,5 +70,14 @@ private fun Application.module() {
 //            prettyPrint = true
 //        })
 //    }
+    install(CORS) {
+        allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Delete)
+        allowMethod(HttpMethod.Patch)
+        allowHeader(HttpHeaders.Authorization)
+        allowHeader("MyCustomHeader")
+        anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
+    }
     configureRouting()
 }

@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.room)
     alias(libs.plugins.ksp)
-    id("java")
+//    id("java")
 }
 
 room {
@@ -15,6 +15,7 @@ room {
 }
 
 dependencies {
+//    implementation("io.ktor:ktor-server-cors:3.1.2")
     ksp(libs.roomCompiler)
 }
 
@@ -23,11 +24,10 @@ kotlin {
     jvm("desktop")
 
     sourceSets {
-        val commonMain = commonMain {
+        commonMain {
             dependencies {
-                val ktorVer = "3.0.1"
+                val ktorVer = "3.1.2"
                 val logbackVer = "1.3.14"
-                val imageLoader = "1.9.0"
                 val hutoolVer = "5.8.27"
 //            val kotlinVersion = extra["kotlin.version"] as String
 //            implementation(project(":CatVod"))
@@ -73,6 +73,7 @@ kotlin {
                 implementation("io.ktor:ktor-server-core:$ktorVer")
                 implementation("io.ktor:ktor-server-netty:$ktorVer")
 //                implementation("io.ktor:ktor-server-status-pages:$ktorVer")
+                implementation("io.ktor:ktor-server-cors:$ktorVer")
                 implementation("io.ktor:ktor-server-default-headers:$ktorVer")
                 implementation("io.ktor:ktor-server-content-negotiation:$ktorVer")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVer")
@@ -83,7 +84,7 @@ kotlin {
                 // log
                 implementation("ch.qos.logback:logback-classic:$logbackVer")
                 // image-loader
-                api("io.github.qdsfdhvh:image-loader:$imageLoader")
+                api(libs.image.loader)
                 // optional - Moko Resources Decoder
 //                api("io.github.qdsfdhvh:image-loader-extension-moko-resources:$imageLoader")
 
@@ -151,7 +152,8 @@ compose.desktop {
                 "java.net.http",
                 "jdk.unsupported",
                 "java.naming",
-                "java.base"
+                "java.base",
+                "java.sql"
             )
             val dir = project.layout.projectDirectory.dir("src/desktopMain/appResources")
             println(dir)

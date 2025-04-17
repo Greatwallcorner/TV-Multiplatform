@@ -3,6 +3,7 @@ package com.corner.init
 import com.corner.catvodcore.util.Paths
 import com.corner.util.KtorHeaderUrlFetcher
 import com.seiko.imageloader.ImageLoader
+import com.seiko.imageloader.component.setupDefaultComponents
 import com.seiko.imageloader.intercept.bitmapMemoryCacheConfig
 import com.seiko.imageloader.intercept.imageMemoryCacheConfig
 import com.seiko.imageloader.intercept.painterMemoryCacheConfig
@@ -14,7 +15,7 @@ actual fun initPlatformSpecify() {
 fun generateImageLoader(): ImageLoader {
     return ImageLoader {
         components {
-//            setupDefaultComponents()
+            setupDefaultComponents()
             add(KtorHeaderUrlFetcher.CustomUrlFetcher)
         }
         interceptor {
