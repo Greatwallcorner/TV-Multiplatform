@@ -22,6 +22,7 @@ class TvAvTransportService : AbstractAVTransportService() {
     ) {
 
         runBlocking {
+            GlobalAppState.DLNAUrl.emit("")
             GlobalAppState.DLNAUrl.emit(currentURI)
             SnackBar.postMsg("投屏：$currentURI")
         }

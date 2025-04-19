@@ -20,6 +20,9 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import com.corner.bean.SettingStore
+import com.corner.bean.SettingType
+import com.corner.bean.enums.PlayerType
+import com.corner.bean.getPlayerSetting
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
 import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
@@ -27,6 +30,9 @@ import com.corner.ui.nav.vm.DetailViewModel
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.ControlBar
 import com.corner.ui.scene.ToolTipText
+import com.corner.util.play.Play
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import tv_multiplatform.composeapp.generated.resources.Res
 import tv_multiplatform.composeapp.generated.resources.TV_icon_x
@@ -61,11 +67,15 @@ fun WindowScope.DLNAPlayer(vm:DetailViewModel, onClickBack:() -> Unit) {
     }
 
     DisposableEffect(Unit) {
+        scope.launch{
+            GlobalAppState.DLNAUrl.collect{
+                vm.setPlayUrl(it!!)
+            }
+        }
         vm.controller.init()
         onDispose {
             vm.clear()
         }
-
     }
     Column {
         if (!isFullScreen.value) {
@@ -99,7 +109,7 @@ fun WindowScope.DLNAPlayer(vm:DetailViewModel, onClickBack:() -> Unit) {
             modifier = Modifier.fillMaxHeight(), horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             val internalPlayer = derivedStateOf {
-                SettingStore.getPlayerSetting()[0] as Boolean
+                SettingStore.getSettingItem(SettingType.PLAYER).getPlayerSetting().first() == PlayerType.Innie.id
             }
             if (internalPlayer.value) {
                 SideEffect {
@@ -113,6 +123,11 @@ fun WindowScope.DLNAPlayer(vm:DetailViewModel, onClickBack:() -> Unit) {
                     focusRequester = focus
                 )
             } else {
+                LaunchedEffect(internalPlayer.value) {
+                    if(!internalPlayer.value) {
+                        Play.start(mrl.value, "")
+                    }
+                }
                 Box(
                     Modifier.fillMaxWidth().fillMaxHeight().background(Color.Black)
                 ) {
@@ -136,14 +151,6 @@ fun WindowScope.DLNAPlayer(vm:DetailViewModel, onClickBack:() -> Unit) {
                     }
                 }
             }
-//            AnimatedVisibility(!isFullScreen.value, modifier = Modifier.fillMaxSize()) {
-//                EpChooser(
-//                    vm, Modifier.fillMaxSize().background(
-//                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
-//                        shape = RoundedCornerShape(4.dp)
-//                    ).padding(horizontal = 5.dp)
-//                )
-//            }
         }
     }
 }

@@ -72,7 +72,6 @@ fun WindowScope.RootContent(
         GlobalAppState.DLNAUrl.collect{
             if(it.isNullOrBlank()) return@collect
             navController.navigate(TVScreen.DLNAPlayerScreen.name)
-
         }
     }
 

@@ -22,7 +22,7 @@ object GlobalAppState{
     var videoFullScreen = MutableStateFlow<Boolean>(false)
         private set
     var upnpService = mutableStateOf<UpnpService?>(null)
-    var DLNAUrl = MutableStateFlow<String?>(null)
+    var DLNAUrl = MutableStateFlow<String>("")
 
     fun clearHome(){
         home.value = Site.get("","")
