@@ -242,7 +242,7 @@ fun WindowScope.SettingScene(vm: SettingViewModel, onClickBack: () -> Unit) {
                                     },
                                     shape = SegmentedButtonDefaults.itemShape(
                                         index = type.ordinal,
-                                        count = PlayerType.entries.size
+                                        count = PlayerType.entries.size-1
                                     ),
                                     label = { Text(type.display) },
                                 )
