@@ -5,8 +5,10 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -21,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -33,6 +36,7 @@ fun RatioBtn(
     tag: () -> Pair<Boolean, String> = { false to "" },
     enableTooltip: Boolean = true
 ) {
+    Spacer(modifier = Modifier.width(15.dp))
     if (enableTooltip) {
         TooltipArea(
             tooltip = {
@@ -48,7 +52,8 @@ fun RatioBtn(
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-            }, delayMillis = 600
+            },
+            delayMillis = 600,
         ) {
             ratioBtnContent(modifier, selected, onClick, loading, text, tag)
         }
@@ -84,7 +89,8 @@ private fun ratioBtnContent(
                 color = if (selected) MaterialTheme.colorScheme.onSecondary else Color.White,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                fontSize = 15.sp
             )
             if (loading) {
                 CircularProgressIndicator(
@@ -109,7 +115,7 @@ private fun ratioBtnContent(
         }
     }
 }
-
+/*
 @Preview
 @Composable
 fun RatioBtnPreview() {
@@ -121,3 +127,4 @@ fun RatioBtnPreview() {
         }
     }
 }
+*/

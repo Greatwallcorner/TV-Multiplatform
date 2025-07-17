@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -54,8 +55,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.empty
 import tv_multiplatform.composeapp.generated.resources.folder_back
+import tv_multiplatform.composeapp.generated.resources.nothing_svg
 
 @Composable
 fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> Unit) {
@@ -80,8 +81,8 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
                     modifier = picModifier,
                     contentDescription = vod.vodName,
                     contentScale = ContentScale.Crop,
-                    placeholderPainter = { painterResource(Res.drawable.empty) },
-                    errorPainter = { painterResource(Res.drawable.empty) })
+                    placeholderPainter = { painterResource(Res.drawable.nothing_svg) },
+                    errorPainter = { painterResource(Res.drawable.nothing_svg) })
             }
             Box(Modifier.align(Alignment.BottomCenter)) {
                 ToolTipText(

@@ -34,7 +34,7 @@ import com.corner.ui.scene.RatioBtn
 import com.corner.ui.video.VideoItem
 import org.jetbrains.compose.resources.painterResource
 import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.nothing
+import tv_multiplatform.composeapp.generated.resources.nothing_svg
 
 enum class SearchPageType {
     page,
@@ -166,7 +166,7 @@ private fun WindowScope.SearchResult(
                     if (currentVodList.value.isEmpty()) {
                         Image(
                             modifier = Modifier.align(Alignment.Center),
-                            painter = painterResource(Res.drawable.nothing),
+                            painter = painterResource(Res.drawable.nothing_svg),
                             contentDescription = "nothing here",
                             contentScale = ContentScale.Crop
                         )

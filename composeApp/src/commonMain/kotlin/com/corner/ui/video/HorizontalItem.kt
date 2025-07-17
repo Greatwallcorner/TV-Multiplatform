@@ -18,6 +18,7 @@ import com.seiko.imageloader.ui.AutoSizeImage
 import org.jetbrains.compose.resources.painterResource
 import tv_multiplatform.composeapp.generated.resources.Res
 import tv_multiplatform.composeapp.generated.resources.empty
+import tv_multiplatform.composeapp.generated.resources.nothing_svg
 
 @Composable
 fun HorizontalItem(modifier: Modifier, vod:Vod, onClick:(Vod)->Unit){
@@ -31,8 +32,8 @@ fun HorizontalItem(modifier: Modifier, vod:Vod, onClick:(Vod)->Unit){
                 modifier = Modifier/*.height(150.dp).width(130.dp)*/,
                 contentDescription = vod.vodName,
                 contentScale = ContentScale.Fit,
-                placeholderPainter = { painterResource(Res.drawable.empty) },
-                errorPainter = { painterResource(Res.drawable.empty) })
+                placeholderPainter = { painterResource(Res.drawable.nothing_svg) },
+                errorPainter = { painterResource(Res.drawable.nothing_svg) })
             Spacer(Modifier.size(15.dp))
             Text(vod.vodName ?: "", modifier = Modifier
                 .align(Alignment.CenterVertically)

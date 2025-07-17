@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -26,11 +27,15 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
+import androidx.lifecycle.viewModelScope
 import com.corner.bean.Suggest
 import com.corner.ui.nav.vm.SearchViewModel
 import com.corner.util.KtorClient
@@ -69,75 +74,104 @@ fun SearchBar(
         suggestions = Suggest()
     }
 
-    Row {
-        Button(onClick = { showSearchSiteDialog = true }) {
-            Text(modelState.value.searchBarText)
-        }
-        TextField(
-            modifier = modifier
-                .focusRequester(focusRequester)
-                .fillMaxWidth(0.9f)
-                .fillMaxHeight()
-                .padding(top = 2.dp)
-                .background(color = Color.Gray.copy(0.3f), shape = RoundedCornerShape(50)),
-            singleLine = true,
-            onValueChange = { i ->
-                searchText = i
-                if (job.isActive) return@TextField
-                job = SiteViewModel.viewModelScope.launch {
-                    if (isGettingSuggestion || searchText.isBlank()) return@launch
-                    delay(500)
-                    isGettingSuggestion = true
-                    try {
-                        val response =
-                            KtorClient.createHttpClient { }
-                                .get("https://suggest.video.iqiyi.com/?if=mobile&key=$searchText")
-                        if (response.status == HttpStatusCode.OK) {
-                            suggestions = Suggest.objectFrom(response.bodyAsText())
-                        }
-                    } finally {
-                        isGettingSuggestion = false
-                    }
-                    focusRequester.requestFocus()
-                }
-            },
-            shape = RoundedCornerShape(50),
-            value = searchText,
-            leadingIcon = {
-                AnimatedVisibility(
-                    visible = searching,
-                    enter = fadeIn() + scaleIn(),
-                    exit = fadeOut() + scaleOut()
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.fillMaxHeight(),
-//                    color = MaterialTheme.colors.secondary,
-//                    backgroundColor = MaterialTheme.colors.secondaryVariant
+    Column {
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Button(
+                onClick = { showSearchSiteDialog = true },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                shape = RoundedCornerShape(10.dp), // 圆角形状
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp), // 添加阴影
+                modifier = Modifier.height(48.dp) // 固定高度与搜索框一致
+            ) {
+                Text(modelState.value.searchBarText, style = TextStyle(fontSize = 12.sp))
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .height(48.dp)
+                    .background(
+                        color = Color.Gray.copy(alpha = 0.3f),
+                        shape = RoundedCornerShape(10.dp)
                     )
-                }
-            },
-            trailingIcon = {
-                IconButton(
-                    modifier = Modifier,
-                    onClick = { searchFun(searchText) },
-                    enabled = StringUtils.isNotBlank(searchText)
-                ) {
-                    Icon(Icons.Outlined.Search, contentDescription = "Search", modifier = Modifier)
-                }
-            },
-            textStyle = TextStyle(fontSize = TextUnit(12f, TextUnitType.Sp)),
-            keyboardActions = KeyboardActions(onDone = { searchFun(searchText) }),
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Done,
-                keyboardType = KeyboardType.Text,
-            ),
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color.Transparent, // 焦点时下划线颜色
-                unfocusedIndicatorColor = Color.Transparent,
-//            backgroundColor = Color.Gray.copy(alpha = 0.3f),
-//            textColor = MaterialTheme.colors.onBackground
-            )
-        )
+                    .padding(horizontal = 8.dp),  // 内部padding
+                contentAlignment = Alignment.CenterStart
+            ) {
+                BasicTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
+                    value = searchText,
+                    onValueChange = { i ->
+                        searchText = i
+                        if (job?.isActive == true) return@BasicTextField
+                        job = SiteViewModel.viewModelScope.launch {
+                            if (isGettingSuggestion || searchText.isBlank()) return@launch
+                            delay(500)
+                            isGettingSuggestion = true
+                            try {
+                                val response =
+                                    KtorClient.createHttpClient { }
+                                        .get("https://suggest.video.iqiyi.com/?if=mobile&key=$searchText")
+                                if (response.status == HttpStatusCode.OK) {
+                                    suggestions = Suggest.objectFrom(response.bodyAsText())
+                                }
+                            } finally {
+                                isGettingSuggestion = false
+                            }
+                            focusRequester.requestFocus()
+                        }
+                    },
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
+                    decorationBox = { innerTextField ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            // 加载指示器
+                            if (searching) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
+
+                            // 文本输入区域
+                            Box(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                innerTextField()
+                            }
+
+                            // 搜索图标
+                            if (searchText.isNotBlank()) {
+                                IconButton(
+                                    onClick = { searchFun(searchText) },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Search,
+                                        contentDescription = "Search"
+                                    )
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+        }
     }
 
     val scrollState = remember { ScrollState(0) }
@@ -194,7 +228,11 @@ fun SearchBar(
             Modifier.padding(horizontal = 5.dp, vertical = 5.dp)
                 .clip(shape = RoundedCornerShape(5.dp))
         ) {
-            Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
                 Text("全选")
                 TriStateCheckbox(state = parentState.value, onClick = {
                     vm.updateModel {
@@ -235,4 +273,3 @@ fun SearchBar(
         }
     }
 }
-

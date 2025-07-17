@@ -3,6 +3,10 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
+        maven { url = uri("https://maven.aliyun.com/repository/public/") }
+        maven { url = uri("https://maven.aliyun.com/repositories/jcenter") }
+        maven { url = uri("https://maven.aliyun.com/repositories/google") }
+        maven { url = uri("https://maven.aliyun.com/repositories/central") }
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")
@@ -25,6 +29,10 @@ plugins {
 
 dependencyResolutionManagement {
     repositories {
+        maven { url = uri("https://maven.aliyun.com/repository/public/") }
+        maven { url = uri("https://maven.aliyun.com/repositories/jcenter") }
+        maven { url = uri("https://maven.aliyun.com/repositories/google") }
+        maven { url = uri("https://maven.aliyun.com/repositories/central") }
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")

@@ -31,7 +31,7 @@ import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.GlobalAppState.isShowProgress
 import org.jetbrains.compose.resources.painterResource
 import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.nothing
+import tv_multiplatform.composeapp.generated.resources.no_data
 
 @Composable
 fun ExpandedText(text: String, maxLine: Int, textStyle: TextStyle = TextStyle()) {
@@ -66,18 +66,26 @@ fun LoadingIndicator(showProgress: Boolean) {
 
 @Composable
 fun emptyShow(modifier: Modifier = Modifier, onRefresh: (() -> Unit)? = null) {
-    Column(modifier.fillMaxWidth()/*.align(Alignment.CenterHorizontally)*/) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(Modifier.size(100.dp))//顶边高度
         Image(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            painter = painterResource(Res.drawable.nothing),
-            contentDescription = "nothing here",
+            modifier = Modifier.size(200.dp),
+            painter = painterResource(Res.drawable.no_data),
+            contentDescription = "nothing_svg here",
             contentScale = ContentScale.Fit
         )
+        Spacer(Modifier.size(20.dp))
+        Text("这里什么都没有....")
+        Spacer(Modifier.size(20.dp))
         onRefresh?.let {
-            Spacer(Modifier.size(20.dp))
             Button(
                 onClick = onRefresh,
-                Modifier.align(Alignment.CenterHorizontally).size(80.dp),
+                Modifier.width(110.dp).height(50.dp),
                 shape = RoundedCornerShape(9.dp),
                 colors = ButtonDefaults.buttonColors().copy(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -87,8 +95,8 @@ fun emptyShow(modifier: Modifier = Modifier, onRefresh: (() -> Unit)? = null) {
             ) {
                 Icon(Icons.Default.Refresh, contentDescription = "refresh", modifier = Modifier.fillMaxSize(0.8f))
             }
+            Spacer(Modifier.size(100.dp))//底边高度
         }
-//                        Text("这里什么都没有...", modifier.align(Alignment.CenterHorizontally))
     }
 }
 
@@ -118,7 +126,7 @@ fun MenuItem(
             Spacer(Modifier.padding(3.dp))
             Text(
                 text = menu.desc,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.size(40.dp),
                 color = primaryColor,
                 style = TextStyle(textAlign = TextAlign.Center),
             )
@@ -174,7 +182,7 @@ fun ToolTipText(text: String, textStyle: TextStyle, delayMills: Int = 600, modif
             ) {
                 Text(
                     text = text,
-                    modifier = Modifier.padding(10.dp),
+                    modifier = Modifier.padding(10.dp).size(30.dp),
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
