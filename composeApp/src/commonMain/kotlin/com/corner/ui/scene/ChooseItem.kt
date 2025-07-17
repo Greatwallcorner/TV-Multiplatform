@@ -42,9 +42,9 @@ fun RatioBtn(
             tooltip = {
                 // composable tooltip content
                 Surface(
-                    modifier = Modifier.shadow(4.dp),
+                    modifier = Modifier.shadow(16.dp),
                     color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(4.dp)
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Text(
                         text = text,
@@ -76,7 +76,7 @@ private fun ratioBtnContent(
         shape = RoundedCornerShape(6.dp),
         modifier = modifier.shadow(1.dp).background(
                 if (selected) MaterialTheme.colorScheme.secondary else Color.Transparent,
-                shape = RoundedCornerShape(4.dp)
+                shape = RoundedCornerShape(16.dp)
             ).clickable(
                 onClick = { onClick() }, enabled = !loading
             ),

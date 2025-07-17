@@ -11,8 +11,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
@@ -23,19 +21,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
-import androidx.lifecycle.viewModelScope
 import com.corner.bean.Suggest
 import com.corner.ui.nav.vm.SearchViewModel
 import com.corner.util.KtorClient
@@ -45,7 +40,13 @@ import io.ktor.http.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.apache.commons.lang3.StringUtils
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.focus.FocusState
+import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.ui.text.TextRange
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.delay
+
 
 @Composable
 fun SearchBar(
@@ -54,9 +55,13 @@ fun SearchBar(
     focusRequester: FocusRequester = remember { FocusRequester() },
     initValue: String,
     onSearch: (String) -> Unit,
-    isSearching: Boolean
+    isSearching: Boolean,
+    // 新增：焦点请求回调
+    onFocusRequested: () -> Unit = { focusRequester.requestFocus() }
 ) {
+    var focusState by remember { mutableStateOf<FocusState?>(null) }
     val modelState = vm.state.collectAsState()
+    var textFieldValue  by remember { mutableStateOf(TextFieldValue(initValue)) }
     var searchText by remember { mutableStateOf(initValue) }
     val searching by rememberUpdatedState(isSearching)
     var isGettingSuggestion by remember { mutableStateOf(false) }
@@ -68,6 +73,18 @@ fun SearchBar(
     }
 
     var suggestions by remember { mutableStateOf(Suggest()) }
+
+    LaunchedEffect(focusRequester) {
+        snapshotFlow { focusState?.isFocused == true && textFieldValue.text.isNotEmpty()}
+            .collect { isFocused ->
+                if (isFocused && textFieldValue.text.isNotEmpty()) {
+                    delay(50) // 等待焦点稳定
+                    textFieldValue = textFieldValue.copy(
+                        selection = TextRange(0, textFieldValue.text.length)
+                    )
+                }
+            }
+    }
 
     val searchFun = fun(text: String) {
         onSearch(text)
@@ -91,7 +108,9 @@ fun SearchBar(
             ) {
                 Text(modelState.value.searchBarText, style = TextStyle(fontSize = 12.sp))
             }
+            //隔离搜索网站按钮与搜索栏
             Spacer(modifier = Modifier.width(10.dp))
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
@@ -106,10 +125,12 @@ fun SearchBar(
                 BasicTextField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .focusRequester(focusRequester),
-                    value = searchText,
-                    onValueChange = { i ->
-                        searchText = i
+                        .focusRequester(focusRequester)
+                        .onFocusEvent { focusState = it }, // 捕获焦点状态变化
+                    value = textFieldValue,
+                    onValueChange = { newValue  ->
+                        textFieldValue = newValue
+                        searchText = newValue.text
                         if (job?.isActive == true) return@BasicTextField
                         job = SiteViewModel.viewModelScope.launch {
                             if (isGettingSuggestion || searchText.isBlank()) return@launch
@@ -133,6 +154,7 @@ fun SearchBar(
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     ),
+                    cursorBrush = SolidColor(Color.White),//白色输入光标
                     decorationBox = { innerTextField ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -159,9 +181,12 @@ fun SearchBar(
                             if (searchText.isNotBlank()) {
                                 IconButton(
                                     onClick = { searchFun(searchText) },
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .pointerHoverIcon(PointerIcon.Default)//悬停在搜索图标上时，显示为普通光标
                                 ) {
                                     Icon(
+                                        tint = Color.White,
                                         imageVector = Icons.Outlined.Search,
                                         contentDescription = "Search"
                                     )
@@ -176,6 +201,7 @@ fun SearchBar(
 
     val scrollState = remember { ScrollState(0) }
     val showSuggestion = remember { derivedStateOf { searchText.isNotEmpty() && !suggestions.isEmpty() } }
+
     DropdownMenu(
         expanded = showSuggestion.value,
         scrollState = scrollState,

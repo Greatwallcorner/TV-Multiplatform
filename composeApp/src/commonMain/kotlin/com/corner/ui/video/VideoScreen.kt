@@ -26,7 +26,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
@@ -34,6 +37,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
@@ -56,7 +60,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import tv_multiplatform.composeapp.generated.resources.Res
 import tv_multiplatform.composeapp.generated.resources.folder_back
-import tv_multiplatform.composeapp.generated.resources.nothing_svg
+import tv_multiplatform.composeapp.generated.resources.loading
 
 @Composable
 fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> Unit) {
@@ -80,9 +84,10 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
                     url = vod.vodPic ?: "",
                     modifier = picModifier,
                     contentDescription = vod.vodName,
-                    contentScale = ContentScale.Crop,
-                    placeholderPainter = { painterResource(Res.drawable.nothing_svg) },
-                    errorPainter = { painterResource(Res.drawable.nothing_svg) })
+                    contentScale = ContentScale.Fit,
+                    placeholderPainter = { painterResource(Res.drawable.loading) },
+                    errorPainter = { painterResource(Res.drawable.loading) }
+                )
             }
             Box(Modifier.align(Alignment.BottomCenter)) {
                 ToolTipText(
