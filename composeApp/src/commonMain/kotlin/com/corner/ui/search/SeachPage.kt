@@ -42,7 +42,7 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
         focusRequester.requestFocus()
     }
 
-    DisposableEffect(Unit){
+    DisposableEffect(Unit) {
         vm.onCreate()
         onDispose {
         }
@@ -57,18 +57,35 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
                         modifier = Modifier.align(Alignment.Start)/*.background(MaterialTheme.colors.background)*/
                             .height(80.dp)
                     ) {
-                        IconButton(
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                                .padding(start = 20.dp, end = 20.dp),
-                            onClick = { onClickBack() }
+                        FilledTonalIconButton(
+                            modifier = Modifier
+                                .width(80.dp)
+                                .height(80.dp)
+                                .padding(top = 10.dp, start = 10.dp, end = 10.dp, bottom = 6.dp),
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = MaterialTheme.colorScheme.primary
+                            ),
+                            onClick = {
+                                vm.clear()
+                                onClickBack()
+                            },
+                            shape = RoundedCornerShape(8.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                                contentDescription = "back to video home",
-                                tint = MaterialTheme.colorScheme.onBackground
+                                contentDescription = "返回",
+                                modifier = Modifier.height(20.dp).width(20.dp)
                             )
                         }
-                        SearchBar(vm, Modifier, focusRequester, "", onSearch, false)
+                        SearchBar(
+                            vm,
+                            Modifier,
+                            focusRequester,
+                            "",
+                            onSearch,
+                            false
+                        )
                     }
                 }, center = {})
             }

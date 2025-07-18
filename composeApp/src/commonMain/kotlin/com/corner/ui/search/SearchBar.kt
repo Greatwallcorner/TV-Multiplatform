@@ -61,7 +61,7 @@ fun SearchBar(
 ) {
     var focusState by remember { mutableStateOf<FocusState?>(null) }
     val modelState = vm.state.collectAsState()
-    var textFieldValue  by remember { mutableStateOf(TextFieldValue(initValue)) }
+    var textFieldValue by remember { mutableStateOf(TextFieldValue(initValue)) }
     var searchText by remember { mutableStateOf(initValue) }
     val searching by rememberUpdatedState(isSearching)
     var isGettingSuggestion by remember { mutableStateOf(false) }
@@ -75,7 +75,7 @@ fun SearchBar(
     var suggestions by remember { mutableStateOf(Suggest()) }
 
     LaunchedEffect(focusRequester) {
-        snapshotFlow { focusState?.isFocused == true && textFieldValue.text.isNotEmpty()}
+        snapshotFlow { focusState?.isFocused == true && textFieldValue.text.isNotEmpty() }
             .collect { isFocused ->
                 if (isFocused && textFieldValue.text.isNotEmpty()) {
                     delay(50) // 等待焦点稳定
@@ -95,6 +95,7 @@ fun SearchBar(
         Spacer(modifier = Modifier.height(10.dp))
         Row(
             verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier
         ) {
             Button(
                 onClick = { showSearchSiteDialog = true },
@@ -113,7 +114,7 @@ fun SearchBar(
 
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.9f)
+                    .widthIn(max = 850.dp)
                     .height(48.dp)
                     .background(
                         color = Color.Gray.copy(alpha = 0.3f),
@@ -128,7 +129,7 @@ fun SearchBar(
                         .focusRequester(focusRequester)
                         .onFocusEvent { focusState = it }, // 捕获焦点状态变化
                     value = textFieldValue,
-                    onValueChange = { newValue  ->
+                    onValueChange = { newValue ->
                         textFieldValue = newValue
                         searchText = newValue.text
                         if (job?.isActive == true) return@BasicTextField

@@ -29,8 +29,8 @@ kotlin {
                 val ktorVer = "3.1.2"
                 val logbackVer = "1.3.14"
                 val hutoolVer = "5.8.27"
-//            val kotlinVersion = extra["kotlin.version"] as String
-//            implementation(project(":CatVod"))
+//              val kotlinVersion = extra["kotlin.version"] as String
+//              implementation(project(":CatVod"))
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material3)
@@ -38,8 +38,8 @@ kotlin {
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
                 implementation(compose.materialIconsExtended)
+//              implementation(libs.roomCompiler)
 
-//            implementation(libs.roomCompiler)
                 // room database access
                 implementation(libs.roomRuntime)
                 implementation(libs.roomGuava)
@@ -50,7 +50,7 @@ kotlin {
                 implementation(libs.androidx.navigation.compose)
 
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-//            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
+//              implementation("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
 
                 // tool
                 api("com.google.guava:guava:31.1-jre")
@@ -98,16 +98,18 @@ kotlin {
                 implementation(libs.jupnp.support)
                 implementation(libs.jupnp.osgi)
                 implementation("org.apache.logging.log4j:log4j-api:2.20.0")
-//            implementation(libs.jupnp)
-//                implementation(libs.jetty.servlet)
-//                implementation(libs.jetty.server)
-//                implementation(libs.jetty.client)
-//                implementation(project(":Upnp"))
+//              implementation(libs.jupnp)
+//              implementation(libs.jetty.servlet)
+//              implementation(libs.jetty.server)
+//              implementation(libs.jetty.client)
+//              implementation(project(":Upnp"))
 
-//            api("com.arkivanov.decompose:decompose:3.3.0")
-//            api("com.arkivanov.decompose:extensions-compose:3.3.0")
-//            // Add the dependency, typically under the commonMain source set
-//            api("com.arkivanov.essenty:lifecycle:2.5.0")
+//              api("com.arkivanov.decompose:decompose:3.3.0")
+//              api("com.arkivanov.decompose:extensions-compose:3.3.0")
+
+//              Add the dependency, typically under the commonMain source set
+
+//              api("com.arkivanov.essenty:lifecycle:2.5.0")
             }
 
         }

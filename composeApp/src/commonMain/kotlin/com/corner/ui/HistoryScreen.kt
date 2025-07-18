@@ -64,8 +64,6 @@ fun HistoryItem(
                     modifier = Modifier.height(220.dp),
                     contentDescription = history.vodName,
                     contentScale = ContentScale.Crop,
-                    placeholderPainter = { painterResource(Res.drawable.nothing_svg) },
-                    errorPainter = { painterResource(Res.drawable.nothing_svg) })
                     placeholderPainter = { painterResource(Res.drawable.loading) },
                     errorPainter = { painterResource(Res.drawable.loading) })
                 Text(

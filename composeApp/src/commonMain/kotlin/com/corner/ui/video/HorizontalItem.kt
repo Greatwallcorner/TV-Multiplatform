@@ -31,8 +31,6 @@ fun HorizontalItem(modifier: Modifier, vod:Vod, onClick:(Vod)->Unit){
                 modifier = Modifier/*.height(150.dp).width(130.dp)*/,
                 contentDescription = vod.vodName,
                 contentScale = ContentScale.Fit,
-                placeholderPainter = { painterResource(Res.drawable.nothing_svg) },
-                errorPainter = { painterResource(Res.drawable.nothing_svg) })
                 placeholderPainter = { painterResource(Res.drawable.loading) },
                 errorPainter = { painterResource(Res.drawable.loading) })
             Spacer(Modifier.size(15.dp))
