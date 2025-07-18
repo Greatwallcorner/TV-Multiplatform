@@ -130,7 +130,7 @@ fun WindowScope.RootContent(
             }
             SnackBar.SnackBarList()
             val showProgress = GlobalAppState.showProgress.collectAsState()
-            LoadingIndicator(showProgress = showProgress.value)
+            LoadingIndicator(showProgress = showProgress.value,withOverlay = true)
         }
     }
 //        if(isDebug.value){

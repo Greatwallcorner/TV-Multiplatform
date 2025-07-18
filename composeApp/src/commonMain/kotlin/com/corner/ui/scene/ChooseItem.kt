@@ -1,12 +1,13 @@
 package com.corner.ui.scene
 
-import AppTheme
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,17 +15,19 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RatioBtn(
@@ -36,83 +39,118 @@ fun RatioBtn(
     tag: () -> Pair<Boolean, String> = { false to "" },
     enableTooltip: Boolean = true
 ) {
-    Spacer(modifier = Modifier.width(15.dp))
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+
+    Spacer(modifier = Modifier.width(12.dp))
+
+    val buttonContent = @Composable {
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = when {
+                selected -> MaterialTheme.colorScheme.primaryContainer
+                pressed -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                else -> MaterialTheme.colorScheme.surfaceVariant
+            },
+            border = BorderStroke(
+                width = if (selected) 1.5.dp else 1.dp,
+                color = if (selected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+            ),
+            shadowElevation = if (selected) 4.dp else 1.dp,
+            tonalElevation = if (selected) 2.dp else 0.dp,
+            modifier = modifier
+                .height(36.dp)
+                .width(IntrinsicSize.Min)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = ripple(bounded = true),
+                    onClick = { onClick() },
+                    enabled = !loading
+                )
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (loading) {
+                        CircularProgressIndicator(
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
+                    Text(
+                        text = text,
+                        color = when {
+                            selected -> MaterialTheme.colorScheme.onPrimaryContainer
+                            pressed -> MaterialTheme.colorScheme.onSurface
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        fontSize = 14.sp,
+                        fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    val tags = remember { tag() }
+                    if (tags.first) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                            else MaterialTheme.colorScheme.secondaryContainer,
+                            border = BorderStroke(
+                                0.5.dp,
+                                if (selected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                            )
+                        ) {
+                            Text(
+                                tags.second,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (selected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     if (enableTooltip) {
         TooltipArea(
             tooltip = {
-                // composable tooltip content
                 Surface(
-                    modifier = Modifier.shadow(16.dp),
+                    modifier = Modifier.shadow(8.dp),
+                    shape = RoundedCornerShape(4.dp),
                     color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(16.dp)
+                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                 ) {
                     Text(
                         text = text,
-                        modifier = Modifier.padding(10.dp),
-                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(8.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             },
-            delayMillis = 600,
+            delayMillis = 500,
+            tooltipPlacement = TooltipPlacement.CursorPoint(
+                alignment = Alignment.BottomCenter,
+                offset = if (selected) DpOffset(0.dp, 8.dp) else DpOffset.Zero
+            )
         ) {
-            ratioBtnContent(modifier, selected, onClick, loading, text, tag)
+            buttonContent()
         }
     } else {
-        ratioBtnContent(modifier, selected, onClick, loading, text, tag)
-    }
-}
-
-@Composable
-private fun ratioBtnContent(
-    modifier: Modifier,
-    selected: Boolean,
-    onClick: () -> Unit,
-    loading: Boolean,
-    text: String,
-    tag: () -> Pair<Boolean, String>
-) {
-    Surface(
-        border = BorderStroke(1.dp, Color.Gray.copy(0.6F)),
-        shape = RoundedCornerShape(6.dp),
-        modifier = modifier.shadow(1.dp).background(
-                if (selected) MaterialTheme.colorScheme.secondary else Color.Transparent,
-                shape = RoundedCornerShape(16.dp)
-            ).clickable(
-                onClick = { onClick() }, enabled = !loading
-            ),
-    ) {
-        Box() {
-            Text(
-                text,
-                modifier = Modifier.background(if (selected) MaterialTheme.colorScheme.secondary else Color.Transparent)
-                    .fillMaxWidth().padding(vertical = 8.dp, horizontal = 10.dp),
-                color = if (selected) MaterialTheme.colorScheme.onSecondary else Color.White,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                fontSize = 15.sp
-            )
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.CenterStart).padding(1.dp),
-                    color = Color.White,
-                    trackColor = Color.Gray
-                )
-            }
-
-            val tags = remember { tag() }
-            if (tags.first) {
-                Text(
-                    tags.second,
-                    Modifier.background(
-                        if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary /*if (selected) Color.Blue.copy(0.5f) else MaterialTheme.colorScheme.onSecondary*/,
-                        shape = RoundedCornerShape(0.dp, 6.dp, 0.dp, 6.dp)
-                    ).align(Alignment.TopEnd).border(1.dp, Color.Gray).padding(3.dp),
-                    maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    color = if (selected) Color.White else MaterialTheme.colorScheme.onSecondary, /*if(selected) Color.Black else Color.White*/
-                )
-            }
-        }
+        buttonContent()
     }
 }
 /*

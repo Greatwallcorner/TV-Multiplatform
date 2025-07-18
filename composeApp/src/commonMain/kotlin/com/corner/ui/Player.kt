@@ -5,8 +5,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -15,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusTarget
@@ -77,19 +80,19 @@ fun Player(
     val videoFullScreen = GlobalAppState.videoFullScreen.collectAsState()
     val showMediaInfoDialog = remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit){
+    LaunchedEffect(Unit) {
         val volume = SettingStore.getCache("playerState")
-        if(volume != null){
+        if (volume != null) {
             val v = (volume as PlayerStateCache).get("volume")?.toFloat()
-            controller.doWithPlayState { it.update { it.copy(volume = v ?: .8f) }}
+            controller.doWithPlayState { it.update { it.copy(volume = v ?: .8f) } }
         }
     }
 
-    DisposableEffect(videoFullScreen.value, showControllerBar.value){
+    DisposableEffect(videoFullScreen.value, showControllerBar.value) {
         try {
             log.debug("robot cancle")
             keepScreenOnJob?.cancel()
-            if(videoFullScreen.value && !showControllerBar.value){
+            if (videoFullScreen.value && !showControllerBar.value) {
                 var time = 1
                 if (videoFullScreen.value) {
                     focusRequester.requestFocus()
@@ -107,7 +110,7 @@ fun Player(
                 }
             }
         } catch (e: Exception) {
-            log.error("keep screen on timer err:",e)
+            log.error("keep screen on timer err:", e)
         }
         onDispose {
             keepScreenOnJob?.cancel()
@@ -117,64 +120,94 @@ fun Player(
     val showCursor = remember { mutableStateOf(true) }
     DisposableEffect(mrl) {
         scope.launch {
-            if(StringUtils.isNotBlank(mrl)){
+            if (StringUtils.isNotBlank(mrl)) {
                 controller.load(mrl)
             }
         }
         onDispose {
         }
     }
-    Box(modifier.onPointerEvent(PointerEventType.Move) {
-        val current = it.changes.first().position
-        val cel = mousePosition.minus(current)
-        if (abs(cel.x) < 2 || abs(cel.y) < 2) return@onPointerEvent
 
-        showControllerBar.value = true
-        mousePosition = current
-        hideJob.value?.cancel()
-        hideJob.value = scope.launch {
-            delay(controlBarDuration)
-            showControllerBar.value = false
-        }
-        cursorJob.value?.cancel()
-        showCursor.value = true
-        cursorJob.value = scope.launch {
-            delay(3000)
-            showCursor.value = false
-        }
-    }.pointerHoverIcon(PointerIcon(if (!showCursor.value) createEmptyCursor() else Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)))) {
-        FrameContainer(Modifier.fillMaxSize().focusTarget().focusable().focusRequester(focusRequester), controller){
+    val roundedShape = RoundedCornerShape(4.dp)
+    Box(
+        modifier
+            .background(Color.Transparent, roundedShape)
+            .onPointerEvent(PointerEventType.Move) {
+                val current = it.changes.first().position
+                val cel = mousePosition.minus(current)
+                if (abs(cel.x) < 2 || abs(cel.y) < 2) return@onPointerEvent
+
+                showControllerBar.value = true
+                mousePosition = current
+                hideJob.value?.cancel()
+                hideJob.value = scope.launch {
+                    delay(controlBarDuration)
+                    showControllerBar.value = false
+                }
+                cursorJob.value?.cancel()
+                showCursor.value = true
+                cursorJob.value = scope.launch {
+                    delay(3000)
+                    showCursor.value = false
+                }
+            }.pointerHoverIcon(
+                PointerIcon(
+                    if (!showCursor.value) createEmptyCursor() else Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
+                )
+            )
+    ) {
+        FrameContainer(
+            Modifier
+                .clip(roundedShape)
+                .fillMaxSize()
+                .focusTarget()
+                .focusable()
+                .focusRequester(focusRequester),
+            controller
+        ) {
             showControllerBar.value = !showControllerBar.value
         }
-        AnimatedVisibility(showControllerBar.value,
+        AnimatedVisibility(
+            showControllerBar.value,
             modifier = Modifier.align(Alignment.TopEnd),
             enter = fadeIn(),
-            exit = fadeOut()){
-            Row (Modifier.height(40.dp).fillMaxWidth(), horizontalArrangement = Arrangement.End){
+            exit = fadeOut()
+        ) {
+            Row(Modifier.height(40.dp).fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 IconButton(onClick = {
                     showMediaInfoDialog.value = true
-                }){
-                    Icon(Icons.Default.Info, contentDescription = "media info", tint = MaterialTheme.colorScheme.primary)
+                }) {
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = "media info",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }
         AnimatedVisibility(
             showControllerBar.value,
-            modifier = Modifier.align(Alignment.BottomEnd),
+            modifier = Modifier.align(Alignment.BottomEnd).offset(y = (-1).dp),
 //            enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
 //            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
             enter = fadeIn(),
             exit = fadeOut()
         ) {
             DefaultControls(
-                Modifier.background(Color.Gray.copy(alpha = 0.45f))
-                    .height(80.dp)
+                Modifier.background(
+                    Color.Gray.copy(alpha = 0.45f), RoundedCornerShape(
+                        topStart = 4.dp,  // 顶部与父容器匹配
+                        topEnd = 4.dp,
+                        bottomStart = 4.dp, // 底部不需要圆角
+                        bottomEnd = 4.dp
+                    )
+                ).height(80.dp)
                     .align(Alignment.BottomEnd), controller, vm.state.value.detail
-            ){
+            ) {
                 vm.clickShowEp()
             }
         }
-        LaunchedEffect(tip.value){
+        LaunchedEffect(tip.value) {
             delay(1500)
             controller.tip.emit("")
             controller.showTip.emit(false)
@@ -192,20 +225,28 @@ fun Player(
                 )
             }
         }
-        MediaInfoDialog(Modifier.fillMaxWidth(0.5f).fillMaxHeight(0.4f), controller.state.value, showMediaInfoDialog.value){
+        MediaInfoDialog(
+            Modifier.fillMaxWidth(0.5f).fillMaxHeight(0.4f),
+            controller.state.value,
+            showMediaInfoDialog.value
+        ) {
             showMediaInfoDialog.value = false
         }
     }
 }
 
 @Composable
-fun MediaInfoDialog(modifier: Modifier, playerState: PlayerState, show:Boolean, onClose:()->Unit){
+fun MediaInfoDialog(modifier: Modifier, playerState: PlayerState, show: Boolean, onClose: () -> Unit) {
     val mediaInfo = rememberUpdatedState(playerState.mediaInfo)
-    Dialog(modifier, showDialog = show, onClose = onClose){
+    Dialog(modifier, showDialog = show, onClose = onClose) {
         val scrollbar = rememberLazyListState(0)
-        Box{
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(30.dp), modifier = Modifier.padding(30.dp), state = scrollbar,
-                horizontalAlignment = Alignment.CenterHorizontally) {
+        Box {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(30.dp),
+                modifier = Modifier.padding(30.dp),
+                state = scrollbar,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 item {
                     SelectionContainer {
                         Text(text = AnnotatedString(mediaInfo.value?.url ?: ""))
@@ -214,12 +255,14 @@ fun MediaInfoDialog(modifier: Modifier, playerState: PlayerState, show:Boolean, 
                     Text("${mediaInfo.value?.width ?: ""} * ${mediaInfo.value?.height ?: ""}")
                 }
             }
-            VerticalScrollbar(rememberScrollbarAdapter(scrollbar),
+            VerticalScrollbar(
+                rememberScrollbarAdapter(scrollbar),
                 modifier = Modifier.align(Alignment.CenterEnd).padding(vertical = 5.dp, horizontal = 8.dp),
                 style = defaultScrollbarStyle().copy(
                     unhoverColor = Color.Gray.copy(0.45F),
                     hoverColor = Color.DarkGray
-                ))
+                )
+            )
         }
     }
 }

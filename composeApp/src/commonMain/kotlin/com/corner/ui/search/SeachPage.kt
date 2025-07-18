@@ -49,7 +49,7 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
     }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        Column(modifier = Modifier.align(alignment = Alignment.TopStart)) {
+        Column(modifier = Modifier.align(alignment = Alignment.TopStart).padding(horizontal = 16.dp, vertical = 8.dp)) {
             // TopBar
             WindowDraggableArea {
                 ControlBar(leading = {
@@ -59,9 +59,7 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
                     ) {
                         FilledTonalIconButton(
                             modifier = Modifier
-                                .width(80.dp)
-                                .height(80.dp)
-                                .padding(top = 10.dp, start = 10.dp, end = 10.dp, bottom = 6.dp),
+                                .fillMaxHeight().width(60.dp).padding(vertical = 8.dp),
                             colors = IconButtonDefaults.filledTonalIconButtonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 contentColor = MaterialTheme.colorScheme.primary
@@ -70,7 +68,7 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
                                 vm.clear()
                                 onClickBack()
                             },
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(12.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,

@@ -3,9 +3,16 @@ package com.corner.ui
 import AppTheme
 import SiteViewModel
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement.Absolute.Center
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -14,28 +21,33 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Autorenew
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowScope
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
@@ -43,6 +55,7 @@ import com.corner.bean.enums.PlayerType
 import com.corner.bean.getPlayerSetting
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
+import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
@@ -50,15 +63,12 @@ import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
 import com.corner.ui.nav.data.DetailScreenState
 import com.corner.ui.nav.vm.DetailViewModel
 import com.corner.ui.scene.*
-import com.corner.ui.video.QuickSearchItem
 import com.corner.util.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.apache.commons.lang3.StringUtils
 import org.jetbrains.compose.resources.painterResource
 import tv_multiplatform.composeapp.generated.resources.Res
 import tv_multiplatform.composeapp.generated.resources.TV_icon_x
-
 
 @Composable
 fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
@@ -99,13 +109,11 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
     ) {
         Column(Modifier) {
             if (!isFullScreen.value) {
-                WindowDraggableArea {
+                WindowDraggableArea(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     ControlBar(leading = {
-                        BackRow(Modifier, onClickBack = {
-                            onClickBack()
-                        }) {
+                        BackRow(modifier = Modifier.align(Alignment.Start), { onClickBack() }) {
                             Row(
-                                Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -113,7 +121,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                     ToolTipText(
                                         detail.vodName ?: "",
                                         textStyle = MaterialTheme.typography.headlineMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                                        modifier = Modifier.padding(start = 50.dp)
+                                        modifier = Modifier.padding(horizontal = 12.dp)
                                     )
                                 }
                             }
@@ -126,12 +134,46 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                     vm.quickSearch()
                                     SnackBar.postMsg("重新加载")
                                 }
-                            }, enabled = !model.value.isLoading
+                            },
+                            enabled = !model.value.isLoading,
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
                         ) {
+                            // 使用derivedStateOf优化状态读取
+                            val isLoading by remember { derivedStateOf { model.value.isLoading } }
+
+                            // 更流畅的动画配置
+                            val rotation by animateFloatAsState(
+                                targetValue = if (isLoading) 360f else 0f,
+                                animationSpec = if (isLoading) {
+                                    infiniteRepeatable(
+                                        animation = tween(1000, easing = LinearEasing),
+                                        repeatMode = RepeatMode.Restart
+                                    )
+                                } else {
+                                    tween(300, easing = FastOutSlowInEasing)
+                                },
+                                label = "refresh_rotation"
+                            )
+
+                            // 颜色过渡动画
+                            val iconTint by animateColorAsState(
+                                targetValue = if (!isLoading)
+                                    MaterialTheme.colorScheme.onSecondaryContainer
+                                else
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                animationSpec = tween(300),
+                                label = "icon_tint"
+                            )
+
                             Icon(
-                                Icons.Default.Autorenew,
-                                contentDescription = "renew",
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                imageVector = Icons.Default.Autorenew,
+                                contentDescription = "刷新数据",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .rotate(rotation),
+                                tint = iconTint
                             )
                         }
                     })
@@ -139,13 +181,15 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
             }
             val mrl = derivedStateOf { model.value.currentPlayUrl }
             Row(
-                modifier = Modifier.fillMaxHeight(videoHeight.value), horizontalArrangement = Arrangement.spacedBy(5.dp)
+                modifier = Modifier.fillMaxHeight(videoHeight.value)
+                    .padding(start = if (isFullScreen.value) 0.dp else 16.dp),//挺好，全屏取消左侧缩进
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 val internalPlayer = derivedStateOf {
                     val playerSetting =
                         SettingStore.getSettingItem(SettingType.PLAYER).getPlayerSetting(detail.site?.playerType)
                     playerSetting.first() == PlayerType.Innie.id
-                 }
+                }
                 if (internalPlayer.value) {
                     SideEffect {
                         focus.requestFocus()
@@ -159,8 +203,10 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                     )
                 } else {
                     Box(
-                        Modifier.fillMaxWidth(videoWidth.value).fillMaxHeight().background(Color.Black)
-                    ) {
+                        Modifier.fillMaxWidth(videoWidth.value).fillMaxHeight()
+                            .background(Color.Black, shape = RoundedCornerShape(4.dp)),
+
+                        ) {
                         Column(
                             Modifier.fillMaxSize().align(Alignment.Center),
                             verticalArrangement = Arrangement.Center
@@ -181,7 +227,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                         }
                     }
                 }
-                AnimatedVisibility(!isFullScreen.value, modifier = Modifier.fillMaxSize()) {
+                AnimatedVisibility(!isFullScreen.value, modifier = Modifier.fillMaxSize().padding(end = 16.dp)) {
                     EpChooser(
                         vm, Modifier.fillMaxSize().background(
                             MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
@@ -192,64 +238,147 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
             }
             AnimatedVisibility(!isFullScreen.value) {
                 val searchResultList = derivedStateOf { model.value.quickSearchResult.toList() }
-                Box(Modifier) {
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Spacer(Modifier.size(15.dp))
-                        Column(Modifier.fillMaxWidth(0.3f)) {
+
+                // 外层容器
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // 1. 固定搜索结果列（30%宽度）
+                    if (searchResultList.value.isNotEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(0.3f)
+                        ) {
                             quickSearchResult(model, searchResultList, vm)
                         }
-                        Column(
-                            modifier = Modifier.padding(start = 10.dp).fillMaxSize()
-                        ) {
-                            if (model.value.detail.isEmpty()) {
-                                emptyShow(onRefresh = { vm.load() })
-                            } else {
-                                VodInfo(detail)
-                            }
-                            Spacer(modifier = Modifier.size(15.dp))
-                            // 线路
-                            Flags(scope, vm)
-                            Spacer(Modifier.size(15.dp))
-                            val urls = rememberUpdatedState(vm.state.value.currentUrl)
-                            val showUrl = derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
-                            if (showUrl.value) {
-                                Row {
-                                    Text(
-                                        "清晰度",
-                                        fontSize = TextUnit(25F, TextUnitType.Sp),
-                                        modifier = Modifier.padding(bottom = 5.dp, end = 5.dp),
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    LazyRow(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                                        itemsIndexed(urls.value?.values ?: listOf()) { i, item ->
-                                            RatioBtn(text = item.n ?: (i + 1).toString(), onClick = {
-                                                vm.chooseLevel(urls.value?.copy(position = i), item.v)
-                                            }, selected = i == urls.value?.position!!)
-                                        }
-                                    }
+                    }
 
+                    // 2. 可滚动内容列（70%宽度）
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()) // 垂直滚动
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(32.dp),  // 统一内边距
+                            horizontalArrangement = Arrangement.spacedBy(32.dp)  // 列间距
+                        ) {
+                            // 左侧视频信息区域 (占50%宽度)
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                            ) {
+                                if (model.value.detail.isEmpty()) {
+                                    emptyShow(onRefresh = { vm.load() })
+                                } else {
+                                    VodInfo(detail)
                                 }
+                            }
+
+                            // 右侧控制区域 (占50%宽度)
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
+                                verticalArrangement = Arrangement.spacedBy(24.dp)
+                            ) {
+                                // 线路选择
+                                Flags(scope, vm)
+
+                                // 清晰度选择
+                                QualitySelector(vm)
+
+                                // 底部留白
+                                Spacer(modifier = Modifier.weight(1f))
                             }
                         }
                     }
                 }
             }
         }
-        val showEpChooserDialog = derivedStateOf { isFullScreen.value && model.value.showEpChooserDialog }
-        Dialog(
-            Modifier.align(Alignment.CenterEnd).fillMaxWidth(0.3f).fillMaxHeight(0.8f).padding(end = 20.dp),
-            showDialog = showEpChooserDialog.value,
-            onClose = { vm.showEpChooser() }) {
-            EpChooser(
-                vm, Modifier.fillMaxSize().background(
-                    MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(8.dp)
-                ).padding(horizontal = 5.dp)
-            )
-        }
-
     }
-
 }
+//val urls = rememberUpdatedState(vm.state.value.currentUrl)
+//val showUrl = derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
+//if (showUrl.value) {
+@Composable
+private fun QualitySelector(vm: DetailViewModel) {
+    val urls = rememberUpdatedState(vm.state.value.currentUrl)
+    val showUrl =  derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
+
+    if (showUrl.value) {
+        Column(
+            modifier = Modifier
+                .padding(vertical = 12.dp)
+                .fillMaxWidth()
+        ) {
+            // 标题文本
+            Text(
+                text = "画质选择",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Medium
+                ),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 16.dp, start = 8.dp)
+            )
+
+            // 清晰度选项列表
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                itemsIndexed(urls.value?.values ?: listOf()) { i, item ->
+                    val isSelected = i == urls.value?.position!!
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isSelected)
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant,
+                        border = BorderStroke(
+                            width = if (isSelected) 1.5.dp else 1.dp,
+                            color = if (isSelected)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                        ),
+                        onClick = { vm.chooseLevel(urls.value?.copy(position = i), item.v) },
+                        modifier = Modifier
+                            .height(40.dp)
+                            .widthIn(min = 80.dp)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                            Text(
+                                text = item.n ?: "选项 ${i + 1}",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                ),
+                                color = if (isSelected)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -261,41 +390,100 @@ private fun Flags(
     LaunchedEffect(detail.value) {
         println("detail detail 修改")
     }
-    Row(Modifier.padding(start = 10.dp)) {
+    Row(
+        modifier = Modifier
+            .padding(start = 16.dp, bottom = 12.dp)
+            .fillMaxWidth()
+    ) {
+        // 标题文本 - 与清晰度选择器风格一致
         Text(
-            "线路",
-            fontSize = TextUnit(25F, TextUnitType.Sp),
-            modifier = Modifier.padding(bottom = 5.dp),
-            color = MaterialTheme.colorScheme.onSurface
+            text = "线路选择",
+            style = MaterialTheme.typography.headlineSmall.copy(
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 0.15.sp
+            ),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f),
+            modifier = Modifier.align(Alignment.CenterVertically)
         )
-        Spacer(Modifier.size(10.dp))
-        val detailIsNotEmpty = derivedStateOf { detail.value.vodFlags.isNotEmpty() }
-        if (detailIsNotEmpty.value) {
-            val state = rememberLazyListState(0)
-            Box() {
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Box(modifier = Modifier.weight(1f)) {
+            val state = rememberLazyListState()
+            val hasFlags = remember { derivedStateOf { detail.value.vodFlags.isNotEmpty() } }
+
+            if (hasFlags.value) {
+                // 线路选项列表
                 LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
                     state = state,
-                    modifier = Modifier.padding(bottom = 10.dp).fillMaxWidth().onPointerEvent(PointerEventType.Scroll) {
-                        scope.launch {
-                            state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
-                        }
-                    },
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    val flagList = derivedStateOf { detail.value.vodFlags.toList() }
-                    items(flagList.value) {
-                        RatioBtn(text = it.show ?: "", onClick = {
-                            vm.chooseFlag(detail.value, it)
-                        }, selected = it.activated)
+                    items(detail.value.vodFlags.toList()) { flag ->
+                        val isSelected = remember { derivedStateOf { flag.activated } }
+
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isSelected.value)
+                                MaterialTheme.colorScheme.primaryContainer
+                            else
+                                MaterialTheme.colorScheme.surfaceVariant,
+                            border = BorderStroke(
+                                width = if (isSelected.value) 1.5.dp else 1.dp,
+                                color = if (isSelected.value)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                            ),
+                            onClick = { vm.chooseFlag(detail.value, flag) },
+                            modifier = Modifier
+                                .height(48.dp)
+                                .widthIn(min = 96.dp)
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.padding(horizontal = 20.dp)
+                            ) {
+                                Text(
+                                    text = flag.show ?: "线路",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = if (isSelected.value) FontWeight.Bold else FontWeight.Medium
+                                    ),
+                                    color = if (isSelected.value)
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
                     }
                 }
-                val showScrollBar =
-                    derivedStateOf { state.layoutInfo.visibleItemsInfo.size < (detail.value.vodFlags.size) }
-                if (showScrollBar.value) {
+
+                // 滚动条指示器
+                val showScrollbar by remember {
+                    derivedStateOf {
+                        state.layoutInfo.totalItemsCount > state.layoutInfo.visibleItemsInfo.size
+                    }
+                }
+
+                if (showScrollbar) {
                     HorizontalScrollbar(
-                        rememberScrollbarAdapter(state), style = defaultScrollbarStyle().copy(
-                            unhoverColor = Color.Gray.copy(0.45F), hoverColor = Color.DarkGray
-                        ), modifier = Modifier.align(Alignment.BottomCenter)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .padding(horizontal = 12.dp),
+                        adapter = rememberScrollbarAdapter(state),
+                        style = ScrollbarStyle(
+                            minimalHeight = 8.dp,
+                            thickness = 6.dp,
+                            shape = RoundedCornerShape(3.dp),
+                            hoverDurationMillis = 300, // 添加悬停持续时间
+                            unhoverColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                            hoverColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                        )
                     )
                 }
             }
@@ -305,30 +493,56 @@ private fun Flags(
 
 @Composable
 private fun quickSearchResult(
-    model: State<DetailScreenState>, searchResultList: State<List<Vod>>, component: DetailViewModel
+    model: State<DetailScreenState>,
+    searchResultList: State<List<Vod>>,
+    component: DetailViewModel
 ) {
-    if (model.value.quickSearchResult.isNotEmpty()) {
-        val quickState = rememberLazyGridState()
-        val adapter = rememberScrollbarAdapter(quickState)
-        Box {
+    if (searchResultList.value.isNotEmpty()) {
+        val gridState = rememberLazyGridState()
+        val scrollbarAdapter = rememberScrollbarAdapter(gridState)
+
+        Box(modifier = Modifier.padding(start = 12.dp, end = 8.dp, bottom = 10.dp)) {
+            // 使用正确的 LazyGridState
+            val gridState = rememberLazyGridState()
+
             LazyVerticalGrid(
-                modifier = Modifier.padding(end = 10.dp),
                 columns = GridCells.Fixed(2),
-                state = quickState,
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                state = gridState,  // 使用相同的状态
+                modifier = Modifier.padding(4.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                items(searchResultList.value) {
-                    QuickSearchItem(it) {
-                        SiteViewModel.viewModelScope.launch {
-                            component.loadDetail(it)
-                        }
-                    }
+                items(
+                    items = searchResultList.value,
+                    key = { it.vodId ?: it.vodName ?: "" }
+                ) { vod ->
+                    CompactSearchItem(
+                        vod = vod,
+                        onClick = {
+                            SiteViewModel.viewModelScope.launch {
+                                component.loadDetail(vod)
+                            }
+                        },
+                        detail = model.value.detail
+                    )
                 }
             }
+
             VerticalScrollbar(
-                modifier = Modifier.align(Alignment.CenterEnd), adapter = adapter, style = defaultScrollbarStyle().copy(
-                    unhoverColor = Color.Gray.copy(0.45F), hoverColor = Color.DarkGray
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .padding(start = 5.dp),
+                adapter = rememberScrollbarAdapter(
+                    scrollState = gridState
+                ),
+                style = ScrollbarStyle(
+                    minimalHeight = 16.dp,
+                    thickness = 6.dp,
+                    shape = RoundedCornerShape(3.dp),
+                    hoverDurationMillis = 300, // 控制悬停持续时间
+                    unhoverColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                    hoverColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                 )
             )
         }
@@ -336,42 +550,229 @@ private fun quickSearchResult(
 }
 
 @Composable
-private fun VodInfo(detail: Vod?) {
-    Column(Modifier.padding(10.dp)) {
-        Row() {
-            if (detail?.site?.name?.isNotBlank() == true) {
+private fun CompactSearchItem(
+    detail: Vod?,
+    vod: Vod,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp), // 稍微增加高度让内容更宽松
+        shape = RoundedCornerShape(12.dp), // 更大的圆角更现代
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        tonalElevation = 2.dp,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 12.dp), // 增加内边距
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // 标题行（带评分）
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text(
-                    "站源: " + detail.site?.name, color = MaterialTheme.colorScheme.onSurface
+                    text = vod.vodName ?: "未知标题",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .weight(1f)
+                        .basicMarquee()
+                        .padding(end = 8.dp) // 增加右边距
                 )
-                Spacer(Modifier.width(5.dp))
+
+                // 站源展示（修复版）
+                detail?.site?.name?.takeIf { it.isNotBlank() }?.let { vodPlayFrom ->
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f),
+                        modifier = Modifier
+                            .height(24.dp)
+                            .padding(start = 8.dp) // 增加左边距避免紧贴前一个元素
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 6.dp)
+                        ) {
+                            // 更合适的站源图标
+                            Icon(
+                                imageVector = Icons.Outlined.Public, // 使用"地球"图标更符合站源语义
+                                contentDescription = "站源",
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = vodPlayFrom,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis // 超长时显示省略号
+                            )
+                        }
+                    }
+                } ?: Text( // 空数据时的占位（可选）
+                    text = "未指定来源",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    modifier = Modifier.padding(start = 8.dp)
+                )
             }
-            val s = mutableListOf<String>()
-            Text(detail?.vodYear ?: "", color = MaterialTheme.colorScheme.onSurface)
-            if (StringUtils.isNotBlank(detail?.vodArea)) {
-                s.add(detail?.vodArea!!)
+
+            // 副信息行
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // 年份+类型信息 (始终左侧)
+                Text(
+                    text = buildString {
+                        vod.vodYear?.takeIf { it.isNotBlank() }?.let { append("$it • ") }
+                        append(vod.typeName ?: vod.cate ?: "未知类型")
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false) // 关键修改：fill = false
+                )
+
+                // 播放时长 (始终右侧)
+                detail?.vodRemarks?.takeIf { it.isNotBlank() }?.let { remarks ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Schedule,
+                            contentDescription = "时长",
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = remarks,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    }
+                }
             }
-            if (StringUtils.isNotBlank(detail?.cate)) {
-                s.add(detail?.cate!!)
-            }
-            if (StringUtils.isNotBlank(detail?.typeName)) {
-                s.add(detail?.typeName!!)
-            }
-            Text(
-                s.joinToString(separator = " | "), color = MaterialTheme.colorScheme.onSurface
-            )
         }
+    }
+}
+
+@Composable
+private fun VodInfo(detail: Vod?) {
+    val typography = MaterialTheme.typography
+    val colors = MaterialTheme.colorScheme
+
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+    ) {
+        // 1. 基本信息行（站源/年份/地区/分类）
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            detail?.site?.name?.takeIf { it.isNotBlank() }?.let { siteName ->
+                InfoChip("站源: $siteName")
+            }
+
+            detail?.vodYear?.takeIf { it.isNotBlank() }?.let { year ->
+                InfoChip(year)
+            }
+
+            listOfNotNull(
+                detail?.vodArea,
+                detail?.cate,
+                detail?.typeName
+            ).filter { it.isNotBlank() }
+                .forEach { info ->
+                    InfoChip(info)
+                }
+        }
+
+        // 2. 导演信息
+        LabeledText(
+            label = "导演",
+            content = detail?.vodDirector,
+            modifier = Modifier.padding(top = 12.dp)
+        )
+
+        // 3. 演员信息
+        LabeledText(
+            label = "演员",
+            content = detail?.vodActor,
+            modifier = Modifier.padding(top = 8.dp),
+            maxLines = 2
+        )
+
+        // 4. 简介
+        LabeledText(
+            label = "简介",
+            content = detail?.vodContent?.trim(),
+            modifier = Modifier.padding(top = 8.dp),
+            maxLines = 3,
+            textStyle = typography.bodyMedium.copy(lineHeight = 22.sp)
+        )
+    }
+}
+
+@Composable
+private fun InfoChip(text: String) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
         Text(
-            "导演：${detail?.vodDirector ?: "无"}", color = MaterialTheme.colorScheme.onSurface
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        ExpandedText(
-            "演员：${detail?.vodActor ?: "无"}",
-            2,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+@Composable
+private fun LabeledText(
+    label: String,
+    content: String?,
+    modifier: Modifier = Modifier,
+    maxLines: Int = Int.MAX_VALUE,
+    textStyle: TextStyle = MaterialTheme.typography.bodyMedium
+) {
+    Column(modifier) {
+        Text(
+            text = "$label：",
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            ),
+            modifier = Modifier.padding(bottom = 2.dp)
         )
-        ExpandedText(
-            "简介：${detail?.vodContent?.trim() ?: "无"}",
-            3,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            text = content ?: "无",
+            style = textStyle,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = maxLines,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -381,109 +782,161 @@ private fun VodInfo(detail: Vod?) {
 fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
     val model = vm.state.collectAsState()
     val detail = rememberUpdatedState(model.value.detail)
-    Column(modifier = modifier) {
-        Row(Modifier.padding(vertical = 3.dp, horizontal = 8.dp)) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, end = 10.dp, bottom = 8.dp, start = 8.dp)
+    ) {
+        // 标题行
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                "选集",
-                fontSize = TextUnit(20F, TextUnitType.Sp),
-                modifier = Modifier.padding(bottom = 5.dp),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(Modifier.size(10.dp))
-            val show = derivedStateOf {
-                (detail.value.currentFlag.episodes.size) > 0
-            }
-            if (show.value) {
-                Text(
-                    "共${detail.value.currentFlag.episodes.size}集",
-                    textAlign = TextAlign.End,
-                    fontSize = TextUnit(15F, TextUnitType.Sp),
+                text = "选集",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
-        val epSize = derivedStateOf { detail.value.currentFlag.episodes.size }
+                ),
+                modifier = Modifier.weight(1f)
+            )
 
-        val scrollState = rememberLazyListState(0)
-        val scrollBarAdapter = rememberScrollbarAdapter(scrollState)
-        if (epSize.value > 15) {
-            Box(modifier = Modifier.padding(bottom = 2.dp)) {
-                LazyRow(
-                    state = scrollState,
-                    modifier = Modifier.padding(bottom = 2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    for (i in 0 until epSize.value step Constants.EpSize) {
-                        item {
-                            RatioBtn(
-                                selected = detail.value.currentTabIndex == (i / Constants.EpSize),
-                                onClick = {
-                                    vm.chooseEpBatch(i)
-                                },
-                                text = "${i + 1}-${if ((i + Constants.EpSize) > epSize.value) epSize.value else i + Constants.EpSize}"
-                            )
-                        }
-                    }
-                }
-                HorizontalScrollbar(
-                    adapter = scrollBarAdapter,
-                    modifier = Modifier.padding(bottom = 5.dp).align(Alignment.BottomCenter),
-                    style = defaultScrollbarStyle().copy(
-                        unhoverColor = Color.Gray.copy(0.45F), hoverColor = Color.DarkGray
+            val show by remember { derivedStateOf { detail.value.currentFlag.episodes.isNotEmpty() } }
+            if (show) {
+                Text(
+                    text = "共${detail.value.currentFlag.episodes.size}集",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 )
             }
         }
 
-        val uriHandler = LocalUriHandler.current
-        val epList = derivedStateOf { detail.value.subEpisode }
-        val state = rememberLazyGridState()
-        Box {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(1),
-                state = state,
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                verticalArrangement = Arrangement.spacedBy(5.dp)
+        // 剧集批次选择（仅当剧集数量>15时显示）
+        val epSize by remember { derivedStateOf { detail.value.currentFlag.episodes.size } }
+        if (epSize > 15) {
+            val scrollState = rememberLazyListState()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
             ) {
-                items(epList.value, key = { it.url + it.number }) {
-                    TooltipArea(
-                        tooltip = {
-                            // composable tooltip content
-                            Surface(
-                                modifier = Modifier.shadow(4.dp), shape = RoundedCornerShape(4.dp)
-                            ) {
-                                Text(
-                                    text = it.name,
-                                    modifier = Modifier.padding(10.dp),
-                                )
-                            }
-                        }, delayMillis = 600
-                    ) {
+                LazyRow(
+                    state = scrollState,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 8.dp)
+                ) {
+                    items((0 until epSize step Constants.EpSize).toList()) { i ->
                         RatioBtn(
-                            text = it.name, onClick = {
-                                vm.chooseEp(it) {
-                                    uriHandler.openUri(it)
-                                }
-                            }, selected = it.activated,
-                            loading = it.activated && vm.videoLoading.value,
-                            tag = {
-                                if (Utils.isDownloadLink(it.url)) {
-                                    true to "下载"
-                                } else {
-                                    false to ""
-                                }
-                            })
+                            selected = detail.value.currentTabIndex == (i / Constants.EpSize),
+                            onClick = { vm.chooseEpBatch(i) },
+                            text = buildString {
+                                append(i + 1)
+                                append("-")
+                                append(minOf(i + Constants.EpSize, epSize))
+                            },
+                            modifier = Modifier.height(32.dp)
+                        )
                     }
                 }
+
+                HorizontalScrollbar(
+                    adapter = rememberScrollbarAdapter(scrollState),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .align(Alignment.BottomCenter),
+                    style = LocalScrollbarStyle.current.copy(
+                        unhoverColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                        hoverColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    )
+                )
             }
+        }
+        val uriHandler = LocalUriHandler.current
+        val epList by remember { derivedStateOf { detail.value.subEpisode } }
+        val gridState = rememberLazyGridState()
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            // 网格列表（占满宽度减去滚动条宽度）
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(1),
+                state = gridState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 12.dp), // 为滚动条预留空间
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(end = 8.dp)
+            ) {
+                items(epList, key = { it.url + it.number }) { episode ->
+                    EpisodeItem(
+                        episode = episode,
+                        onSelect = { vm.chooseEp(it) { uriHandler.openUri(it) } },
+                        isLoading = episode.activated && vm.videoLoading.value,
+                        modifier = Modifier.fillMaxWidth() // 关键：确保条目填满宽度
+                    )
+                }
+            }
+
+            // 滚动条（固定在右侧）
             VerticalScrollbar(
-                adapter = rememberScrollbarAdapter(state),
-                modifier = Modifier.align(Alignment.CenterEnd),
-                style = defaultScrollbarStyle().copy(
-                    unhoverColor = Color.Gray.copy(0.45F), hoverColor = Color.DarkGray
+                adapter = rememberScrollbarAdapter(gridState),
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .width(8.dp),
+                style = LocalScrollbarStyle.current.copy(
+                    unhoverColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                    hoverColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                 )
             )
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun EpisodeItem(
+    episode: Episode,
+    onSelect: (Episode) -> Unit,
+    isLoading: Boolean,
+    modifier: Modifier = Modifier
+) {
+    TooltipArea(
+        tooltip = {
+            Surface(
+                modifier = Modifier.shadow(8.dp),
+                shape = RoundedCornerShape(4.dp),
+                color = MaterialTheme.colorScheme.surfaceContainer
+            ) {
+                Text(
+                    text = episode.name,
+                    modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        },
+        delayMillis = 500
+    ) {
+        RatioBtn(
+            text = episode.name,
+            onClick = { onSelect(episode) },
+            selected = episode.activated,
+            loading = isLoading,
+            tag = {
+                if (Utils.isDownloadLink(episode.url)) {
+                    Pair(true, "下载")
+                } else {
+                    Pair(false, "")
+                }
+            },
+            modifier = Modifier.height(48.dp).fillMaxWidth()
+        )
     }
 }
 

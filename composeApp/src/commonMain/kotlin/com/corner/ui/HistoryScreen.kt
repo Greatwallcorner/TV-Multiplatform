@@ -21,10 +21,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowScope
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
@@ -122,27 +124,98 @@ fun WindowScope.HistoryScene(vm: HistoryViewModel, onClickItem: (Vod) -> Unit, o
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    "历史记录", style = MaterialTheme.typography.headlineMedium,
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    modifier = Modifier.align(Alignment.CenterVertically)
+                                    text = "历史记录",
+                                    style = MaterialTheme.typography.headlineMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        letterSpacing = 0.15.sp,
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
                     },
                     actions = {
-                        IconButton(
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                                .padding(end = 20.dp)
-                                .size(80.dp), onClick = {
-                                vm.clearHistory()
-                                vm.fetchHistoryList()
-                            }) {
-                            Row(modifier = Modifier.padding(2.dp)) {
-                                Icon(Icons.Default.Delete, "delete all", tint = MaterialTheme.colorScheme.onSurface)
-                                Text("清空", color = MaterialTheme.colorScheme.onSurface)
+                        var showConfirmDialog by remember { mutableStateOf(false) }
+
+                        // 主按钮
+                        FilledTonalButton(
+                            modifier = Modifier
+                                .height(40.dp)
+                                .padding(end = 12.dp),
+                            onClick = { showConfirmDialog = true },
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+                            )
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "清空全部",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    "清空",
+                                    style = MaterialTheme.typography.labelLarge
+                                )
                             }
                         }
-                    })
+
+                        // 确认对话框
+                        if (showConfirmDialog) {
+                            AlertDialog(
+                                onDismissRequest = { showConfirmDialog = false },
+                                title = {
+                                    Text(
+                                        "确认清空历史记录",
+                                        style = MaterialTheme.typography.headlineSmall
+                                    )
+                                },
+                                text = {
+                                    Text(
+                                        "此操作将永久删除所有历史记录，且不可恢复。",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                },
+                                confirmButton = {
+                                    FilledTonalButton(
+                                        onClick = {
+                                            showConfirmDialog = false
+                                            vm.clearHistory()
+                                            vm.fetchHistoryList()
+                                        },
+                                        colors = ButtonDefaults.filledTonalButtonColors(
+                                            containerColor = MaterialTheme.colorScheme.error,
+                                            contentColor = MaterialTheme.colorScheme.onError
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text("确认清空")
+                                    }
+                                },
+                                dismissButton = {
+                                    OutlinedButton(
+                                        onClick = { showConfirmDialog = false },
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text("取消")
+                                    }
+                                }
+                            )
+                        }
+                    }
+                )
             }
             val gridState = remember { LazyGridState() }
             LazyVerticalGrid(

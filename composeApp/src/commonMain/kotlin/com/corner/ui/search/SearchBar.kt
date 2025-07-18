@@ -5,14 +5,17 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,17 +23,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.state.ToggleableState
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.PopupProperties
 import com.corner.bean.Suggest
 import com.corner.ui.nav.vm.SearchViewModel
 import com.corner.util.KtorClient
@@ -43,11 +39,14 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextRange
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.delay
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.window.PopupProperties
 
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun SearchBar(
     vm: SearchViewModel,
@@ -56,7 +55,6 @@ fun SearchBar(
     initValue: String,
     onSearch: (String) -> Unit,
     isSearching: Boolean,
-    // 新增：焦点请求回调
     onFocusRequested: () -> Unit = { focusRequester.requestFocus() }
 ) {
     var focusState by remember { mutableStateOf<FocusState?>(null) }
@@ -66,19 +64,15 @@ fun SearchBar(
     val searching by rememberUpdatedState(isSearching)
     var isGettingSuggestion by remember { mutableStateOf(false) }
     var showSearchSiteDialog by remember { mutableStateOf(false) }
-    var job: Job = remember {
-        val j = Job()
-        j.complete()
-        j
-    }
-
+    var job by remember { mutableStateOf<Job?>(null) }
     var suggestions by remember { mutableStateOf(Suggest()) }
 
+    // 自动获取焦点并全选文本
     LaunchedEffect(focusRequester) {
         snapshotFlow { focusState?.isFocused == true && textFieldValue.text.isNotEmpty() }
             .collect { isFocused ->
                 if (isFocused && textFieldValue.text.isNotEmpty()) {
-                    delay(50) // 等待焦点稳定
+                    delay(50)
                     textFieldValue = textFieldValue.copy(
                         selection = TextRange(0, textFieldValue.text.length)
                     )
@@ -86,110 +80,132 @@ fun SearchBar(
             }
     }
 
-    val searchFun = fun(text: String) {
+    val searchFun = { text: String ->
         onSearch(text)
         suggestions = Suggest()
     }
 
-    Column {
-        Spacer(modifier = Modifier.height(10.dp))
+    Column(modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp).wrapContentHeight()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier
+            modifier = Modifier.fillMaxWidth(0.82f)
         ) {
+            // 网站选择按钮
             Button(
                 onClick = { showSearchSiteDialog = true },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
-                shape = RoundedCornerShape(10.dp), // 圆角形状
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp), // 添加阴影
-                modifier = Modifier.height(48.dp) // 固定高度与搜索框一致
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 0.dp,
+                    pressedElevation = 2.dp
+                ),
+                modifier = Modifier.height(48.dp)
             ) {
-                Text(modelState.value.searchBarText, style = TextStyle(fontSize = 12.sp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Outlined.Tune,
+                        contentDescription = "Filter",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        modelState.value.searchBarText,
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
-            //隔离搜索网站按钮与搜索栏
-            Spacer(modifier = Modifier.width(10.dp))
 
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // 搜索框
             Box(
                 modifier = Modifier
-                    .widthIn(max = 850.dp)
+                    .weight(1f)
                     .height(48.dp)
-                    .background(
-                        color = Color.Gray.copy(alpha = 0.3f),
-                        shape = RoundedCornerShape(10.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(
+                        width = 1.dp,
+                        color = if (focusState?.isFocused == true)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(12.dp)
                     )
-                    .padding(horizontal = 8.dp),  // 内部padding
-                contentAlignment = Alignment.CenterStart
             ) {
                 BasicTextField(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
                         .focusRequester(focusRequester)
-                        .onFocusEvent { focusState = it }, // 捕获焦点状态变化
+                        .onFocusEvent { focusState = it },
                     value = textFieldValue,
                     onValueChange = { newValue ->
                         textFieldValue = newValue
                         searchText = newValue.text
-                        if (job?.isActive == true) return@BasicTextField
+                        job?.cancel()
                         job = SiteViewModel.viewModelScope.launch {
                             if (isGettingSuggestion || searchText.isBlank()) return@launch
                             delay(500)
                             isGettingSuggestion = true
                             try {
-                                val response =
-                                    KtorClient.createHttpClient { }
-                                        .get("https://suggest.video.iqiyi.com/?if=mobile&key=$searchText")
+                                val response = KtorClient.createHttpClient { }
+                                    .get("https://suggest.video.iqiyi.com/?if=mobile&key=$searchText")
                                 if (response.status == HttpStatusCode.OK) {
-                                    suggestions = Suggest.objectFrom(response.bodyAsText())
+                                    val body = response.bodyAsText()
+                                    suggestions = Suggest.objectFrom(body)
                                 }
-                            } finally {
-                                isGettingSuggestion = false
+                            } catch (e:Exception) {
+                            }finally {
+                                    isGettingSuggestion = false
                             }
-                            focusRequester.requestFocus()
                         }
                     },
                     singleLine = true,
-                    textStyle = TextStyle(
-                        fontSize = 14.sp,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
                         color = MaterialTheme.colorScheme.onSurface
                     ),
-                    cursorBrush = SolidColor(Color.White),//白色输入光标
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     decorationBox = { innerTextField ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxSize()
                         ) {
-                            // 加载指示器
                             if (searching) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(20.dp),
                                     strokeWidth = 2.dp,
                                     color = MaterialTheme.colorScheme.primary
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
                             }
 
-                            // 文本输入区域
-                            Box(
-                                modifier = Modifier.weight(1f)
-                            ) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                if (textFieldValue.text.isEmpty()) {
+                                    Text(
+                                        "搜索...",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    )
+                                }
                                 innerTextField()
                             }
 
-                            // 搜索图标
                             if (searchText.isNotBlank()) {
                                 IconButton(
                                     onClick = { searchFun(searchText) },
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .pointerHoverIcon(PointerIcon.Default)//悬停在搜索图标上时，显示为普通光标
+                                    modifier = Modifier.size(40.dp)
                                 ) {
                                     Icon(
-                                        tint = Color.White,
                                         imageVector = Icons.Outlined.Search,
-                                        contentDescription = "Search"
+                                        contentDescription = "Search",
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
@@ -198,105 +214,125 @@ fun SearchBar(
                 )
             }
         }
-    }
 
-    val scrollState = remember { ScrollState(0) }
-    val showSuggestion = remember { derivedStateOf { searchText.isNotEmpty() && !suggestions.isEmpty() } }
+        val scrollState = remember { ScrollState(0) }
+        val showSuggestion = remember { derivedStateOf { searchText.isNotEmpty() && !suggestions.isEmpty() } }
 
-    DropdownMenu(
-        expanded = showSuggestion.value,
-        scrollState = scrollState,
-        offset = DpOffset(100.dp, 3.dp),
-        onDismissRequest = {
-            suggestions = Suggest()
-        },
-        properties = PopupProperties(
-            focusable = false,
-            dismissOnBackPress = true,
-            dismissOnClickOutside = true,
-            clippingEnabled = true
-        ),
-        modifier = Modifier.animateContentSize(animationSpec = spring())
-            .clip(RoundedCornerShape(15.dp))
-    ) {
-        Column(Modifier.padding(horizontal = 15.dp, vertical = 5.dp)) {
-            suggestions.data?.forEach {
-                DropdownMenuItem(
-                    modifier = Modifier,
-                    onClick = {
-                        searchFun(it.name)
-                    },
-                    contentPadding = PaddingValues(horizontal = 15.dp, vertical = 5.dp), text = {
-                        Text(
-                            it.name,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
-                        )
-                    }
-                )
-            }
-        }
-    }
-    DropdownMenu(
-        expanded = showSearchSiteDialog,
-        onDismissRequest = { showSearchSiteDialog = false },
-        offset = DpOffset(100.dp, 3.dp),
-    ) {
-        val parentState = remember {
-            derivedStateOf {
-                when {
-                    modelState.value.searchableSites.all { it.isSearchable() } -> ToggleableState.On
-                    modelState.value.searchableSites.none { it.isSearchable() } -> ToggleableState.Off
-                    else -> ToggleableState.Indeterminate
+        DropdownMenu(
+            expanded = showSuggestion.value,
+            scrollState = scrollState,
+            offset = DpOffset(100.dp, 3.dp),
+            onDismissRequest = {
+                suggestions = Suggest()
+            },
+            properties = PopupProperties(
+                focusable = false,
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true,
+                clippingEnabled = true
+            ),
+            modifier = Modifier.animateContentSize(animationSpec = spring())
+                .clip(RoundedCornerShape(15.dp))
+        ) {
+            Column(Modifier.padding(horizontal = 15.dp, vertical = 5.dp)) {
+                suggestions.data?.forEach {
+                    DropdownMenuItem(
+                        modifier = Modifier,
+                        onClick = {
+                            searchFun(it.name)
+                        },
+                        contentPadding = PaddingValues(horizontal = 15.dp, vertical = 5.dp), text = {
+                            Text(
+                                it.name,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                            )
+                        }
+                    )
                 }
             }
         }
-        Column(
-            Modifier.padding(horizontal = 5.dp, vertical = 5.dp)
-                .clip(shape = RoundedCornerShape(5.dp))
-        ) {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text("全选")
-                TriStateCheckbox(state = parentState.value, onClick = {
-                    vm.updateModel {
-                        val newState = parentState.value != ToggleableState.On
-                        it.searchableSites.forEachIndexed { _, site ->
-                            if (newState) {
-                                site.searchable = 1
-                            } else {
-                                site.searchable = 0
+    }
+
+    // 网站选择对话框
+    if (showSearchSiteDialog) {
+        AlertDialog(
+            onDismissRequest = { showSearchSiteDialog = false },
+            title = { Text("选择搜索网站") },
+            text = {
+                Column {
+                    val parentState = remember {
+                        derivedStateOf {
+                            when {
+                                modelState.value.searchableSites.all { it.isSearchable() } -> ToggleableState.On
+                                modelState.value.searchableSites.none { it.isSearchable() } -> ToggleableState.Off
+                                else -> ToggleableState.Indeterminate
                             }
                         }
                     }
-                })
-            }
-            HorizontalDivider()
-            val siteList = remember { derivedStateOf { modelState.value.searchableSites.toList() } }
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(5.dp),
-                verticalArrangement = Arrangement.spacedBy(3.dp),
-                modifier = Modifier.height(300.dp).width(450.dp)
-            ) {
-                items(items = siteList.value) { site ->
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                        modifier = Modifier.padding(bottom = 8.dp)
                     ) {
-                        Text(site.name)
-                        Checkbox(site.isSearchable(), onCheckedChange = {
-                            vm.updateModel {
-                                it.searchableSites.first { iSite -> iSite.key == site.key }
-                                    ?.apply { toggleSearchable() }
+                        Text("全选", style = MaterialTheme.typography.bodyMedium)
+                        TriStateCheckbox(
+                            state = parentState.value,
+                            onClick = {
+                                vm.updateModel {
+                                    val newState = parentState.value != ToggleableState.On
+                                    it.searchableSites.forEach { site ->
+                                        site.searchable = if (newState) 1 else 0
+                                    }
+                                }
+                            },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    }
+
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(150.dp),
+                        contentPadding = PaddingValues(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.heightIn(max = 400.dp)
+                    ) {
+                        items(modelState.value.searchableSites.toList()) { site ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(4.dp)
+                            ) {
+                                Checkbox(
+                                    checked = site.isSearchable(),
+                                    onCheckedChange = {
+                                        vm.updateModel {
+                                            it.searchableSites.first { iSite -> iSite.key == site.key }
+                                                ?.apply { toggleSearchable() }
+                                        }
+                                    },
+                                    colors = CheckboxDefaults.colors(
+                                        checkedColor = MaterialTheme.colorScheme.primary
+                                    )
+                                )
+                                Text(
+                                    site.name,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
                             }
-                        })
+                        }
                     }
                 }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { showSearchSiteDialog = false }
+                ) {
+                    Text("确定")
+                }
             }
-        }
+        )
     }
 }

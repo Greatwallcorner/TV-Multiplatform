@@ -119,7 +119,7 @@ private fun WindowScope.SearchResult(
         }
     }
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 16.dp, vertical = 8.dp)) {
             WindowDraggableArea {
                 //TopBar
                 ControlBar(
@@ -127,18 +127,16 @@ private fun WindowScope.SearchResult(
                     leading = {
                         FilledTonalIconButton(
                             modifier = Modifier
-                                .width(80.dp)
-                                .height(80.dp)
-                                .padding(top = 10.dp, start = 10.dp, end = 10.dp, bottom = 6.dp),
+                                .height(40.dp).width(60.dp),
                             colors = IconButtonDefaults.filledTonalIconButtonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 contentColor = MaterialTheme.colorScheme.primary
                             ),
+                            shape = RoundedCornerShape(12.dp),
                             onClick = {
                                 vm.clear()
                                 onClickBack()
-                            },
-                            shape = RoundedCornerShape(8.dp)
+                            }
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
