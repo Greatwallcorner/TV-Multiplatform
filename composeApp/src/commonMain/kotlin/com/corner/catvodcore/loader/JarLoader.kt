@@ -22,9 +22,9 @@ object JarLoader {
     private val methods: ConcurrentHashMap<String, Method> by lazy { ConcurrentHashMap() }
     private val spiders: ConcurrentHashMap<String, Spider> by lazy { ConcurrentHashMap() }
 
-    var recent:String? = null;
+    var recent: String? = null;
 
-    fun clear(){
+    fun clear() {
         loaders.clear()
         methods.clear()
         spiders.clear()
@@ -54,7 +54,7 @@ object JarLoader {
      * 如果在配置文件种使用的相对路径， 下载的时候使用的全路径 如果的判断md5是否一致的时候使用相对路径 就会造成重复下载
      */
     private fun parseJarUrl(jar: String): String {
-        if(jar.startsWith("file") || jar.startsWith("http")) return jar
+        if (jar.startsWith("file") || jar.startsWith("http")) return jar
         return Urls.convert(ApiConfig.api.url!!, jar)
     }
 
@@ -91,7 +91,7 @@ object JarLoader {
             val spKey = jaKey + key
             if (spiders.containsKey(spKey)) return spiders[spKey]!!
             if (loaders[jaKey] == null) loadJar(jaKey, jar)
-            val loader = loaders[jaKey]
+            val loader = loaders[jaKey] ?: throw IllegalStateException("Loader is null for JAR: $jar")
             val classPath = "${Constant.catVodSpider}.${api.replace("csp_", "")}"
             val spider: Spider =
                 loader!!.loadClass(classPath).getDeclaredConstructor()
@@ -107,7 +107,7 @@ object JarLoader {
 
     private fun download(jar: String): File {
         val jarPath = Paths.jar(jar)
-        log.debug("download jar file {} to:{}",jar, jarPath)
+        log.debug("download jar file {} to:{}", jar, jarPath)
         return Paths.write(jarPath, Http.Get(jar).execute().body.bytes())
     }
 
@@ -123,6 +123,6 @@ object JarLoader {
     }
 
     fun SetRecent(jar: String?) {
-         recent = jar
+        recent = jar
     }
 }

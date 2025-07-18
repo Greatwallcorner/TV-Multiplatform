@@ -84,7 +84,7 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
                     url = vod.vodPic ?: "",
                     modifier = picModifier,
                     contentDescription = vod.vodName,
-                    contentScale = ContentScale.Fit,
+                    contentScale = ContentScale.Crop,
                     placeholderPainter = { painterResource(Res.drawable.loading) },
                     errorPainter = { painterResource(Res.drawable.loading) }
                 )
@@ -541,7 +541,7 @@ fun ClassRow(vm: VideoViewModel, onCLick: (Type) -> Unit) {
             val list = derivedStateOf { model.value.classList.toList() }
             items(list.value) { type ->
                 RatioBtn(text = type.typeName, onClick = {
-                    vm.chooseClass(type){
+                    vm.chooseClass(type) {
                         onCLick(type)
                     }
                 }, selected = type.selected)
@@ -607,7 +607,12 @@ fun ChooseHomeDialog(
                             }) {
                             Text(item.name, textAlign = TextAlign.Center)
                         }
-                        TooltipArea(tooltip = {Text("开启/禁用搜索", Modifier.background(MaterialTheme.colorScheme.background))}, delayMillis = 1000){
+                        TooltipArea(tooltip = {
+                            Text(
+                                "开启/禁用搜索",
+                                Modifier.background(MaterialTheme.colorScheme.background)
+                            )
+                        }, delayMillis = 1000) {
                             IconButton(onClick = {
                                 vm.changeSite {
                                     if (item.isSearchable()) {
@@ -625,7 +630,12 @@ fun ChooseHomeDialog(
                                 }
                             }
                         }
-                        TooltipArea(tooltip = {Text("开启/禁用换源", Modifier.background(MaterialTheme.colorScheme.background))}, delayMillis = 1000){
+                        TooltipArea(tooltip = {
+                            Text(
+                                "开启/禁用换源",
+                                Modifier.background(MaterialTheme.colorScheme.background)
+                            )
+                        }, delayMillis = 1000) {
                             IconButton(onClick = {
                                 vm.changeSite {
                                     if (item.isChangeable()) {

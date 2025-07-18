@@ -38,7 +38,7 @@ import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.nothing_svg
+import tv_multiplatform.composeapp.generated.resources.loading
 
 @Composable
 fun HistoryItem(
@@ -66,6 +66,8 @@ fun HistoryItem(
                     contentScale = ContentScale.Crop,
                     placeholderPainter = { painterResource(Res.drawable.nothing_svg) },
                     errorPainter = { painterResource(Res.drawable.nothing_svg) })
+                    placeholderPainter = { painterResource(Res.drawable.loading) },
+                    errorPainter = { painterResource(Res.drawable.loading) })
                 Text(
                     text = history.vodName!!,
                     modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))

@@ -17,8 +17,7 @@ import com.corner.catvod.enum.bean.Vod
 import com.seiko.imageloader.ui.AutoSizeImage
 import org.jetbrains.compose.resources.painterResource
 import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.empty
-import tv_multiplatform.composeapp.generated.resources.nothing_svg
+import tv_multiplatform.composeapp.generated.resources.loading
 
 @Composable
 fun HorizontalItem(modifier: Modifier, vod:Vod, onClick:(Vod)->Unit){
@@ -34,6 +33,8 @@ fun HorizontalItem(modifier: Modifier, vod:Vod, onClick:(Vod)->Unit){
                 contentScale = ContentScale.Fit,
                 placeholderPainter = { painterResource(Res.drawable.nothing_svg) },
                 errorPainter = { painterResource(Res.drawable.nothing_svg) })
+                placeholderPainter = { painterResource(Res.drawable.loading) },
+                errorPainter = { painterResource(Res.drawable.loading) })
             Spacer(Modifier.size(15.dp))
             Text(vod.vodName ?: "", modifier = Modifier
                 .align(Alignment.CenterVertically)
