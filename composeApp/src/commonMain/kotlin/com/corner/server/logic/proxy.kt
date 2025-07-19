@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
  * 只是雏形，还是不要用了
  * */
 
-suspend fun proxy(params: Map<String, String>): Array<Any>? {
+fun proxy(params: Map<String, String>): Array<Any>? {
     when (params["do"]) {
         "js" -> { /* js处理逻辑 */ }
         "py" -> { /* py处理逻辑 */ }

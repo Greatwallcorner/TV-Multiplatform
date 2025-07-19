@@ -32,7 +32,6 @@ import androidx.compose.ui.window.WindowScope
 import com.corner.bean.HotData
 import com.corner.ui.nav.vm.SearchViewModel
 import com.corner.ui.scene.ControlBar
-import com.corner.ui.scene.ExpandedText
 
 /**
  *历史记录
