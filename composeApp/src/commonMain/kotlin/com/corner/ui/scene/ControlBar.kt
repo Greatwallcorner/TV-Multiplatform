@@ -129,7 +129,12 @@ private fun RowScope.WindowControlButtons() {
         description = "Close",
         containerColor = MaterialTheme.colorScheme.errorContainer,
         contentColor = MaterialTheme.colorScheme.onErrorContainer,
-        onClick = { GlobalAppState.closeApp.value = true }
+        onClick = { // 在关闭应用时
+            GlobalAppState.cleanupBeforeExit {
+                // 确保清理完成后再退出
+                GlobalAppState.closeApp.value = true
+            }
+        }
     )
 }
 

@@ -24,9 +24,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.cancellation.CancellationException
 
 
-class VideoViewModel: BaseViewModel() {
+class VideoViewModel : BaseViewModel() {
     private val _state = MutableStateFlow(VideoScreenState())
     val state: StateFlow<VideoScreenState> = _state
 
@@ -203,17 +204,29 @@ class VideoViewModel: BaseViewModel() {
         return filters
     }
 
+    /*
+    * 错误处理，关闭应用时处理线程时忽略抛出的异常
+    * */
     fun searchBarPrompt() {
+        promptJob?.cancel()
         promptJob = SiteViewModel.viewModelScope.launch {
-            if (state.value.isRunning) return@launch
-            _state.update { it.copy(isRunning = true) }
-            delay(1500) // 等待获取热门数据列表
-            var idx = 0
+            try {
+                if (state.value.isRunning) return@launch
+                _state.update { it.copy(isRunning = true) }
+                delay(1500) // 等待获取热门数据列表
+                var idx = 0
 
-            while (true) {
-                delay(2000)
-                if (idx >= GlobalAppState.hotList.value.size) idx = 0
-                _state.update { it.copy(prompt = GlobalAppState.hotList.value[idx++].title) }
+                while (true) {
+                    delay(2000)
+                    if (idx >= GlobalAppState.hotList.value.size) idx = 0
+                    _state.update { it.copy(prompt = GlobalAppState.hotList.value[idx++].title) }
+                }
+            } catch (e: CancellationException) {
+                // 正常取消不记录错误
+                _state.update { it.copy(isRunning = false) }
+            } catch (e: Exception) {
+                log.error("滚动提示异常", e)
+                _state.update { it.copy(isRunning = false) }
             }
         }
         promptJob?.invokeOnCompletion {
@@ -232,13 +245,14 @@ class VideoViewModel: BaseViewModel() {
                         changeable = site.changeable
                         searchable = site.searchable
                     }
-                }, ref=api.ref+1) }
+                }, ref = api.ref + 1)
+            }
         }
 
     }
 
     fun setClassData() {
-        _state.update{ it.copy(homeVodResult = SiteViewModel.result.value.list.toMutableSet()) }
+        _state.update { it.copy(homeVodResult = SiteViewModel.result.value.list.toMutableSet()) }
         _state.value.page.set(1)
     }
 
@@ -249,7 +263,7 @@ class VideoViewModel: BaseViewModel() {
         _state.update { it.copy(currentFilters = state.value.currentFilters, ref = state.value.ref++) }
     }
 
-    fun chooseClass(type: Type, onClick: ()-> Unit) {
+    fun chooseClass(type: Type, onClick: () -> Unit) {
         if (isLoading.get()) return
         isLoading.set(true)
         scope.launch {

@@ -21,6 +21,7 @@ import com.corner.ui.scene.SnackBar
 import com.corner.util.SysVerUtil
 import com.seiko.imageloader.LocalImageLoader
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.slf4j.LoggerFactory
@@ -69,15 +70,30 @@ fun main() {
             ) {
                 RootContent(modifier = Modifier.fillMaxSize())
             }
+
+            /**
+            * 流程挺正常，代码水平不太正常
+            **/
+
             scope.launch {
-                GlobalAppState.closeApp.collect{
-                    if(it){
+                GlobalAppState.closeApp.collect {
+                    if (it) {
                         try {
+                            // 1. 隐藏窗口
                             window.isVisible = false
+
+                            // 2. 保存设置
                             SettingStore.write()
-                        }catch(e: Exception){
+
+                            // 3. 执行清理（新增）
+                            GlobalAppState.cleanupBeforeExit()
+
+                            // 4. 等待500ms确保清理完成
+                            delay(500)
+                        } catch (e: Exception) {
                             log.error("关闭应用异常", e)
                         } finally {
+                            // 5. 退出应用
                             exitApplication()
                         }
                     }

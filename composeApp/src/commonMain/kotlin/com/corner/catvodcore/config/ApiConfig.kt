@@ -97,8 +97,9 @@ object ApiConfig{
 
     fun setRecent(site: Site) {
         api.recent = site.key
-        val js: Boolean = site.api.contains(".js")
-        val py: Boolean = site.api.startsWith("py_")
+        //注释js和py实现
+//        val js: Boolean = site.api.contains(".js")
+//        val py: Boolean = site.api.startsWith("py_")
         val csp: Boolean = site.api.startsWith("csp_")
         /*if (js) jsLoader.setRecent(site.getKey())
         else if (py) pyLoader.setRecent(site.getKey())
