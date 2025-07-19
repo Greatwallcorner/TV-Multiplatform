@@ -21,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -213,13 +214,23 @@ class VideoViewModel : BaseViewModel() {
             try {
                 if (state.value.isRunning) return@launch
                 _state.update { it.copy(isRunning = true) }
-                delay(1500) // 等待获取热门数据列表
-                var idx = 0
 
-                while (true) {
+                // 等待初始数据加载
+                delay(1500)
+
+                var idx = 0
+                while (isActive) {  // 使用isActive检查协程状态
+                    val hotList = GlobalAppState.hotList.value
+                    if (hotList.isEmpty()) {
+                        delay(2000)  // 列表为空时等待
+                        continue
+                    }
+
+                    _state.update {
+                        it.copy(prompt = hotList[idx % hotList.size].title)
+                    }
+                    idx++
                     delay(2000)
-                    if (idx >= GlobalAppState.hotList.value.size) idx = 0
-                    _state.update { it.copy(prompt = GlobalAppState.hotList.value[idx++].title) }
                 }
             } catch (e: CancellationException) {
                 // 正常取消不记录错误
@@ -229,9 +240,9 @@ class VideoViewModel : BaseViewModel() {
                 _state.update { it.copy(isRunning = false) }
             }
         }
+
         promptJob?.invokeOnCompletion {
-            println("scroll invoke complete")
-            state.value.isRunning = false
+            _state.update { it.copy(isRunning = false) }
         }
     }
 

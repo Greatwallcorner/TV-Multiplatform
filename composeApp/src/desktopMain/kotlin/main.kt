@@ -23,6 +23,8 @@ import com.seiko.imageloader.LocalImageLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.jetbrains.compose.resources.painterResource
 import org.slf4j.LoggerFactory
 import tv_multiplatform.composeapp.generated.resources.Res
@@ -36,8 +38,18 @@ fun main() {
     launchErrorCatcher()
     printSystemInfo()
     Runtime.getRuntime().addShutdownHook(Thread {
-        log.info("Performing cleanup before exiting...")
-        Init.stop()
+        log.info("Shutdown started")
+        try {
+            // 设置超时防止卡死
+            runBlocking {
+                withTimeout(5000) {
+                    //执行清理程序
+                    Init.stop()
+                }
+            }
+        } catch (e: Exception) {
+            log.error("Shutdown failed", e)
+        }
     })
 //    System.setProperty("java.net.useSystemProxies", "true");
     application {
@@ -72,7 +84,7 @@ fun main() {
             }
 
             /**
-            * 流程挺正常，代码水平不太正常
+            * 代码水平不太正常
             **/
 
             scope.launch {

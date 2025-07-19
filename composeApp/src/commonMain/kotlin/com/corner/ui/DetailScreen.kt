@@ -48,6 +48,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.WindowScope
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
@@ -303,11 +305,41 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                 }
             }
         }
+        //全屏选集弹窗
+        if (isFullScreen.value && vm.state.value.showEpChooserDialog) {
+            Dialog(
+                onDismissRequest = { vm.showEpChooser() },
+                properties = DialogProperties(
+                    usePlatformDefaultWidth = false,
+                )
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize().clickable { vm.showEpChooser() },
+                    contentAlignment = Alignment.CenterEnd, // 关键：内容右对齐
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .widthIn(max = 400.dp)  // 控制最大宽度
+                            .fillMaxHeight(0.8f)    // 高度占比80%
+                            .padding(end = 16.dp),  // 右侧留白
+                        shape = RoundedCornerShape(
+                            topStart = 16.dp,
+                            bottomStart = 16.dp    // 仅左侧圆角
+                        ),
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        tonalElevation = 8.dp      // 增加阴影深度
+                    ) {
+                        EpChooser(
+                            vm,
+                            Modifier
+                                .fillMaxSize()
+                        )
+                    }
+                }
+            }
+        }
     }
 }
-//val urls = rememberUpdatedState(vm.state.value.currentUrl)
-//val showUrl = derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
-//if (showUrl.value) {
 @Composable
 private fun QualitySelector(vm: DetailViewModel) {
     val urls = rememberUpdatedState(vm.state.value.currentUrl)

@@ -2,7 +2,6 @@ package com.corner.ui.scene
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,15 +19,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPlacement
 import com.corner.catvodcore.viewmodel.GlobalAppState
+import org.slf4j.LoggerFactory
 
-
+val log = LoggerFactory.getLogger("ControlBar")
 
 @Composable
 fun ControlBar(
@@ -41,11 +40,6 @@ fun ControlBar(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
-            .shadow(
-                elevation = 2.dp,
-                shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
-            )
     ) {
         Box(
             modifier = Modifier
@@ -91,7 +85,8 @@ fun ControlBar(
         // 更精细的分割线
         Divider(
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
-            thickness = 0.5.dp
+            thickness = 0.3.dp,
+            modifier = Modifier.padding(horizontal = 4.dp)
         )
     }
 }
@@ -103,6 +98,7 @@ private fun RowScope.WindowControlButtons() {
         icon = Icons.Default.Minimize,
         description = "Minimize",
         containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = Color.White,
         onClick = {
             GlobalAppState.windowState?.isMinimized = !GlobalAppState.windowState?.isMinimized!!
         }
@@ -114,6 +110,7 @@ private fun RowScope.WindowControlButtons() {
             Icons.Default.KeyboardArrowUp else Icons.Default.CropSquare,
         description = "Maximize/Restore",
         containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = Color.White,
         onClick = {
             GlobalAppState.windowState?.placement =
                 if (GlobalAppState.windowState?.placement == WindowPlacement.Maximized)
@@ -128,10 +125,12 @@ private fun RowScope.WindowControlButtons() {
         icon = Icons.Default.Close,
         description = "Close",
         containerColor = MaterialTheme.colorScheme.errorContainer,
-        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        contentColor = Color.White,
+        iconTint = Color.White,
         onClick = { // 在关闭应用时
             GlobalAppState.cleanupBeforeExit {
                 // 确保清理完成后再退出
+                log.info("清理完成，即将退出")
                 GlobalAppState.closeApp.value = true
             }
         }
@@ -144,6 +143,7 @@ private fun RowScope.WindowControlButton(
     description: String,
     containerColor: Color,
     contentColor: Color = MaterialTheme.colorScheme.primary,
+    iconTint: Color = contentColor,
     onClick: () -> Unit
 ) {
     FilledTonalIconButton(
@@ -160,6 +160,7 @@ private fun RowScope.WindowControlButton(
         Icon(
             imageVector = icon,
             contentDescription = description,
+            tint = iconTint,  // 独立控制图标颜色
             modifier = Modifier.size(18.dp)
         )
     }

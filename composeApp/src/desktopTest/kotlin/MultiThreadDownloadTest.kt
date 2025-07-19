@@ -1,4 +1,5 @@
 import com.corner.server.logic.multiThreadDownload
+import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 
 class MultiThreadDownloadTest {
@@ -6,7 +7,9 @@ class MultiThreadDownloadTest {
 
     @Test
     fun test(){
-        multiThreadDownload(downloadUrl, 5, null)
+        runBlocking {
+            multiThreadDownload(downloadUrl, 5, null)
+        }
     }
 
 }

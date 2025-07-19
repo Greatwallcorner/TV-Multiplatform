@@ -147,10 +147,50 @@ class VlcjFrameController(
         return controller.player
     }
 
+//    fun release() {
+//        controller.player?.controls()?.stop()
+//        controller.player?.release()
+//        controller.factory.release()
+//        isReleased = true
+//    }
+
+    /**
+     * 原来的代码会出现Invalid memory access问题,尝试修复
+     * */
     fun release() {
-        controller.player?.controls()?.stop()
-        controller.player?.release()
-        controller.factory.release()
+        if (isReleased) return
         isReleased = true
+
+        try {
+            // 1. 先移除视频表面回调
+            controller.player?.videoSurface()?.set(null)
+
+            // 2. 尝试软停止（带重试）
+            stopPlayerWithRetry()
+
+            // 3. 释放资源
+            controller.player?.release()
+            controller.factory.release()
+
+        } catch (e: Throwable) {
+            // 静默处理所有错误，避免崩溃
+        } finally {
+            // 确保状态一致
+            historyCollectJob?.cancel()
+            byteArray = null
+            info = null
+        }
+    }
+
+    private fun stopPlayerWithRetry() {
+        repeat(3) { attempt ->
+            try {
+                controller.player?.controls()?.stop()
+                return
+            } catch (e: Error) {
+                if (attempt == 2) throw e // 最后一次尝试仍失败则抛出
+                Thread.sleep(100) // 等待100ms后重试
+            }
+        }
     }
 }

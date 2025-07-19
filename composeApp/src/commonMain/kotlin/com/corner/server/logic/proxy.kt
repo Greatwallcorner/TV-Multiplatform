@@ -2,83 +2,107 @@ package com.corner.server.logic
 
 import com.corner.catvodcore.loader.JarLoader
 import com.corner.util.KtorClient
+import io.ktor.client.call.body
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.slf4j.LoggerFactory
 
+
+/**
+ * 只是雏形，还是不要用了
+ * */
+
 suspend fun proxy(params: Map<String, String>): Array<Any>? {
-    if (params.containsKey("do") && params.get("do")?.equals("js") ?: false) {
-
-    } else if (params.containsKey("do") && params.get("do")?.equals("py") ?: false) {
-
-    } else {
-        return JarLoader.proxyInvoke(params)
+    when (params["do"]) {
+        "js" -> { /* js处理逻辑 */ }
+        "py" -> { /* py处理逻辑 */ }
+        else -> return JarLoader.proxyInvoke(params)
     }
     return null
 }
 
-const val segmentSize = 1024 * 1024 // 1MB
-val logger = LoggerFactory.getLogger("multiThreadDownload")
-fun multiThreadDownload(url: String, thread: Int, call: ApplicationCall?) {
-    runBlocking {
-//        val semaphore = Semaphore(thread)
-        // 获取需要下载的内容长度
+private val logger = LoggerFactory.getLogger("multiThreadDownload")
+
+suspend fun multiThreadDownload(url: String, thread: Int, call: ApplicationCall?) {
+    coroutineScope {
         val client = KtorClient.client
 
-        val head = client.head(url)
-        if (!head.headers.contains(HttpHeaders.AcceptRanges)) {
-            logger.error("不支持range请求 url:$url")
-            call?.respond(HttpStatusCode.InternalServerError, "不支持range请求")
-            return@runBlocking
+        // 直接使用head请求，Ktor 2.x会自动管理资源
+        val response = client.head(url)
+
+        if (!response.headers.contains(HttpHeaders.AcceptRanges)) {
+            logger.error("服务器不支持Range请求: $url")
+            call?.respond(HttpStatusCode.BadRequest, "Range not supported")
+            return@coroutineScope
         }
-        val contentLen = head.contentLength()
-        if (contentLen == null || contentLen.toInt() == 0) {
-            logger.warn("contentLength为空:${contentLen}")
-            return@runBlocking
+
+        val contentLen = response.contentLength() ?: run {
+            logger.warn("内容长度未知")
+            call?.respond(HttpStatusCode.BadRequest, "Unknown content length")
+            return@coroutineScope
         }
-        var segmentCount = contentLen.div(segmentSize)
-        if (contentLen % segmentSize > 0) segmentCount++
-        val mutex = Mutex()
-        val segments = (0 until segmentCount).map { i ->
-            val start = if((i * segmentSize).toInt() == 0) 0 else i * segmentSize - 1
-            val end = if (start + segmentSize > contentLen) contentLen - 1 else start + segmentSize
-            Pair(start, end)
-        }.toMutableList()
-        for (i in 0..thread) {
-            launch {
-                while (true) {
-                    if (segments.isEmpty()) return@launch
-                    var segment: Pair<Long, Long>? = null
-                    mutex.withLock {
-                        segment = segments.removeFirst()
-                    }
-                    if (segment == null) {
-                        return@launch
-                    } else {
-                        downloadSegment(url, segment!!, call)
+
+        val segmentSize = calculateSegmentSize(contentLen)
+        val segments = createSegments(contentLen, segmentSize)
+        val segmentChannel = Channel<Pair<Long, Long>>(Channel.UNLIMITED)
+
+        segments.forEach { segmentChannel.send(it) }
+        segmentChannel.close()
+
+        repeat(thread) {
+            launch(Dispatchers.IO) {
+                for (segment in segmentChannel) {
+                    try {
+                        downloadSegment(url, segment, call)
+                    } catch (e: Exception) {
+                        logger.error("分段下载失败 [$segment]", e)
                     }
                 }
             }
         }
     }
+}
 
+private fun calculateSegmentSize(contentLength: Long): Long {
+    return when {
+        contentLength > 1_000_000_000 -> 10 * 1024 * 1024
+        else -> 1 * 1024 * 1024
+    }
+}
 
+private fun createSegments(contentLength: Long, segmentSize: Long): List<Pair<Long, Long>> {
+    val segmentCount = (contentLength + segmentSize - 1) / segmentSize
+    return (0 until segmentCount).map { i ->
+        val start = i * segmentSize
+        val end = minOf(start + segmentSize - 1, contentLength - 1)
+        start to end
+    }
 }
 
 suspend fun downloadSegment(url: String, segment: Pair<Long, Long>, call: ApplicationCall?) {
-    val response = KtorClient.client.get {
-        url(url)
+    // 依赖协程作用域自动管理资源
+    val data = KtorClient.client.get(url) {
         header(HttpHeaders.Range, "bytes=${segment.first}-${segment.second}")
-    }
-//    call.respondOutputStream {
-//        write(response.body<ByteArray>())
-//        headers { response.headers }
-//    }
-    println("${response.contentLength()} ${response.headers.get(HttpHeaders.ContentRange)}")
+    }.body<ByteArray>()
+
+    logger.debug("下载完成: ${segment.first}-${segment.second}, 大小: ${data.size}")
+    // TODO: 处理数据
 }
+
+//suspend fun downloadSegment(url: String, segment: Pair<Long, Long>, call: ApplicationCall?) {
+//    val response = KtorClient.client.get {
+//        url(url)
+//        header(HttpHeaders.Range, "bytes=${segment.first}-${segment.second}")
+//    }
+////    call.respondOutputStream {
+////        write(response.body<ByteArray>())
+////        headers { response.headers }
+////    }
+//    println("${response.contentLength()} ${response.headers.get(HttpHeaders.ContentRange)}")
+//}

@@ -1,20 +1,16 @@
 package com.corner.ui
 
-import AppTheme
 import SiteViewModel
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,7 +28,6 @@ import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LiveTv
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Security
@@ -55,7 +50,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -75,7 +69,6 @@ import com.corner.init.initConfig
 import com.corner.ui.nav.vm.SettingViewModel
 import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.scene.*
-import com.corner.util.KtorClient.Companion.log
 import com.corner.util.getSetting
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
@@ -108,9 +101,9 @@ fun WindowScope.SettingScene(vm: SettingViewModel, onClickBack: () -> Unit) {
 
     Box(
         modifier = Modifier.fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(MaterialTheme.colorScheme.surface),
     ) {
-        Column(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp)) {
             // 顶部应用栏 - 更现代化的设计
             WindowDraggableArea {
                 ControlBar(
@@ -574,7 +567,7 @@ fun WindowScope.SettingScene(vm: SettingViewModel, onClickBack: () -> Unit) {
     if (showAboutDialog) {
         AboutDialog(
             modifier = Modifier
-                .fillMaxWidth(0.9f)  // 改为宽度比例
+                .fillMaxWidth(0.5f)  // 改为宽度比例
                 .fillMaxHeight(0.8f), // 改为高度比例
             showDialog = showAboutDialog,
             onDismiss = { showAboutDialog = false },
@@ -593,7 +586,7 @@ fun SettingCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -755,7 +748,7 @@ fun AboutDialog(
     ) {
         Card(
             modifier = modifier
-                .fillMaxWidth(0.6f)
+                .fillMaxWidth(0.9f)
                 .heightIn(min = 400.dp, max = 600.dp)
                 .padding(16.dp),
             shape = RoundedCornerShape(24.dp),
@@ -807,7 +800,6 @@ fun AboutDialog(
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-
                 // Author section - 保持水平滚动
                 AboutSection(
                     title = "开发团队",
@@ -923,8 +915,8 @@ fun AboutSection(
     items: List<AboutItem>
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp ),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
             text = title,
@@ -933,61 +925,62 @@ fun AboutSection(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        // 修改为水平滚动列表
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(vertical = 8.dp)
+        // 垂直按钮列表
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp ),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(items) { item ->
-                Card(
-                    modifier = Modifier.width(180.dp), // 设置固定宽度
+            items.forEach { item ->
+                ElevatedButton(
+                    onClick = { openBrowser(item.link) },
+                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
+                    colors = ButtonDefaults.elevatedButtonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
-                    onClick = { openBrowser(item.link) }
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 2.dp,
+                        pressedElevation = 4.dp
+                    )
                 ) {
-                    Column(
-                        modifier = Modifier.padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        // 左侧头像和文本
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Icon(
                                 imageVector = item.icon,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(24.dp)
                             )
-                            Text(
-                                text = item.name,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Medium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                            Column {
+                                Text(
+                                    text = item.name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = item.role,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                )
+                            }
                         }
-                        Text(
-                            text = item.role,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+
+                        // 右侧链接图标
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                            contentDescription = "打开链接",
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                                contentDescription = "打开链接",
-                                modifier = Modifier.size(16.dp),
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                            )
-                        }
                     }
                 }
             }

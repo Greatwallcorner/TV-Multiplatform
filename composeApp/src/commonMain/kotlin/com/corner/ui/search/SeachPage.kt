@@ -4,6 +4,9 @@ import AppTheme
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -20,9 +23,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowScope
 import com.corner.bean.HotData
 import com.corner.ui.nav.vm.SearchViewModel
@@ -89,16 +94,120 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
             }
             Column(Modifier.fillMaxSize()) {
                 if (model.value.historyList.isNotEmpty()) {
-                    Box(modifier = Modifier.fillMaxHeight(0.4f)) {
-                        HistoryPanel(Modifier.padding(15.dp), model.value.historyList) {
-                            onSearch(it)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight(0.4f)
+                            .padding(vertical = 8.dp) // 增加垂直间距
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    color = MaterialTheme.colorScheme.background,
+                                    shape = RoundedCornerShape(10.dp)
+                                )
+                        ) {
+                            // 标题区域（与热搜样式对齐）
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 24.dp, top = 12.dp, bottom = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "搜索历史",
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+
+                            // 内容区域
+                            if (model.value.historyList.isEmpty()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "暂无搜索历史",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(12.dp))// 裁剪溢出内容
+                                        .fillMaxSize()
+                                ) {
+                                    LazyVerticalGrid(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(horizontal = 8.dp),
+                                        columns = GridCells.FixedSize(200.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        contentPadding = PaddingValues(
+                                            start = 16.dp,
+                                            end = 16.dp
+                                        )
+                                    ) {
+                                        items(model.value.historyList.toList()) { query ->
+                                            HistoryItem(query = query, onClick = { onSearch(query) })
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
+                //热搜
                 if (model.value.hotList.isNotEmpty()) {
-                    Box(modifier = Modifier.fillMaxHeight()) {
-                        HotPanel(Modifier.padding(horizontal = 15.dp), model.value.hotList) {
-                            onSearch(it.title)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                    ) {
+
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            // 1. 标题区域
+                            Text(
+                                text = "热搜",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                modifier = Modifier
+                                    .padding(start = 24.dp, top = 12.dp, bottom = 8.dp)
+                            )
+
+                            // 2. 热搜内容区域
+                            Box(modifier = Modifier.weight(1f)) {
+                                LazyVerticalGrid(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 8.dp),
+                                    columns = GridCells.FixedSize(100.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    contentPadding = PaddingValues(
+                                        start = 16.dp,
+                                        end = 16.dp
+                                    )
+                                ) {
+                                    items(model.value.hotList) { item ->
+                                        HotItem(
+                                            hotData = item,
+                                            onClick = { onSearch(it.title) },
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -134,51 +243,102 @@ fun HotPanel(modifier: Modifier, hots: List<HotData>, onClick: (HotData) -> Unit
         }
     }
 }
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HotItem(modifier: Modifier, hotData: HotData, onClick: (HotData) -> Unit) {
-    TooltipArea(tooltip = {
-        Surface(
-            modifier = Modifier.border(
-                width = 2.dp,
-                Color.Gray.copy(blue = 0.6f),
-                shape = RoundedCornerShape(5.dp)
-            )
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(0.5f)
-                    .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(5.dp))
-                    .shadow(5.dp, RoundedCornerShape(5.dp), clip = true, ambientColor = Color.Gray)
-                    .clip(RoundedCornerShape(5.dp))
-                    .padding(15.dp)
+fun HotItem(
+    modifier: Modifier = Modifier,
+    hotData: HotData,
+    onClick: (HotData) -> Unit
+) {
+    // 统一样式配置
+    val cardShape = RoundedCornerShape(12.dp)
+    val tooltipShape = RoundedCornerShape(8.dp)
+    val borderColor = MaterialTheme.colorScheme.outlineVariant
+    val tooltipBorderColor = Color.Gray.copy(blue = 0.6f)
+
+    TooltipArea(
+        tooltip = {
+            // 增强的工具提示
+            Surface(
+                modifier = Modifier.shadow(8.dp, tooltipShape),
+                shape = tooltipShape,
+                border = BorderStroke(1.dp, tooltipBorderColor),
+                color = MaterialTheme.colorScheme.surfaceContainer
             ) {
-                if (hotData.comment.isNotEmpty()) {
-                    Text(hotData.comment, style = MaterialTheme.typography.headlineMedium)
+                Column(
+                    modifier = Modifier
+                        .width(280.dp)
+                        .padding(16.dp)
+                ) {
+                    if (hotData.comment.isNotEmpty()) {
+                        Text(
+                            text = hotData.comment,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+                    Text(
+                        text = hotData.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-                Text(
-                    modifier = Modifier.padding(top = 10.dp),
-                    text = hotData.description,
-                    style = MaterialTheme.typography.bodyMedium
-                )
             }
-        }
-    }) {
-        Surface(
-            modifier
-                .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(15.dp))
-                .border(width = 1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(15.dp))
-                .clickable(enabled = true) { onClick(hotData) }
-                .clip(RoundedCornerShape(15.dp)),
+        },
+        delayMillis = 500,
+        tooltipPlacement = TooltipPlacement.CursorPoint(offset = DpOffset.Zero)
+    ) {
+        Card(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(80.dp),
+            shape = cardShape,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ),
+            border = BorderStroke(1.dp, borderColor),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            onClick = { onClick(hotData) }
         ) {
-            Column(
-                modifier = modifier.padding(10.dp).wrapContentWidth(Alignment.CenterHorizontally).wrapContentHeight()
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    hotData.title,
-                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = TextUnit(15f, TextUnitType.Sp))
-                )
-                ExpandedText(hotData.upinfo.trim(), 1, MaterialTheme.typography.bodyMedium)
+                // 可滚动文本区域
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    Column {
+                        // 标题文本（自动滚动）
+                        Text(
+                            text = hotData.title,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .basicMarquee()
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // 副文本（自动滚动）
+                        Text(
+                            text = hotData.upinfo.trim(),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .basicMarquee()
+                        )
+                    }
+                }
             }
         }
     }
@@ -206,45 +366,104 @@ fun previewHotPanel() {
     }
 }
 
+/*
 @Composable
-fun HistoryItem(modifier: Modifier, str: String, onClick: (String) -> Unit) {
-    Surface(
-        modifier
-            .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(15.dp))
-            .border(width = 1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(15.dp))
-            .clickable(enabled = true) { onClick(str) }
-            .clip(RoundedCornerShape(15.dp))
-    ) {
-        Text(str, color = MaterialTheme.colorScheme.onBackground, modifier = modifier.padding(10.dp))
-    }
-}
-
-@Composable
-fun HistoryPanel(modifier: Modifier, histories: Set<String>, onClick: (String) -> Unit) {
+fun HistoryPanel(
+    modifier: Modifier = Modifier,
+    histories: Set<String>,
+    onClick: (String) -> Unit
+) {
     val list by rememberUpdatedState(histories)
-    Column(modifier = modifier) {
-        Text(
-            "搜索历史",
-            modifier = Modifier.padding(vertical = 5.dp, horizontal = 15.dp),
-            color = MaterialTheme.colorScheme.onBackground,
-            style = MaterialTheme.typography.headlineMedium
-        )
-        Box() {
-            val state = rememberLazyStaggeredGridState()
-            LazyHorizontalStaggeredGrid(
-                rows = StaggeredGridCells.Adaptive(55.dp),
-                state = state, contentPadding = PaddingValues(10.dp),
-                horizontalItemSpacing = 8.dp,
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-                modifier = Modifier.fillMaxWidth(),
-                userScrollEnabled = true,
-            ) {
-                items(list.toList()) {
-                    HistoryItem(Modifier.wrapContentHeight(), it) {
-                        onClick(it)
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(150.dp) // 固定高度保持一致性
+            .border(1.dp, Color.Red) // 调试边框
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // 1. 标题区域（与热搜样式一致）
+            Text(
+                text = "搜索历史",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                modifier = Modifier
+                    .padding(start = 24.dp, top = 12.dp, bottom = 8.dp)
+            )
+
+            // 2. 横向滚动内容区域
+            Box(modifier = Modifier.weight(1f)) {
+                val scrollState = rememberLazyListState()
+
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp),
+                    state = scrollState,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    items(list.toList()) { query ->
+                        HistoryItem(
+                            modifier = Modifier.height(55.dp), // 固定高度
+                            query = query,
+                            onClick = onClick
+                        )
                     }
                 }
+
+                // 3. 滚动条（与热搜样式一致）
+                HorizontalScrollbar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .align(Alignment.BottomCenter)
+                        .padding(horizontal = 24.dp),
+                    adapter = rememberScrollbarAdapter(scrollState),
+                    style = ScrollbarStyle(
+                        minimalHeight = 4.dp,
+                        thickness = 4.dp,
+                        shape = RoundedCornerShape(2.dp),
+                        hoverDurationMillis = 300,
+                        unhoverColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                        hoverColor = MaterialTheme.colorScheme.primary
+                    )
+                )
             }
+        }
+    }
+}
+*/
+@Composable
+private fun HistoryItem(
+    modifier: Modifier = Modifier,
+    query: String,
+    onClick: (String) -> Unit
+) {
+    Card(
+        modifier = modifier
+            .widthIn(min = 80.dp, max = 200.dp), // 自适应宽度
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick = { onClick(query) }
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = query,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

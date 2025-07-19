@@ -39,7 +39,6 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusEvent
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
@@ -256,26 +255,41 @@ fun SearchBar(
 
     // 网站选择对话框
     if (showSearchSiteDialog) {
+        val parentState = remember {
+            derivedStateOf {
+                when {
+                    modelState.value.searchableSites.all { it.isSearchable() } -> ToggleableState.On
+                    modelState.value.searchableSites.none { it.isSearchable() } -> ToggleableState.Off
+                    else -> ToggleableState.Indeterminate
+                }
+            }
+        }
+
         AlertDialog(
             onDismissRequest = { showSearchSiteDialog = false },
-            title = { Text("选择搜索网站") },
+            title = {
+                Text("选择搜索网站",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary)
+            },
             text = {
                 Column {
-                    val parentState = remember {
-                        derivedStateOf {
-                            when {
-                                modelState.value.searchableSites.all { it.isSearchable() } -> ToggleableState.On
-                                modelState.value.searchableSites.none { it.isSearchable() } -> ToggleableState.Off
-                                else -> ToggleableState.Indeterminate
-                            }
-                        }
-                    }
-
+                    // 全选行
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
-                        Text("全选", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            "全选",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f))
                         TriStateCheckbox(
                             state = parentState.value,
                             onClick = {
@@ -292,6 +306,7 @@ fun SearchBar(
                         )
                     }
 
+                    // 网站列表
                     LazyVerticalGrid(
                         columns = GridCells.Adaptive(150.dp),
                         contentPadding = PaddingValues(8.dp),
@@ -302,7 +317,14 @@ fun SearchBar(
                         items(modelState.value.searchableSites.toList()) { site ->
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(4.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(8.dp)
                             ) {
                                 Checkbox(
                                     checked = site.isSearchable(),
@@ -328,9 +350,12 @@ fun SearchBar(
             },
             confirmButton = {
                 TextButton(
-                    onClick = { showSearchSiteDialog = false }
+                    onClick = { showSearchSiteDialog = false },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
-                    Text("确定")
+                    Text("确定", style = MaterialTheme.typography.labelLarge)
                 }
             }
         )

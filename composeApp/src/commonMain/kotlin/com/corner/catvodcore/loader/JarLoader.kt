@@ -50,7 +50,7 @@ object JarLoader {
     /**
      * 这里有点懵，虽然限制了递归了深度，但是为什么能加载内容？为什么重试次数一定会满？
      * What The Fuck????
-     * 但是不会出现栈溢出错误了，绝对是最烂的修复！！！
+     * 但是不会出现栈溢出错误了，这绝对是最烂地修复！！！
      * */
 
     fun loadJar(key: String, spider: String, retryCount: Int = 0) {

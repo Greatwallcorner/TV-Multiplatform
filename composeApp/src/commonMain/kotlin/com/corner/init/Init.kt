@@ -42,7 +42,7 @@ class Init {
                 initPlatformSpecify()
                 Hot.getHotList()
                 VlcJInit.init()
-                GlobalAppState.upnpService.value = TVMUpnpService().apply {
+                GlobalAppState.upnpService = TVMUpnpService().apply {
                     startup()
                     sendAlive()
                 }
@@ -51,10 +51,18 @@ class Init {
             }
         }
 
-        fun stop(){
-            KtorD.stop()
-            VlcJInit.release()
-            instance?.close()
+        fun stop() {
+            // 1. 先停止业务逻辑
+            GlobalAppState.cancelAllOperations("Application shutdown")
+
+            // 2. 按依赖顺序释放资源
+            try {
+                KtorD.stop() // 先停止网络服务
+                instance?.close() // 关闭应用级资源
+                VlcJInit.release() // 最后释放VLC,避免出现Invalid memory access问题
+            } catch (e: Throwable) {
+                log.error("Cleanup error", e)
+            }
         }
 
 

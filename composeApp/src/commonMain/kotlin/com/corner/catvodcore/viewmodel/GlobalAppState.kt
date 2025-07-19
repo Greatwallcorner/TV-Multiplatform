@@ -7,19 +7,16 @@ import com.corner.bean.HotData
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.loader.JarLoader
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import org.jupnp.UpnpService
 import org.slf4j.LoggerFactory
 
 object GlobalAppState {
     private val log = LoggerFactory.getLogger(GlobalAppState::class.java)
-    // State Flows
+
+    // State Flows (保持不变)
     val showProgress = MutableStateFlow(false)
     val hotList = MutableStateFlow(listOf<HotData>())
     val chooseVod = mutableStateOf<Vod>(Vod())
@@ -28,20 +25,69 @@ object GlobalAppState {
     val closeApp = MutableStateFlow(false)
     val videoFullScreen = MutableStateFlow(false)
     val DLNAUrl = MutableStateFlow("")
-    private val supervisorJob = SupervisorJob()
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + supervisorJob)
 
-    // Services
-    var upnpService = mutableStateOf<UpnpService?>(null)
-        private set
+    // 协程管理改进点1：改用普通Job
+    private val mainJob = Job()
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + mainJob)
 
-    // Window Management
+    // 服务管理改进点2：添加同步控制
+    private val upnpServiceLock = Any()
+    private var _upnpService: UpnpService? = null
+    var upnpService: UpnpService?
+        get() = synchronized(upnpServiceLock) { _upnpService }
+        set(value) = synchronized(upnpServiceLock) { _upnpService = value }
+
+    // 保持不变
     var windowState: WindowState? = null
-
-    // Navigation
     var detailFrom = DetailFromPage.HOME
 
-    /* ========== Public Methods ========== */
+    /* ========== 新增关键方法 ========== */
+
+    fun cancelAllOperations(reason: String = "Normal shutdown") {
+        if (!mainJob.isCancelled) {
+            log.info("Cancelling all operations: $reason")
+            mainJob.cancel(reason)
+        }
+    }
+
+    /* ========== 清理流程改进 ========== */
+
+    fun cleanupBeforeExit(onComplete: () -> Unit = {}) {
+        if (mainJob.isCancelled) {
+            onComplete()
+            return
+        }
+
+        coroutineScope.launch {
+            try {
+                log.info("开始执行清理操作...")
+
+                // 1. 取消所有操作
+                cancelAllOperations("取消所有操作...")
+
+                // 2. 安全关闭UPnP
+                upnpService?.let {
+                    it.shutdown()
+                    upnpService = null
+                    log.info("UPnP服务已关闭")
+                }
+
+                // 3. 清理JarLoader
+                JarLoader.clear()
+
+                // 4. 重置状态
+                resetAllStates()
+
+                log.info("清理操作执行成功！")
+            } catch (e: Exception) {
+                log.error("清理失败", e)
+            } finally {
+                onComplete()
+            }
+        }
+    }
+
+    /* ========== 原有方法保持不变 ========== */
 
     fun initWindowState(state: WindowState) {
         windowState = state
@@ -67,77 +113,26 @@ object GlobalAppState {
 
     fun isShowProgress(): Boolean = showProgress.value
 
-    /**
-     * 关闭应用时，应该执行清理函数，虽然写的是Shit
-     * */
-
-    fun cleanupBeforeExit(onComplete: () -> Unit = {}) {
-        coroutineScope.launch {
-            try {
-                log.info("Starting application cleanup...")
-
-                // 1. 取消所有子协程
-                supervisorJob.cancelChildren()
-
-                // 2. 清理UPnP服务
-                upnpService.value?.let {
-                    it.shutdown()
-                    upnpService.value = null
-                    log.info("UPnP service stopped")
-                }
-
-                // 3. 终止爬虫运行
-                JarLoader.clear()
-
-                // 4. 重置状态
-                resetAllStates()
-
-                log.info("Cleanup completed successfully")
-                onComplete()
-            } catch (e: Exception) {
-                log.error("Cleanup failed", e)
-                onComplete()
-            }
-        }
-    }
-
     private fun resetAllStates() {
-        // 重置所有StateFlow
-        listOf(
-            showProgress,
-            hotList,
-            home,
-            clear,
-            closeApp,
-            videoFullScreen,
-            DLNAUrl
-        ).forEach { flow ->
-            when (flow) {
-                is MutableStateFlow<*> -> {
-                    when (val currentValue = flow.value) {
-                        is Boolean -> (flow as MutableStateFlow<Boolean>).value = false
-                        is List<*> -> (flow as MutableStateFlow<List<*>>).value = emptyList<Any>()
-                        is String -> (flow as MutableStateFlow<String>).value = ""
-                        else -> (flow as MutableStateFlow<Any?>).value = null
-                    }
-                }
-            }
-        }
+        showProgress.value = false
+        hotList.value = emptyList()
+        home.value = Site.get("", "")
+        clear.value = false
+        closeApp.value = false
+        videoFullScreen.value = false
+        DLNAUrl.value = ""
         chooseVod.value = Vod()
     }
 
-    /* ========== Private Methods ========== */
-
     private fun toggleWindowFullScreen() {
-        windowState?.let {
-            it.placement = when (it.placement) {
-                WindowPlacement.Fullscreen -> WindowPlacement.Floating
-                else -> WindowPlacement.Fullscreen
-            }
+        windowState?.placement = when (windowState?.placement) {
+            WindowPlacement.Fullscreen -> WindowPlacement.Floating
+            else -> WindowPlacement.Fullscreen
         }
     }
 }
 
+// 保持不变
 enum class DetailFromPage {
     SEARCH, DLNA, HOME
 }

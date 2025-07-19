@@ -2,7 +2,6 @@ package com.corner.ui.video
 
 import SiteViewModel
 import androidx.compose.animation.*
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
@@ -34,9 +33,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.zIndex
 import com.corner.catvod.enum.bean.Site
@@ -348,7 +348,7 @@ fun FloatButton(
     showFiltersDialog: Boolean,
     onClickFilter: () -> Unit
 ) {
-    val show = derivedStateOf { GlobalAppState.chooseVod.value.isFolder() }
+//    val show = derivedStateOf { GlobalAppState.chooseVod.value.isFolder() }
     val model = vm.state.collectAsState()
     val showButton = derivedStateOf { model.value.currentFilters.isNotEmpty() || state.firstVisibleItemIndex > 8 }
     AnimatedVisibility(
@@ -427,91 +427,158 @@ fun VideoTopBar(
 
     ControlBar(
         title = {},
-        modifier = Modifier.height(50.dp).padding(1.dp),
+        modifier = Modifier.height(80.dp).padding(horizontal = 16.dp, vertical = 8.dp),
         leading = {
-            ElevatedButton(
-                modifier = Modifier.wrapContentWidth().padding(start = 5.dp),
-                onClick = { onClickChooseHome() },
-                colors = ButtonDefaults.elevatedButtonColors().copy(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    disabledContentColor = MaterialTheme.colorScheme.background
-                ),
-                elevation = ButtonDefaults.buttonElevation(),
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(vertical = 8.dp), // 增加垂直padding
+                contentAlignment = Alignment.Center
             ) {
-                Row(Modifier.wrapContentWidth()) {
-                    Icon(
-                        Icons.Outlined.ArrowDropDown,
-                        contentDescription = "Choose Home",
-                        modifier = Modifier.padding(end = 3.dp)
+                // 首页选择按钮
+                FilledTonalButton(
+                    onClick = { onClickChooseHome() },
+                    modifier = Modifier
+                        .height(40.dp),
+//                        .padding(start = 1.dp),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 1.dp,
+                        pressedElevation = 2.dp
                     )
-                    Text(
-                        home.value.name,
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 1,
-                        fontSize = TextUnit(15f, TextUnitType.Sp)
-                    )
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ArrowDropDown,
+                            contentDescription = "Choose Home",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = home.value.name,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(start = 5.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                        )
+                    }
                 }
             }
         },
         center = {
+            // 搜索框（带动态提示和微交互）
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.3f)
-                    .fillMaxHeight(0.6f)
-                    .background(Color.Gray.copy(alpha = 0.3f), shape = RoundedCornerShape(percent = 50))
-                    .clickable {
-                        onClickSearch()
-                    }) {
-                AnimatedContent(
-                    targetState = model.value.prompt,
-                    contentAlignment = Alignment.Center,
-                    transitionSpec = {
-                        slideInVertically { height -> height } + fadeIn() togetherWith
-                                slideOutVertically { height -> -height } + fadeOut()
-                    },
-                    modifier = Modifier.fillMaxHeight()/*.padding(top = 4.dp)*/
+                    .fillMaxWidth(0.4f)
+                    .height(40.dp)
+                    .shadow(1.dp, RoundedCornerShape(20.dp))
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .clickable { onClickSearch() }
+                    .animateContentSize()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = it,
-                        modifier = Modifier.align(Alignment.Center)
-                            .fillMaxWidth()
-                            .fillMaxHeight(),
-                        textAlign = TextAlign.Center
+                    AnimatedContent(
+                        targetState = model.value.prompt,
+                        transitionSpec = {
+                            slideInVertically { it } + fadeIn() togetherWith
+                                    slideOutVertically { -it } + fadeOut()
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) { prompt ->
+                        Text(
+                            text = prompt,
+                            modifier = Modifier.padding(start = 16.dp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            fontSize = 14.sp
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = "搜索",
+                        modifier = Modifier
+                            .padding(end = 12.dp)
+                            .size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
-                Icon(
-                    Icons.Outlined.Search,
-                    contentDescription = "搜索",
-                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 15.dp)
-                )
             }
         },
         actions = {
-            IconButton(onClick = {
-                onClickHistory()
-            }, modifier = Modifier.padding(end = 10.dp)) {
-                Icon(Icons.Outlined.History, "history")
+            // 右侧操作按钮组
+            Row(
+                modifier = Modifier.padding(end = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 历史记录按钮
+                IconButton(
+                    onClick = { onClickHistory() },
+                    modifier = Modifier
+                        .size(36.dp)  // 适当减小整体尺寸
+                        .padding(2.dp),  // 增加内边距替代背景
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.History,
+                        contentDescription = "历史记录",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                // 设置按钮
+                IconButton(
+                    onClick = { onClickSetting() },
+                    modifier = Modifier
+                        .size(36.dp)
+                        .padding(2.dp),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = "设置",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
-            IconButton(onClick = {
-                onClickSetting()
-            }, modifier = Modifier.padding(end = 25.dp)) {
-                Icon(Icons.Outlined.Settings, "settings")
-            }
-        })
+        }
+    )
 }
 
-@Composable
-@Preview
-fun previewImageItem() {
-    MaterialTheme {
-        val vod = Vod()
-        vod.vodId = "/index.php/voddetail/82667.html"
-        vod.vodName = "Test"
-        vod.vodPic = "https://pic1.yzzyimg.com/upload/vod/2024-01-09/17047994131.jpg"
-        vod.vodRemarks = "更新至第10集"
-        VideoItem(Modifier, vod, true, {})
-    }
-}
+//@Composable
+//@Preview
+//fun previewImageItem() {
+//    MaterialTheme {
+//        val vod = Vod()
+//        vod.vodId = "/index.php/voddetail/82667.html"
+//        vod.vodName = "Test"
+//        vod.vodPic = "https://pic1.yzzyimg.com/upload/vod/2024-01-09/17047994131.jpg"
+//        vod.vodRemarks = "更新至第10集"
+//        VideoItem(Modifier, vod, true, {})
+//    }
+//}
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -552,14 +619,14 @@ fun ClassRow(vm: VideoViewModel, onCLick: (Type) -> Unit) {
     }
 }
 
-@Composable
-@Preview
-fun previewClassRow() {
+//@Composable
+//@Preview
+//fun previewClassRow() {
 //    AppTheme {
 //        val list = listOf(Type("1", "ABC"), Type("2", "CDR"), Type("3", "ddr"))
-////        ClassRow(list.toMutableSet()) {}
+//        ClassRow(list.toMutableSet()) {}
 //    }
-}
+//}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -569,91 +636,158 @@ fun ChooseHomeDialog(
     onClose: () -> Unit,
     onClick: (Site) -> Unit
 ) {
+    var isClosing by remember { mutableStateOf(false) }
     val model = vm.state.collectAsState()
     val apiState = ApiConfig.apiFlow.collectAsState()
-//    val siteList by remember { mutableStateOf(ApiConfig.api.sites.toList()) }
-//    val sitesFlow = remember { MutableStateFlow(ApiConfig.api.sites.toList()) }
-//    val sites by sitesFlow.collectAsState()
     val sites by derivedStateOf { apiState.value.sites.toList() }
 
-    Dialog(
-        Modifier
-            .wrapContentWidth(Alignment.CenterHorizontally)
-            .wrapContentHeight(Alignment.CenterVertically)
-            .defaultMinSize(minWidth = 100.dp)
-            .padding(20.dp), onClose = { onClose() }, showDialog = showDialog
+    AnimatedVisibility(
+        visible = showDialog && !isClosing,
+        enter = EnterTransition.None, // 完全禁用进入动画
+        exit = ExitTransition.None    // 完全禁用退出动画
     ) {
-        Box {
-            val lazyListState = rememberLazyListState(0)
-            LazyColumn(
-                modifier = Modifier.padding(20.dp).wrapContentHeight(Alignment.CenterVertically),
-                state = lazyListState
+        Dialog(
+            onDismissRequest = onClose,
+            properties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true,
+                usePlatformDefaultWidth = false // 禁用平台默认动画
+            ),
+        ) {
+            Surface(
+                modifier = Modifier
+                    .width(300.dp)
+                    .heightIn(min = 200.dp, max = 500.dp),
+                shape = RoundedCornerShape(12.dp),
+                tonalElevation = 8.dp,
+                color = MaterialTheme.colorScheme.background
             ) {
-                items(items = sites) { item ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        OutlinedButton(
-                            modifier = Modifier.width(180.dp),
-                            onClick = {
-                                SiteViewModel.viewModelScope.launch {
-                                    ApiConfig.setHome(item)
-                                    model.value.homeLoaded = false
-                                    Db.Config.setHome(ApiConfig.api.url, ConfigType.SITE.ordinal, item.key)
-                                }
-                                onClick(item)
-                            }) {
-                            Text(item.name, textAlign = TextAlign.Center)
-                        }
-                        TooltipArea(tooltip = {
-                            Text(
-                                "开启/禁用搜索",
-                                Modifier.background(MaterialTheme.colorScheme.background)
-                            )
-                        }, delayMillis = 1000) {
-                            IconButton(onClick = {
-                                vm.changeSite {
-                                    if (item.isSearchable()) {
-                                        item.searchable = 0
-                                    } else {
-                                        item.searchable = 1
+                Column {
+                    // 标题
+                    Text(
+                        text = "选择首页站点",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    )
+
+                    // 内容区域
+                    Box {
+                        val lazyListState = rememberLazyListState()
+                        LazyColumn(
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                            state = lazyListState,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            items(items = sites) { item ->
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    shape = RoundedCornerShape(8.dp),
+                                    tonalElevation = 1.dp,
+                                    color = MaterialTheme.colorScheme.surfaceVariant
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        // 站点按钮
+                                        OutlinedButton(
+                                            modifier = Modifier.weight(1f),
+                                            onClick = {
+                                                SiteViewModel.viewModelScope.launch {
+                                                    ApiConfig.setHome(item)
+                                                    model.value.homeLoaded = false
+                                                    Db.Config.setHome(ApiConfig.api.url, ConfigType.SITE.ordinal, item.key)
+                                                }
+                                                onClick(item)
+                                            },
+                                            shape = RoundedCornerShape(6.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(
+                                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        ) {
+                                            Text(
+                                                text = item.name,
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                textAlign = TextAlign.Center,
+                                                modifier = Modifier.fillMaxWidth(),
+                                                fontWeight = FontWeight.Medium,
+                                                color = Color.White,
+                                            )
+                                        }
+
+                                        // 搜索开关
+                                        IconToggleButton(
+                                            checked = item.isSearchable(),
+                                            onCheckedChange = {
+                                                vm.changeSite {
+                                                    if (item.isSearchable()) {
+                                                        item.searchable = 0
+                                                    } else {
+                                                        item.searchable = 1
+                                                    }
+                                                    return@changeSite item
+                                                }
+                                            },
+                                            modifier = Modifier.size(36.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = if (item.isSearchable()) Icons.Default.Search else Icons.Default.SearchOff,
+                                                contentDescription = if (item.isSearchable()) "禁用搜索" else "启用搜索",
+                                                tint = if (item.isSearchable()) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+
+                                        // 换源开关
+                                        IconToggleButton(
+                                            checked = item.isChangeable(),
+                                            onCheckedChange = {
+                                                vm.changeSite {
+                                                    if (item.isChangeable()) {
+                                                        item.changeable = 0
+                                                    } else {
+                                                        item.changeable = 1
+                                                    }
+                                                    return@changeSite item
+                                                }
+                                            },
+                                            modifier = Modifier.size(36.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = if (item.isChangeable()) Icons.Default.Sync else Icons.Default.SyncDisabled,
+                                                contentDescription = if (item.isChangeable()) "禁用换源" else "启用换源",
+                                                tint = if (item.isChangeable()) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
                                     }
-                                    return@changeSite item
-                                }
-                            }) {
-                                if (item.isSearchable()) {
-                                    Icon(Icons.Default.Search, contentDescription = "enable search")
-                                } else {
-                                    Icon(Icons.Default.SearchOff, contentDescription = "disable search")
-                                }
-                            }
-                        }
-                        TooltipArea(tooltip = {
-                            Text(
-                                "开启/禁用换源",
-                                Modifier.background(MaterialTheme.colorScheme.background)
-                            )
-                        }, delayMillis = 1000) {
-                            IconButton(onClick = {
-                                vm.changeSite {
-                                    if (item.isChangeable()) {
-                                        item.changeable = 0
-                                    } else {
-                                        item.changeable = 1
-                                    }
-                                    return@changeSite item
-                                }
-                            }) {
-                                if (item.isChangeable()) {
-                                    Icon(Icons.Default.Sync, contentDescription = "enable change")
-                                } else {
-                                    Icon(Icons.Default.SyncDisabled, contentDescription = "disable change")
                                 }
                             }
                         }
 
+                        // 滚动条
+                        VerticalScrollbar(
+                            modifier = Modifier.align(Alignment.CenterEnd).padding(end = 5.dp),
+                            adapter = rememberScrollbarAdapter(lazyListState),
+                            style = LocalScrollbarStyle.current.copy(
+                                unhoverColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                hoverColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                                thickness = 6.dp
+                            )
+                        )
                     }
                 }
             }
-            VerticalScrollbar(rememberScrollbarAdapter(lazyListState))
         }
     }
 }

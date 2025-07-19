@@ -49,42 +49,58 @@ fun Application.configureRouting() {
         /**
          * 播放器必须支持range请求 否则会返回完整资源 导致拨动进度条加载缓慢
          */
+
+        /**
+         * clevebitr: 使用use来管理资源，看看能否修复潜在的内存泄露、资源管理问题
+         * */
+
         get("/proxy") {
             val parameters = call.request.queryParameters
             val paramMap = parameters.toSingleValueMap().toMutableMap()
             paramMap.putAll(call.request.headers.toSingleValueMap())
             log.info("proxy param:{}", paramMap)
-            var response: Response? = null
             // 0 statusCode 1 content_type 2 body
             try {
                 val objects: Array<Any> = proxy(paramMap) ?: arrayOf()
-                if (objects.isEmpty()) errorResp(call)
-                else if (objects[0] is Response) {
-                    response = objects[0] as Response
-                    response.headers.forEach { i -> if(!HttpHeaders.isUnsafe(i.first)) call.response.headers.append(i.first, i.second) }
-                    log.debug("proxy resp code:{} headers:{}", response.code, response.headers)
-                    call.respondOutputStream(
-                        status = HttpStatusCode.fromValue(response.code),
-                    ) {
-                        response.body.byteStream().transferTo(this)
-                    }
-                } else if (HttpStatusCode.Found.value == objects[0]) {
-                    call.respondRedirect(Url(objects[2] as String), false)
-                } else {
-                    if(objects.size == 4){
-                        (objects[3] as HashMap<String,String>).forEach { t, u ->
-                            call.response.headers.append(t, u)
+                if (objects.isEmpty()) {
+                    errorResp(call)
+                } else when {
+                    objects[0] is Response -> (objects[0] as Response).use { response ->
+                        response.headers.forEach { (name, value) ->
+                            if (!HttpHeaders.isUnsafe(name)) {
+                                call.response.headers.append(name, value)
+                            }
+                        }
+                        log.debug("proxy resp code:{} headers:{}", response.code, response.headers)
+                        call.respondOutputStream(status = HttpStatusCode.fromValue(response.code)) {
+                            response.body.byteStream().use { it.transferTo(this) }
                         }
                     }
-                    call.respondOutputStream(ContentType.parse(objects[1].toString()),HttpStatusCode.fromValue(objects[0] as Int)){
-                        (objects[2] as InputStream).transferTo(this)
+                    objects[0] == HttpStatusCode.Found.value -> {
+                        val url = objects[2] as? String ?: run {
+                            errorResp(call)
+                            return@get
+                        }
+                        call.respondRedirect(Url(url), false)
+                    }
+                    else -> {
+                        (objects.getOrNull(3) as? Map<*, *>)?.forEach { (t, u) ->
+                            if (t is String && u is String) call.response.headers.append(t, u)
+                        }
+                        (objects[2] as? InputStream)?.use { inputStream ->
+                            call.respondOutputStream(
+                                contentType = ContentType.parse(objects[1].toString()),
+                                status = HttpStatusCode.fromValue(objects[0] as? Int ?: HttpStatusCode.InternalServerError.value)
+                            ) {
+                                inputStream.transferTo(this)
+                            }
+                        } ?: errorResp(call)
                     }
                 }
-            }catch (ignore:IOException){
+            } catch (e: IOException) {
+                log.debug("IO操作被取消或中断", e)  // 静默处理预期内的IO异常
             } catch (e: Exception) {
-                log.error("proxy 错误", e)
-            } finally {
-                response?.close()
+                log.error("proxy处理失败", e)
             }
         }
 
