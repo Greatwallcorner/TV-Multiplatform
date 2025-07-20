@@ -112,7 +112,7 @@ fun WindowScope.HistoryScene(vm: HistoryViewModel, onClickItem: (Vod) -> Unit, o
         modifier = Modifier.fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Column(Modifier.height(80.dp).padding(horizontal = 16.dp, vertical = 8.dp),) {
+        Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),) {
             WindowDraggableArea {
                 ControlBar(
                     leading = {
