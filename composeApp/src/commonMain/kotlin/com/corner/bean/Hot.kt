@@ -19,20 +19,22 @@ private val log = LoggerFactory.getLogger("Hot")
 data class Hot(val data: List<HotData>) {
     companion object {
         @OptIn(ExperimentalSerializationApi::class)
-        public fun getHotList() {
+        fun getHotList() {
             SiteViewModel.viewModelScope.launch {
-                var response: Response? = null
                 try {
-                    response = Http.Get(
+                    Http.Get(
                         "https://api.web.360kan.com/v1/rank?cat=1",
                         headers = mapOf(HttpHeaders.Referrer to "https://www.360kan.com/rank/general").toHeaders()
-                    ).execute()
+                    ).execute().use { response ->
+                        if (response.isSuccessful) {
+                            GlobalAppState.hotList.value = Jsons.decodeFromStream<Hot>(
+                                response.body!!.byteStream()
+                            ).data
+                        }
+                    }
                 } catch (e: Exception) {
                     log.error("请求热搜失败", e)
                 }
-
-                if (response?.isSuccessful == true)
-                    GlobalAppState.hotList.value = Jsons.decodeFromStream<Hot>(response.body.byteStream()).data
             }
         }
     }
