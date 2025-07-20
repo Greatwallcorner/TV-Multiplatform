@@ -195,6 +195,14 @@ class commonTest {
         println(convert)
     }
 
+    @Test fun urlResolve_Local(){
+        var convert: String = Urls.convert(
+            "file://C:\\Users\\xiaol\\Downloads\\CatVodSpider\\json\\config.json",
+            "../jar/spider.jar"
+        )
+        println(convert)
+    }
+
     @Test
     fun osTest(){
         println(SystemUtil.getOsInfo().version)
