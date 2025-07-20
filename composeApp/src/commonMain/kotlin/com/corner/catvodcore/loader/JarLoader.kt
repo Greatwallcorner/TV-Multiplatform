@@ -78,8 +78,8 @@ object JarLoader {
                     load(key, download(jar))
                 }
                 else -> {
+                    val processedUrl = parseJarUrl(jar)
                     try {
-                        val processedUrl = parseJarUrl(jar)
                         if (processedUrl == jar) {
                             if (retryCount < MAX_RETRY_COUNT) {
                                 log.warn("路径解析失败，尝试第${retryCount + 1}次重试: $jar")
@@ -90,6 +90,13 @@ object JarLoader {
                         }
                         loadJar(key, processedUrl, 0) // 重置重试计数器
                     } catch (e: Exception) {
+                        log.error("""
+                                        加载失败！
+                                        原始路径: $jar
+                                        解析后路径: $processedUrl
+                                        重试次数: $retryCount/$MAX_RETRY_COUNT
+                                        错误类型: ${e.javaClass.simpleName}
+                        """.trimIndent(), e)
                         if (retryCount < MAX_RETRY_COUNT) {
                             Thread.sleep(1000) // 延迟1秒后重试
                             loadJar(key, spider, retryCount + 1)
@@ -99,6 +106,7 @@ object JarLoader {
                     }
                 }
             }
+
         } finally {
             loadJarStackDepth--
         }
@@ -107,8 +115,6 @@ object JarLoader {
 
     private fun resetLoadJarState() {
         loadJarStackDepth = 0
-//        不知道能不能用
-//        initConfig()
         log.error("重置loadJar状态，防止堆栈溢出")
     }
 

@@ -1,7 +1,5 @@
 package com.corner.ui.video
 
-import AppTheme
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -18,7 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.ui.scene.ToolTipText
 
@@ -37,12 +34,12 @@ fun QuickSearchItem(vod:Vod, onClick:()->Unit){
     }
 }
 
-@Composable
-@Preview
-fun previewQuickSearchItem(){
-    AppTheme {
-        val vod =
-            Vod(vodName = "teseeeeeeeeeeet", site = Site(name = "OK5555", key = "key", type = 1, api = "yyy"), vodRemarks = "kkkjj")
-        QuickSearchItem(vod, {})
-    }
-}
+//@Composable
+//@Preview
+//fun previewQuickSearchItem(){
+//    AppTheme {
+//        val vod =
+//            Vod(vodName = "teseeeeeeeeeeet", site = Site(name = "OK5555", key = "key", type = 1, api = "yyy"), vodRemarks = "kkkjj")
+//        QuickSearchItem(vod, {})
+//    }
+//}
