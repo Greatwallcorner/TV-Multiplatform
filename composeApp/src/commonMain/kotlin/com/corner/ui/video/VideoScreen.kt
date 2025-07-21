@@ -57,6 +57,7 @@ import org.jetbrains.compose.resources.painterResource
 import tv_multiplatform.composeapp.generated.resources.Res
 import tv_multiplatform.composeapp.generated.resources.folder_back
 import tv_multiplatform.composeapp.generated.resources.loading
+import tv_multiplatform.composeapp.generated.resources.undraw_loading
 
 @Composable
 fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> Unit) {
@@ -81,7 +82,7 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
                     modifier = picModifier,
                     contentDescription = vod.vodName,
                     contentScale = ContentScale.Crop,
-                    placeholderPainter = { painterResource(Res.drawable.loading) },
+                    placeholderPainter = { painterResource(Res.drawable.undraw_loading) },
                     errorPainter = { painterResource(Res.drawable.loading) }
                 )
             }
@@ -113,7 +114,6 @@ fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> U
         }
     }
 }
-
 @Composable
 fun WindowScope.VideoScene(
     vm: VideoViewModel,

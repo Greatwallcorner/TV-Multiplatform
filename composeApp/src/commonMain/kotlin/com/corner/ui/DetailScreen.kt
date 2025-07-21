@@ -114,17 +114,15 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                     ControlBar(leading = {
                         BackRow(modifier = Modifier.align(Alignment.Start), { onClickBack() }) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth(0.7f),
+                                horizontalArrangement = Arrangement.Start,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(horizontalArrangement = Arrangement.Start) {
-                                    ToolTipText(
-                                        detail.vodName ?: "",
-                                        textStyle = MaterialTheme.typography.headlineMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                                        modifier = Modifier.padding(horizontal = 12.dp)
-                                    )
-                                }
+                                ToolTipText(
+                                    detail.vodName ?: "",
+                                    textStyle = MaterialTheme.typography.headlineMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+                                    modifier = Modifier.padding(horizontal = 12.dp)
+                                )
                             }
                         }
                     }, actions = {
@@ -340,7 +338,12 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                                         else
                                                             MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
                                                     ),
-                                                    onClick = { vm.chooseLevel(urls.value?.copy(position = i), item.v) },
+                                                    onClick = {
+                                                        vm.chooseLevel(
+                                                            urls.value?.copy(position = i),
+                                                            item.v
+                                                        )
+                                                    },
                                                     modifier = Modifier
                                                         .height(40.dp)
                                                         .widthIn(min = 80.dp)
@@ -412,6 +415,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
         }
     }
 }
+
 /*
 @Composable
 private fun QualitySelector(vm: DetailViewModel) {

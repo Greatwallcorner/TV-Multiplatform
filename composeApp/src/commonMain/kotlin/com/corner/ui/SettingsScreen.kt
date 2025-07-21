@@ -792,7 +792,7 @@ fun AboutDialog(
                         )
 
                         Text(
-                            "v1.0.0",
+                            "内部测试 v1.0.0",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
