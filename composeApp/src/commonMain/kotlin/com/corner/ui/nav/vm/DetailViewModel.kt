@@ -58,6 +58,8 @@ class DetailViewModel : BaseViewModel() {
 
     val controller: VlcjFrameController = VlcjFrameController(this).apply { VlcJInit.setController(this) }
 
+    val currentSelectedEpUrl = mutableStateOf<String?>(null) // 新增状态记录
+
     fun updateHistory(it: History) {
         if (StringUtils.isNotBlank(state.value.detail.site?.key)) {
             scope.launch {
@@ -247,6 +249,7 @@ class DetailViewModel : BaseViewModel() {
     }
 
     private fun playEp(detail: Vod, ep: Episode) {
+        currentSelectedEpUrl.value = ep.url
         if (Utils.isDownloadLink(ep.url)) return
         val result = SiteViewModel.playerContent(
             detail.site?.key ?: "",
@@ -463,6 +466,7 @@ class DetailViewModel : BaseViewModel() {
 
     fun chooseEp(it: Episode, openUri: (String) -> Unit) {
         videoLoading.value = true
+        currentSelectedEpUrl.value = it.url // 记录当前选中的URL
         val detail = _state.value.detail
         scope.launch {
             val isDownloadLink = Utils.isDownloadLink(it.url)

@@ -779,6 +779,7 @@ fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
             ) {
                 items(epList, key = { it.url + it.number }) { episode ->
                     EpisodeItem(
+                        isSelected = episode.url == vm.currentSelectedEpUrl.value,
                         episode = episode,
                         onSelect = { vm.chooseEp(it) { uriHandler.openUri(it) } },
                         isLoading = episode.activated && vm.videoLoading.value,
@@ -805,6 +806,7 @@ fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EpisodeItem(
+    isSelected: Boolean, // 由父组件计算选中状态
     episode: Episode,
     onSelect: (Episode) -> Unit,
     isLoading: Boolean,
@@ -829,7 +831,7 @@ fun EpisodeItem(
         RatioBtn(
             text = episode.name,
             onClick = { onSelect(episode) },
-            selected = episode.activated,
+            selected = isSelected || episode.activated,
             loading = isLoading,
             tag = {
                 if (Utils.isDownloadLink(episode.url)) {
@@ -838,7 +840,8 @@ fun EpisodeItem(
                     Pair(false, "")
                 }
             },
-            modifier = Modifier.height(48.dp).fillMaxWidth()
+            modifier = Modifier.height(48.dp).fillMaxWidth(),
+            enableTooltip = false
         )
     }
 }

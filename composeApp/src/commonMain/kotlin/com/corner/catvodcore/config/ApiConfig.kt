@@ -109,17 +109,24 @@ object ApiConfig{
     }
 
     fun parseExt(ext: String): String {
-        if (StringUtils.isBlank(ext)) return ext
-        if (ext.startsWith("file")) {
-            return Files.readString(Paths.get(Urls.convert(ext)))
+        var currentExt = ext
+        var attempts = 0
+        val maxAttempts = 5
+
+        while (attempts < maxAttempts) {
+            when {
+                StringUtils.isBlank(currentExt) -> return currentExt
+                currentExt.startsWith("file") -> return Files.readString(Paths.get(Urls.convert(currentExt)))
+                currentExt.endsWith(".js") || currentExt.endsWith(".json") || currentExt.endsWith(".txt") -> {
+                    val newExt = Urls.convert(api.url ?: "", currentExt)
+                    if (newExt == currentExt) return currentExt // 无变化时终止
+                    currentExt = newExt
+                }
+                else -> return currentExt
+            }
+            attempts++
         }
-        if (ext.endsWith(".js") || ext.endsWith(".json") || ext.endsWith(".txt")) return parseExt(
-            Urls.convert(
-                api.url ?: "",
-                ext
-            )
-        )
-        return ext
+        throw IllegalStateException("Failed to parseExt after $maxAttempts attempts")
     }
 
     fun parseApi(str: String): String {
@@ -146,7 +153,7 @@ object ApiConfig{
             if (isJson) {
                 return Jsons.decodeFromString(str)
             } else if (str.startsWith("http")) {
-                return Http.Get(str).execute().body.string()
+                return Http.Get(str,connectTimeout = 60,readTimeout = 60).execute().body.string()
             } else if (str.startsWith("file")) {
                 val file = Urls.convert(str).toPath().toFile()
                 if (!file.exists()) {
