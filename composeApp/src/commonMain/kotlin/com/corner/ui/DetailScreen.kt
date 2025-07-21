@@ -254,6 +254,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                         .padding(top = 8.dp, start = 16.dp, end = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+
                     // 1. 固定搜索结果列（30%宽度）
                     if (searchResultList.value.isNotEmpty()) {
                         Column(
@@ -264,7 +265,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                             quickSearchResult(model, searchResultList, vm)
                         }
                     }
-
                     // 2. 可滚动内容列（70%宽度）
                     Box(
                         modifier = Modifier
@@ -274,106 +274,111 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                         Row(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(32.dp),  // 统一内边距
+                                .padding(1.dp),  // 统一内边距
                             horizontalArrangement = Arrangement.spacedBy(32.dp)  // 列间距
                         ) {
-                            // 左侧视频信息区域 (占50%宽度)
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
-                            ) {
-                                if (model.value.detail.isEmpty()) {
-                                    emptyShow(onRefresh = { vm.load() })
-                                } else {
+                            if (model.value.detail.isEmpty()) {
+                                emptyShow(
+                                    title = "当前源不可用",
+                                    subtitle = "或加载缓慢，请刷新重试",
+                                    onRefresh = { vm.load() },
+                                    modifier = Modifier.border(1.dp, Color.Red)
+                                )
+                            } else {
+                                // 左侧视频信息区域 (占50%宽度)
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                ) {
                                     VodInfo(detail)
                                 }
-                            }
 
-                            // 右侧控制区域 (占50%宽度)
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                verticalArrangement = Arrangement.spacedBy(24.dp)
-                            ) {
-                                // 清晰度选择
-                                val urls = rememberUpdatedState(vm.state.value.currentUrl)
-                                val showUrl = derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
-                                if (showUrl.value) {
-                                    Column(
-                                        modifier = Modifier
-                                            .padding(vertical = 12.dp)
-                                            .fillMaxWidth()
-                                    ) {
-                                        // 标题文本
-                                        Text(
-                                            text = "画质选择",
-                                            style = MaterialTheme.typography.titleLarge.copy(
-                                                fontWeight = FontWeight.Medium
-                                            ),
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                            modifier = Modifier.padding(bottom = 16.dp, start = 8.dp)
-                                        )
-
-                                        // 清晰度选项列表
-                                        LazyRow(
-                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                            contentPadding = PaddingValues(horizontal = 12.dp),
-                                            modifier = Modifier.fillMaxWidth()
+                                // 右侧控制区域 (占50%宽度)
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(),
+                                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                                ) {
+                                    // 清晰度选择
+                                    val urls = rememberUpdatedState(vm.state.value.currentUrl)
+                                    val showUrl = derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
+                                    if (showUrl.value) {
+                                        Column(
+                                            modifier = Modifier
+                                                .padding(vertical = 12.dp)
+                                                .fillMaxWidth()
                                         ) {
-                                            itemsIndexed(urls.value?.values ?: listOf()) { i, item ->
-                                                val isSelected = i == urls.value?.position!!
+                                            // 标题文本
+                                            Text(
+                                                text = "画质选择",
+                                                style = MaterialTheme.typography.titleLarge.copy(
+                                                    fontWeight = FontWeight.Medium
+                                                ),
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                modifier = Modifier.padding(bottom = 16.dp, start = 8.dp)
+                                            )
 
-                                                Surface(
-                                                    shape = RoundedCornerShape(8.dp),
-                                                    color = if (isSelected)
-                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                                                    else
-                                                        MaterialTheme.colorScheme.surfaceVariant,
-                                                    border = BorderStroke(
-                                                        width = if (isSelected) 1.5.dp else 1.dp,
+                                            // 清晰度选项列表
+                                            LazyRow(
+                                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                                contentPadding = PaddingValues(horizontal = 12.dp),
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                itemsIndexed(urls.value?.values ?: listOf()) { i, item ->
+                                                    val isSelected = i == urls.value?.position!!
+
+                                                    Surface(
+                                                        shape = RoundedCornerShape(8.dp),
                                                         color = if (isSelected)
-                                                            MaterialTheme.colorScheme.primary
+                                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                                                         else
-                                                            MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
-                                                    ),
-                                                    onClick = {
-                                                        vm.chooseLevel(
-                                                            urls.value?.copy(position = i),
-                                                            item.v
-                                                        )
-                                                    },
-                                                    modifier = Modifier
-                                                        .height(40.dp)
-                                                        .widthIn(min = 80.dp)
-                                                ) {
-                                                    Box(
-                                                        contentAlignment = Alignment.Center,
-                                                        modifier = Modifier.padding(horizontal = 16.dp)
-                                                    ) {
-                                                        Text(
-                                                            text = item.n ?: "选项 ${i + 1}",
-                                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                                            ),
+                                                            MaterialTheme.colorScheme.surfaceVariant,
+                                                        border = BorderStroke(
+                                                            width = if (isSelected) 1.5.dp else 1.dp,
                                                             color = if (isSelected)
                                                                 MaterialTheme.colorScheme.primary
                                                             else
-                                                                MaterialTheme.colorScheme.onSurface,
-                                                            maxLines = 1
-                                                        )
+                                                                MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                                                        ),
+                                                        onClick = {
+                                                            vm.chooseLevel(
+                                                                urls.value?.copy(position = i),
+                                                                item.v
+                                                            )
+                                                        },
+                                                        modifier = Modifier
+                                                            .height(40.dp)
+                                                            .widthIn(min = 80.dp)
+                                                    ) {
+                                                        Box(
+                                                            contentAlignment = Alignment.Center,
+                                                            modifier = Modifier.padding(horizontal = 16.dp)
+                                                        ) {
+                                                            Text(
+                                                                text = item.n ?: "选项 ${i + 1}",
+                                                                style = MaterialTheme.typography.bodyMedium.copy(
+                                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                                                ),
+                                                                color = if (isSelected)
+                                                                    MaterialTheme.colorScheme.primary
+                                                                else
+                                                                    MaterialTheme.colorScheme.onSurface,
+                                                                maxLines = 1
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
                                     }
-                                }
-                                // 线路选择
-                                Flags(scope, vm)
+                                    // 线路选择
+                                    Flags(scope, vm)
 
-                                // 底部留白
-                                Spacer(modifier = Modifier.weight(1f))
+                                    // 底部留白
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
                             }
                         }
                     }

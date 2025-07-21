@@ -236,6 +236,8 @@ class DetailViewModel : BaseViewModel() {
                 )
             )
         }
+        //在开始播放前，强制停止当前视频播放，以便开始播放新的视频
+        controller.stop()
         startPlay()
     }
 

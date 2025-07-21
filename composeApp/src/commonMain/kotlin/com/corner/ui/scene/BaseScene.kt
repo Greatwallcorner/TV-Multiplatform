@@ -123,21 +123,24 @@ fun LoadingIndicator(
 }
 
 @Composable
-fun emptyShow(modifier: Modifier = Modifier, onRefresh: (() -> Unit)? = null) {
+fun emptyShow(
+    modifier: Modifier = Modifier,
+    onRefresh: (() -> Unit)? = null,
+    title: String = "没有找到内容",
+    subtitle: String = "请检查网络连接或稍后再试",
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.size(100.dp))//顶边高度
         EmptyState(
-            title = "没有找到内容",
-            subtitle = "请检查网络连接或稍后再试",
+            title = title,
+            subtitle = subtitle,
             onRefresh = onRefresh,
-            isLoading = true
+//            isLoading = true
         )
-        Spacer(Modifier.size(100.dp))//底边高度
     }
 }
 
@@ -151,7 +154,6 @@ fun EmptyState(
     onRefresh: (() -> Unit)? = null,
     title: String = "这里什么都没有...",
     subtitle: String? = null,
-    isLoading: Boolean = false // 新增加载状态参数
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         Column(
@@ -196,27 +198,27 @@ fun EmptyState(
                     onClick = it,
                     modifier = Modifier.widthIn(min = 160.dp),
                     shape = RoundedCornerShape(12.dp),
-                    enabled = !isLoading, // 禁用按钮当加载中
+//                    enabled = !isLoading, // 禁用按钮当加载中
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    } else {
-                        Icon(
-                            Icons.Default.Refresh,
-                            contentDescription = "refresh",
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+//                    if (isLoading) {
+//                        CircularProgressIndicator(
+//                            modifier = Modifier.size(18.dp),
+//                            strokeWidth = 2.dp,
+//                            color = MaterialTheme.colorScheme.onSecondaryContainer
+//                        )
+//                    } else {
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = "refresh",
+                        modifier = Modifier.size(18.dp)
+                    )
+//                    }
                     Spacer(Modifier.width(8.dp))
-                    Text(if (isLoading) "加载中..." else "重新加载")
+                    Text("重新加载")
                 }
             }
         }
@@ -328,7 +330,7 @@ fun ToolTipText(
             offset = DpOffset(0.dp, 10.dp)
         )
     ) {
-        Box(modifier = modifier,contentAlignment = Alignment.Center ) {
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
             if (enableMarquee) {
                 BasicText(
                     text = text,

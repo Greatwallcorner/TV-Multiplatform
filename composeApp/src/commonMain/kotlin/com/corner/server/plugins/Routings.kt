@@ -98,7 +98,7 @@ fun Application.configureRouting() {
                     }
                 }
             } catch (e: IOException) {
-                log.debug("IO操作被取消或中断", e)  // 静默处理预期内的IO异常
+            // 静默处理预期内的IO异常
             } catch (e: Exception) {
                 log.error("proxy处理失败", e)
             }
