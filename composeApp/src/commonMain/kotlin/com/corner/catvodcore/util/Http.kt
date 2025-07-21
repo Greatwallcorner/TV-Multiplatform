@@ -2,7 +2,6 @@ package com.corner.catvodcore.util
 
 import com.corner.util.KtorClient
 import com.github.catvod.bean.Doh
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.*
 import okhttp3.Credentials.basic
