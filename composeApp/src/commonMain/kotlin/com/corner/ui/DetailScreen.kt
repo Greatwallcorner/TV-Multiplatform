@@ -1,6 +1,5 @@
 package com.corner.ui
 
-import AppTheme
 import SiteViewModel
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -25,8 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Autorenew
-import androidx.compose.material.icons.outlined.Public
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -87,8 +84,10 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
     val videoWidth = derivedStateOf { if (isFullScreen.value) 1f else 0.7f }
 
     DisposableEffect(Unit) {
+        //进入界面时加载数据
         vm.load()
         onDispose {
+            //重置播放器状态
             vm.clear()
         }
     }
@@ -132,7 +131,16 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                         IconButton(
                             onClick = {
                                 scope.launch {
-                                    vm.clear()
+
+                                    /**
+                                     * 不要使用controller.release()方法，释放资源会为isReleased = true，
+                                     * vm.quickSearch()在完成任务时会调用loadDetail函数，
+                                     * 加载完成后会调用setDetail函数，最后会调用startPlay()，
+                                     * 但是controller.isReleased为true，导致无法播放
+                                     * 传入releaseController = false时不释放播放器资源
+                                     * */
+
+                                    vm.clear(false)
                                     vm.quickSearch()
                                     SnackBar.postMsg("重新加载")
                                 }
@@ -404,16 +412,17 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
         }
     }
 }
-//@Composable
-//private fun QualitySelector(vm: DetailViewModel) {
-//    val urls = rememberUpdatedState(vm.state.value.currentUrl)
-//    val showUrl =  derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
-//
-//    if (showUrl.value) {
-//
-//    }
-//}
+/*
+@Composable
+private fun QualitySelector(vm: DetailViewModel) {
+    val urls = rememberUpdatedState(vm.state.value.currentUrl)
+    val showUrl =  derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
 
+    if (showUrl.value) {
+
+    }
+}
+*/
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun Flags(
@@ -829,11 +838,12 @@ fun EpisodeItem(
         )
     }
 }
-
-//@androidx.compose.desktop.ui.tooling.preview.Preview
-//@Composable
-//fun previewEmptyShow() {
-//    AppTheme {
-//        emptyShow(onRefresh = { println("ddd") })
-//    }
-//}
+/*
+@androidx.compose.desktop.ui.tooling.preview.Preview
+@Composable
+fun previewEmptyShow() {
+    AppTheme {
+        emptyShow(onRefresh = { println("ddd") })
+    }
+}
+ */

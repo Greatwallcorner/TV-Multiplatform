@@ -171,11 +171,12 @@ class VlcjFrameController(
             // 3. 释放资源
             controller.player?.release()
             controller.factory.release()
-
+            log.debug("Controller released succeed")
         } catch (e: Throwable) {
             // 静默处理所有错误，避免崩溃
         } finally {
             // 确保状态一致
+            log.debug("Controller released: $isReleased")
             historyCollectJob?.cancel()
             byteArray = null
             info = null

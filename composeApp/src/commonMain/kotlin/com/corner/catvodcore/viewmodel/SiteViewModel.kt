@@ -93,7 +93,7 @@ object SiteViewModel {
             if (site.type == 3) {
                 val spider: Spider = ApiConfig.getSpider(site)
                 val detailContent = spider.detailContent(listOf(id))
-                log.debug("detail:$detailContent")
+                log.debug("detailContent : detail:$detailContent")
                 ApiConfig.setRecent(site)
                 rst = Jsons.decodeFromString<Result>(detailContent)
                 if (rst.list.isNotEmpty()) rst.list[0].setVodFlags()

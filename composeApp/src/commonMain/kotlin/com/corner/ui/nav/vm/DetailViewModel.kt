@@ -197,9 +197,15 @@ class DetailViewModel : BaseViewModel() {
         if (_state.value.quickSearchResult.isNotEmpty()) loadDetail(_state.value.quickSearchResult[0])
     }
 
-    fun clear() {
+    /**
+     * 修改clear,传入releaseController = false时不释放播放器资源
+     * */
+
+    fun clear(releaseController: Boolean = true) {
         log.debug("detail clear")
-        controller.release()
+        if (releaseController) {
+            controller.release()
+        }
         launched = false
         jobList.forEach { it.cancel("detail clear") }
         jobList.clear()
@@ -268,7 +274,10 @@ class DetailViewModel : BaseViewModel() {
     @OptIn(ExperimentalCoroutinesApi::class)
     fun startPlay() {
         if (!_state.value.detail.isEmpty()) {
-            if (controller.isReleased) return
+            if (controller.isReleased) {
+                log.error("Controller已释放，无法播放")
+                return
+            }
             if (controller.isPlaying() && !_state.value.shouldPlay) {
                 log.info("视频播放中 返回")
                 return

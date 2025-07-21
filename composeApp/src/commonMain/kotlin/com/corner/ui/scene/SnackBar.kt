@@ -8,14 +8,14 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -90,28 +91,50 @@ object SnackBar {
                 animationSpec = tween(durationMillis = 250, easing = FastOutLinearInEasing)
             )
         ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Snackbar(
-                    modifier = Modifier.padding(top = 5.dp, start = 10.dp, end = 10.dp)
-                        .height(60.dp)
-                        .wrapContentWidth()
-//                        .width((35 * msg.value.length).dp)
-                        .align(Alignment.Center),
-                    shape = RoundedCornerShape(25),
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                    action = {
-                        Box(modifier = Modifier.fillMaxHeight().wrapContentWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp), // 顶部留白，避免贴边
+                contentAlignment = Alignment.TopCenter
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(24.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shadowElevation = 6.dp, // 添加阴影提升层次感
+                    modifier = Modifier
+                        .widthIn(max = 500.dp) // 最大宽度限制
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .height(60.dp)
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        // 提示文字
+                        Text(
+                            text = msg.value,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            textAlign = TextAlign.Center, // 文字居中对齐
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        // 关闭按钮
+                        IconButton(
+                            onClick = { msgList[index].value = "" },
+                            modifier = Modifier.size(32.dp)
+                        ) {
                             Icon(
-                                imageVector = Icons.Outlined.Close, contentDescription = "Close the SnackBar",
-                                modifier = Modifier.clickable(onClick = { msgList[index].value = "" })
-                                    .align(Alignment.Center),
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                imageVector = Icons.Outlined.Close,
+                                contentDescription = "Close",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
                             )
                         }
                     }
-                ) {
-                    Text(msg.value, modifier = Modifier.align(Alignment.Center).fillMaxWidth(), textAlign = TextAlign.Center)
                 }
             }
         }
