@@ -19,7 +19,6 @@ import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
-import kotlinx.serialization.encodeToString
 import okhttp3.Headers.Companion.toHeaders
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
