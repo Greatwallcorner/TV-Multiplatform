@@ -3,41 +3,42 @@ on:
   workflow_call:
     outputs:
       tag:
-        description: "latest tag"
-        value: ${{ jobs.set-tag.outputs.output1 }}
+        description: "latest tag with optional suffix"
+        value: ${{ jobs.set-tag.outputs.tag }}
       lastTag:
-        description: "last tag"
-        value: ${{ jobs.set-tag.outputs.output2 }}
+        description: "previous tag before latest"
+        value: ${{ jobs.set-tag.outputs.lastTag }}
 
 jobs:
   set-tag:
     name: set-tag
     runs-on: ubuntu-latest
     outputs:
-      output1: ${{ steps.tag.outputs.tag }}
-      output2: ${{ steps.last-tag.outputs.lastTag }}
+      tag: ${{ steps.set-version.outputs.tag }}
+      lastTag: ${{ steps.get-last-tag.outputs.lastTag }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 获取最新标签
       - id: get-latest-tag
-        run: echo "LATEST_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
 
+      # 获取上一个标签
       - id: get-last-tag
-        run: echo "lastTag=$(git tag --sort=-creatordate | sed -n '2p')" >> $GITHUB_OUTPUT
-
-      - name: Set prerelease suffix
-        id: set-prerelease
-        if: github.ref == 'refs/heads/pre-release'
         run: |
-          PRERELEASE="-alpha.$(date +'%Y%m%d%H%M')"
-          echo "tag=${GITHUB_OUTPUT##*tag=}${PRERELEASE}" >> $GITHUB_OUTPUT
+          LAST_TAG=$(git tag --sort=-creatordate | sed -n '2p')
+          echo "lastTag=$LAST_TAG" >> $GITHUB_OUTPUT
 
-      - name: Use latest tag directly
-        id: use-latest-tag
-        if: github.ref != 'refs/heads/pre-release'
+      # 统一版本号生成逻辑
+      - id: set-version
         run: |
-          echo "tag=${LATEST_TAG}" >> $GITHUB_OUTPUT
-        env:
-          LATEST_TAG: ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
+          if [ "${{ github.ref }}" == "refs/heads/pre-release" ]; then
+            NEW_TAG="${{ steps.get-latest-tag.outputs.LATEST_TAG }}-alpha.$(date +'%Y%m%d%H%M')"
+          else
+            NEW_TAG="${{ steps.get-latest-tag.outputs.LATEST_TAG }}"
+          fi
+          echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
