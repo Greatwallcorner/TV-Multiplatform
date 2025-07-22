@@ -1,4 +1,4 @@
-name: TV-Multiplatform Build
+name: LumenTV Compose Build
 on:
   workflow_dispatch:
 #  push:
@@ -104,29 +104,5 @@ jobs:
             **/*.dmg
             **/*.msi
           tag_name: ${{ needs.set-tag.outputs.tag }}
-      #      - name: Set up S3cmd cli tool
-      #        uses: s3-actions/s3cmd@v1.9.0
-      #        with:
-      #          provider: Cloudflare # default is linode
-      #          region: 'eu-central-1'
-      #          access_key: ${{ secrets.S3_ACCESS_KEY }}
-      #          secret_key: ${{ secrets.S3_SECRET_KEY }}
-      #      - name: set up python
-      #        uses: actions/setup-python@v5
-      #        with:
-      #          python-version: '3.13'
-      #      - name: upload to s3 storage
-      #        run:
-#      - name: send telegram message
-#        uses: appleboy/telegram-action@master
-#        with:
-#          to: ${{ secrets.TG_GROUP_ID }}
-#          token: ${{ secrets.TG_TOKEN }}
-#          message: |
-#            👇新的版本👇
-#              ${{needs.set-tag.outputs.tag}}
-#            📦仓库: ${{ github.repository }}
-#            See changes: https://github.com/${{ github.repository }}/compare/${{needs.set-tag.outputs.lastTag}}...${{needs.set-tag.outputs.tag}}
-#            Download: https://github.com/${{ github.repository }}/releases/tag/${{ needs.set-tag.outputs.tag }}
     permissions:
       contents: write
