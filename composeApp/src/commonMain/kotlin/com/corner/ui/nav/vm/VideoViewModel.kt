@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.cancellation.CancellationException
-
+import com.corner.ui.scene.SnackBar
 
 class VideoViewModel : BaseViewModel() {
     private val _state = MutableStateFlow(VideoScreenState())
@@ -69,60 +69,81 @@ class VideoViewModel : BaseViewModel() {
         }
     }
 
-    fun homeLoad() {
-        val home = GlobalAppState.home
+    fun homeLoad(forceRefresh: Boolean = false) {
         if (isLoading.get()) return
+
         isLoading.set(true)
+        log.debug("开始homeload")
+
         SiteViewModel.viewModelScope.launch {
-            showProgress()
             try {
+                showProgress()
+
+                // 强制刷新时重置状态
+                if (forceRefresh) {
+                    _state.value.homeLoaded = false
+                }
+
                 if (!_state.value.homeLoaded) {
-                    if (home.value.isEmpty()) return@launch
-                    var list = SiteViewModel.homeContent().list.toMutableSet()
-                    var classList = SiteViewModel.result.value.types.toMutableSet()
-                    val filtersMap = SiteViewModel.result.value.filters
-                    // 只保留site中配置的分类
-                    if (home.value.categories.isNotEmpty()) {
-                        val iterator = classList.iterator()
-                        while (iterator.hasNext()) {
-                            val next = iterator.next()
-                            if (!home.value.categories.contains(next.typeName)) iterator.remove()
-                        }
+                    val home = GlobalAppState.home.value
+                    if (home.isEmpty()) {
+                        log.debug("home配置为空")
+                        return@launch
                     }
 
-                    if (list.isNotEmpty()) {
-                        classList = (mutableSetOf(Type.home()) + classList).toMutableSet()
-                    } else {
-                        if (classList.isEmpty()) return@launch
-                        val types = classList.firstOrNull()
-                        types?.selected = true
-                        val rst = loadCate(types?.typeId ?: "")
-                        if (!rst.isSuccess) {
+                    // 尝试获取首页内容
+                    val homeContent = SiteViewModel.homeContent()
+                    var list = homeContent.list.toMutableSet()
+                    var classList = SiteViewModel.result.value.types.toMutableSet()
+
+                    // 过滤分类
+                    if (home.categories.isNotEmpty()) {
+                        classList.removeAll { !home.categories.contains(it.typeName) }
+                    }
+
+                    // 如果首页内容为空，尝试加载第一个分类
+                    if (list.isEmpty()) {
+                        if (classList.isEmpty()) {
+                            log.debug("没有可用的分类")
                             return@launch
                         }
+
+                        val firstType = classList.first().apply { selected = true }
+                        val result = loadCate(firstType.typeId)
+
+                        if (!result.isSuccess || result.list.isEmpty()) {
+                            log.debug("加载分类内容失败")
+                            SnackBar.postMsg("加载分类内容失败,请尝试切换站源")
+                            return@launch
+                        }
+
                         _state.value.page.addAndGet(1)
-                        list = rst.list.toMutableSet()
+                        list = result.list.toMutableSet()
+                    } else {
+                        classList = (mutableSetOf(Type.home()) + classList).toMutableSet()
                     }
-                    val currentClass = classList.firstOrNull()
-                    _state.value.homeLoaded = true
-                    _state.update {
-                        it.copy(
-                            homeVodResult = list,
-                            currentClass = currentClass,
-                            classList = classList,
-                            filtersMap = filtersMap,
-                            currentFilters = getFilters(currentClass!!)
-                        )
+
+                    // 只有成功获取到数据时才标记为已加载
+                    if (list.isNotEmpty()) {
+                        _state.update {
+                            it.copy(
+                                homeVodResult = list,
+                                currentClass = classList.firstOrNull(),
+                                classList = classList,
+                                filtersMap = SiteViewModel.result.value.filters,
+                                homeLoaded = true,  // 只有这里设为true
+                                currentFilters = getFilters(classList.first())
+                            )
+                        }
                     }
-//                    _state.update { it.copy(currentFilters = getFilters(currentClass!!)) }
                 }
             } catch (e: Exception) {
-                log.error("homeLoad", e)
+                log.error("加载失败", e)
+                _state.value.homeLoaded = false // 失败时重置状态
             } finally {
                 hideProgress()
+                isLoading.set(false)
             }
-        }.invokeOnCompletion {
-            isLoading.set(false)
         }
     }
 

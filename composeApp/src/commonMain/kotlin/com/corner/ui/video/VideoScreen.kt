@@ -47,6 +47,8 @@ import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.database.Db
+import com.corner.init.Init
+import com.corner.init.Init.Companion.initConfig
 import com.corner.ui.nav.vm.VideoViewModel
 import com.corner.ui.scene.*
 import com.corner.util.isScrollingUp
@@ -173,8 +175,19 @@ fun WindowScope.VideoScene(
                     }
                 }
                 val listEmpty = derivedStateOf { model.value.homeVodResult.isEmpty() }
+                val isInitialized by Init.isInitializedSuccessfully
+                if (!isInitialized){
+                    emptyShow(
+                        onRefresh = { initConfig() },  // 点击重新初始化
+                        title = "初始化失败",
+                        subtitle = "点击按钮重新加载配置"
+                    )
+                }
                 if (listEmpty.value) {
-                    emptyShow(onRefresh = { vm.homeLoad() })
+                    emptyShow(
+                        onRefresh = {
+                        vm.homeLoad(forceRefresh = true)
+                    })
                 } else {
                     Box {
                         LazyVerticalGrid(

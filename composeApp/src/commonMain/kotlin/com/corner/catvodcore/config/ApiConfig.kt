@@ -46,29 +46,51 @@ object ApiConfig{
         apiFlow.value = Api(spider = "")
     }
 
-    fun parseConfig(cfg: Config, isJson: Boolean): Api {
-        log.info("parseConfig start cfg:{} isJson:{}", cfg, isJson)
-        val data = getData(if (isJson) cfg.json ?: "" else cfg.url!!, isJson) ?: throw RuntimeException("配置读取异常")
-        if(StringUtils.isBlank(data)) {
-            log.warn("配置数据为空")
-            SnackBar.postMsg("配置数据为空 请检查")
-            setHome(null)
-            return api
+    fun parseConfig(
+        cfg: Config,
+        isJson: Boolean,
+        onSuccess: () -> Unit,
+        onError: (Throwable) -> Unit
+    ): Api {
+        return try {
+            log.info("parseConfig start cfg:{} isJson:{}", cfg, isJson)
+
+            val data = getData(if (isJson) cfg.json ?: "" else cfg.url!!, isJson)
+                ?: throw RuntimeException("配置读取异常")
+
+            if (StringUtils.isBlank(data)) {
+                log.warn("配置数据为空")
+                SnackBar.postMsg("配置数据为空 请检查")
+                setHome(null)
+                throw RuntimeException("配置数据为空")
+            }
+
+            val apiConfig = Jsons.decodeFromString<Api>(data)
+            apiFlow.update { apiConfig }
+            apiFlow.update { ap ->
+                ap.copy(url = cfg.url, data = data, cfg = cfg, ref = ap.ref + 1)
+            }
+
+            JarLoader.loadJar("", apiConfig.spider)
+
+            if (cfg.home?.isNotBlank() == true) {
+                setHome(api.sites.find { it.key == cfg.home })
+            } else {
+                setHome(api.sites.first())
+            }
+
+            scope.launch {
+                api.sites = Db.Site.update(cfg, api)
+            }
+
+            log.info("parseConfig end")
+            onSuccess()  // 成功回调
+            apiConfig
+        } catch (e: Exception) {
+            log.error("parseConfig error", e)
+            onError(e)  // 失败回调
+            throw e  // 保持原有异常抛出行为
         }
-        val apiConfig = Jsons.decodeFromString<Api>(data)
-        apiFlow.update { apiConfig }
-        apiFlow.update { ap ->  ap.copy(url = cfg.url, data = data, cfg = cfg, ref = ap.ref+1)}
-        JarLoader.loadJar("", apiConfig.spider)
-        if(cfg.home?.isNotBlank() == true) {
-            setHome(api.sites.find { it.key == cfg.home })
-        }else{
-            setHome(api.sites.first())
-        }
-        scope.launch {
-            api.sites = Db.Site.update(cfg, api)
-        }
-        log.info("parseConfig end")
-        return apiConfig
     }
 
     fun setHome(home:Site?){

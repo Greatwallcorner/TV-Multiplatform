@@ -65,7 +65,7 @@ import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
 import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
 import com.corner.database.Db
 import com.corner.database.entity.Config
-import com.corner.init.initConfig
+import com.corner.init.Init.Companion.initConfig
 import com.corner.ui.nav.vm.SettingViewModel
 import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.scene.*
