@@ -272,6 +272,7 @@ private fun WindowScope.SearchResult(
                                 FilledTonalButton(
                                     onClick = {
                                         if (searchText.value.isNotBlank()) {
+                                            vm.clear()
                                             vm.search(searchText.value, true)
                                         }
                                     },

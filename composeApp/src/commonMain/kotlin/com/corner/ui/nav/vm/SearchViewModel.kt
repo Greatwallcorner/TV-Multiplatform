@@ -7,6 +7,7 @@ import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.ui.nav.BaseViewModel
 import com.corner.ui.nav.data.SearchScreenState
+import com.corner.ui.scene.SnackBar
 import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -82,6 +83,9 @@ class SearchViewModel: BaseViewModel() {
                     .shuffled()
             searchableSites = searchableSites.subList(0, _state.value.onceSearchSiteNum.coerceAtMost(searchableSites.size))
             log.info("站源：{}", searchableSites.map { it.name })
+            if(searchableSites.map { it.name }.isEmpty()){
+                SnackBar.postMsg("所有站点已搜索完毕，未找到新内容")
+            }
             searchableSites.forEach { site ->
                 val job = searchScope.launch {
                     _state.value.searchCompleteSites.add(site.key)

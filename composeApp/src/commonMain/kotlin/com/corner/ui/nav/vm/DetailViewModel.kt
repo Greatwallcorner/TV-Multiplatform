@@ -367,6 +367,7 @@ class DetailViewModel : BaseViewModel() {
         var detail = _state.value.detail.copy()
         val nextFlag = _state.value.detail.nextFlag()
         if (nextFlag == null) {
+            SnackBar.postMsg("没有更多线路")
             log.info("没有更多线路")
             return
         }
