@@ -4,10 +4,10 @@ on:
     outputs:
       tag:
         description: "latest tag"
-        value: ${{jobs.set-tag.outputs.output1}}
+        value: ${{ jobs.set-tag.outputs.output1 }}
       lastTag:
         description: "last tag"
-        value: ${{jobs.set-tag.outputs.output2}}
+        value: ${{ jobs.set-tag.outputs.output2 }}
 
 jobs:
   set-tag:
@@ -20,7 +20,24 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - id: tag
-        run: echo "tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
-      - id: last-tag
+
+      - id: get-latest-tag
+        run: echo "LATEST_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+
+      - id: get-last-tag
         run: echo "lastTag=$(git tag --sort=-creatordate | sed -n '2p')" >> $GITHUB_OUTPUT
+
+      - name: Set prerelease suffix
+        id: set-prerelease
+        if: github.ref == 'refs/heads/pre-release'
+        run: |
+          PRERELEASE="-alpha.$(date +'%Y%m%d%H%M')"
+          echo "tag=${GITHUB_OUTPUT##*tag=}${PRERELEASE}" >> $GITHUB_OUTPUT
+
+      - name: Use latest tag directly
+        id: use-latest-tag
+        if: github.ref != 'refs/heads/pre-release'
+        run: |
+          echo "tag=${LATEST_TAG}" >> $GITHUB_OUTPUT
+        env:
+          LATEST_TAG: ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
