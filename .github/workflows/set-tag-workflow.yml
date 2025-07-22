@@ -14,30 +14,26 @@ jobs:
     name: set-tag
     runs-on: ubuntu-latest
     outputs:
-      output1: ${{ steps.tag.outputs.tag }}
-      output2: ${{ steps.last-tag.outputs.lastTag }}
+      tag: ${{ jobs.set-tag.outputs.tag }}
+      lastTag: ${{ jobs.set-tag.outputs.lastTag }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 获取最新标签
       - id: get-latest-tag
         run: echo "LATEST_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
 
+      # 获取上一个标签
       - id: get-last-tag
         run: echo "lastTag=$(git tag --sort=-creatordate | sed -n '2p')" >> $GITHUB_OUTPUT
 
-      - name: Set prerelease suffix
-        id: set-prerelease
-        if: github.ref == 'refs/heads/pre-release'
+      # 统一版本号生成逻辑
+      - id: set-version
         run: |
-          PRERELEASE="-alpha.$(date +'%Y%m%d%H%M')"
-          echo "tag=${GITHUB_OUTPUT##*tag=}${PRERELEASE}" >> $GITHUB_OUTPUT
-
-      - name: Use latest tag directly
-        id: use-latest-tag
-        if: github.ref != 'refs/heads/pre-release'
-        run: |
-          echo "tag=${LATEST_TAG}" >> $GITHUB_OUTPUT
-        env:
-          LATEST_TAG: ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
+          if [ "${{ github.ref }}" == "refs/heads/pre-release" ]; then
+            echo "tag=${{ steps.get-latest-tag.outputs.LATEST_TAG }}-alpha.$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ steps.get-latest-tag.outputs.LATEST_TAG }}" >> $GITHUB_OUTPUT
+          fi
