@@ -1,4 +1,4 @@
-# TV-Multiplatform
+# LumenTV Compose
 本项目基于[TV-Multiplatform](https://github.com/Greatwallcorner/TV-Multiplatform)，[jetbrain/KMP](https://github.com/JetBrains/compose-multiplatform-desktop-template#readme)
 , [fonmi/TV](https://github.com/FongMi/TV). 名称中的multiplatform指的是compose-multiplatform所提供的多平台能力，但是本项目现阶段只使用桌面版本。
 使用方式和fonmi/TV类似， 使用动态加载jar的方式获取需要展示的数据。需要结合为本项目定制的spider使用
