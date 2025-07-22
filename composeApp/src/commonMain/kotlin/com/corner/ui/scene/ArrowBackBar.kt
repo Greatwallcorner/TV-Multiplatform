@@ -47,7 +47,7 @@ fun BackRow(
 
         Box(
             modifier = Modifier.weight(1f),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.CenterStart
         ) {
             content()
         }

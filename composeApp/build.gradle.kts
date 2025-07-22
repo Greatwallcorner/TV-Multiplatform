@@ -110,6 +110,8 @@ kotlin {
 //              Add the dependency, typically under the commonMain source set
 
 //              api("com.arkivanov.essenty:lifecycle:2.5.0")
+
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
             }
 
         }

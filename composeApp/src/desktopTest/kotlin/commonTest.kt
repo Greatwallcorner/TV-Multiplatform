@@ -143,20 +143,20 @@ class commonTest {
         }
     }
 
-    @Test
-    fun playerTest(){
-        val string = Jsons.decodeFromString<Result>(
-            "{\n" +
-                    "    \"header\": \"{/\"User-Agent/\":/\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36/\",/\"Referer/\":/\"https://www.aliyundrive.com//\"}\",\n" +
-                    "    \"format\": \"application/octet-stream\",\n" +
-                    "    \"url\": \"http://127.0.0.1:-1/proxy?do=ali&type=video&cate=open&shareId=oZ57YSztbiv&fileId=65818959490bb29ff891425781615706f974e445\",\n" +
-                    "    \"subs\": [],\n" +
-                    "    \"parse\": 0,\n" +
-                    "    \"jx\": 0\n" +
-                    "}"
-        )
-        println(string)
-    }
+//    @Test
+//    fun playerTest(){
+//        val string = Jsons.decodeFromString<Result>(
+//            "{\n" +
+//                    "    \"header\": \"{/\"User-Agent/\":/\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36/\",/\"Referer/\":/\"https://www.aliyundrive.com//\"}\",\n" +
+//                    "    \"format\": \"application/octet-stream\",\n" +
+//                    "    \"url\": \"http://127.0.0.1:-1/proxy?do=ali&type=video&cate=open&shareId=oZ57YSztbiv&fileId=65818959490bb29ff891425781615706f974e445\",\n" +
+//                    "    \"subs\": [],\n" +
+//                    "    \"parse\": 0,\n" +
+//                    "    \"jx\": 0\n" +
+//                    "}"
+//        )
+//        println(string)
+//    }
 
     @Test
     fun headerTest(){
@@ -190,6 +190,14 @@ class commonTest {
     @Test fun urlResolve(){
         var convert: String = Urls.convert(
             "https://raw.githubusercontent.com/Greatwallcorner/CatVodSpider/master/json/config.json",
+            "../jar/spider.jar"
+        )
+        println(convert)
+    }
+
+    @Test fun urlResolve_Local(){
+        var convert: String = Urls.convert(
+            "file://C:\\Users\\xiaol\\Downloads\\CatVodSpider\\json\\config.json",
             "../jar/spider.jar"
         )
         println(convert)

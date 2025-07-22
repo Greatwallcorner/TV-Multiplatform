@@ -14,10 +14,6 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 
 
-/**
- * 只是雏形，还是不要用了
- * */
-
 fun proxy(params: Map<String, String>): Array<Any>? {
     when (params["do"]) {
         "js" -> { /* js处理逻辑 */ }
@@ -28,6 +24,10 @@ fun proxy(params: Map<String, String>): Array<Any>? {
 }
 
 private val logger = LoggerFactory.getLogger("multiThreadDownload")
+
+/**
+ * 只是雏形，还是不要用了
+ * */
 
 suspend fun multiThreadDownload(url: String, thread: Int, call: ApplicationCall?) {
     coroutineScope {

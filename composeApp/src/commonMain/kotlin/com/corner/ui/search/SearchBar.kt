@@ -161,7 +161,7 @@ fun SearchBar(
                                 }
                             } catch (e:Exception) {
                             }finally {
-                                    isGettingSuggestion = false
+                                isGettingSuggestion = false
                             }
                         }
                     },
@@ -238,7 +238,9 @@ fun SearchBar(
                     DropdownMenuItem(
                         modifier = Modifier,
                         onClick = {
-                            searchFun(it.name)
+                            textFieldValue = TextFieldValue(it.name) // 更新文本字段值
+                            searchText = it.name // 更新搜索文本
+                            searchFun(it.name) // 执行搜索
                         },
                         contentPadding = PaddingValues(horizontal = 15.dp, vertical = 5.dp), text = {
                             Text(

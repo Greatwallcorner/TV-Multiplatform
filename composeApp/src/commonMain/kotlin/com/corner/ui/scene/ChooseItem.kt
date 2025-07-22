@@ -1,5 +1,7 @@
 package com.corner.ui.scene
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -21,8 +23,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
@@ -41,7 +45,11 @@ fun RatioBtn(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
-
+    val animatedProgress by animateFloatAsState(
+        targetValue = if (loading) 1f else 0f,
+        animationSpec = tween(300),
+        label = "loading_indicator"
+    )
     Spacer(modifier = Modifier.width(12.dp))
 
     val buttonContent = @Composable {
@@ -76,11 +84,28 @@ fun RatioBtn(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (loading) {
-                        CircularProgressIndicator(
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(modifier = modifier.width(24.dp).height(24.dp)) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .width(24.dp)
+                                    .height(24.dp)
+                                    .alpha(animatedProgress),
+                                strokeWidth = 2.5.dp,
+                                color = if (selected) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                                },
+                                strokeCap = StrokeCap.Round,
+                                trackColor = if (selected) {
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                }
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
                     }
 
                     Text(

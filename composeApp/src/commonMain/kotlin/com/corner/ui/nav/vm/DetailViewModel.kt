@@ -58,6 +58,8 @@ class DetailViewModel : BaseViewModel() {
 
     val controller: VlcjFrameController = VlcjFrameController(this).apply { VlcJInit.setController(this) }
 
+    val currentSelectedEpUrl = mutableStateOf<String?>(null) // 新增状态记录
+
     fun updateHistory(it: History) {
         if (StringUtils.isNotBlank(state.value.detail.site?.key)) {
             scope.launch {
@@ -197,9 +199,15 @@ class DetailViewModel : BaseViewModel() {
         if (_state.value.quickSearchResult.isNotEmpty()) loadDetail(_state.value.quickSearchResult[0])
     }
 
-    fun clear() {
+    /**
+     * 修改clear,传入releaseController = false时不释放播放器资源
+     * */
+
+    fun clear(releaseController: Boolean = true) {
         log.debug("detail clear")
-        controller.release()
+        if (releaseController) {
+            controller.release()
+        }
         launched = false
         jobList.forEach { it.cancel("detail clear") }
         jobList.clear()
@@ -228,6 +236,8 @@ class DetailViewModel : BaseViewModel() {
                 )
             )
         }
+        //在开始播放前，强制停止当前视频播放，以便开始播放新的视频
+        controller.stop()
         startPlay()
     }
 
@@ -241,6 +251,7 @@ class DetailViewModel : BaseViewModel() {
     }
 
     private fun playEp(detail: Vod, ep: Episode) {
+        currentSelectedEpUrl.value = ep.url
         if (Utils.isDownloadLink(ep.url)) return
         val result = SiteViewModel.playerContent(
             detail.site?.key ?: "",
@@ -268,7 +279,10 @@ class DetailViewModel : BaseViewModel() {
     @OptIn(ExperimentalCoroutinesApi::class)
     fun startPlay() {
         if (!_state.value.detail.isEmpty()) {
-            if (controller.isReleased) return
+            if (controller.isReleased) {
+                log.error("Controller已释放，无法播放")
+                return
+            }
             if (controller.isPlaying() && !_state.value.shouldPlay) {
                 log.info("视频播放中 返回")
                 return
@@ -353,6 +367,7 @@ class DetailViewModel : BaseViewModel() {
         var detail = _state.value.detail.copy()
         val nextFlag = _state.value.detail.nextFlag()
         if (nextFlag == null) {
+            SnackBar.postMsg("没有更多线路")
             log.info("没有更多线路")
             return
         }
@@ -454,6 +469,7 @@ class DetailViewModel : BaseViewModel() {
 
     fun chooseEp(it: Episode, openUri: (String) -> Unit) {
         videoLoading.value = true
+        currentSelectedEpUrl.value = it.url // 记录当前选中的URL
         val detail = _state.value.detail
         scope.launch {
             val isDownloadLink = Utils.isDownloadLink(it.url)

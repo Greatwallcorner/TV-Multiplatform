@@ -29,14 +29,15 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.corner.catvodcore.enum.Menu
-import com.corner.catvodcore.viewmodel.GlobalAppState.isShowProgress
 import org.jetbrains.compose.resources.painterResource
 import tv_multiplatform.composeapp.generated.resources.Res
 import tv_multiplatform.composeapp.generated.resources.no_data
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 
 @Composable
 fun ExpandedText(text: String, maxLine: Int, textStyle: TextStyle = TextStyle()) {
@@ -122,21 +123,24 @@ fun LoadingIndicator(
 }
 
 @Composable
-fun emptyShow(modifier: Modifier = Modifier, onRefresh: (() -> Unit)? = null) {
+fun emptyShow(
+    modifier: Modifier = Modifier,
+    onRefresh: (() -> Unit)? = null,
+    title: String = "没有找到内容",
+    subtitle: String = "请检查网络连接或稍后再试",
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.size(100.dp))//顶边高度
         EmptyState(
-            title = "没有找到内容",
-            subtitle = "请检查网络连接或稍后再试",
+            title = title,
+            subtitle = subtitle,
             onRefresh = onRefresh,
-            isLoading = true
+//            isLoading = true
         )
-        Spacer(Modifier.size(100.dp))//底边高度
     }
 }
 
@@ -150,7 +154,6 @@ fun EmptyState(
     onRefresh: (() -> Unit)? = null,
     title: String = "这里什么都没有...",
     subtitle: String? = null,
-    isLoading: Boolean = false // 新增加载状态参数
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         Column(
@@ -195,27 +198,27 @@ fun EmptyState(
                     onClick = it,
                     modifier = Modifier.widthIn(min = 160.dp),
                     shape = RoundedCornerShape(12.dp),
-                    enabled = !isLoading, // 禁用按钮当加载中
+//                    enabled = !isLoading, // 禁用按钮当加载中
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    } else {
-                        Icon(
-                            Icons.Default.Refresh,
-                            contentDescription = "refresh",
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+//                    if (isLoading) {
+//                        CircularProgressIndicator(
+//                            modifier = Modifier.size(18.dp),
+//                            strokeWidth = 2.dp,
+//                            color = MaterialTheme.colorScheme.onSecondaryContainer
+//                        )
+//                    } else {
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = "refresh",
+                        modifier = Modifier.size(18.dp)
+                    )
+//                    }
                     Spacer(Modifier.width(8.dp))
-                    Text(if (isLoading) "加载中..." else "重新加载")
+                    Text("重新加载")
                 }
             }
         }
@@ -293,17 +296,18 @@ fun Dialog(
     }
 }
 
+//当文字过长时可以选择滚动或阶段显示省略号
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ToolTipText(
     text: String,
     textStyle: TextStyle,
     delayMills: Int = 600,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enableMarquee: Boolean = true
 ) {
     TooltipArea(
         tooltip = {
-            // ✅ 正确实现卡片式工具提示
             Card(
                 modifier = Modifier.shadow(4.dp),
                 shape = RoundedCornerShape(4.dp),
@@ -313,20 +317,41 @@ fun ToolTipText(
             ) {
                 Text(
                     text = text,
-                    style = MaterialTheme.typography.bodyMedium, // 使用更适合小字号的样式
+                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(10.dp),
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 5,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        },
+        delayMillis = delayMills,
+        tooltipPlacement = TooltipPlacement.CursorPoint(
+            offset = DpOffset(0.dp, 10.dp)
+        )
+    ) {
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
+            if (enableMarquee) {
+                BasicText(
+                    text = text,
+                    style = textStyle,
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip,
+                    modifier = Modifier
+                        .basicMarquee(
+                            iterations = Int.MAX_VALUE,
+                            animationMode = MarqueeAnimationMode.Immediately,
+                        )
+                )
+            } else {
+                Text(
+                    text = text,
+                    style = textStyle,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
-    ) {
-        Text(
-            text = text,
-            maxLines = 1,
-            style = textStyle,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.then(modifier) // 合并外部modifier
-        )
     }
 }
 

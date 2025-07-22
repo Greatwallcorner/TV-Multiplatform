@@ -1,7 +1,10 @@
-# TV-Multiplatform
-本项目基于[jetbrain/KMP](https://github.com/JetBrains/compose-multiplatform-desktop-template#readme)
+# LumenTV Compose
+本项目基于[TV-Multiplatform](https://github.com/Greatwallcorner/TV-Multiplatform)，[jetbrain/KMP](https://github.com/JetBrains/compose-multiplatform-desktop-template#readme)
 , [fonmi/TV](https://github.com/FongMi/TV). 名称中的multiplatform指的是compose-multiplatform所提供的多平台能力，但是本项目现阶段只使用桌面版本。
 使用方式和fonmi/TV类似， 使用动态加载jar的方式获取需要展示的数据。需要结合为本项目定制的spider使用
+
+# 关于讨论群
+本项目无讨论群！不要在原项目tg群里提及有关该项目问题！
 
 # 声明
 - 本项目现在只支持java爬虫，JS和Py暂时没有计划，过多类型的语言现在感觉不是很有必要。编写爬虫现在还是有门槛， 语言多也不会有很多人贡献代码。
@@ -12,7 +15,6 @@
   3. mpv 等
 - 本项目按道理支持win(10/11)/linux/macos, 但只在win上测试过
 - 配置播放器, 使用内部播放器需要安装vlc如果无法自动找到vlc， 可以在输入框中输入vlc可执行文件的路径。
-- 常见问题/提问须知： https://telegra.ph/TV-Multiplatform%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98-04-20
 
 # TODO
 - [x] Decompose
@@ -43,10 +45,6 @@
 ![](readme_images/externalPlayer.png)
 ## 设置页
 ![](readme_images/settings.png)
-
-
-# 讨论群
-[TG](https://t.me/tv_multiplatform)
 
 # 引用
 player: https://github.com/numq/jetpack-compose-desktop-media-player

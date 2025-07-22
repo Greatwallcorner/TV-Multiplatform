@@ -2,7 +2,6 @@ package com.corner.catvodcore.util
 
 import com.corner.util.KtorClient
 import com.github.catvod.bean.Doh
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.*
 import okhttp3.Credentials.basic
@@ -132,20 +131,36 @@ class Http {
         }
 
         @JvmOverloads
-        fun Get(url: String, params: Map<String, String?>? = null, headers: Headers? = null): Call {
-            val builder: HttpUrl.Builder = url.toHttpUrlOrNull()!!.newBuilder()
-            params?.forEach { (name: String, value: String?) ->
-                builder.addQueryParameter(
-                    name,
-                    value
-                )
-            }
-            val httpUrl: HttpUrl = builder.build()
-            val request: Request.Builder = Request.Builder()
+        fun Get(
+            url: String,
+            params: Map<String, String?>? = null,
+            headers: Headers? = null,
+            connectTimeout: Long = 15, // 新增参数
+            readTimeout: Long = 15     // 新增参数
+        ): Call {
+            // 1. 构建URL和Request（保持原逻辑）
+            val httpUrl = url.toHttpUrlOrNull()!!.newBuilder().apply {
+                params?.forEach { (name, value) ->
+                    addQueryParameter(name, value)
+                }
+            }.build()
+
+            val request = Request.Builder()
                 .url(httpUrl.toUrl())
                 .headers(headers ?: defaultHeaders)
-            checkBaseAuth(httpUrl, request)
-            return client().newCall(request.build())
+                .apply { checkBaseAuth(httpUrl, this) }
+                .build()
+
+            // 2. 最小化修改：仅在需要自定义超时时创建新Client
+            return if (connectTimeout != 15L || readTimeout != 15L) {
+                client().newBuilder()
+                    .connectTimeout(connectTimeout, TimeUnit.SECONDS)
+                    .readTimeout(readTimeout, TimeUnit.SECONDS)
+                    .build()
+                    .newCall(request)
+            } else {
+                client().newCall(request) // 默认使用原有Client
+            }
         }
 
         fun Post(url: String, params: Map<String, String>?, headers: Headers?): Call {

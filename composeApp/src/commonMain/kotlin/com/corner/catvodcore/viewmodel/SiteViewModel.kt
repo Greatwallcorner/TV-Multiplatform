@@ -12,6 +12,7 @@ import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalAppState
+import com.corner.ui.scene.SnackBar
 import com.corner.util.copyAdd
 import com.corner.util.createCoroutineScope
 import com.github.catvod.crawler.Spider
@@ -19,7 +20,6 @@ import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
-import kotlinx.serialization.encodeToString
 import okhttp3.Headers.Companion.toHeaders
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -93,7 +93,7 @@ object SiteViewModel {
             if (site.type == 3) {
                 val spider: Spider = ApiConfig.getSpider(site)
                 val detailContent = spider.detailContent(listOf(id))
-                log.debug("detail:$detailContent")
+                log.debug("detailContent : detail:$detailContent")
                 ApiConfig.setRecent(site)
                 rst = Jsons.decodeFromString<Result>(detailContent)
                 if (rst.list.isNotEmpty()) rst.list[0].setVodFlags()
@@ -267,7 +267,13 @@ object SiteViewModel {
 
 
     private fun post(site: Site, result: Result, quick: Boolean) {
-        if (result.list.isEmpty()) return
+        if (site.name.isNotEmpty()){
+            SnackBar.postMsg("开始在${site.name}搜索")
+        }
+        if(result.list.isEmpty()){
+            SnackBar.postMsg("${site.name}搜索结果为空,可能是站源问题或尝试换个关键词")
+            return
+        }
         for (vod in result.list) vod.site = site
         if (quick) {
             search.value = quickSearch.value.copyAdd(Collect.create(result.list))

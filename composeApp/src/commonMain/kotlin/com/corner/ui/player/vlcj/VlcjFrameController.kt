@@ -147,13 +147,6 @@ class VlcjFrameController(
         return controller.player
     }
 
-//    fun release() {
-//        controller.player?.controls()?.stop()
-//        controller.player?.release()
-//        controller.factory.release()
-//        isReleased = true
-//    }
-
     /**
      * 原来的代码会出现Invalid memory access问题,尝试修复
      * */
@@ -162,6 +155,10 @@ class VlcjFrameController(
         isReleased = true
 
         try {
+            log.debug("release called")
+            // 0. 先取消所有异步任务（优先级最高）
+            historyCollectJob?.cancel()
+
             // 1. 先移除视频表面回调
             controller.player?.videoSurface()?.set(null)
 
@@ -171,14 +168,16 @@ class VlcjFrameController(
             // 3. 释放资源
             controller.player?.release()
             controller.factory.release()
-
+            log.debug("Controller released successfully")
         } catch (e: Throwable) {
-            // 静默处理所有错误，避免崩溃
+            // 至少记录严重错误
+            log.error("Critical release error", e)
         } finally {
             // 确保状态一致
             historyCollectJob?.cancel()
             byteArray = null
             info = null
+            log.debug("Final release state: $isReleased")
         }
     }
 
