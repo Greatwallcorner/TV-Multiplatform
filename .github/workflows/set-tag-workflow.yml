@@ -3,19 +3,19 @@ on:
   workflow_call:
     outputs:
       tag:
-        description: "latest tag"
-        value: ${{ jobs.set-tag.outputs.output1 }}
+        description: "latest tag with optional suffix"
+        value: ${{ jobs.set-tag.outputs.tag }}
       lastTag:
-        description: "last tag"
-        value: ${{ jobs.set-tag.outputs.output2 }}
+        description: "previous tag before latest"
+        value: ${{ jobs.set-tag.outputs.lastTag }}
 
 jobs:
   set-tag:
     name: set-tag
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ jobs.set-tag.outputs.tag }}
-      lastTag: ${{ jobs.set-tag.outputs.lastTag }}
+      tag: ${{ steps.set-version.outputs.tag }}
+      lastTag: ${{ steps.get-last-tag.outputs.lastTag }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,17 +23,22 @@ jobs:
 
       # 获取最新标签
       - id: get-latest-tag
-        run: echo "LATEST_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
 
       # 获取上一个标签
       - id: get-last-tag
-        run: echo "lastTag=$(git tag --sort=-creatordate | sed -n '2p')" >> $GITHUB_OUTPUT
+        run: |
+          LAST_TAG=$(git tag --sort=-creatordate | sed -n '2p')
+          echo "lastTag=$LAST_TAG" >> $GITHUB_OUTPUT
 
       # 统一版本号生成逻辑
       - id: set-version
         run: |
           if [ "${{ github.ref }}" == "refs/heads/pre-release" ]; then
-            echo "tag=${{ steps.get-latest-tag.outputs.LATEST_TAG }}-alpha.$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+            NEW_TAG="${{ steps.get-latest-tag.outputs.LATEST_TAG }}-alpha.$(date +'%Y%m%d%H%M')"
           else
-            echo "tag=${{ steps.get-latest-tag.outputs.LATEST_TAG }}" >> $GITHUB_OUTPUT
+            NEW_TAG="${{ steps.get-latest-tag.outputs.LATEST_TAG }}"
           fi
+          echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
