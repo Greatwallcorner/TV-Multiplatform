@@ -48,67 +48,68 @@ object JarLoader {
     private const val STACK_OVERFLOW_THRESHOLD = 50 // 根据实际JVM栈深度调整
 
     /**
-     * 这里有点懵，虽然限制了递归了深度，但是为什么能加载内容？为什么重试次数一定会满？
-     * What The Fuck????
-     * 但是不会出现栈溢出错误了，这绝对是最烂地修复！！！
+     * 改为迭代方式，不要使用递归，会出现问题
      * */
 
-    fun loadJar(key: String, spider: String, retryCount: Int = 0) {
-        try {
-            loadJarStackDepth++
-            if (loadJarStackDepth > STACK_OVERFLOW_THRESHOLD) {
-                resetLoadJarState()
-                throw IllegalStateException("检测到堆栈溢出风险，已重置状态")
-            }
+    fun loadJar(key: String, spider: String) {
+        var currentRetryCount = 0
+        var currentSpider = spider
+        var currentProcessedUrl: String? = null  // 初始化为null
 
-            if(StringUtils.isBlank(spider)) return
+        while (true) {
+            try {
+                if (StringUtils.isBlank(currentSpider)) return
 
-            val texts = spider.split(Constant.md5Split)
-            val md5 = if(texts.size<=1) "" else texts[1].trim()
-            val jar = texts[0]
+                val texts = currentSpider.split(Constant.md5Split)
+                val md5 = if(texts.size<=1) "" else texts[1].trim()
+                val jar = texts[0]
 
-            when {
-                md5.isNotEmpty() && Utils.equals(parseJarUrl(jar), md5) -> {
-                    load(key, Paths.jar(parseJarUrl(jar)))
-                }
-                jar.startsWith("file") -> {
-                    load(key, Paths.local(jar))
-                }
-                jar.startsWith("http") -> {
-                    load(key, download(jar))
-                }
-                else -> {
-                    val processedUrl = parseJarUrl(jar)
-                    try {
-                        if (processedUrl == jar) {
-                            if (retryCount < MAX_RETRY_COUNT) {
-                                log.warn("路径解析失败，尝试第${retryCount + 1}次重试: $jar")
-                                loadJar(key, jar, retryCount + 1) // 重试原始路径
-                                return
+                when {
+                    md5.isNotEmpty() && Utils.equals(parseJarUrl(jar), md5) -> {
+                        load(key, Paths.jar(parseJarUrl(jar)))
+                        return
+                    }
+                    jar.startsWith("file") -> {
+                        load(key, Paths.local(jar))
+                        return
+                    }
+                    jar.startsWith("http") -> {
+                        load(key, download(jar))
+                        return
+                    }
+                    else -> {
+                        currentProcessedUrl = parseJarUrl(jar)
+                        if (currentProcessedUrl == jar) {
+                            if (currentRetryCount < MAX_RETRY_COUNT) {
+                                log.warn("路径解析失败，尝试第${currentRetryCount + 1}次重试: $jar")
+                                currentRetryCount++
+                                Thread.sleep(1000)
+                                continue
                             }
                             throw IllegalStateException("无法解析的路径格式: $jar (已尝试$MAX_RETRY_COUNT 次)")
-                        }
-                        loadJar(key, processedUrl, 0) // 重置重试计数器
-                    } catch (e: Exception) {
-                        log.error("""
-                                        加载失败！
-                                        原始路径: $jar
-                                        解析后路径: $processedUrl
-                                        重试次数: $retryCount/$MAX_RETRY_COUNT
-                                        错误类型: ${e.javaClass.simpleName}
-                        """.trimIndent(), e)
-                        if (retryCount < MAX_RETRY_COUNT) {
-                            Thread.sleep(1000) // 延迟1秒后重试
-                            loadJar(key, spider, retryCount + 1)
                         } else {
-                            throw e
+                            currentRetryCount = 0
+                            currentSpider = currentProcessedUrl
+                            continue
                         }
                     }
                 }
-            }
+            } catch (e: Exception) {
+                log.error("""
+                加载失败！
+                原始路径: $currentSpider
+                解析后路径: ${currentProcessedUrl ?: "N/A"}
+                重试次数: $currentRetryCount/$MAX_RETRY_COUNT
+                错误类型: ${e.javaClass.simpleName}
+            """.trimIndent(), e)
 
-        } finally {
-            loadJarStackDepth--
+                if (currentRetryCount < MAX_RETRY_COUNT) {
+                    currentRetryCount++
+                    Thread.sleep(1000)
+                } else {
+                    throw e
+                }
+            }
         }
     }
 
@@ -176,7 +177,11 @@ object JarLoader {
     private fun download(jar: String): File {
         val jarPath = Paths.jar(jar)
         log.debug("download jar file {} to:{}", jar, jarPath)
-        return Paths.write(jarPath, Http.Get(jar).execute().body.bytes())
+
+        return Http.Get(jar).execute().use { response ->
+            val body = response.body ?: throw java.io.IOException("Empty response body")
+            Paths.write(jarPath, body.bytes())
+        }
     }
 
     fun proxyInvoke(params: Map<String, String>): Array<Any>? {

@@ -1,6 +1,7 @@
 package com.corner.ui.nav.vm
 
 import SiteViewModel
+import androidx.compose.runtime.mutableStateOf
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Filter
@@ -23,7 +24,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.cancellation.CancellationException
 import com.corner.ui.scene.SnackBar
@@ -34,8 +34,7 @@ class VideoViewModel : BaseViewModel() {
 
     private var promptJob: Job? = null
 
-    var isLoading = AtomicBoolean(false)
-
+    val isLoading = mutableStateOf(false)
 
     init {
         scope.launch {
@@ -68,12 +67,14 @@ class VideoViewModel : BaseViewModel() {
             )
         }
     }
-
+    private var loadJob: Job? = null
     fun homeLoad(forceRefresh: Boolean = false) {
-        if (isLoading.get()) return
+        //取消前一个任务
+        loadJob?.cancel()
+        if (isLoading.value) return
 
-        isLoading.set(true)
-        log.debug("开始homeload")
+        isLoading.value = true
+        log.debug("开始加载主页数据")
 
         SiteViewModel.viewModelScope.launch {
             try {
@@ -87,7 +88,8 @@ class VideoViewModel : BaseViewModel() {
                 if (!_state.value.homeLoaded) {
                     val home = GlobalAppState.home.value
                     if (home.isEmpty()) {
-                        log.debug("home配置为空")
+                        log.debug("主页配置为空")
+                        isLoading.value = false
                         return@launch
                     }
 
@@ -105,6 +107,8 @@ class VideoViewModel : BaseViewModel() {
                     if (list.isEmpty()) {
                         if (classList.isEmpty()) {
                             log.debug("没有可用的分类")
+                            SnackBar.postMsg("没有可用的分类,请尝试切换站源或重新加载")
+                            isLoading.value = false
                             return@launch
                         }
 
@@ -113,7 +117,8 @@ class VideoViewModel : BaseViewModel() {
 
                         if (!result.isSuccess || result.list.isEmpty()) {
                             log.debug("加载分类内容失败")
-                            SnackBar.postMsg("加载分类内容失败,请尝试切换站源")
+                            SnackBar.postMsg("加载分类内容失败,请尝试切换站源或重新加载")
+                            isLoading.value = false
                             return@launch
                         }
 
@@ -142,7 +147,7 @@ class VideoViewModel : BaseViewModel() {
                 _state.value.homeLoaded = false // 失败时重置状态
             } finally {
                 hideProgress()
-                isLoading.set(false)
+                isLoading.value = false
             }
         }
     }
@@ -165,8 +170,8 @@ class VideoViewModel : BaseViewModel() {
         if (state.value.currentClass == null || state.value.currentClass?.typeId == "home") return
         if ((state.value.currentClass?.failTime ?: 0) >= 2) return
         showProgress()
-        if (isLoading.get()) return
-        isLoading.set(true)
+        if (isLoading.value) return
+        isLoading.value = true
         SiteViewModel.viewModelScope.launch {
             try {
                 val rst = loadCate(state.value.currentClass?.typeId ?: "")
@@ -186,7 +191,7 @@ class VideoViewModel : BaseViewModel() {
             } finally {
             }
         }.invokeOnCompletion {
-            isLoading.set(false)
+            isLoading.value = false
             hideProgress()
         }
     }
@@ -209,14 +214,14 @@ class VideoViewModel : BaseViewModel() {
     }
 
     fun chooseCate(cate: String) {
-        if (isLoading.get()) return
-        isLoading.set(true)
+        if (isLoading.value) return
+        isLoading.value = true
         SiteViewModel.viewModelScope.launch {
             state.value.page.set(1)
             val result = loadCate(cate)
             _state.update { it.copy(homeVodResult = result.list.toMutableSet(), currentFilters = it.currentFilters) }
         }.invokeOnCompletion {
-            isLoading.set(false)
+            isLoading.value = false
         }
     }
 
@@ -296,8 +301,8 @@ class VideoViewModel : BaseViewModel() {
     }
 
     fun chooseClass(type: Type, onClick: () -> Unit) {
-        if (isLoading.get()) return
-        isLoading.set(true)
+        if (isLoading.value) return
+        isLoading.value = true
         scope.launch {
             showProgress()
             for (tp in state.value.classList) {
@@ -329,7 +334,7 @@ class VideoViewModel : BaseViewModel() {
             }
         }.invokeOnCompletion {
             onClick()
-            isLoading.set(false)
+            isLoading.value = false
             hideProgress()
         }
     }

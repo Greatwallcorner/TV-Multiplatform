@@ -17,10 +17,12 @@ object GlobalAppState {
     private val log = LoggerFactory.getLogger(GlobalAppState::class.java)
 
     // State Flows (保持不变)
-    val showProgress = MutableStateFlow(false)
+    var showProgress = MutableStateFlow(false)
     val hotList = MutableStateFlow(listOf<HotData>())
     val chooseVod = mutableStateOf<Vod>(Vod())
+
     val home = MutableStateFlow<Site>(Site.get("", ""))
+
     val clear = MutableStateFlow(false)
     val closeApp = MutableStateFlow(false)
     val videoFullScreen = MutableStateFlow(false)
@@ -114,7 +116,7 @@ object GlobalAppState {
     fun isShowProgress(): Boolean = showProgress.value
 
     private fun resetAllStates() {
-        showProgress.value = false
+        showProgress = MutableStateFlow(false)
         hotList.value = emptyList()
         home.value = Site.get("", "")
         clear.value = false

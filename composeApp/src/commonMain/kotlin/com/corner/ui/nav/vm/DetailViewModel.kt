@@ -244,6 +244,7 @@ class DetailViewModel : BaseViewModel() {
     fun play(result: Result?) {
         //获取到的播放结果为空 尝试下一个线路
         if (result == null || result.playResultIsEmpty()) {
+            SnackBar.postMsg("加载内容失败，尝试切换线路")
             nextFlag()
             return
         }
@@ -260,6 +261,7 @@ class DetailViewModel : BaseViewModel() {
         )
         _state.update { it.copy(currentUrl = result?.url) }
         if (result == null || result.playResultIsEmpty()) {
+            SnackBar.postMsg("加载内容失败，尝试切换线路")
             nextFlag()
             return
         }
@@ -331,6 +333,7 @@ class DetailViewModel : BaseViewModel() {
             }
             detail.subEpisode.apply {
                 val ep = findEp ?: first()
+                log.debug("detail is $detail, Ep is $ep")
                 playEp(detail, ep)
             }
         }

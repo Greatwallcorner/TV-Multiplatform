@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Paths
+import com.corner.util.NoStackTraceException
 
 private val log = LoggerFactory.getLogger("apiConfig")
 
@@ -59,10 +60,9 @@ object ApiConfig{
                 ?: throw RuntimeException("配置读取异常")
 
             if (StringUtils.isBlank(data)) {
-                log.warn("配置数据为空")
-                SnackBar.postMsg("配置数据为空 请检查")
+                SnackBar.postMsg("配置数据为空,请检查配置文件")
                 setHome(null)
-                throw RuntimeException("配置数据为空")
+                throw NoStackTraceException("配置数据为空") // 自定义不打印堆栈的异常
             }
 
             val apiConfig = Jsons.decodeFromString<Api>(data)
@@ -175,7 +175,11 @@ object ApiConfig{
             if (isJson) {
                 return Jsons.decodeFromString(str)
             } else if (str.startsWith("http")) {
-                return Http.Get(str,connectTimeout = 60,readTimeout = 60).execute().body.string()
+                return Http.Get(str, connectTimeout = 60, readTimeout = 60)
+                    .execute()
+                    .use { response ->  // 自动关闭Response
+                        response.body?.string() ?: ""
+                    }
             } else if (str.startsWith("file")) {
                 val file = Urls.convert(str).toPath().toFile()
                 if (!file.exists()) {

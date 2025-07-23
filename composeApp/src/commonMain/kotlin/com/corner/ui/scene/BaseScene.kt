@@ -53,7 +53,7 @@ fun ExpandedText(text: String, maxLine: Int, textStyle: TextStyle = TextStyle())
     }
 }
 
-/*
+/**
 * 该组件已被重写，可自定义样式，调用时使用withOverlay = true显示遮罩
 * */
 
@@ -128,6 +128,7 @@ fun emptyShow(
     onRefresh: (() -> Unit)? = null,
     title: String = "没有找到内容",
     subtitle: String = "请检查网络连接或稍后再试",
+    isLoading: Boolean ?= false
 ) {
     Column(
         modifier = modifier
@@ -139,7 +140,7 @@ fun emptyShow(
             title = title,
             subtitle = subtitle,
             onRefresh = onRefresh,
-//            isLoading = true
+            isLoading = isLoading
         )
     }
 }
@@ -154,6 +155,7 @@ fun EmptyState(
     onRefresh: (() -> Unit)? = null,
     title: String = "这里什么都没有...",
     subtitle: String? = null,
+    isLoading: Boolean ?= false
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         Column(
@@ -194,31 +196,34 @@ fun EmptyState(
             onRefresh?.let {
                 Spacer(Modifier.height(32.dp))
 
-                FilledTonalButton(
-                    onClick = it,
-                    modifier = Modifier.widthIn(min = 160.dp),
-                    shape = RoundedCornerShape(12.dp),
-//                    enabled = !isLoading, // 禁用按钮当加载中
-                    colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                ) {
-//                    if (isLoading) {
-//                        CircularProgressIndicator(
-//                            modifier = Modifier.size(18.dp),
-//                            strokeWidth = 2.dp,
-//                            color = MaterialTheme.colorScheme.onSecondaryContainer
-//                        )
-//                    } else {
-                    Icon(
-                        Icons.Default.Refresh,
-                        contentDescription = "refresh",
-                        modifier = Modifier.size(18.dp)
-                    )
-//                    }
-                    Spacer(Modifier.width(8.dp))
-                    Text("重新加载")
+                isLoading?.let { it1 ->
+                    FilledTonalButton(
+                        onClick = it,
+                        modifier = Modifier.widthIn(min = 160.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        enabled = !it1, // 禁用按钮当加载中
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        } else {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = "refresh",
+                                modifier = Modifier.size(18.dp)
+                            )
+            //                    }
+                            Spacer(Modifier.width(8.dp))
+                            Text("重新加载")
+                        }
+                    }
                 }
             }
         }

@@ -7,6 +7,7 @@ import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.Url
 import com.corner.catvodcore.bean.add
+import com.corner.catvodcore.bean.v
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
@@ -20,9 +21,13 @@ import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
+import okhttp3.Call
 import okhttp3.Headers.Companion.toHeaders
+import okhttp3.Response
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
+import java.io.IOException
+import java.net.URLEncoder
 import java.util.concurrent.CopyOnWriteArrayList
 
 object SiteViewModel {
@@ -56,7 +61,7 @@ object SiteViewModel {
                     log.debug("home: $homeContent")
                     ApiConfig.setRecent(site)
                     val rst: Result = Jsons.decodeFromString<Result>(homeContent)
-                    if ((rst.list.size) > 0) result.value = rst
+                    if (rst.list.size > 0) result.value = rst
                     val homeVideoContent = spider.homeVideoContent()
                     log.debug("homeContent: $homeVideoContent")
                     rst.list.addAll(Jsons.decodeFromString<Result>(homeVideoContent).list)
@@ -64,16 +69,20 @@ object SiteViewModel {
                 }
 
                 4 -> {
-                    val params: MutableMap<String, String> =
-                        mutableMapOf()
+                    val params: MutableMap<String, String> = mutableMapOf()
                     params["filter"] = "true"
                     val homeContent = call(site, params, false)
-                    log.debug("home:$homeContent")
+                    log.debug("home: $homeContent")
                     result.value = Jsons.decodeFromString<Result>(homeContent).also { this.result.value = it }
                 }
+
                 else -> {
-                    val homeContent: String =
-                        Http.newCall(site.api, site.header.toHeaders()).execute().body.string()
+                    //  use 确保 Response 正确关闭
+                    val homeContent: String = Http.newCall(site.api, site.header.toHeaders()).execute().use { response ->
+                        if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                        val body = response.body ?: throw IOException("Empty response body")
+                        body.string()
+                    }
                     log.debug("home: $homeContent")
                     fetchPic(site, Jsons.decodeFromString<Result>(homeContent)).also { result.value = it }
                 }
@@ -131,7 +140,6 @@ object SiteViewModel {
     }
 
     fun playerContent(key: String, flag: String, id: String): Result? {
-//        Source.get().stop()
         val site: Site = ApiConfig.getSite(key) ?: return null
         try {
             if (site.type == 3) {
@@ -141,8 +149,14 @@ object SiteViewModel {
                 ApiConfig.setRecent(site)
                 val result = Jsons.decodeFromString<Result>(playerContent)
                 if (StringUtils.isNotBlank(result.flag)) result.flag = flag
-                //            result.setUrl(Source.get().fetch(result))
-                //            result.url.replace() = result.url.v()
+
+                // 仅在满足所有条件时才处理M3U8
+                if (result?.url?.v().orEmpty().run {
+                        endsWith(".m3u8") && !contains("proxy") && isNotBlank()
+                    }) {
+                    result.url = processM3U8(result.url)
+                }
+
                 result.header = site.header
                 result.key = key
                 return result
@@ -154,17 +168,17 @@ object SiteViewModel {
                 log.debug("player: $playerContent")
                 val result = Jsons.decodeFromString<Result>(playerContent)
                 if (StringUtils.isNotBlank(result.flag)) result.flag = flag
-                //            result.setUrl(Source.get().fetch(result))
+
+                // 仅在满足所有条件时才处理M3U8
+                if (result?.url?.v().orEmpty().run {
+                        endsWith(".m3u8") && !contains("proxy") && isNotBlank()
+                    }) {
+                    result.url = processM3U8(result.url)
+                }
+
                 result.header = site.header
                 return result
-            } /*else if (site.isEmpty() && key == "push_agent") {
-                val result = Result<Any>()
-                result.setParse(0)
-                result.setFlag(flag)
-                result.setUrl(Url.create().add(id))
-                result.setUrl(Source.get().fetch(result))
-                return result
-            }*/ else {
+            } else {
                 var url: Url = Url().add(id)
                 val type: String? = Url(id).parameters["type"]
                 if (type != null && type == "json") {
@@ -176,16 +190,89 @@ object SiteViewModel {
                 val result = Result()
                 result.url = url
                 result.flag = flag
+
+                // 仅在满足所有条件时才处理M3U8
+                if (result?.url?.v().orEmpty().run {
+                        endsWith(".m3u8") && !contains("proxy") && isNotBlank()
+                    }) {
+                    result.url = processM3U8(result.url)
+                }
+
                 result.header = site.header
                 result.playUrl = site.playUrl
-                result.parse =
-                    (if (/*Sniffer.isVideoFormat(url.v())*//* && */StringUtils.isBlank(result.playUrl)) 0 else 1)
-                //            result.setParse(if (Sniffer.isVideoFormat(url.v()) && result.getPlayUrl().isEmpty()) 0 else 1)
+                result.parse = (if (StringUtils.isBlank(result.playUrl)) 0 else 1)
                 return result
             }
         } catch (e: Exception) {
             log.error("${site.name} player error:", e)
             return null
+        }
+    }
+
+
+
+    /**
+     * 处理M3U8文件，修正错误的扩展名
+     */
+    private fun processM3U8(url: Url): Url {
+        val site: Site = GlobalAppState.home.value
+
+        // 如果不是 .m3u8 文件，直接返回
+        if (!url.v().endsWith(".m3u8", ignoreCase = true)) {
+            return url
+        }
+
+        try {
+            var header: Map<String, String> = mapOf(
+                "Accept" to "application/json, text/javascript, */*; q=0.01",
+                "Accept-Encoding" to "gzip, deflate, br, zstd",
+                "Accept-Language" to "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+                "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
+                "DNT" to "1",
+                "Origin" to "https://hhjx.hhplayer.com",
+                "Priority" to "u=1, i",
+                "Sec-Ch-Ua" to "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Microsoft Edge\";v=\"138\"",
+                "Sec-Ch-Ua-Mobile" to "?0",
+                "Sec-Ch-Ua-Platform" to "\"Windows\"",
+                "Sec-Fetch-Dest" to "empty",
+                "Sec-Fetch-Mode" to "cors",
+                "Sec-Fetch-Site" to "same-origin",
+                "Sec-Fetch-Storage-Access" to "active",
+                "Sec-Gpc" to "1",
+                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
+                "X-Requested-With" to "XMLHttpRequest"
+            )
+            // 使用use自动关闭资源
+            val content = Http.newCall(url.v(), headers = header.toHeaders())
+                .execute()
+                .use { response ->
+                    response.body.string()
+                }
+
+            // 定义需要检测的图片扩展名
+            val imageExtensions = listOf("png", "jpg", "jpeg", "webp", "bmp", "gif")
+            val extensionPattern = imageExtensions.joinToString("|")
+
+            // 关键修正：调整正则表达式捕获组
+            val regex = Regex("""(https?://[^\s"']+?\.)($extensionPattern)(?=[\s"'>]|$)""")
+
+            // 执行替换（保留完整URL路径，只替换扩展名）
+            val processedContent = content.replace(regex) {
+                "${it.groupValues[1]}ts"  // groupValues[1]是URL路径+点号，groupValues[2]是原扩展名
+            }
+
+            // 检查是否需要处理（是否包含图片扩展名）
+            if (!regex.containsMatchIn(content)) {
+                log.debug("M3U8内容无需处理，未发现混淆扩展名")
+                return url
+            }
+
+            // 创建代理URL
+            val proxyUrl = "http://127.0.0.1:9978/proxy/m3u8?url=${URLEncoder.encode(url.v(), "UTF-8")}"
+            return Url().add(proxyUrl)
+        } catch (e: Exception) {
+            log.error("处理 M3U8 文件失败", e)
+            return url // 如果处理失败，返回原始URL
         }
     }
 
@@ -305,13 +392,21 @@ object SiteViewModel {
 
 
 private fun call(site: Site, params: MutableMap<String, String>, limit: Boolean): String {
-    val call: okhttp3.Call =
-        if (fetchExt(site, params, limit).length <= 1000) Http.newCall(
-            site.api,
-            site.header.toHeaders(),
-            params
-        ) else Http.newCall(site.api, site.header.toHeaders(), Http.toBody(params))
-    return call.execute().body.string()
+    val call: Call = if (fetchExt(site, params, limit).length <= 1000) {
+        Http.newCall(site.api, site.header.toHeaders(), params)
+    } else {
+        Http.newCall(site.api, site.header.toHeaders(), Http.toBody(params))
+    }
+
+    return call.execute().use { response ->
+        if (!response.isSuccessful) {
+            throw IOException("Unexpected code $response")
+        }
+
+        val body = response.body ?: throw IOException("Empty response body")
+
+        body.string()
+    }
 }
 
 private fun fetchExt(site: Site, params: MutableMap<String, String>, limit: Boolean): String {
@@ -323,7 +418,7 @@ private fun fetchExt(site: Site, params: MutableMap<String, String>, limit: Bool
 }
 
 private fun fetchExt(site: Site): String {
-    val res: okhttp3.Response = Http.newCall(site.ext, site.header.toHeaders()).execute()
+    val res: Response = Http.newCall(site.ext, site.header.toHeaders()).execute()
     if (res.code != 200) return ""
     site.ext = res.body.string()
     return site.ext
