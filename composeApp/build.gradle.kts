@@ -124,12 +124,6 @@ kotlin {
                 implementation(libs.vlcj)
             }
         }
-
-//        desktopMain.dependencies {
-//            implementation(compose.desktop.currentOs)
-//            // Player
-//            implementation(libs.vlcj)
-//        }
     }
 }
 

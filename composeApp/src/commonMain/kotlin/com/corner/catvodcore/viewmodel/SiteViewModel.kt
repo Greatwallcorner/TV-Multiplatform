@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.URLEncoder
 import java.util.concurrent.CopyOnWriteArrayList
+import com.corner.ui.nav.data.DialogState
 
 object SiteViewModel {
     private val log = LoggerFactory.getLogger("SiteViewModel")
@@ -209,8 +210,6 @@ object SiteViewModel {
         }
     }
 
-
-
     /**
      * 处理M3U8文件，修正错误的扩展名
      */
@@ -249,21 +248,23 @@ object SiteViewModel {
                     response.body.string()
                 }
 
-            // 定义需要检测的图片扩展名
-            val imageExtensions = listOf("png", "jpg", "jpeg", "webp", "bmp", "gif")
-            val extensionPattern = imageExtensions.joinToString("|")
+            // 关键修改：仅匹配 jpg 扩展名
+            val regex = Regex("""(https?://[^\s"']+?\.)(jpg)(?=[\s"'>]|$)""")
 
-            // 关键修正：调整正则表达式捕获组
-            val regex = Regex("""(https?://[^\s"']+?\.)($extensionPattern)(?=[\s"'>]|$)""")
-
-            // 执行替换（保留完整URL路径，只替换扩展名）
+            // 执行替换（保留完整URL路径，只替换 jpg 扩展名）
             val processedContent = content.replace(regex) {
-                "${it.groupValues[1]}ts"  // groupValues[1]是URL路径+点号，groupValues[2]是原扩展名
+                "${it.groupValues[1]}ts"  // groupValues[1]是URL路径+点号，groupValues[2]是原扩展名 jpg
             }
 
-            // 检查是否需要处理（是否包含图片扩展名）
+            // 检查是否存在 .png 链接
+            val pngRegex = Regex("https?://[^\\s\"']+?\\.png(?=[\\s\"'>]|$)")
+            if (pngRegex.containsMatchIn(content)) {
+                DialogState.showPngDialog(url.v())
+            }
+
+            // 检查是否需要处理（是否包含 jpg 扩展名）
             if (!regex.containsMatchIn(content)) {
-                log.debug("M3U8内容无需处理，未发现混淆扩展名")
+                log.debug("M3U8内容无需处理，未发现 jpg 扩展名")
                 return url
             }
 

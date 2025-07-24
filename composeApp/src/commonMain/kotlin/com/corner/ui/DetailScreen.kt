@@ -1,6 +1,7 @@
 package com.corner.ui
 
 import SiteViewModel
+import com.corner.ui.nav.data.DialogState
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -62,7 +63,9 @@ import com.corner.ui.nav.data.DetailScreenState
 import com.corner.ui.nav.vm.DetailViewModel
 import com.corner.ui.scene.*
 import com.corner.ui.video.QuickSearchItem
+import com.corner.util.BrowserUtils
 import com.corner.util.Constants
+import com.sun.rowset.internal.Row
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -202,6 +205,30 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                     SideEffect {
                         focus.requestFocus()
                     }
+                    var localShowPngDialog by remember { mutableStateOf(DialogState.showPngDialog) }
+                    var localCurrentM3U8Url by remember { mutableStateOf(DialogState.currentM3U8Url) }
+
+                    // 监听 DialogState 中的状态变化
+                    LaunchedEffect(DialogState.showPngDialog, DialogState.currentM3U8Url) {
+                        localShowPngDialog = DialogState.showPngDialog
+                        localCurrentM3U8Url = DialogState.currentM3U8Url
+                    }
+
+                    if (localShowPngDialog) {
+                        PngFoundDialog(
+                            m3u8Url = localCurrentM3U8Url,
+                            onDismiss = {
+                                localShowPngDialog = false
+                                DialogState.dismissPngDialog()
+                            },
+                            onOpenInBrowser = {
+                                BrowserUtils.openBrowserWithHtml(localCurrentM3U8Url)
+                                localShowPngDialog = false
+                                DialogState.dismissPngDialog()
+                            }
+                        )
+                    }
+
                     Player(
                         mrl.value,
                         controller.value,
