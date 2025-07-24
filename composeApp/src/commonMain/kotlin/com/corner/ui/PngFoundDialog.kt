@@ -41,6 +41,7 @@ fun PngFoundDialog(
                     }
                     Button(onClick = {
                         BrowserUtils.openBrowserWithHtml(m3u8Url)
+                        onDismiss()
                     }) {
                         Text("跳转浏览器")
                     }
