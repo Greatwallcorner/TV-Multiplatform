@@ -65,7 +65,6 @@ import com.corner.ui.scene.*
 import com.corner.ui.video.QuickSearchItem
 import com.corner.util.BrowserUtils
 import com.corner.util.Constants
-import com.sun.rowset.internal.Row
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
