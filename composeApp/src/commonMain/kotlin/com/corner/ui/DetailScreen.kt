@@ -73,10 +73,17 @@ import tv_multiplatform.composeapp.generated.resources.TV_icon_x
 
 @Composable
 fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
-    val model = vm.state.collectAsState()
+    val model by vm.state.collectAsState()  // 自动响应状态更新
     val scope = rememberCoroutineScope()
 
-    val detail by rememberUpdatedState(model.value.detail)
+    // derivedStateOf 自动计算当前选中的剧集
+    val currentEp by remember {
+        derivedStateOf {
+            model.detail.subEpisode.find { it.activated }
+        }
+    }
+
+    val detail = model.detail
 
     val controller = rememberUpdatedState(vm.controller)
 
@@ -94,15 +101,50 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
         }
     }
 
-    LaunchedEffect(model.value.isLoading) {
-        if (model.value.isLoading) {
+    LaunchedEffect(model.isLoading) {
+        if (model.isLoading) {
             showProgress()
         } else {
             hideProgress()
         }
     }
 
+    // 初始化 BrowserUtils
+    LaunchedEffect(Unit) {
+        BrowserUtils.init(vm)
+    }
+
     val focus = remember { FocusRequester() }
+
+
+    // 提取重复的 UI 组件
+    @Composable
+    fun NoPlayerContent(message: String) {
+        Box(
+            Modifier.fillMaxWidth(videoWidth.value).fillMaxHeight()
+                .background(Color.Black, shape = RoundedCornerShape(4.dp))
+        ) {
+            Column(
+                Modifier.fillMaxSize().align(Alignment.Center),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    painter = painterResource(Res.drawable.TV_icon_x),
+                    contentDescription = "nothing here",
+                    contentScale = ContentScale.Crop
+                )
+                Text(
+                    message,
+                    modifier = Modifier.align(Alignment.CenterHorizontally).focusRequester(focus),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = TextUnit(23f, TextUnitType.Sp),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+        }
+    }
+
 
     LaunchedEffect(isFullScreen.value) {
         focus.requestFocus()
@@ -132,7 +174,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                             onClick = {
                                 scope.launch {
 
-                                    /**
+                                    /*
                                      * 不要使用controller.release()方法，释放资源会为isReleased = true，
                                      * vm.quickSearch()在完成任务时会调用loadDetail函数，
                                      * 加载完成后会调用setDetail函数，最后会调用startPlay()，
@@ -145,18 +187,15 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                     SnackBar.postMsg("重新加载")
                                 }
                             },
-                            enabled = !model.value.isLoading,
+                            enabled = !model.isLoading,
                             modifier = Modifier
                                 .size(48.dp)
                                 .clip(CircleShape)
                         ) {
-                            // 使用derivedStateOf优化状态读取
-                            val isLoading by remember { derivedStateOf { model.value.isLoading } }
-
                             // 更流畅的动画配置
                             val rotation by animateFloatAsState(
-                                targetValue = if (isLoading) 360f else 0f,
-                                animationSpec = if (isLoading) {
+                                targetValue = if (model.isLoading) 360f else 0f,
+                                animationSpec = if (model.isLoading) {
                                     infiniteRepeatable(
                                         animation = tween(1000, easing = LinearEasing),
                                         repeatMode = RepeatMode.Restart
@@ -169,7 +208,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
 
                             // 颜色过渡动画
                             val iconTint by animateColorAsState(
-                                targetValue = if (!isLoading)
+                                targetValue = if (!model.isLoading)
                                     MaterialTheme.colorScheme.onSecondaryContainer
                                 else
                                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
@@ -189,12 +228,14 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                     })
                 }
             }
-            val mrl = derivedStateOf { model.value.currentPlayUrl }
+            val mrl = derivedStateOf { model.currentPlayUrl }
+
             Row(
                 modifier = Modifier.fillMaxHeight(videoHeight.value)
                     .padding(start = if (isFullScreen.value) 0.dp else 16.dp),//全屏取消左侧缩进
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
+
                 val internalPlayer = derivedStateOf {
                     val playerSetting =
                         SettingStore.getSettingItem(SettingType.PLAYER).getPlayerSetting(detail.site?.playerType)
@@ -212,8 +253,9 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                         localShowPngDialog = DialogState.showPngDialog
                         localCurrentM3U8Url = DialogState.currentM3U8Url
                     }
-
-                    if (localShowPngDialog) {
+                    log.debug("用户选择在浏览器打开: ${DialogState.userChoseOpenInBrowser}")
+                    // 检查用户是否选择在浏览器打开，若选择则不显示对话框
+                    if (localShowPngDialog && !DialogState.userChoseOpenInBrowser) {
                         PngFoundDialog(
                             m3u8Url = localCurrentM3U8Url,
                             onDismiss = {
@@ -221,45 +263,31 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                 DialogState.dismissPngDialog()
                             },
                             onOpenInBrowser = {
-                                BrowserUtils.openBrowserWithHtml(localCurrentM3U8Url)
+                                // 获取当前选中的剧集
+                                val currentEpisode = model.detail.subEpisode.find { it.activated }
+                                val episodeName = model.detail.vodName ?: ""
+                                val episodeNumber = currentEpisode?.number ?: 0
+                                log.debug("Name is {},Number is {}",episodeName,episodeNumber)
+                                BrowserUtils.openBrowserWithHtml(localCurrentM3U8Url, episodeName,episodeNumber)
                                 localShowPngDialog = false
                                 DialogState.dismissPngDialog()
-                            }
+                            },
+                            vm
                         )
+                        NoPlayerContent(message = "正在web播放器中播放")
+                    } else if (!DialogState.userChoseOpenInBrowser){
+                        Player(
+                            mrl.value,
+                            controller.value,
+                            Modifier.fillMaxWidth(videoWidth.value).focusable(),
+                            vm,
+                            focusRequester = focus
+                        )
+                    }else{
+                        NoPlayerContent(message = "正在web播放器中播放")
                     }
-
-                    Player(
-                        mrl.value,
-                        controller.value,
-                        Modifier.fillMaxWidth(videoWidth.value).focusable(),
-                        vm,
-                        focusRequester = focus
-                    )
                 } else {
-                    Box(
-                        Modifier.fillMaxWidth(videoWidth.value).fillMaxHeight()
-                            .background(Color.Black, shape = RoundedCornerShape(4.dp)),
-
-                        ) {
-                        Column(
-                            Modifier.fillMaxSize().align(Alignment.Center),
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Image(
-                                modifier = Modifier.align(Alignment.CenterHorizontally),
-                                painter = painterResource(Res.drawable.TV_icon_x),
-                                contentDescription = "nothing here",
-                                contentScale = ContentScale.Crop
-                            )
-                            Text(
-                                "使用外部播放器",
-                                modifier = Modifier.align(Alignment.CenterHorizontally).focusRequester(focus),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = TextUnit(23f, TextUnitType.Sp),
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
-                    }
+                    NoPlayerContent(message = "正在外部播放器中播放")
                 }
                 AnimatedVisibility(!isFullScreen.value, modifier = Modifier.fillMaxSize().padding(end = 16.dp)) {
                     EpChooser(
@@ -271,7 +299,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                 }
             }
             AnimatedVisibility(!isFullScreen.value) {
-                val searchResultList = derivedStateOf { model.value.quickSearchResult.toList() }
+                val searchResultList = derivedStateOf { model.quickSearchResult.toList() }
 
                 // 外层容器
                 Row(
@@ -303,12 +331,12 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                 .padding(1.dp),  // 统一内边距
                             horizontalArrangement = Arrangement.spacedBy(32.dp)  // 列间距
                         ) {
-                            if (model.value.detail.isEmpty()) {
+                            if (model.detail.isEmpty()) {
                                 emptyShow(
                                     title = "当前源不可用",
                                     subtitle = "或加载缓慢，请刷新重试",
                                     onRefresh = { vm.load() },
-                                    modifier = Modifier.border(1.dp, Color.Red)
+                                    modifier = Modifier
                                 )
                             } else {
                                 // 左侧视频信息区域 (占50%宽度)
@@ -577,9 +605,9 @@ private fun Flags(
 
 @Composable
 private fun quickSearchResult(
-    model: State<DetailScreenState>, searchResultList: State<List<Vod>>, component: DetailViewModel
+    detail: DetailScreenState, searchResultList: State<List<Vod>>, component: DetailViewModel
 ) {
-    if (model.value.quickSearchResult.isNotEmpty()) {
+    if (detail.quickSearchResult.isNotEmpty()) {
         val quickState = rememberLazyGridState()
         val adapter = rememberScrollbarAdapter(quickState)
         Box {

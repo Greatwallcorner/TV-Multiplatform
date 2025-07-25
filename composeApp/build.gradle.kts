@@ -100,6 +100,9 @@ kotlin {
                 implementation(libs.jupnp.osgi)
                 implementation("org.apache.logging.log4j:log4j-api:2.20.0")
 
+                //web-player
+                implementation("org.java-websocket:Java-WebSocket:1.6.0")
+
 //              implementation(libs.jupnp)
 //              implementation(libs.jetty.servlet)
 //              implementation(libs.jetty.server)

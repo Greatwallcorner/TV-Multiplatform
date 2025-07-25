@@ -97,6 +97,8 @@ object SiteViewModel {
     }
 
     fun detailContent(key: String, id: String): Result? {
+        // 切换视频时重置浏览器选择标志位
+        DialogState.resetBrowserChoice()
         val site: Site = ApiConfig.api.sites.find { it.key == key } ?: return null
         var rst = Result()
         try {
@@ -146,7 +148,7 @@ object SiteViewModel {
             if (site.type == 3) {
                 val spider: Spider = ApiConfig.getSpider(site)
                 val playerContent = spider.playerContent(flag, id, ApiConfig.api.flags.toList())
-                log.debug("player:$playerContent")
+//                log.debug("player:$playerContent")
                 ApiConfig.setRecent(site)
                 val result = Jsons.decodeFromString<Result>(playerContent)
                 if (StringUtils.isNotBlank(result.flag)) result.flag = flag
@@ -166,7 +168,7 @@ object SiteViewModel {
                 params["play"] = id
                 params["flag"] = flag
                 val playerContent = call(site, params, true)
-                log.debug("player: $playerContent")
+//                log.debug("player: $playerContent")
                 val result = Jsons.decodeFromString<Result>(playerContent)
                 if (StringUtils.isNotBlank(result.flag)) result.flag = flag
 
@@ -242,13 +244,24 @@ object SiteViewModel {
                 "X-Requested-With" to "XMLHttpRequest"
             )
             // 使用use自动关闭资源
-            val content = Http.newCall(url.v(), headers = header.toHeaders())
-                .execute()
-                .use { response ->
-                    response.body.string()
-                }
+            val content = try {
+                Http.newCall(url.v(), headers = header.toHeaders())
+                    .execute()
+                    .use { response ->
+                        if (response.isSuccessful) {
+                            log.debug("下载m3u8文件成功，状态码: ${response.code}")
+                            response.body.string()
+                        } else {
+                            log.error("下载m3u8文件失败，状态码: ${response.code}")
+                            throw IOException("下载 M3U8 文件失败，状态码: ${response.code}")
+                        }
+                    }
+            } catch (e: Exception) {
+                log.error("下载m3u8文件时发生异常", e)
+                throw e
+            }
 
-            // 关键修改：仅匹配 jpg 扩展名
+            // 仅匹配 jpg 扩展名
             val regex = Regex("""(https?://[^\s"']+?\.)(jpg)(?=[\s"'>]|$)""")
 
             // 执行替换（保留完整URL路径，只替换 jpg 扩展名）

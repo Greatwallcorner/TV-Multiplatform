@@ -7,6 +7,7 @@ import com.corner.bean.HotData
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.loader.JarLoader
+import com.corner.util.BrowserUtils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -77,7 +78,10 @@ object GlobalAppState {
                 // 3. 清理JarLoader
                 JarLoader.clear()
 
-                // 4. 重置状态
+                // 4. 关闭websocket服务
+                BrowserUtils.cleanup()
+
+                // 5. 重置状态
                 resetAllStates()
 
                 log.info("清理操作执行成功！")
