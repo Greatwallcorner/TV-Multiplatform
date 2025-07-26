@@ -147,9 +147,9 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "TV"
+            packageName = "LumenTV"
             packageVersion = libs.versions.app.version.get()
-            vendor = "TV Multiplatform"
+            vendor = "LumenTV Compose"
 
             modules(
                 "java.management",

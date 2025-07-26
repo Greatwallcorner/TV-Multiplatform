@@ -237,6 +237,11 @@
             console.log("已连接到应用");
         };
 
+        // 监听视频播放开始事件
+        video.addEventListener("play", () => {
+            socket.send("PLAYBACK_STARTED");
+        });
+
         // 监听视频结束事件
         video.addEventListener("ended", () => {
             socket.send("PLAYBACK_FINISHED");

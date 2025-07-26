@@ -36,6 +36,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 
@@ -54,8 +55,8 @@ fun ExpandedText(text: String, maxLine: Int, textStyle: TextStyle = TextStyle())
 }
 
 /**
-* 该组件已被重写，可自定义样式，调用时使用withOverlay = true显示遮罩
-* */
+ * 该组件已被重写，可自定义样式，调用时使用withOverlay = true显示遮罩
+ * */
 
 @Composable
 fun LoadingIndicator(
@@ -72,6 +73,8 @@ fun LoadingIndicator(
         Box(
             modifier = modifier
                 .fillMaxSize()
+                // 当显示遮罩时，拦截所有指针事件
+                .then(if (withOverlay) Modifier.pointerInput(Unit) { awaitPointerEventScope { while (true) awaitPointerEvent() } } else Modifier)
                 .then(if (withOverlay) Modifier.background(overlayColor) else Modifier),
             contentAlignment = Alignment.Center
         ) {
@@ -128,7 +131,9 @@ fun emptyShow(
     onRefresh: (() -> Unit)? = null,
     title: String = "没有找到内容",
     subtitle: String = "请检查网络连接或稍后再试",
-    isLoading: Boolean ?= false
+    isLoading: Boolean? = false,
+    showIcon: Boolean? = true, // 默认显示图标
+    showRefresh: Boolean? = true, // 默认显示刷新按钮
 ) {
     Column(
         modifier = modifier
@@ -140,7 +145,42 @@ fun emptyShow(
             title = title,
             subtitle = subtitle,
             onRefresh = onRefresh,
-            isLoading = isLoading
+            isLoading = isLoading,
+            showIcon = showIcon,
+            showRefresh = showRefresh
+        )
+    }
+}
+
+@Composable
+fun TopEmptyShow(
+    modifier: Modifier = Modifier,
+    onRefresh: (() -> Unit)? = null,
+    title: String = "没有找到内容",
+    subtitle: String = "请检查网络连接或稍后再试",
+    isLoading: Boolean? = false,
+    showIcon: Boolean? = false, // 默认显示图标
+    buttonAlignment: ButtonAlignment = ButtonAlignment.CENTER,
+    showRefresh: Boolean? = true, // 默认显示刷新按钮
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .height(56.dp), // 限制高度，可根据实际情况调整
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center // 垂直居中
+    ) {
+        EmptyState(
+            modifier = Modifier.fillMaxHeight().fillMaxWidth().padding(1.dp), // 高度占满 Column
+            title = title,
+            subtitle = subtitle,
+            onRefresh = onRefresh,
+            isLoading = isLoading,
+            showIcon = showIcon,
+            buttonAlignment = buttonAlignment,
+            textAlignment = TextAlignmentOption.LEFT,
+            isTopBar = true,
+            showRefresh = showRefresh
         )
     }
 }
@@ -149,79 +189,203 @@ fun emptyShow(
 * 使用isLoading = true设置加载状态
 * */
 
+// 定义一个枚举类型来表示按钮的对齐方式
+enum class ButtonAlignment {
+    LEFT,
+    CENTER,
+    RIGHT
+}
+
+// 定义文字对齐方式的枚举
+enum class TextAlignmentOption {
+    LEFT,
+    CENTER,
+    RIGHT
+}
+
 @Composable
 fun EmptyState(
     modifier: Modifier = Modifier,
     onRefresh: (() -> Unit)? = null,
     title: String = "这里什么都没有...",
     subtitle: String? = null,
-    isLoading: Boolean ?= false
+    isLoading: Boolean? = false,
+    showIcon: Boolean? = true, // 默认显示图标
+    // 按钮对齐方式参数，默认居中
+    buttonAlignment: ButtonAlignment = ButtonAlignment.CENTER,
+    // 新增文字对齐方式参数，默认左对齐
+    textAlignment: TextAlignmentOption = TextAlignmentOption.LEFT,
+    // 新增参数，用于区分是否为顶栏显示
+    isTopBar: Boolean = false,
+    // 新增参数，用于区分是否显示刷新按钮
+    showRefresh: Boolean? = true
 ) {
+    val paddingValue = if (isTopBar) 1.dp else 24.dp
+    val iconSize = if (isTopBar) 40.dp else 180.dp
+    val titleStyle = if (isTopBar) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.titleMedium
+    val subtitleStyle = if (isTopBar) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium
+    val buttonMinWidth = if (isTopBar) 120.dp else 160.dp
+
     Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Image(
-                modifier = Modifier.size(180.dp),
-                painter = painterResource(Res.drawable.no_data),
-                contentDescription = "empty_state_illustration",
-                contentScale = ContentScale.Fit,
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f)
-                )
-
-                subtitle?.let {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                        textAlign = TextAlign.Center
+        if (isTopBar) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValue),
+                verticalAlignment = Alignment.CenterVertically,
+                // 修改为从左开始排列
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                if (showIcon == true) {
+                    Image(
+                        modifier = Modifier.size(iconSize),
+                        painter = painterResource(Res.drawable.no_data),
+                        contentDescription = "empty_state_illustration",
+                        contentScale = ContentScale.Fit,
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                     )
+                    Spacer(Modifier.width(8.dp))
+                }
+
+                // 根据文字对齐枚举设置对应的 TextAlign 值
+                val textAlignValue = when (textAlignment) {
+                    TextAlignmentOption.LEFT -> TextAlign.Left
+                    TextAlignmentOption.CENTER -> TextAlign.Center
+                    TextAlignmentOption.RIGHT -> TextAlign.Right
+                }
+
+                // 根据文字对齐枚举设置 Column 的水平对齐方式
+                val columnAlignment = when (textAlignment) {
+                    TextAlignmentOption.LEFT -> Alignment.Start
+                    TextAlignmentOption.CENTER -> Alignment.CenterHorizontally
+                    TextAlignmentOption.RIGHT -> Alignment.End
+                }
+
+                Column(
+                    horizontalAlignment = columnAlignment
+                ) {
+                    Text(
+                        modifier = Modifier.padding(start = 15.dp),
+                        text = title,
+                        style = titleStyle,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f),
+                        textAlign = textAlignValue
+                    )
+
+                    subtitle?.let {
+                        Text(
+                            modifier = Modifier.padding(start = 15.dp),
+                            text = it,
+                            style = subtitleStyle,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            textAlign = textAlignValue
+                        )
+                    }
+                }
+
+                onRefresh?.let {
+                    isLoading?.let { it1 ->
+                        if (showRefresh == true) {
+                            FilledTonalButton(
+                                onClick = it,
+                                modifier = Modifier.widthIn(min = buttonMinWidth).padding(end = 15.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                enabled = !it1, // 禁用按钮当加载中
+                                colors = ButtonDefaults.filledTonalButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            ) {
+                                if (isLoading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(14.dp),
+                                        strokeWidth = 1.5.dp,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                } else {
+                                    Icon(
+                                        Icons.Default.Refresh,
+                                        contentDescription = "refresh",
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("重新加载")
+                                }
+                            }
+                        }
+                    }
                 }
             }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValue),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                if (showIcon == true) {
+                    Image(
+                        modifier = Modifier.size(iconSize),
+                        painter = painterResource(Res.drawable.no_data),
+                        contentDescription = "empty_state_illustration",
+                        contentScale = ContentScale.Fit,
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                    )
+                }
 
-            onRefresh?.let {
-                Spacer(Modifier.height(32.dp))
+                Spacer(Modifier.height(24.dp))
 
-                isLoading?.let { it1 ->
-                    FilledTonalButton(
-                        onClick = it,
-                        modifier = Modifier.widthIn(min = 160.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        enabled = !it1, // 禁用按钮当加载中
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = title,
+                        style = titleStyle,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f)
+                    )
+
+                    subtitle?.let {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = it,
+                            style = subtitleStyle,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            textAlign = TextAlign.Center
                         )
-                    ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        } else {
-                            Icon(
-                                Icons.Default.Refresh,
-                                contentDescription = "refresh",
-                                modifier = Modifier.size(18.dp)
-                            )
-            //                    }
-                            Spacer(Modifier.width(8.dp))
-                            Text("重新加载")
+                    }
+                }
+
+                onRefresh?.let {
+                    Spacer(Modifier.height(32.dp))
+
+                    isLoading?.let { it1 ->
+                        if (showRefresh == true) {
+                            FilledTonalButton(
+                                onClick = it,
+                                modifier = Modifier.widthIn(min = buttonMinWidth),
+                                shape = RoundedCornerShape(12.dp),
+                                enabled = !it1, // 禁用按钮当加载中
+                                colors = ButtonDefaults.filledTonalButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            ) {
+                                if (isLoading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                } else {
+                                    Icon(
+                                        Icons.Default.Refresh,
+                                        contentDescription = "refresh",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    //                    }
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("重新加载")
+                                }
+                            }
                         }
                     }
                 }
@@ -229,7 +393,6 @@ fun EmptyState(
         }
     }
 }
-
 
 @Composable
 @Preview
@@ -381,13 +544,13 @@ fun HoverableText(text: String, style: TextStyle = TextStyle(), onClick: () -> U
     )
 }
 
-@Preview
-@Composable
-fun previewDrawer() {
-    AppTheme {
-//        val choose = remember { mutableStateOf(Menu.HOME.name) }
-//        MenuList(Modifier, choose) {
-//            videoList(Modifier, mutableListOf())
-//        }
-    }
-}
+//@Preview
+//@Composable
+//fun previewDrawer() {
+//    AppTheme {
+////        val choose = remember { mutableStateOf(Menu.HOME.name) }
+////        MenuList(Modifier, choose) {
+////            videoList(Modifier, mutableListOf())
+////        }
+//    }
+//}

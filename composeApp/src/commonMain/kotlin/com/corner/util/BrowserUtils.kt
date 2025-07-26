@@ -14,6 +14,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.util.concurrent.atomic.AtomicBoolean
@@ -29,13 +31,19 @@ private val _webPlaybackFinishedFlow = MutableSharedFlow<Unit>(
 )
 val webPlaybackFinishedFlow: SharedFlow<Unit> = _webPlaybackFinishedFlow
 
+// 新增标志位，记录当前视频是否正在播放
+private var isVideoPlaying = false
+
 object BrowserUtils {
+
+    // 定义 WebSocket 连接状态流
+    val _webSocketConnectionState = MutableStateFlow(false) // 初始状态为未连接
+    val webSocketConnectionState: StateFlow<Boolean> = _webSocketConnectionState
     private val lastOpenTime = AtomicLong(0)
 
     // 定义一个 CoroutineScope 实例
     val scope = CoroutineScope(Dispatchers.Default)
     lateinit var detailViewModel: DetailViewModel
-
 
     // 静态 HTML 文件
     private var staticHtmlFile: File? = null
@@ -216,24 +224,42 @@ object BrowserUtils {
 object VideoEventServer : WebSocketServer(InetSocketAddress("localhost", 8888)) {
     override fun onOpen(conn: WebSocket?, handshake: ClientHandshake?) {
         log.debug("WebSocket 连接已建立")
+        // 连接建立后，重置播放状态
+        isVideoPlaying = false
+        // 连接建立后，更新 WebSocket 连接状态为已连接
+        BrowserUtils._webSocketConnectionState.value = true
+//        log.debug("WebSocket 连接状态：{}",BrowserUtils._webSocketConnectionState.value)
     }
 
     override fun onClose(conn: WebSocket?, code: Int, reason: String?, remote: Boolean) {
         log.debug("WebSocket 连接关闭，关闭码: {}, 关闭原因: {}, 是否远程关闭: {}", code, reason, remote)
+        // 若视频正在播放，说明是中途退出，更新 WebSocket 连接状态为未连接
+        if (isVideoPlaying) {
+            BrowserUtils._webSocketConnectionState.value = false
+            log.debug("更新WebSocket 连接状态：{}",BrowserUtils._webSocketConnectionState.value)
+        }
     }
 
     override fun onMessage(conn: WebSocket?, message: String?) {
         log.info("收到消息: {}", message)
-        // 在这里处理来自浏览器的消息（如播放完成事件）
-        if (message == "PLAYBACK_FINISHED") {
-            log.info("视频播放完成！")
-            // 使用自定义的 CoroutineScope 实例启动协程
-            BrowserUtils.scope.launch {
-                _webPlaybackFinishedFlow.emit(Unit)
+        // 在这里处理来自浏览器的消息（如播放开始、播放完成事件）
+        when (message) {
+            "PLAYBACK_STARTED" -> {
+                log.info("视频播放开始！")
+                // 设置视频正在播放标志
+                isVideoPlaying = true
             }
-            println("当前视频播放完成，尝试切换下一集...")
+            "PLAYBACK_FINISHED" -> {
+                log.info("视频播放完成！")
+                // 重置视频正在播放标志
+                isVideoPlaying = false
+                // 使用自定义的 CoroutineScope 实例启动协程
+                BrowserUtils.scope.launch {
+                    _webPlaybackFinishedFlow.emit(Unit)
+                }
+                println("当前视频播放完成，尝试切换下一集...")
+            }
         }
-        log.info("当前视频播放完成，尝试切换下一集...")
     }
 
     override fun onError(conn: WebSocket?, ex: Exception?) {

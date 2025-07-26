@@ -1,7 +1,6 @@
 package com.corner.ui
 
 import SiteViewModel
-import com.corner.ui.nav.data.DialogState
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -25,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Autorenew
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,13 +36,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -60,6 +57,8 @@ import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
 import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
 import com.corner.ui.nav.data.DetailScreenState
+import com.corner.ui.nav.data.DialogState
+import com.corner.ui.nav.data.DialogState.isSpecialVideoLink
 import com.corner.ui.nav.vm.DetailViewModel
 import com.corner.ui.scene.*
 import com.corner.ui.video.QuickSearchItem
@@ -67,28 +66,15 @@ import com.corner.util.BrowserUtils
 import com.corner.util.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
-import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.TV_icon_x
 
 @Composable
 fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
     val model by vm.state.collectAsState()  // 自动响应状态更新
     val scope = rememberCoroutineScope()
-
-    // derivedStateOf 自动计算当前选中的剧集
-    val currentEp by remember {
-        derivedStateOf {
-            model.detail.subEpisode.find { it.activated }
-        }
-    }
-
+    val focus = remember { FocusRequester() }
     val detail = model.detail
-
     val controller = rememberUpdatedState(vm.controller)
-
     val isFullScreen = GlobalAppState.videoFullScreen.collectAsState()
-
     val videoHeight = derivedStateOf { if (isFullScreen.value) 1f else 0.6f }
     val videoWidth = derivedStateOf { if (isFullScreen.value) 1f else 0.7f }
 
@@ -101,6 +87,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
         }
     }
 
+    //监听isLoading, 显示加载动画
     LaunchedEffect(model.isLoading) {
         if (model.isLoading) {
             showProgress()
@@ -114,150 +101,203 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
         BrowserUtils.init(vm)
     }
 
-    val focus = remember { FocusRequester() }
-
-
-    // 提取重复的 UI 组件
-    @Composable
-    fun NoPlayerContent(message: String) {
-        Box(
-            Modifier.fillMaxWidth(videoWidth.value).fillMaxHeight()
-                .background(Color.Black, shape = RoundedCornerShape(4.dp))
-        ) {
-            Column(
-                Modifier.fillMaxSize().align(Alignment.Center),
-                verticalArrangement = Arrangement.Center
-            ) {
-                Image(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    painter = painterResource(Res.drawable.TV_icon_x),
-                    contentDescription = "nothing here",
-                    contentScale = ContentScale.Crop
-                )
-                Text(
-                    message,
-                    modifier = Modifier.align(Alignment.CenterHorizontally).focusRequester(focus),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = TextUnit(23f, TextUnitType.Sp),
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            }
+    // 监听isFullScreen, 非全屏时请求焦点
+    LaunchedEffect(isFullScreen.value) {
+        if (!isFullScreen.value) {
+            focus.requestFocus()
         }
     }
 
+    var showWebSocketDisconnected by remember { mutableStateOf(false) }
+    var localShowPngDialog by remember { mutableStateOf(DialogState.showPngDialog) }
+    var localCurrentM3U8Url by remember { mutableStateOf(DialogState.currentM3U8Url) }
 
-    LaunchedEffect(isFullScreen.value) {
-        focus.requestFocus()
+    // 监听 DialogState 中的状态变化
+    LaunchedEffect(DialogState.showPngDialog, DialogState.currentM3U8Url) {
+        log.debug("DialogState.showPngDialog:{}",DialogState.showPngDialog)
+        localShowPngDialog = DialogState.showPngDialog
+        localCurrentM3U8Url = DialogState.currentM3U8Url
     }
+
+    // 监听 WebSocket 连接状态
+    LaunchedEffect(BrowserUtils.webSocketConnectionState) {
+        BrowserUtils.webSocketConnectionState.collect { isConnected ->
+            showWebSocketDisconnected = !isConnected
+        }
+    }
+    log.debug("用户选择在浏览器打开: ${DialogState.userChoseOpenInBrowser}")
+
+    val internalPlayer = derivedStateOf {
+        val playerSetting =
+            SettingStore.getSettingItem(SettingType.PLAYER).getPlayerSetting(detail.site?.playerType)
+        playerSetting.first() == PlayerType.Innie.id
+    }
+
+    // 提取重复的 UI 组件
+    @Composable
+    fun NoPlayerContent(message: String, subtitle: String) {
+        Box(
+            Modifier.fillMaxWidth(videoWidth.value).fillMaxHeight()
+                .background(Color.Black, shape = RoundedCornerShape(4.dp))
+                .focusable() // 确保可获取焦点
+                .focusRequester(focus)
+        ) {
+            emptyShow(
+                modifier = Modifier.align(Alignment.Center),
+                title = message,
+                subtitle = subtitle,
+                onRefresh = {
+                    scope.launch {
+                        vm.load()
+                    }
+                },
+                showRefresh = false
+            )
+        }
+    }
+
     Box(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
     ) {
         Column(Modifier) {
             if (!isFullScreen.value) {
                 WindowDraggableArea(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    ControlBar(leading = {
-                        BackRow(modifier = Modifier.align(Alignment.Start), { onClickBack() }) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(0.7f),
-                                horizontalArrangement = Arrangement.Start,
-                                verticalAlignment = Alignment.CenterVertically
+                    ControlBar(
+                        leading = {
+                            BackRow(modifier = Modifier.align(Alignment.Start), { onClickBack() }) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(0.7f),
+                                    horizontalArrangement = Arrangement.Start,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    ToolTipText(
+                                        detail.vodName ?: "",
+                                        textStyle = MaterialTheme.typography.headlineMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+                                        modifier = Modifier.padding(horizontal = 12.dp)
+                                    )
+                                }
+                            }
+                        }, actions = {
+                            IconButton(
+                                onClick = {
+                                    scope.launch {
+
+                                        /*
+                                         * 不要使用controller.release()方法，释放资源会为isReleased = true，
+                                         * vm.quickSearch()在完成任务时会调用loadDetail函数，
+                                         * 加载完成后会调用setDetail函数，最后会调用startPlay()，
+                                         * 但是controller.isReleased为true，导致无法播放
+                                         * 传入releaseController = false时不释放播放器资源
+                                         * */
+
+                                        vm.clear(false)
+                                        vm.quickSearch()
+                                        SnackBar.postMsg("重新加载")
+                                    }
+                                },
+                                enabled = !model.isLoading,
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
                             ) {
-                                ToolTipText(
-                                    detail.vodName ?: "",
-                                    textStyle = MaterialTheme.typography.headlineMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                                    modifier = Modifier.padding(horizontal = 12.dp)
+                                // 更流畅的动画配置
+                                val rotation by animateFloatAsState(
+                                    targetValue = if (model.isLoading) 360f else 0f,
+                                    animationSpec = if (model.isLoading) {
+                                        infiniteRepeatable(
+                                            animation = tween(1000, easing = LinearEasing),
+                                            repeatMode = RepeatMode.Restart
+                                        )
+                                    } else {
+                                        tween(300, easing = FastOutSlowInEasing)
+                                    },
+                                    label = "refresh_rotation"
+                                )
+
+                                // 颜色过渡动画
+                                val iconTint by animateColorAsState(
+                                    targetValue = if (!model.isLoading)
+                                        MaterialTheme.colorScheme.onSecondaryContainer
+                                    else
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                    animationSpec = tween(300),
+                                    label = "icon_tint"
+                                )
+
+                                Icon(
+                                    imageVector = Icons.Default.Autorenew,
+                                    contentDescription = "刷新数据",
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .rotate(rotation),
+                                    tint = iconTint
                                 )
                             }
-                        }
-                    }, actions = {
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-
-                                    /*
-                                     * 不要使用controller.release()方法，释放资源会为isReleased = true，
-                                     * vm.quickSearch()在完成任务时会调用loadDetail函数，
-                                     * 加载完成后会调用setDetail函数，最后会调用startPlay()，
-                                     * 但是controller.isReleased为true，导致无法播放
-                                     * 传入releaseController = false时不释放播放器资源
-                                     * */
-
-                                    vm.clear(false)
-                                    vm.quickSearch()
-                                    SnackBar.postMsg("重新加载")
-                                }
-                            },
-                            enabled = !model.isLoading,
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                        ) {
-                            // 更流畅的动画配置
-                            val rotation by animateFloatAsState(
-                                targetValue = if (model.isLoading) 360f else 0f,
-                                animationSpec = if (model.isLoading) {
-                                    infiniteRepeatable(
-                                        animation = tween(1000, easing = LinearEasing),
-                                        repeatMode = RepeatMode.Restart
-                                    )
-                                } else {
-                                    tween(300, easing = FastOutSlowInEasing)
-                                },
-                                label = "refresh_rotation"
-                            )
-
-                            // 颜色过渡动画
-                            val iconTint by animateColorAsState(
-                                targetValue = if (!model.isLoading)
-                                    MaterialTheme.colorScheme.onSecondaryContainer
-                                else
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                                animationSpec = tween(300),
-                                label = "icon_tint"
-                            )
-
-                            Icon(
-                                imageVector = Icons.Default.Autorenew,
-                                contentDescription = "刷新数据",
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .rotate(rotation),
-                                tint = iconTint
-                            )
-                        }
-                    })
+                        })
                 }
             }
             val mrl = derivedStateOf { model.currentPlayUrl }
-
+//            log.debug("WebSocket 连接状态：{}",BrowserUtils.webSocketConnectionState.value)
+            // 添加顶栏通知
+            if (isSpecialVideoLink && showWebSocketDisconnected) {
+                Column(modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
+                    // 顶栏通知
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .background(MaterialTheme.colorScheme.errorContainer)
+                            .padding(start = 16.dp, end = 16.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "WebSocket连接已断开，请使用Web播放器",
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                fontWeight = FontWeight.Medium
+                            )
+                            IconButton(
+                                onClick = { showWebSocketDisconnected = false },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "关闭通知",
+                                    tint = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
+                    }
+                    if (isSpecialVideoLink && showWebSocketDisconnected) {
+                        TopEmptyShow(
+                            title = "当前播放器无法播放",
+                            subtitle = "请使用 Web 播放器；点击选集按钮重新进入浏览器播放，或点击刷新重试",
+                            onRefresh = { vm.load() },
+                            modifier = Modifier
+                                .height(50.dp)
+                                .fillMaxWidth(),
+                            showIcon = false,
+                            buttonAlignment = ButtonAlignment.RIGHT
+                        )
+                    }
+                }
+            }
             Row(
                 modifier = Modifier.fillMaxHeight(videoHeight.value)
                     .padding(start = if (isFullScreen.value) 0.dp else 16.dp),//全屏取消左侧缩进
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-
-                val internalPlayer = derivedStateOf {
-                    val playerSetting =
-                        SettingStore.getSettingItem(SettingType.PLAYER).getPlayerSetting(detail.site?.playerType)
-                    playerSetting.first() == PlayerType.Innie.id
-                }
                 if (internalPlayer.value) {
-                    SideEffect {
-                        focus.requestFocus()
-                    }
-                    var localShowPngDialog by remember { mutableStateOf(DialogState.showPngDialog) }
-                    var localCurrentM3U8Url by remember { mutableStateOf(DialogState.currentM3U8Url) }
-
-                    // 监听 DialogState 中的状态变化
-                    LaunchedEffect(DialogState.showPngDialog, DialogState.currentM3U8Url) {
-                        localShowPngDialog = DialogState.showPngDialog
-                        localCurrentM3U8Url = DialogState.currentM3U8Url
-                    }
-                    log.debug("用户选择在浏览器打开: ${DialogState.userChoseOpenInBrowser}")
+                    log.debug("localShowPngDialog:{}",localShowPngDialog)
                     // 检查用户是否选择在浏览器打开，若选择则不显示对话框
                     if (localShowPngDialog && !DialogState.userChoseOpenInBrowser) {
                         PngFoundDialog(
                             m3u8Url = localCurrentM3U8Url,
+                            Text = "在当前播放的m3u8文件中，检测到了特殊链接，是否跳转到浏览器播放？",
                             onDismiss = {
                                 localShowPngDialog = false
                                 DialogState.dismissPngDialog()
@@ -267,27 +307,30 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                 val currentEpisode = model.detail.subEpisode.find { it.activated }
                                 val episodeName = model.detail.vodName ?: ""
                                 val episodeNumber = currentEpisode?.number ?: 0
-                                log.debug("Name is {},Number is {}",episodeName,episodeNumber)
-                                BrowserUtils.openBrowserWithHtml(localCurrentM3U8Url, episodeName,episodeNumber)
+                                log.debug("Name is {},Number is {}", episodeName, episodeNumber)
+                                BrowserUtils.openBrowserWithHtml(localCurrentM3U8Url, episodeName, episodeNumber)
                                 localShowPngDialog = false
                                 DialogState.dismissPngDialog()
                             },
                             vm
                         )
-                        NoPlayerContent(message = "正在web播放器中播放")
-                    } else if (!DialogState.userChoseOpenInBrowser){
+                        NoPlayerContent(message = "正在 Web 播放器中播放", subtitle = "请使用 Web 播放器")
+                    } else if (!DialogState.userChoseOpenInBrowser) {
                         Player(
                             mrl.value,
                             controller.value,
-                            Modifier.fillMaxWidth(videoWidth.value).focusable(),
+                            Modifier
+                                .fillMaxWidth(videoWidth.value)
+                                .focusable()
+                                .focusRequester(focus),
                             vm,
                             focusRequester = focus
                         )
-                    }else{
-                        NoPlayerContent(message = "正在web播放器中播放")
+                    } else {
+                        NoPlayerContent(message = "正在 Web 播放器中播放", subtitle = "请使用 Web 播放器")
                     }
                 } else {
-                    NoPlayerContent(message = "正在外部播放器中播放")
+                    NoPlayerContent(message = "正在外部播放器中播放", subtitle = "请使用外部播放器")
                 }
                 AnimatedVisibility(!isFullScreen.value, modifier = Modifier.fillMaxSize().padding(end = 16.dp)) {
                     EpChooser(
@@ -308,7 +351,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                         .padding(top = 8.dp, start = 16.dp, end = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-
                     // 1. 固定搜索结果列（30%宽度）
                     if (searchResultList.value.isNotEmpty()) {
                         Column(
@@ -640,7 +682,7 @@ private fun quickSearchResult(
 @Composable
 private fun VodInfo(detail: Vod?) {
     val typography = MaterialTheme.typography
-    val colors = MaterialTheme.colorScheme
+    MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
@@ -840,7 +882,10 @@ fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
                     EpisodeItem(
                         isSelected = episode.url == vm.currentSelectedEpUrl.value,
                         episode = episode,
-                        onSelect = { vm.chooseEp(it) { uriHandler.openUri(it) } },
+                        onSelect = {
+                            vm.chooseEp(it) { uriHandler.openUri(it) }
+                            DialogState.resetBrowserChoice()
+                        },
                         isLoading = episode.activated && vm.videoLoading.value,
                         modifier = Modifier.fillMaxWidth() // 关键：确保条目填满宽度
                     )

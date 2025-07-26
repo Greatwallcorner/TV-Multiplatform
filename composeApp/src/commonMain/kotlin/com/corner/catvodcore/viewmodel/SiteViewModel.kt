@@ -30,6 +30,7 @@ import java.io.IOException
 import java.net.URLEncoder
 import java.util.concurrent.CopyOnWriteArrayList
 import com.corner.ui.nav.data.DialogState
+import com.corner.ui.nav.data.DialogState.toggleSpecialVideoLink
 
 object SiteViewModel {
     private val log = LoggerFactory.getLogger("SiteViewModel")
@@ -81,7 +82,7 @@ object SiteViewModel {
                     //  use 确保 Response 正确关闭
                     val homeContent: String = Http.newCall(site.api, site.header.toHeaders()).execute().use { response ->
                         if (!response.isSuccessful) throw IOException("Unexpected code $response")
-                        val body = response.body ?: throw IOException("Empty response body")
+                        val body = response.body
                         body.string()
                     }
                     log.debug("home: $homeContent")
@@ -99,13 +100,15 @@ object SiteViewModel {
     fun detailContent(key: String, id: String): Result? {
         // 切换视频时重置浏览器选择标志位
         DialogState.resetBrowserChoice()
+        toggleSpecialVideoLink(false)
+
         val site: Site = ApiConfig.api.sites.find { it.key == key } ?: return null
         var rst = Result()
         try {
             if (site.type == 3) {
                 val spider: Spider = ApiConfig.getSpider(site)
                 val detailContent = spider.detailContent(listOf(id))
-                log.debug("detailContent : detail:$detailContent")
+//                log.debug("detailContent : detail:$detailContent")
                 ApiConfig.setRecent(site)
                 rst = Jsons.decodeFromString<Result>(detailContent)
                 if (rst.list.isNotEmpty()) rst.list[0].setVodFlags()
@@ -212,19 +215,24 @@ object SiteViewModel {
         }
     }
 
-    /**
+        /**
      * 处理M3U8文件，修正错误的扩展名
+     *
+     * @param url 包含 M3U8 文件地址的 Url 对象
+     * @return 处理后的 Url 对象，若处理失败则返回原始 Url 对象
      */
     private fun processM3U8(url: Url): Url {
+        // 获取当前的站点信息
         val site: Site = GlobalAppState.home.value
 
-        // 如果不是 .m3u8 文件，直接返回
+        // 如果不是 .m3u8 文件，直接返回原始 Url 对象
         if (!url.v().endsWith(".m3u8", ignoreCase = true)) {
             return url
         }
 
         try {
-            var header: Map<String, String> = mapOf(
+            // 定义请求 M3U8 文件时需要携带的请求头
+            val header: Map<String, String> = mapOf(
                 "Accept" to "application/json, text/javascript, */*; q=0.01",
                 "Accept-Encoding" to "gzip, deflate, br, zstd",
                 "Accept-Language" to "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
@@ -243,128 +251,222 @@ object SiteViewModel {
                 "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
                 "X-Requested-With" to "XMLHttpRequest"
             )
-            // 使用use自动关闭资源
+            // 使用use自动关闭资源，确保响应资源被正确释放
             val content = try {
+                // 发起网络请求获取 M3U8 文件内容
                 Http.newCall(url.v(), headers = header.toHeaders())
                     .execute()
                     .use { response ->
                         if (response.isSuccessful) {
+                            // 下载成功，记录日志并返回响应体内容
                             log.debug("下载m3u8文件成功，状态码: ${response.code}")
                             response.body.string()
                         } else {
+                            // 下载失败，记录错误日志并抛出异常
                             log.error("下载m3u8文件失败，状态码: ${response.code}")
                             throw IOException("下载 M3U8 文件失败，状态码: ${response.code}")
                         }
                     }
             } catch (e: Exception) {
+                // 下载过程中发生异常，记录错误日志并重新抛出异常
                 log.error("下载m3u8文件时发生异常", e)
                 throw e
             }
 
-            // 仅匹配 jpg 扩展名
+            // 定义正则表达式，仅匹配 jpg 扩展名的 URL
             val regex = Regex("""(https?://[^\s"']+?\.)(jpg)(?=[\s"'>]|$)""")
 
-            // 执行替换（保留完整URL路径，只替换 jpg 扩展名）
+            // 执行替换操作，保留完整URL路径，只替换 jpg 扩展名为 ts
             val processedContent = content.replace(regex) {
                 "${it.groupValues[1]}ts"  // groupValues[1]是URL路径+点号，groupValues[2]是原扩展名 jpg
             }
 
-            // 检查是否存在 .png 链接
+            // 定义正则表达式，用于检查是否存在 .png 链接
             val pngRegex = Regex("https?://[^\\s\"']+?\\.png(?=[\\s\"'>]|$)")
             if (pngRegex.containsMatchIn(content)) {
-                DialogState.showPngDialog(url.v())
+                // 若存在 .png 链接，检查用户是否选择在浏览器中打开
+                if (!DialogState.userChoseOpenInBrowser) {
+                    // 用户未选择在浏览器中打开，显示 PNG 弹窗
+                    DialogState.showPngDialog(url.v())
+                }
+                // 标记为特殊视频链接
+                toggleSpecialVideoLink(true)
+            } else {
+                // 不存在 .png 链接，取消特殊视频链接标记
+                toggleSpecialVideoLink(false)
             }
 
-            // 检查是否需要处理（是否包含 jpg 扩展名）
+            // 检查是否需要处理，即 M3U8 内容中是否包含 jpg 扩展名
             if (!regex.containsMatchIn(content)) {
+                // 无需处理，记录日志并返回原始 Url 对象
                 log.debug("M3U8内容无需处理，未发现 jpg 扩展名")
                 return url
             }
 
-            // 创建代理URL
+            // 创建代理URL，将原始 M3U8 文件地址进行 URL 编码
             val proxyUrl = "http://127.0.0.1:9978/proxy/m3u8?url=${URLEncoder.encode(url.v(), "UTF-8")}"
+            // 返回包含代理 URL 的 Url 对象
             return Url().add(proxyUrl)
         } catch (e: Exception) {
+            // 处理过程中发生异常，记录错误日志并返回原始 Url 对象
             log.error("处理 M3U8 文件失败", e)
             return url // 如果处理失败，返回原始URL
         }
     }
 
 
+
+        /**
+     * 根据站点和关键词进行搜索操作，支持快速搜索模式
+     *
+     * @param site 搜索使用的站点信息
+     * @param keyword 搜索的关键词
+     * @param quick 是否为快速搜索模式
+     */
     fun searchContent(site: Site, keyword: String, quick: Boolean) {
         try {
+            // 检查站点类型是否为 3
             if (site.type == 3) {
+                // 获取该站点对应的爬虫实例
                 val spider: Spider = ApiConfig.getSpider(site)
+                // 调用爬虫的搜索方法进行搜索
                 val searchContent = spider.searchContent(keyword, quick)
+                // 记录搜索日志，包含站点名称和搜索结果
                 log.debug("search: "+ site.name + "," + searchContent)
+                // 将搜索结果字符串解析为 Result 对象
                 val result = Jsons.decodeFromString<Result>(searchContent)
+                // 将搜索结果进行后续处理，如展示到界面等
                 post(site, result, quick)
             } else {
+                // 非类型 3 的站点，构建搜索请求参数
                 val params = mutableMapOf<String, String>()
+                // 添加搜索关键词
                 params["wd"] = keyword
+                // 添加是否为快速搜索的标识
                 params["quick"] = quick.toString()
+                // 调用 call 方法发起搜索请求并获取结果
                 val searchContent = call(site, params, true)
+                // 记录搜索日志，包含站点名称和搜索结果
                 log.debug(site.name + "," + searchContent)
+                // 将搜索结果字符串解析为 Result 对象，并获取图片信息
                 val result = Jsons.decodeFromString<Result>(searchContent)
+                // 将搜索结果进行后续处理，如展示到界面等，同时获取图片信息
                 post(site, fetchPic(site, result), quick)
             }
         } catch (e: Exception) {
+            // 捕获搜索过程中发生的异常，并记录错误日志
             log.error("${site.name} search error", e)
         }
     }
 
+
+        /**
+     * 根据指定站点、关键词和页码进行搜索操作，并将搜索结果存储在 `result` 状态中。
+     *
+     * @param site 搜索使用的站点信息
+     * @param keyword 搜索的关键词
+     * @param page 搜索的页码
+     */
     fun searchContent(site: Site, keyword: String, page: String) {
         try {
+            // 检查站点类型是否为 3
             if (site.type == 3) {
+                // 获取该站点对应的爬虫实例
                 val spider: Spider = ApiConfig.getSpider(site)
+                // 调用爬虫的搜索方法进行搜索，第三个参数 false 表示非快速搜索
                 val searchContent = spider.searchContent(keyword, false, page)
+                // 记录搜索日志，包含站点名称和搜索结果
                 log.debug(site.name + "," + searchContent)
+                // 将搜索结果字符串解析为 Result 对象
                 val rst = Jsons.decodeFromString<Result>(searchContent)
+                // 为搜索结果中的每个视频设置所属站点
                 for (vod in rst.list) vod.site = site
+                // 将解析后的搜索结果存储在 result 状态中
                 result.value = rst
             } else {
+                // 非类型 3 的站点，构建搜索请求参数
                 val params = mutableMapOf<String, String>()
+                // 添加搜索关键词
                 params["wd"] = keyword
+                // 添加搜索页码
                 params["pg"] = page
+                // 调用 call 方法发起搜索请求并获取结果
                 val searchContent = call(site, params, true)
+                // 记录搜索日志，包含站点名称和搜索结果
                 log.debug(site.name + "," + searchContent)
+                // 将搜索结果字符串解析为 Result 对象，并获取图片信息
                 val rst: Result = fetchPic(site, Jsons.decodeFromString<Result>(searchContent))
+                // 为搜索结果中的每个视频设置所属站点
                 for (vod in rst.list) vod.site = site
+                // 将解析后的搜索结果存储在 result 状态中
                 result.value = rst
             }
         } catch (e: Exception) {
+            // 捕获搜索过程中发生的异常，并记录错误日志
             log.error("${site.name} searchContent error", e)
         }
     }
 
+
+        /**
+     * 根据站点 key、分类 ID、页码、过滤标志和扩展参数获取分类内容
+     *
+     * @param key 站点的唯一标识
+     * @param tid 分类的 ID
+     * @param page 请求的页码
+     * @param filter 是否启用过滤
+     * @param extend 扩展参数，包含额外的请求信息
+     * @return 包含分类内容的 Result 对象，若出错则返回表示失败的 Result 对象
+     */
     fun categoryContent(key: String, tid: String, page: String, filter: Boolean, extend: HashMap<String, String>):Result{
+        // 记录方法调用时传入的参数信息，方便调试和监控
         log.info("categoryContent key:{} tid:{} page:{} filter:{} extend:{}", key, tid, page, filter, extend)
+        // 根据站点 key 获取对应的站点信息，若未找到则返回表示失败的 Result 对象
         val site: Site = ApiConfig.getSite(key) ?: return Result(false)
-         try {
+        try {
+            // 根据站点类型进行不同处理
             if (site.type == 3) {
+                // 获取该站点对应的爬虫实例
                 val spider: Spider = ApiConfig.getSpider(site)
+                // 调用爬虫的分类内容获取方法
                 val categoryContent = spider.categoryContent(tid, page, filter, extend)
+                // 记录获取到的分类内容信息
                 log.debug("cate: $categoryContent")
+                // 将该站点标记为最近使用
                 ApiConfig.setRecent(site)
+                // 将获取到的分类内容字符串解析为 Result 对象并更新状态
                 result.value = Jsons.decodeFromString<Result>(categoryContent)
             } else {
+                // 非类型 3 的站点，构建请求参数
                 val params = mutableMapOf<String, String>()
+                // 根据站点类型和扩展参数添加不同的请求参数
                 if (site.type == 1 && extend.isNotEmpty()) params.put("f", Jsons.encodeToString(extend))
                 else if (site.type == 4) params.put("ext", Utils.base64(Jsons.encodeToString(extend)))
+                // 根据站点类型设置操作类型参数
                 params["ac"] = if (site.type == 0) "videolist" else "detail"
+                // 添加分类 ID 参数
                 params["t"] = tid
+                // 添加页码参数
                 params["pg"] = page
+                // 调用 call 方法发起请求并获取响应内容
                 val categoryContent = call(site, params, true)
+                // 记录获取到的分类内容信息
                 log.debug("cate: $categoryContent")
+                // 将获取到的分类内容字符串解析为 Result 对象并更新状态
                 result.value = Jsons.decodeFromString<Result>(categoryContent)
             }
         } catch (e: Exception) {
+            // 捕获异常并记录错误信息
             log.error("${site.name} category error", e)
-             result.value = Result(false)
+            // 发生异常时，将结果状态更新为失败
+            result.value = Result(false)
         }
+        // 为结果列表中的每个项设置所属站点信息
         result.value.list.forEach{it.site = site}
+        // 返回最终的结果对象
         return result.value
     }
+
 
 
     private fun post(site: Site, result: Result, quick: Boolean) {
@@ -417,7 +519,7 @@ private fun call(site: Site, params: MutableMap<String, String>, limit: Boolean)
             throw IOException("Unexpected code $response")
         }
 
-        val body = response.body ?: throw IOException("Empty response body")
+        val body = response.body
 
         body.string()
     }

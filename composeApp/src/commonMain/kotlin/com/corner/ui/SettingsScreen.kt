@@ -792,7 +792,7 @@ fun AboutDialog(
                         )
 
                         Text(
-                            "Alpha 1.0.1",
+                            "Alpha 1.0.2",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )

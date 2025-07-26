@@ -3,6 +3,8 @@ package com.corner.ui.nav.data
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.corner.ui.video.log
+
 object DialogState {
 
     // 新增标志位，记录用户是否选择在浏览器打开
@@ -11,7 +13,19 @@ object DialogState {
         private set
 
     var currentM3U8Url = ""
-        private set
+        set(value) {
+            log?.debug("DialogState.currentM3U8Url 更新为: {}", value)
+            field = value
+        }
+//        private set
+
+    // 新增标志位，表明当前播放的视频链接是特殊链接
+    var isSpecialVideoLink by mutableStateOf(false)
+
+    // 切换特殊链接状态的方法
+    fun toggleSpecialVideoLink(isSpecial: Boolean) {
+        isSpecialVideoLink = isSpecial
+    }
 
     fun showPngDialog(url: String) {
         showPngDialog = true

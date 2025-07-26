@@ -31,6 +31,7 @@ import com.corner.util.BrowserUtils
 @Composable
 fun PngFoundDialog(
     m3u8Url: String,
+    Text: String,
     onDismiss: () -> Unit,
     onOpenInBrowser: () -> Unit,
     vm: DetailViewModel
@@ -56,7 +57,7 @@ fun PngFoundDialog(
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     Text(
-                        text = "M3U8 文件中发现 .png 链接，是否跳转到浏览器加载 M3U8 文件？",
+                        text = Text,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontSize = 18.sp,
                             lineHeight = 24.sp,
