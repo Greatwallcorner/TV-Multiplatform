@@ -21,6 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -47,6 +48,8 @@ import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.database.Db
+import com.corner.init.Init
+import com.corner.init.Init.Companion.initConfig
 import com.corner.ui.nav.vm.VideoViewModel
 import com.corner.ui.scene.*
 import com.corner.util.isScrollingUp
@@ -54,10 +57,14 @@ import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tv_multiplatform.composeapp.generated.resources.Res
 import tv_multiplatform.composeapp.generated.resources.folder_back
 import tv_multiplatform.composeapp.generated.resources.loading
 import tv_multiplatform.composeapp.generated.resources.undraw_loading
+
+val log: Logger? = LoggerFactory.getLogger("VideoScreen")
 
 @Composable
 fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> Unit) {
@@ -173,8 +180,27 @@ fun WindowScope.VideoScene(
                     }
                 }
                 val listEmpty = derivedStateOf { model.value.homeVodResult.isEmpty() }
+                val isInitialized by Init.isInitializedSuccessfully
+                //加载站源成功后，加载站源中的数据的状态
+                val isLoading by vm.isLoading
+                //加载配置文件时，调用了showProgress，通过监听showProgress的值来决定显示加载图标
+                val showProgress by GlobalAppState.showProgress.collectAsState()
+
+                if (!isInitialized){
+                    emptyShow(
+                        onRefresh = { initConfig() },  // 点击重新初始化
+                        title = "初始化失败",
+                        subtitle = "请检查配置文件地址或重新加载配置",
+                        isLoading = showProgress
+                    )
+                }
                 if (listEmpty.value) {
-                    emptyShow(onRefresh = { vm.homeLoad() })
+                    emptyShow(
+                        onRefresh = {
+                            vm.homeLoad(forceRefresh = true)
+                        },
+                        isLoading = isLoading
+                    )
                 } else {
                     Box {
                         LazyVerticalGrid(
@@ -424,6 +450,8 @@ fun VideoTopBar(
 ) {
     val home = GlobalAppState.home.collectAsState()
     val model = vm.state.collectAsState()
+    val isLoading by vm.isLoading
+    val showProgress by GlobalAppState.showProgress.collectAsState()
 
     ControlBar(
         title = {},
@@ -437,18 +465,22 @@ fun VideoTopBar(
             ) {
                 // 首页选择按钮
                 FilledTonalButton(
-                    onClick = { onClickChooseHome() },
+                    onClick = { if (!isLoading) onClickChooseHome() }, // 仅在非加载状态响应点击
                     modifier = Modifier
-                        .height(40.dp),
-//                        .padding(start = 1.dp),
+                        .height(40.dp)
+                        .alpha(if (isLoading) 0.5f else 1f), // 加载时半透明
+                    enabled = !isLoading || showProgress, // 关键：禁用状态
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), // 禁用状态背景色
+                        disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)  // 禁用状态内容色
                     ),
                     shape = RoundedCornerShape(8.dp),
                     elevation = ButtonDefaults.buttonElevation(
                         defaultElevation = 1.dp,
-                        pressedElevation = 2.dp
+                        pressedElevation = 2.dp,
+                        disabledElevation = 0.dp // 禁用时取消阴影
                     )
                 ) {
                     Row(
@@ -456,19 +488,30 @@ fun VideoTopBar(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.ArrowDropDown,
+                            imageVector = Icons.Outlined.Language,
                             contentDescription = "Choose Home",
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
-                            text = home.value.name,
+                            text = home.value.name.ifEmpty { "暂无数据" },
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(start = 5.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = if (isLoading) 0.5f else 0.8f // 根据状态调整透明度
+                            ),
                         )
+                        // 加载动画（仅在加载时显示）
+                        if (isLoading || showProgress) {
+                            Spacer(modifier = Modifier.width(4.dp)) // 添加间距
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                            )
+                        }
                     }
                 }
             }
@@ -710,7 +753,7 @@ fun ChooseHomeDialog(
                                             },
                                             shape = RoundedCornerShape(6.dp),
                                             colors = ButtonDefaults.outlinedButtonColors(
-                                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                                contentColor = MaterialTheme.colorScheme.primary
                                             )
                                         ) {
                                             Text(
@@ -721,7 +764,7 @@ fun ChooseHomeDialog(
                                                 textAlign = TextAlign.Center,
                                                 modifier = Modifier.fillMaxWidth(),
                                                 fontWeight = FontWeight.Medium,
-                                                color = Color.White,
+                                                color = MaterialTheme.colorScheme.primary,
                                             )
                                         }
 

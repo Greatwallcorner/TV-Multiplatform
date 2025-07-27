@@ -7,8 +7,13 @@ import kotlinx.serialization.serializer
 @Serializable
 data class Url (
     val values: MutableList<Value> = mutableListOf(),
-    val position:Int = 0
+    val position:Int = 0,
+    var content: String = ""
 )
+
+fun Url.setContent(content: String) {
+    this.content = content
+}
 
 fun Url.v():String{
     return if (position >= (values.size)) "" else values[position].v ?: ""

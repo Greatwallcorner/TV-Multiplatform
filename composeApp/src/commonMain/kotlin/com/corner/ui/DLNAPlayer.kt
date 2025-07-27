@@ -30,12 +30,9 @@ import com.corner.ui.nav.vm.DetailViewModel
 import com.corner.ui.scene.BackRow
 import com.corner.ui.scene.ControlBar
 import com.corner.ui.scene.ToolTipText
+import com.corner.ui.scene.emptyShow
 import com.corner.util.play.Play
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
-import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.TV_icon_x
 
 
 @Composable
@@ -131,24 +128,13 @@ fun WindowScope.DLNAPlayer(vm:DetailViewModel, onClickBack:() -> Unit) {
                 Box(
                     Modifier.fillMaxWidth().fillMaxHeight().background(Color.Black)
                 ) {
-                    Column(
-                        Modifier.fillMaxSize().align(Alignment.Center),
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Image(
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
-                            painter = painterResource(Res.drawable.TV_icon_x),
-                            contentDescription = "nothing here",
-                            contentScale = ContentScale.Crop
-                        )
-                        Text(
-                            "使用外部播放器",
-                            modifier = Modifier.align(Alignment.CenterHorizontally).focusRequester(focus),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = TextUnit(23f, TextUnitType.Sp),
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
+                    // 使用 emptyShow 方法替换原有的 Column 布局
+                    emptyShow(
+                        modifier = Modifier.align(Alignment.Center),
+                        title = "使用外部播放器",
+                        subtitle = "",
+                        showRefresh = false
+                    )
                 }
             }
         }

@@ -18,9 +18,16 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
+import java.util.logging.Logger
+import java.util.logging.Level
 
 class Http {
     companion object {
+        // 在 Companion object 中初始化日志级别
+        init {
+            // 设置 OkHttpClient 的日志级别为 FINE
+            Logger.getLogger(OkHttpClient::class.java.name).level = Level.FINE
+        }
         private var doh: DnsOverHttps? = null
         private var client: OkHttpClient? = null
         private var selector: ProxySelect? = null

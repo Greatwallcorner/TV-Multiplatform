@@ -51,6 +51,11 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
 //        "--sout-mux-caching=500"          // 设置输出缓存为
     )
 
+    override fun resetOpeningEnding() {
+        _state.update { it.copy(opening = -1L, ending = -1L) }
+        history.update { it?.copy(opening = -1L, ending = -1L) }
+    }
+
     internal lateinit var factory: MediaPlayerFactory
 
     override fun doWithMediaPlayer(block: (MediaPlayer) -> Unit) {

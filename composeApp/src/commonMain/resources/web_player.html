@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>%VIDEO_TITLE% - LumenWebPlayer</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #4CAF50;
+            --background-color: #1a1a1a;
+            --text-color: #ffffff;
+            --border-radius: 8px;
+            --input-bg-color: #333333;
+            --input-border-color: #444444;
+            --header-bg-color: #2d2d2d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--header-bg-color);
+            padding: 0;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            gap: 1rem;
+            position: relative;
+        }
+
+        #video-title {
+            flex: 1;
+            text-align: left;
+            font-size: 1.2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 1rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        #input-section {
+            display: none;
+            padding: 0 1rem 1rem 1rem;
+            background-color: var(--header-bg-color);
+            transition: all 0.3s ease;
+        }
+
+        #input-section.show {
+            display: flex;
+            flex-direction: row; /* 改为行布局 */
+            gap: 0.5rem; /* 缩小间距 */
+            align-items: center;
+        }
+
+        #url-input {
+            flex: 1; /* 自动填充剩余空间 */
+            min-width: 200px; /* 最小宽度 */
+            max-width: 600px; /* 最大宽度 */
+            padding: 0.6rem 0.8rem; /* 调整内边距 */
+            border: 2px solid var(--input-border-color);
+            border-radius: var(--border-radius);
+            font-size: 0.95rem; /* 稍小的字体 */
+            background-color: var(--input-bg-color);
+            color: var(--text-color);
+            transition: border-color 0.3s ease;
+        }
+
+        #url-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        button {
+            padding: 0.6rem 1rem; /* 调整按钮内边距 */
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #toggle-input-btn {
+            background-color: var(--primary-color);
+        }
+
+        #toggle-input-btn:hover {
+            background-color: #1e88e5;
+        }
+
+        #video-container {
+            flex: 1;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            max-height: calc(100vh - 100px);
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            #video-title {
+                text-align: center;
+                padding-right: 0;
+                margin-bottom: 0.5rem;
+            }
+
+            .button-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            button {
+                flex: 1;
+                padding: 0.6rem;
+            }
+
+            #input-section.show {
+                flex-direction: column; /* 移动端恢复为列布局 */
+            }
+
+            #url-input {
+                width: 100%; /* 移动端全宽 */
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="top-bar">
+        <div id="video-title">%VIDEO_TITLE%</div>
+        <div class="button-group">
+            <button id="toggle-input-btn" onclick="toggleInputSection()">显示输入框</button>
+            <button id="refresh-btn" onclick="loadVideo()">重新加载</button>
+        </div>
+    </div>
+    <div id="input-section">
+        <input type="text" id="url-input" placeholder="输入M3U8地址 (例如: https://example.com/stream.m3u8)" value="%M3U8_URL%">
+        <button onclick="loadVideo()">播放</button>
+    </div>
+</div>
+<div id="video-container">
+    <div class="loading" id="loading">正在加载视频...</div>
+    <video id="video" controls autoplay></video>
+</div>
+<script>
+    // 切换输入框显示状态
+    function toggleInputSection() {
+        const inputSection = document.getElementById('input-section');
+        const toggleBtn = document.getElementById('toggle-input-btn');
+
+        if (inputSection.classList.contains('show')) {
+            inputSection.classList.remove('show');
+            toggleBtn.textContent = '显示输入框';
+            toggleBtn.style.backgroundColor = 'var(--primary-color)';
+        } else {
+            inputSection.classList.add('show');
+            toggleBtn.textContent = '隐藏输入框';
+            toggleBtn.style.backgroundColor = '#1565C0';
+        }
+    }
+
+    // 加载视频函数
+    function loadVideo() {
+        const m3u8Url = document.getElementById('url-input').value;
+        const video = document.getElementById('video');
+        const loading = document.getElementById('loading');
+
+        if (!m3u8Url) {
+            alert('请输入M3U8地址');
+            return;
+        }
+
+        loading.style.display = 'block';
+        video.style.display = 'none';
+
+        // 清除之前的视频源
+        video.src = '';
+
+        const socket = new WebSocket("ws://localhost:8888");
+
+        socket.onopen = () => {
+            console.log("已连接到应用");
+        };
+
+        // 监听视频播放开始事件
+        video.addEventListener("play", () => {
+            socket.send("PLAYBACK_STARTED");
+        });
+
+        // 监听视频结束事件
+        video.addEventListener("ended", () => {
+            socket.send("PLAYBACK_FINISHED");
+        });
+
+        if (Hls.isSupported()) {
+            const hls = new Hls({
+                maxBufferLength: 30,
+                maxMaxBufferLength: 600,
+                maxBufferSize: 60 * 1000 * 1000,
+                maxBufferHole: 5.0
+            });
+
+            hls.loadSource(m3u8Url);
+            hls.attachMedia(video);
+
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                loading.style.display = 'none';
+                video.style.display = 'block';
+                video.play().catch(e => {
+                    console.log('自动播放被阻止:', e);
+                    video.controls = true;
+                });
+            });
+
+            hls.on(Hls.Events.ERROR, function(event, data) {
+                if (data.fatal) {
+                    loading.textContent = '加载失败: ' + (data.details || '未知错误');
+                    console.error('HLS Error:', data);
+                }
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // 原生支持HLS的浏览器（如Safari）
+            video.src = m3u8Url;
+            video.addEventListener('loadedmetadata', function() {
+                loading.style.display = 'none';
+                video.style.display = 'block';
+                video.play().catch(e => {
+                    console.log('自动播放被阻止:', e);
+                    video.controls = true;
+                });
+            });
+        } else {
+            loading.textContent = '您的浏览器不支持播放此视频格式';
+        }
+    }
+
+    // 页面加载时自动加载视频
+    window.onload = function() {
+        const m3u8Url = document.getElementById('url-input').value;
+        if (m3u8Url) {
+            loadVideo();
+        }
+    };
+</script>
+</body>
+</html>

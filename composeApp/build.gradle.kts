@@ -68,6 +68,7 @@ kotlin {
                 implementation("org.jsoup:jsoup:1.15.3")
                 implementation("com.google.zxing:core:3.3.0")
                 implementation("org.nanohttpd:nanohttpd:2.3.1")
+                implementation("com.github.luben:zstd-jni:1.5.7-4")
 
                 //ktor http server
                 implementation("io.ktor:ktor-server-core:$ktorVer")
@@ -98,6 +99,10 @@ kotlin {
                 implementation(libs.jupnp.support)
                 implementation(libs.jupnp.osgi)
                 implementation("org.apache.logging.log4j:log4j-api:2.20.0")
+
+                //web-player
+                implementation("org.java-websocket:Java-WebSocket:1.6.0")
+
 //              implementation(libs.jupnp)
 //              implementation(libs.jetty.servlet)
 //              implementation(libs.jetty.server)
@@ -122,12 +127,6 @@ kotlin {
                 implementation(libs.vlcj)
             }
         }
-
-//        desktopMain.dependencies {
-//            implementation(compose.desktop.currentOs)
-//            // Player
-//            implementation(libs.vlcj)
-//        }
     }
 }
 
@@ -148,9 +147,9 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "TV"
+            packageName = "LumenTV"
             packageVersion = libs.versions.app.version.get()
-            vendor = "TV Multiplatform"
+            vendor = "LumenTV Compose"
 
             modules(
                 "java.management",

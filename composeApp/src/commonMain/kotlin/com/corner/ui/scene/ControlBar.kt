@@ -97,8 +97,8 @@ private fun RowScope.WindowControlButtons() {
     WindowControlButton(
         icon = Icons.Default.Minimize,
         description = "Minimize",
-        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f), // 半透明表面变体,
+        contentColor = MaterialTheme.colorScheme.primary,
         onClick = {
             GlobalAppState.windowState?.isMinimized = !GlobalAppState.windowState?.isMinimized!!
         }
@@ -109,8 +109,8 @@ private fun RowScope.WindowControlButtons() {
         icon = if (GlobalAppState.windowState?.placement == WindowPlacement.Maximized)
             Icons.Default.KeyboardArrowUp else Icons.Default.CropSquare,
         description = "Maximize/Restore",
-        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f), // 半透明表面变体,,
+        contentColor = MaterialTheme.colorScheme.primary,
         onClick = {
             GlobalAppState.windowState?.placement =
                 if (GlobalAppState.windowState?.placement == WindowPlacement.Maximized)
@@ -124,8 +124,8 @@ private fun RowScope.WindowControlButtons() {
     WindowControlButton(
         icon = Icons.Default.Close,
         description = "Close",
-        containerColor = MaterialTheme.colorScheme.errorContainer,
-        contentColor = Color.White,
+        containerColor = Color.Red,
+        contentColor = MaterialTheme.colorScheme.error,
         iconTint = Color.White,
         onClick = { // 在关闭应用时
             GlobalAppState.cleanupBeforeExit {

@@ -55,7 +55,7 @@ class SearchHistoryCache:Cache{
 
 @Serializable
 class PlayerStateCache:Cache{
-    private val map:MutableMap<String, String> = mutableMapOf();
+    private val map:MutableMap<String, String> = mutableMapOf()
     override fun getName(): String {
         return "playerState"
     }
@@ -88,6 +88,8 @@ enum class SettingType(val id: String) {
     LOG("log"),
     SEARCHHISTORY("searchHistory"),
     PROXY("proxy"),
+    // 新增主题设置类型
+    THEME("theme")
 }
 
 object SettingStore {
@@ -95,7 +97,8 @@ object SettingStore {
         Setting("vod", "点播", ""),
         Setting("log", "日志级别", Level.DEBUG.levelStr),
         Setting("player", "播放器", "false#"),
-        Setting("proxy", "代理", "false#")
+        Setting("proxy", "代理", "false#"),
+        Setting("theme", "主题", "light")
     )
 
     private var settingFile = SettingFile(mutableListOf<Setting>(), mutableMapOf())
@@ -125,7 +128,12 @@ object SettingStore {
     }
 
     fun write() {
-        Files.write(Paths.setting(), Jsons.encodeToString(settingFile).toByteArray())
+        try {
+            Files.write(Paths.setting(), Jsons.encodeToString(settingFile).toByteArray())
+        } catch (e: Exception) {
+            // 打印错误日志，方便排查问题
+            e.printStackTrace()
+        }
     }
 
     fun setValue(type: SettingType, s: String) {

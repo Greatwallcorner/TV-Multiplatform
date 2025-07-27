@@ -1,8 +1,10 @@
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.graphics.Color
+import com.corner.catvodcore.viewmodel.GlobalAppState
 
 
 private val LightColors = lightColorScheme(
@@ -72,10 +74,13 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun AppTheme(
-  useDarkTheme: Boolean = isSystemInDarkTheme(),
   content: @Composable() () -> Unit
 ) {
-  val colors = if (!useDarkTheme) {
+  // 收集 GlobalAppState.isDarkTheme 的状态，使用 val 声明变量
+  val isDarkThemeState = GlobalAppState.isDarkTheme.collectAsState()
+  // 通过 value 属性获取 State 对象的值
+  val isDarkTheme = isDarkThemeState.value
+  val colors = if (!isDarkTheme) {
     LightColors
   } else {
     DarkColors
@@ -85,4 +90,24 @@ fun AppTheme(
     colorScheme = colors,
     content = content
   )
+}
+
+// 播放器专用颜色扩展
+val PlayerLightColors = lightColorScheme(
+    primary = Color(0xFF4285F4),  // Google蓝
+    onPrimary = Color.White,
+    secondary = Color(0xFF34A853), // Google绿
+    onSecondary = Color.White,
+    surface = Color(0xFFF1F3F4),   // 浅灰白
+    onSurface = Color(0xFF202124), // 深灰
+    surfaceVariant = Color(0xFFE8EAED), // 更浅灰
+    outline = Color(0xFFDADCE0)    // 边框灰
+)
+
+@Composable
+fun PlayerControlsTheme(content: @Composable () -> Unit) {
+    MaterialTheme(
+        colorScheme = PlayerLightColors,
+        content = content
+    )
 }
