@@ -34,17 +34,20 @@ import com.corner.ui.nav.data.DialogState.toggleSpecialVideoLink
 
 object SiteViewModel {
     private val log = LoggerFactory.getLogger("SiteViewModel")
-//    val episode: MutableState<Episode?> = mutableStateOf<Episode?>(null)
-    val result: MutableState<Result> by lazy {  mutableStateOf(Result())}
-    val detail: MutableState<Result> by lazy {  mutableStateOf(Result())}
-    val player: MutableState<Result> by lazy {  mutableStateOf(Result())}
-    val search: MutableState<CopyOnWriteArrayList<Collect>> = mutableStateOf(CopyOnWriteArrayList(listOf(Collect.all())))
-    val quickSearch: MutableState<CopyOnWriteArrayList<Collect>> = mutableStateOf(CopyOnWriteArrayList(listOf(Collect.all())))
+
+    //    val episode: MutableState<Episode?> = mutableStateOf<Episode?>(null)
+    val result: MutableState<Result> by lazy { mutableStateOf(Result()) }
+    val detail: MutableState<Result> by lazy { mutableStateOf(Result()) }
+    val player: MutableState<Result> by lazy { mutableStateOf(Result()) }
+    val search: MutableState<CopyOnWriteArrayList<Collect>> =
+        mutableStateOf(CopyOnWriteArrayList(listOf(Collect.all())))
+    val quickSearch: MutableState<CopyOnWriteArrayList<Collect>> =
+        mutableStateOf(CopyOnWriteArrayList(listOf(Collect.all())))
 
     private val supervisorJob = SupervisorJob()
     val viewModelScope = createCoroutineScope(Dispatchers.IO)
 
-    fun cancelAll(){
+    fun cancelAll() {
         supervisorJob.cancelChildren()
     }
 
@@ -80,11 +83,12 @@ object SiteViewModel {
 
                 else -> {
                     //  use 确保 Response 正确关闭
-                    val homeContent: String = Http.newCall(site.api, site.header.toHeaders()).execute().use { response ->
-                        if (!response.isSuccessful) throw IOException("Unexpected code $response")
-                        val body = response.body
-                        body.string()
-                    }
+                    val homeContent: String =
+                        Http.newCall(site.api, site.header.toHeaders()).execute().use { response ->
+                            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                            val body = response.body
+                            body.string()
+                        }
                     log.debug("home: $homeContent")
                     fetchPic(site, Jsons.decodeFromString<Result>(homeContent)).also { result.value = it }
                 }
@@ -215,7 +219,7 @@ object SiteViewModel {
         }
     }
 
-        /**
+    /**
      * 处理M3U8文件，修正错误的扩展名
      *
      * @param url 包含 M3U8 文件地址的 Url 对象
@@ -275,7 +279,6 @@ object SiteViewModel {
 
             // 定义正则表达式，仅匹配 jpg 扩展名的 URL
             val regex = Regex("""(https?://[^\s"']+?\.)(jpg)(?=[\s"'>]|$)""")
-
             // 执行替换操作，保留完整URL路径，只替换 jpg 扩展名为 ts
             val processedContent = content.replace(regex) {
                 "${it.groupValues[1]}ts"  // groupValues[1]是URL路径+点号，groupValues[2]是原扩展名 jpg
@@ -317,8 +320,7 @@ object SiteViewModel {
     }
 
 
-
-        /**
+    /**
      * 根据站点和关键词进行搜索操作，支持快速搜索模式
      *
      * @param site 搜索使用的站点信息
@@ -334,7 +336,7 @@ object SiteViewModel {
                 // 调用爬虫的搜索方法进行搜索
                 val searchContent = spider.searchContent(keyword, quick)
                 // 记录搜索日志，包含站点名称和搜索结果
-                log.debug("search: "+ site.name + "," + searchContent)
+                log.debug("search: " + site.name + "," + searchContent)
                 // 将搜索结果字符串解析为 Result 对象
                 val result = Jsons.decodeFromString<Result>(searchContent)
                 // 将搜索结果进行后续处理，如展示到界面等
@@ -362,7 +364,7 @@ object SiteViewModel {
     }
 
 
-        /**
+    /**
      * 根据指定站点、关键词和页码进行搜索操作，并将搜索结果存储在 `result` 状态中。
      *
      * @param site 搜索使用的站点信息
@@ -410,7 +412,7 @@ object SiteViewModel {
     }
 
 
-        /**
+    /**
      * 根据站点 key、分类 ID、页码、过滤标志和扩展参数获取分类内容
      *
      * @param key 站点的唯一标识
@@ -420,7 +422,13 @@ object SiteViewModel {
      * @param extend 扩展参数，包含额外的请求信息
      * @return 包含分类内容的 Result 对象，若出错则返回表示失败的 Result 对象
      */
-    fun categoryContent(key: String, tid: String, page: String, filter: Boolean, extend: HashMap<String, String>):Result{
+    fun categoryContent(
+        key: String,
+        tid: String,
+        page: String,
+        filter: Boolean,
+        extend: HashMap<String, String>
+    ): Result {
         // 记录方法调用时传入的参数信息，方便调试和监控
         log.info("categoryContent key:{} tid:{} page:{} filter:{} extend:{}", key, tid, page, filter, extend)
         // 根据站点 key 获取对应的站点信息，若未找到则返回表示失败的 Result 对象
@@ -464,32 +472,31 @@ object SiteViewModel {
             result.value = Result(false)
         }
         // 为结果列表中的每个项设置所属站点信息
-        result.value.list.forEach{it.site = site}
+        result.value.list.forEach { it.site = site }
         // 返回最终的结果对象
         return result.value
     }
 
 
-
     private fun post(site: Site, result: Result, quick: Boolean) {
-        if (site.name.isNotEmpty()){
+        if (site.name.isNotEmpty()) {
             SnackBar.postMsg("开始在${site.name}搜索")
         }
-        if(result.list.isEmpty()){
+        if (result.list.isEmpty()) {
             SnackBar.postMsg("${site.name}搜索结果为空,可能是站源问题或尝试换个关键词")
             return
         }
         for (vod in result.list) vod.site = site
         if (quick) {
             search.value = quickSearch.value.copyAdd(Collect.create(result.list))
-            if(quickSearch.value.size == 0){
+            if (quickSearch.value.size == 0) {
                 search.value = quickSearch.value.copyAdd(Collect.all())
             }
             // 同样的数据添加到全部
             quickSearch.value[0].list.addAll(result.list)
         } else {
             search.value = search.value.copyAdd(Collect.create(result.list))
-            if(search.value.size == 0){
+            if (search.value.size == 0) {
                 search.value = search.value.copyAdd(Collect.all())
             }
             // 同样的数据添加到全部

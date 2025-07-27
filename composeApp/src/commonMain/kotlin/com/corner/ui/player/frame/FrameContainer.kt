@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
@@ -34,9 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.ui.player.PlayState
 import com.corner.ui.player.vlcj.VlcjFrameController
-import org.jetbrains.compose.resources.painterResource
-import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.TV_icon_x
+import com.corner.ui.scene.emptyShow
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
@@ -138,11 +135,11 @@ fun FrameContainer(
 
                 else -> {
                     if (bitmap == null) {
-                        Image(
+                        emptyShow(
                             modifier = Modifier.align(Alignment.Center),
-                            painter = painterResource(Res.drawable.TV_icon_x),
-                            contentDescription = "nothing here",
-                            contentScale = ContentScale.Crop
+                            title = "未加载到视频",
+                            subtitle = "请检查网络连接",
+                            showRefresh = false
                         )
                     }
                 }

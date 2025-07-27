@@ -333,12 +333,24 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                     NoPlayerContent(message = "正在外部播放器中播放", subtitle = "请使用外部播放器")
                 }
                 AnimatedVisibility(!isFullScreen.value, modifier = Modifier.fillMaxSize().padding(end = 16.dp)) {
-                    EpChooser(
-                        vm, Modifier.fillMaxSize().background(
-                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
-                            shape = RoundedCornerShape(4.dp)
-                        ).padding(horizontal = 5.dp)
-                    )
+                    val detail = model.detail
+                    val hasEpisodes = detail.subEpisode.isNotEmpty()
+
+                    if (hasEpisodes) {
+                        EpChooser(
+                            vm, Modifier.fillMaxSize().background(
+                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
+                                shape = RoundedCornerShape(4.dp)
+                            ).padding(horizontal = 5.dp)
+                        )
+                    } else {
+                        emptyShow(
+                            modifier = Modifier.fillMaxSize(),
+                            title = "暂无选集信息",
+                            subtitle = "请稍后重试或刷新",
+                            showRefresh = false
+                        )
+                    }
                 }
             }
             AnimatedVisibility(!isFullScreen.value) {
@@ -374,11 +386,12 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                             horizontalArrangement = Arrangement.spacedBy(32.dp)  // 列间距
                         ) {
                             if (model.detail.isEmpty()) {
-                                emptyShow(
+                                TopEmptyShow(
                                     title = "当前源不可用",
                                     subtitle = "或加载缓慢，请刷新重试",
                                     onRefresh = { vm.load() },
-                                    modifier = Modifier
+                                    modifier = Modifier.fillMaxWidth().fillMaxHeight().background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(10.dp)),
+                                    buttonAlignment = ButtonAlignment.LEFT
                                 )
                             } else {
                                 // 左侧视频信息区域 (占50%宽度)

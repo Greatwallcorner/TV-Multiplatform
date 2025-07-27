@@ -159,7 +159,7 @@ fun TopEmptyShow(
     title: String = "没有找到内容",
     subtitle: String = "请检查网络连接或稍后再试",
     isLoading: Boolean? = false,
-    showIcon: Boolean? = false, // 默认显示图标
+    showIcon: Boolean? = false, // 默认不显示图标
     buttonAlignment: ButtonAlignment = ButtonAlignment.CENTER,
     showRefresh: Boolean? = true, // 默认显示刷新按钮
 ) {
