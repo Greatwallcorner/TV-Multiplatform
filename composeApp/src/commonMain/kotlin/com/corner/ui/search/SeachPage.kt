@@ -343,6 +343,8 @@ fun HotItem(
     }
 }
 
+
+/*
 @Preview
 @Composable
 fun previewHotItem() {
@@ -355,7 +357,7 @@ fun previewHotItem() {
 @Preview
 @Composable
 fun previewHotPanel() {
-    AppTheme(useDarkTheme = true) {
+    AppTheme {
         val hot = HotData("阿凡达", "潘多拉", "更新到第二季", "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfffffff")
         val hots = mutableListOf<HotData>()
         for (i in 0 until 10) {
@@ -365,7 +367,6 @@ fun previewHotPanel() {
     }
 }
 
-/*
 @Composable
 fun HistoryPanel(
     modifier: Modifier = Modifier,

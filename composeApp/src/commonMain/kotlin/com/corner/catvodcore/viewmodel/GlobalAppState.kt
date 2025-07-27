@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
 import com.corner.bean.HotData
+import com.corner.bean.SettingStore
+import com.corner.bean.SettingType
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.loader.JarLoader
@@ -17,6 +19,14 @@ import org.slf4j.LoggerFactory
 object GlobalAppState {
     private val log = LoggerFactory.getLogger(GlobalAppState::class.java)
 
+    // 从 SettingStore 加载初始主题状态
+    val isDarkTheme = MutableStateFlow(try {
+        SettingStore.getSettingItem(SettingType.THEME) == "dark"
+    } catch (e: Exception) {
+        // 打印错误日志，方便排查问题
+        e.printStackTrace()
+        false
+    })
     // State Flows (保持不变)
     var showProgress = MutableStateFlow(false)
     val hotList = MutableStateFlow(listOf<HotData>())

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LiveTv
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Security
@@ -81,11 +82,16 @@ import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.io.File
 import java.net.URI
+import androidx.compose.runtime.collectAsState
+import com.corner.catvodcore.viewmodel.GlobalAppState
 
 @Composable
 fun WindowScope.SettingScene(vm: SettingViewModel, onClickBack: () -> Unit) {
     val model = vm.state.collectAsState()
     var showAboutDialog by remember { mutableStateOf(false) }
+
+    // 收集全局主题状态
+    val isDarkTheme by GlobalAppState.isDarkTheme.collectAsState()
 
     DisposableEffect("setting") {
         vm.sync()
@@ -238,6 +244,42 @@ fun WindowScope.SettingScene(vm: SettingViewModel, onClickBack: () -> Unit) {
 //                    }
 //                }
 //            }
+            // 新增主题切换卡片
+            item {
+                SettingCard(
+                    title = "主题设置",
+                    icon = Icons.Default.Palette
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = if (isDarkTheme) "当前主题：暗色模式" else "当前主题：亮色模式",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Switch(
+                            checked = isDarkTheme,
+                            onCheckedChange = {
+                                GlobalAppState.isDarkTheme.value = it
+                                try {
+                                    // 保存新的主题状态到 SettingStore
+                                    SettingStore.setValue(SettingType.THEME, if (it) "dark" else "light")
+                                } catch (e: Exception) {
+                                    // 打印错误日志，方便排查问题
+                                    e.printStackTrace()
+                                }
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        )
+                    }
+                }
+            }
+
             item {
                 SettingCard(title = "点播源配置", icon = Icons.Default.LiveTv) {
                     val focusRequester = remember { FocusRequester() }

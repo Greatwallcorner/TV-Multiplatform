@@ -76,7 +76,7 @@ fun WindowScope.RootContent(
     }
 
 
-    AppTheme(useDarkTheme = true) {
+    AppTheme {
         Box(
             modifier = modifierVar.value.background(Color.Black)
         ) {

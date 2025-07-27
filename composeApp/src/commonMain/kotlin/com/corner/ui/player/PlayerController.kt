@@ -52,4 +52,5 @@ interface PlayerController {
     fun updateEnding(detail: Vod?)
     fun setStartEnding(opening: Long, ending: Long)
     fun doWithPlayState(func: (MutableStateFlow<PlayerState>) -> Unit)
+    fun resetOpeningEnding()
 }

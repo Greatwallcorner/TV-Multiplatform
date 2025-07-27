@@ -284,6 +284,7 @@ object SiteViewModel {
             // 定义正则表达式，用于检查是否存在 .png 链接
             val pngRegex = Regex("https?://[^\\s\"']+?\\.png(?=[\\s\"'>]|$)")
             if (pngRegex.containsMatchIn(content)) {
+                log.debug("m3u8文件中存在png链接")
                 // 若存在 .png 链接，检查用户是否选择在浏览器中打开
                 if (!DialogState.userChoseOpenInBrowser) {
                     // 用户未选择在浏览器中打开，显示 PNG 弹窗
@@ -292,6 +293,7 @@ object SiteViewModel {
                 // 标记为特殊视频链接
                 toggleSpecialVideoLink(true)
             } else {
+                log.debug("m3u8文件中不存在png链接")
                 // 不存在 .png 链接，取消特殊视频链接标记
                 toggleSpecialVideoLink(false)
             }

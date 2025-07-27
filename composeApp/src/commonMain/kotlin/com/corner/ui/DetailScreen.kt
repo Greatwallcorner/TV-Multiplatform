@@ -112,7 +112,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
     var localShowPngDialog by remember { mutableStateOf(DialogState.showPngDialog) }
     var localCurrentM3U8Url by remember { mutableStateOf(DialogState.currentM3U8Url) }
 
-    // 监听 DialogState 中的状态变化
+// 监听 DialogState 中的状态变化
     LaunchedEffect(DialogState.showPngDialog, DialogState.currentM3U8Url) {
         log.debug("DialogState.showPngDialog:{}",DialogState.showPngDialog)
         localShowPngDialog = DialogState.showPngDialog
@@ -138,7 +138,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
     fun NoPlayerContent(message: String, subtitle: String) {
         Box(
             Modifier.fillMaxWidth(videoWidth.value).fillMaxHeight()
-                .background(Color.Black, shape = RoundedCornerShape(4.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(4.dp))
                 .focusable() // 确保可获取焦点
                 .focusRequester(focus)
         ) {

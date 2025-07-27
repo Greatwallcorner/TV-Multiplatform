@@ -753,7 +753,7 @@ fun ChooseHomeDialog(
                                             },
                                             shape = RoundedCornerShape(6.dp),
                                             colors = ButtonDefaults.outlinedButtonColors(
-                                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                                contentColor = MaterialTheme.colorScheme.primary
                                             )
                                         ) {
                                             Text(
@@ -764,7 +764,7 @@ fun ChooseHomeDialog(
                                                 textAlign = TextAlign.Center,
                                                 modifier = Modifier.fillMaxWidth(),
                                                 fontWeight = FontWeight.Medium,
-                                                color = Color.White,
+                                                color = MaterialTheme.colorScheme.primary,
                                             )
                                         }
 
