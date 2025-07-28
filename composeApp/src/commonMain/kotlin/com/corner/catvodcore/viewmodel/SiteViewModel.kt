@@ -33,10 +33,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 import com.corner.ui.nav.data.DialogState
 import com.corner.ui.nav.data.DialogState.toggleSpecialVideoLink
 import com.corner.util.M3U8AdFilterInterceptor
-import com.corner.util.M3U8FilterConfig
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.io.File
 
 object SiteViewModel {
     private val log = LoggerFactory.getLogger("SiteViewModel")
