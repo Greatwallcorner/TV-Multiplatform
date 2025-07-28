@@ -13,6 +13,8 @@ import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalAppState
+import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
+import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
 import com.corner.ui.scene.SnackBar
 import com.corner.util.copyAdd
 import com.corner.util.createCoroutineScope
@@ -27,10 +29,14 @@ import okhttp3.Response
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.io.IOException
-import java.net.URLEncoder
 import java.util.concurrent.CopyOnWriteArrayList
 import com.corner.ui.nav.data.DialogState
 import com.corner.ui.nav.data.DialogState.toggleSpecialVideoLink
+import com.corner.util.M3U8AdFilterInterceptor
+import com.corner.util.M3U8FilterConfig
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.File
 
 object SiteViewModel {
     private val log = LoggerFactory.getLogger("SiteViewModel")
@@ -161,7 +167,7 @@ object SiteViewModel {
                 if (StringUtils.isNotBlank(result.flag)) result.flag = flag
 
                 // 仅在满足所有条件时才处理M3U8
-                if (result?.url?.v().orEmpty().run {
+                if (result.url.v().run {
                         endsWith(".m3u8") && !contains("proxy") && isNotBlank()
                     }) {
                     result.url = processM3U8(result.url)
@@ -180,7 +186,7 @@ object SiteViewModel {
                 if (StringUtils.isNotBlank(result.flag)) result.flag = flag
 
                 // 仅在满足所有条件时才处理M3U8
-                if (result?.url?.v().orEmpty().run {
+                if (result.url.v().run {
                         endsWith(".m3u8") && !contains("proxy") && isNotBlank()
                     }) {
                     result.url = processM3U8(result.url)
@@ -202,7 +208,7 @@ object SiteViewModel {
                 result.flag = flag
 
                 // 仅在满足所有条件时才处理M3U8
-                if (result?.url?.v().orEmpty().run {
+                if (result.url.v().run {
                         endsWith(".m3u8") && !contains("proxy") && isNotBlank()
                     }) {
                     result.url = processM3U8(result.url)
@@ -220,21 +226,19 @@ object SiteViewModel {
     }
 
     /**
-     * 处理M3U8文件，修正错误的扩展名
+     * 处理M3U8文件，修正错误的扩展名、处理加密密钥、过滤广告链接并返回本地代理URL
      *
      * @param url 包含 M3U8 文件地址的 Url 对象
-     * @return 处理后的 Url 对象，若处理失败则返回原始 Url 对象
+     * @return 处理后的本地代理 Url 对象，若处理失败则返回原始 Url 对象
      */
     private fun processM3U8(url: Url): Url {
-        // 获取当前的站点信息
-        val site: Site = GlobalAppState.home.value
-
         // 如果不是 .m3u8 文件，直接返回原始 Url 对象
         if (!url.v().endsWith(".m3u8", ignoreCase = true)) {
             return url
         }
 
         try {
+            showProgress()
             // 定义请求 M3U8 文件时需要携带的请求头
             val header: Map<String, String> = mapOf(
                 "Accept" to "application/json, text/javascript, */*; q=0.01",
@@ -255,68 +259,129 @@ object SiteViewModel {
                 "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
                 "X-Requested-With" to "XMLHttpRequest"
             )
-            // 使用use自动关闭资源，确保响应资源被正确释放
-            val content = try {
-                // 发起网络请求获取 M3U8 文件内容
-                Http.newCall(url.v(), headers = header.toHeaders())
-                    .execute()
-                    .use { response ->
-                        if (response.isSuccessful) {
-                            // 下载成功，记录日志并返回响应体内容
-                            log.debug("下载m3u8文件成功，状态码: ${response.code}")
-                            response.body.string()
-                        } else {
-                            // 下载失败，记录错误日志并抛出异常
-                            log.error("下载m3u8文件失败，状态码: ${response.code}")
-                            throw IOException("下载 M3U8 文件失败，状态码: ${response.code}")
-                        }
-                    }
-            } catch (e: Exception) {
-                // 下载过程中发生异常，记录错误日志并重新抛出异常
-                log.error("下载m3u8文件时发生异常", e)
-                throw e
+            val interceptor = M3U8AdFilterInterceptor.Interceptor()
+            // 创建OkHttpClient并添加拦截器
+            val client = OkHttpClient.Builder()
+                .addInterceptor(interceptor)
+                .build()
+
+            // 使用拦截器处理请求
+            val request = Request.Builder()
+                .url(url.v())
+                .headers(header.toHeaders())
+                .build()
+
+            val content = client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("下载失败: ${response.code}")
+                response.body.string()
             }
 
-            // 定义正则表达式，仅匹配 jpg 扩展名的 URL
-            val regex = Regex("""(https?://[^\s"']+?\.)(jpg)(?=[\s"'>]|$)""")
-            // 执行替换操作，保留完整URL路径，只替换 jpg 扩展名为 ts
-            val processedContent = content.replace(regex) {
-                "${it.groupValues[1]}ts"  // groupValues[1]是URL路径+点号，groupValues[2]是原扩展名 jpg
-            }
-
-            // 定义正则表达式，用于检查是否存在 .png 链接
-            val pngRegex = Regex("https?://[^\\s\"']+?\\.png(?=[\\s\"'>]|$)")
-            if (pngRegex.containsMatchIn(content)) {
-                log.debug("m3u8文件中存在png链接")
-                // 若存在 .png 链接，检查用户是否选择在浏览器中打开
-                if (!DialogState.userChoseOpenInBrowser) {
-                    // 用户未选择在浏览器中打开，显示 PNG 弹窗
-                    DialogState.showPngDialog(url.v())
-                }
-                // 标记为特殊视频链接
-                toggleSpecialVideoLink(true)
+            // 0. 处理加密密钥（仅在存在密钥时处理）
+            val processedKeyContent = if (content.contains("#EXT-X-KEY:")) {
+                processEncryptionKeys(content, url.v())
             } else {
-                log.debug("m3u8文件中不存在png链接")
-                // 不存在 .png 链接，取消特殊视频链接标记
-                toggleSpecialVideoLink(false)
+                content
             }
 
-            // 检查是否需要处理，即 M3U8 内容中是否包含 jpg 扩展名
-            if (!regex.containsMatchIn(content)) {
-                // 无需处理，记录日志并返回原始 Url 对象
-                log.debug("M3U8内容无需处理，未发现 jpg 扩展名")
+            // 1. 处理.jpg链接（增强版正则）
+            val jpgRegex = Regex("""(https?://[^\s"']+?\.jpg)[^\s"']*(?=[\s"'>]|$)""", RegexOption.IGNORE_CASE)
+            val processedJpgContent = if (jpgRegex.containsMatchIn(processedKeyContent)) {
+                log.debug("检测到.jpg链接，执行替换...")
+                processedKeyContent.replace(jpgRegex) { match ->
+                    val newUrl = match.groupValues[1].replace(".jpg", ".ts", ignoreCase = true)
+                    log.debug("替换链接: ${match.value} → $newUrl")
+                    newUrl
+                }
+            } else {
+                log.debug("未检测到.jpg链接，跳过替换")
+                processedKeyContent
+            }
+
+            // 2. PNG检测（保留原有逻辑）
+            if (Regex("https?://[^\\s\"']+?\\.png").containsMatchIn(processedJpgContent)) {
+                log.debug("检测到PNG链接，弹出弹窗")
+                if (!DialogState.userChoseOpenInBrowser) {
+                    DialogState.showPngDialog(url.v())
+                    toggleSpecialVideoLink(true)
+                } else {
+                    toggleSpecialVideoLink(false)
+                }
                 return url
             }
 
-            // 创建代理URL，将原始 M3U8 文件地址进行 URL 编码
-            val proxyUrl = "http://127.0.0.1:9978/proxy/m3u8?url=${URLEncoder.encode(url.v(), "UTF-8")}"
-            // 返回包含代理 URL 的 Url 对象
-            return Url().add(proxyUrl)
+            // 3. 处理嵌套M3U8
+            val processedContent = Regex("(?m)^(?!#).*\\.m3u8$").replace(processedJpgContent) { match ->
+                val nestedUrl = match.value.let {
+                    if (it.startsWith("http")) it else "${url.v().substringBeforeLast("/")}/$it"
+                }
+                processM3U8(Url().add(nestedUrl)).v() // 递归处理
+            }
+
+            // 缓存内容并返回代理URL
+            val cacheId = M3U8Cache.put(processedContent)
+            return Url().add("http://127.0.0.1:9978/proxy/cached_m3u8?id=$cacheId")
         } catch (e: Exception) {
-            // 处理过程中发生异常，记录错误日志并返回原始 Url 对象
             log.error("处理 M3U8 文件失败", e)
-            return url // 如果处理失败，返回原始URL
+            return url
+        } finally {
+            hideProgress()
         }
+
+    }
+
+    /**
+     * 处理M3U8中的加密密钥
+     */
+    private fun processEncryptionKeys(content: String, baseUrl: String): String {
+        log.debug("开始处理密钥")
+        val keyRegex = """#EXT-X-KEY:METHOD=([^,]+),URI="([^"]+)"(,IV=([^"]+))?""".toRegex()
+        log.debug("原始链接: $baseUrl")
+
+        return keyRegex.replace(content) { match ->
+            val (method, uri, _, iv) = match.destructured
+            try {
+                val keyUrl = when {
+                    uri.startsWith("http") -> uri
+                    uri.startsWith("/") -> {
+                        // 修复点：正确提取协议和域名部分
+                        val baseUri = java.net.URI(baseUrl)
+                        "${baseUri.scheme}://${baseUri.host}$uri"
+                    }
+                    else -> {
+                        // 处理相对路径
+                        val basePath = baseUrl.substringBeforeLast("/")
+                        "$basePath/$uri".replace(Regex("(?<!:)//"), "/")
+                    }
+                }
+                log.debug("处理出的密钥链接: $keyUrl")
+                val cacheId = downloadAndStoreKey(keyUrl)
+
+                "#EXT-X-KEY:METHOD=$method,URI=\"$cacheId\"" +
+                        (if (iv.isNotEmpty()) ",IV=$iv" else "")
+            } catch (e: Exception) {
+                log.error("密钥处理失败，保留原始标签", e)
+                match.value
+            }
+        }
+    }
+
+    /**
+     * 下载并存储加密密钥
+     */
+    private fun downloadAndStoreKey(keyUrl: String): String {
+        val client = OkHttpClient()
+        val request = Request.Builder().url(keyUrl).build()
+
+        val keyData = client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) throw IOException("密钥下载失败")
+            response.body.bytes()
+        }
+
+        // 将密钥数据存入M3U8缓存
+        val cacheId = M3U8Cache.put(String(keyData))
+
+        // 返回通过本地服务器访问的缓存URL
+        return "http://127.0.0.1:9978/proxy/cached_m3u8?id=$cacheId"
     }
 
 

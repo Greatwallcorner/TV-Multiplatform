@@ -2,6 +2,7 @@
 package com.github.catvod.net
 
 import com.corner.util.KtorClient.Companion.getProxy
+import com.corner.util.M3U8AdFilterInterceptor
 import com.github.catvod.crawler.Spider.Companion.safeDns
 import com.github.catvod.crawler.SpiderDebug
 import com.github.catvod.crawler.SpiderDebug.log
@@ -177,11 +178,13 @@ object OkHttp {
     val builder: OkHttpClient.Builder
         get() = OkHttpClient.Builder()
             .proxy(getProxy())
-            .addInterceptor(OkhttpInterceptor()).dns(dns())
+            .addInterceptor(OkhttpInterceptor())
+            .addInterceptor(M3U8AdFilterInterceptor.Interceptor()) // 添加拦截器
+            .dns(dns())
             .connectTimeout(2, TimeUnit.SECONDS)
             .readTimeout(10, TimeUnit.SECONDS)
             .writeTimeout(10, TimeUnit.SECONDS)
             .sslSocketFactory(SSLSocketClient.sSLSocketFactory, SSLSocketClient.x509TrustManager)
-            .hostnameVerifier((SSLSocketClient.hostnameVerifier))
+            .hostnameVerifier(SSLSocketClient.hostnameVerifier)
 
 }

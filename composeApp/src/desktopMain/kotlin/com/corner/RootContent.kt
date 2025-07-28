@@ -20,6 +20,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.corner.bean.SettingStore
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.DetailFromPage
@@ -117,7 +118,10 @@ fun WindowScope.RootContent(
                 }
 
                 composable(TVScreen.SettingsScreen.name) {
-                    SettingScene(viewModel { SettingViewModel() }) { navController.popBackStack() }
+                    SettingScene(
+                        viewModel { SettingViewModel() },
+                        config = SettingStore.getM3U8FilterConfig()
+                    ) { navController.popBackStack() }
                 }
 
                 composable(TVScreen.DLNAPlayerScreen.name) {
