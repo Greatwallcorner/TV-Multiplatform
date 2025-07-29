@@ -25,14 +25,15 @@ class HistoryViewModel: BaseViewModel() {
     fun deleteBatchHistory(listOf: List<String>) {
         scope.launch {
             Db.History.deleteBatch(listOf)
+            fetchHistoryList() // 在删除完成后立即刷新
         }
     }
 
     fun fetchHistoryList() {
-        val listFlow = Db.History.findAll(ApiConfig.api.cfg?.id)
         scope.launch {
-            val list = listFlow.firstOrNull() ?: emptyList<History>()
-            _state.update { it.copy(historyList = list.toMutableList()) }
+            Db.History.findAll(ApiConfig.api.cfg?.id).collect { list ->
+                _state.update { it.copy(historyList = list.toMutableList()) }
+            }
         }
     }
 }

@@ -83,10 +83,6 @@ fun main() {
                 RootContent(modifier = Modifier.fillMaxSize())
             }
 
-            /**
-            * 代码水平不太正常
-            **/
-
             scope.launch {
                 GlobalAppState.closeApp.collect {
                     if (it) {
@@ -97,15 +93,12 @@ fun main() {
                             // 2. 保存设置
                             SettingStore.write()
 
-                            // 3. 执行清理（新增）
-                            GlobalAppState.cleanupBeforeExit()
-
-                            // 4. 等待500ms确保清理完成
+                            // 3. 等待500ms确保清理完成
                             delay(500)
                         } catch (e: Exception) {
                             log.error("关闭应用异常", e)
                         } finally {
-                            // 5. 退出应用
+                            // 4. 退出应用
                             exitApplication()
                         }
                     }

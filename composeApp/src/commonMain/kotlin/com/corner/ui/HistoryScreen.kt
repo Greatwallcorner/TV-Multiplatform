@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -60,6 +61,19 @@ fun HistoryItem(
             })
         }) {
             Box(modifier = modifier) {
+                // 新增删除按钮
+                IconButton(
+                    onClick = { onDelete(history.key) },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "删除",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
                 AutoSizeImage(
                     url = history.vodPic!!,
                     modifier = Modifier.height(220.dp),
@@ -231,7 +245,6 @@ fun WindowScope.HistoryScene(vm: HistoryViewModel, onClickItem: (Vod) -> Unit, o
                         Modifier,
                         it, showSite = false, onDelete = { key ->
                             vm.deleteBatchHistory(listOf(key))
-                            vm.fetchHistoryList()
                         }) {
                         onClickItem(it.buildVod())
                         chooseHistory = it

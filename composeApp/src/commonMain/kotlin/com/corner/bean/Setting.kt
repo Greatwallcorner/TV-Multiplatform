@@ -34,7 +34,7 @@ class SearchHistoryCache:Cache{
 
     private val maxSize:Int = 30
 
-    private var searchHistoryList:LinkedHashSet<String> = linkedSetOf()
+    var searchHistoryList:LinkedHashSet<String> = linkedSetOf()
     override fun getName(): String {
         return "searchHistory"
     }
@@ -51,6 +51,10 @@ class SearchHistoryCache:Cache{
 
     fun getSearchList():List<String>{
         return searchHistoryList.toList().reversed()
+    }
+
+    fun remove(query: String) {
+        searchHistoryList.remove(query)
     }
 
 }
@@ -146,7 +150,6 @@ object SettingStore {
         settingFile.list.find { i -> i.id == type.id }?.value = s
         write()
     }
-    
     fun doWithCache(func:(MutableMap<String, Cache>) -> Unit){
         func(settingFile.cache)
         write()
@@ -219,6 +222,13 @@ object SettingStore {
     fun setM3U8FilterConfig(config: M3U8FilterConfig) {
         val configJson = Json.encodeToString(config)
         setValue(SettingType.M3U8_FILTER_CONFIG, configJson)
+    }
+
+    fun deleteSearchHistory(query: String) {
+        getCache(SettingType.SEARCHHISTORY.id)?.let { cache ->
+            (cache as? SearchHistoryCache)?.remove(query)
+            write()
+        }
     }
 }
 

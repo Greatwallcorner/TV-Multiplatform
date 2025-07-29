@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowScope
 import com.corner.bean.HotData
+import com.corner.bean.SearchHistoryCache
+import com.corner.bean.SettingStore
+import com.corner.bean.SettingType
 import com.corner.ui.nav.vm.SearchViewModel
 import com.corner.ui.scene.ControlBar
 
@@ -104,7 +108,7 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
                                     shape = RoundedCornerShape(10.dp)
                                 )
                         ) {
-                            // 标题区域（与热搜样式对齐）
+                            // 在历史记录标题区域添加删除全部按钮
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -119,6 +123,20 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
                                     ),
                                     modifier = Modifier.weight(1f)
                                 )
+                                TextButton(
+                                    onClick = {
+                                        // 删除全部历史记录
+                                        SettingStore.getCache(SettingType.SEARCHHISTORY.id)?.let {
+                                            (it as? SearchHistoryCache)?.let { cache ->
+                                                cache.searchHistoryList.clear()
+                                                SettingStore.write()
+                                                vm.onCreate()
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Text("清空全部", color = MaterialTheme.colorScheme.error)
+                                }
                             }
 
                             // 内容区域
@@ -154,7 +172,7 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
                                         )
                                     ) {
                                         items(model.value.historyList.toList()) { query ->
-                                            HistoryItem(query = query, onClick = { onSearch(query) })
+                                            HistoryItem(query = query, onClick = { onSearch(query) }, vm = vm)
                                         }
                                     }
                                 }
@@ -240,6 +258,7 @@ fun HotPanel(modifier: Modifier, hots: List<HotData>, onClick: (HotData) -> Unit
         }
     }
 }
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HotItem(
@@ -438,30 +457,46 @@ fun HistoryPanel(
 private fun HistoryItem(
     modifier: Modifier = Modifier,
     query: String,
-    onClick: (String) -> Unit
+    onClick: (String) -> Unit,
+    vm: SearchViewModel
 ) {
     Card(
         modifier = modifier
-            .widthIn(min = 80.dp, max = 200.dp), // 自适应宽度
+            .widthIn(min = 80.dp, max = 200.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        onClick = { onClick(query) }
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clickable { onClick(query) },
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = query,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.weight(1f)
             )
+            IconButton(
+                onClick = {
+                    // 调用删除单个历史记录的方法
+                    SettingStore.deleteSearchHistory(query)
+                    vm.onCreate()
+                },
+                modifier = Modifier.size(20.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "删除",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

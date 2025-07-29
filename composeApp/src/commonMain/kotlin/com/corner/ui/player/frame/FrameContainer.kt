@@ -172,31 +172,43 @@ fun ProgressIndicator(modifier: Modifier, text: String = "加载中...", progres
     }
 }
 
-private class FrameContainerSizeCalculator(){
-    private var lastContainerSize = Size.Zero
-    private var lastSize = IntSize.Zero
+class FrameContainerSizeCalculator {
+    var srcWidth = 0
+    var srcHeight = 0
+    var dstWidth = 0f
+    var dstHeight = 0f
+    var offsetX = 0f
+    var offsetY = 0f
 
-    var dstSize = IntSize.Zero
-    var dstOffset = IntOffset.Zero
+    val dstOffset: IntOffset get() = IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
+    val dstSize: IntSize get() = IntSize(dstWidth.roundToInt(), dstHeight.roundToInt())
 
-    fun calculate(imageSize: IntSize, containerSize: Size){
-        if(lastSize == imageSize && containerSize == lastContainerSize) {
-            return
+    fun calculate(imageSize: IntSize, containerSize: Size) {
+        // 修复：过滤无效尺寸（避免宽高为0导致NaN）
+        srcWidth = if (imageSize.width > 0) imageSize.width else 1280
+        srcHeight = if (imageSize.height > 0) imageSize.height else 720
+
+        val containerWidth = containerSize.width
+        val containerHeight = containerSize.height
+
+        // 计算原始宽高比（添加安全检查避免除零）
+        val imageRatio = if (srcHeight > 0) srcWidth.toFloat() / srcHeight.toFloat() else 16f/9f // 默认16:9
+        val containerRatio = if (containerHeight > 0) containerWidth / containerHeight else 16f/9f
+
+        // 根据比例决定缩放方向，避免拉伸
+        if (imageRatio > containerRatio) {
+            dstWidth = containerWidth
+            dstHeight = containerWidth / imageRatio
+            offsetY = (containerHeight - dstHeight) / 2
+            offsetX = 0f
+        } else {
+            dstHeight = containerHeight
+            dstWidth = containerHeight * imageRatio
+            offsetX = (containerWidth - dstWidth) / 2
+            offsetY = 0f
         }
-        lastContainerSize = containerSize
-        lastSize = imageSize
-
-        val imageRatio = imageSize.width.toFloat() / imageSize.height.toFloat()
-        var finalWidth = containerSize.width
-        var finalHeight = containerSize.width / imageRatio
-        if(imageRatio == 0.0f || imageSize == IntSize.Zero){
-            finalHeight = containerSize.height
-        }else if(finalHeight > containerSize.height) {
-            finalHeight = containerSize.height
-            finalWidth = containerSize.height * imageRatio
-        }
-
-        dstSize = IntSize(finalWidth.roundToInt(), finalHeight.roundToInt())
-        dstOffset = IntOffset(((containerSize.width-finalWidth) / 2).toInt(), ((containerSize.height - finalHeight) / 2).toInt())
     }
 }
+
+
+

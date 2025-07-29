@@ -177,9 +177,13 @@ object SiteViewModel {
                 if (StringUtils.isNotBlank(result.flag)) result.flag = flag
 
                 // 检测包含.m3u8但不以.m3u8结尾的链接（特殊链接处理）
+                // 提取URL基础部分（去除查询参数和片段标识后的部分）
                 val urlStr = result.url.v()
-                if (urlStr.isNotBlank() && !urlStr.contains("proxy") &&
-                    urlStr.contains(".m3u8", ignoreCase = true) && !urlStr.endsWith(".m3u8", ignoreCase = true)) {
+                if (urlStr.isNotBlank() &&
+                    !urlStr.contains("proxy") &&
+                    urlStr.contains(".m3u8", ignoreCase = true) &&
+                    !urlStr.trim().endsWith(".m3u8", ignoreCase = true)) {
+
                     log.debug("检测到包含.m3u8的非M3U8链接，弹出弹窗")
                     if (!DialogState.userChoseOpenInBrowser) {
                         DialogState.showPngDialog(urlStr) // 显示特殊链接对话框
@@ -187,15 +191,14 @@ object SiteViewModel {
                     } else {
                         toggleSpecialVideoLink(false) // 取消特殊视频链接标记
                     }
+                }else{
+                    // 处理标准M3U8链接（以.m3u8结尾、不含proxy、非空）
+                    if (result.url.v().run {
+                            endsWith(".m3u8") && !contains("proxy") && isNotBlank()
+                        }) {
+                        result.url = processM3U8(result.url) // 调用M3U8处理函数
+                    }
                 }
-
-                // 处理标准M3U8链接（以.m3u8结尾、不含proxy、非空）
-                if (result.url.v().run {
-                        endsWith(".m3u8") && !contains("proxy") && isNotBlank()
-                    }) {
-                    result.url = processM3U8(result.url) // 调用M3U8处理函数
-                }
-
                 // 设置结果头信息和站点key
                 result.header = site.header
                 result.key = key
@@ -216,8 +219,11 @@ object SiteViewModel {
 
                 // 检测包含.m3u8但不以.m3u8结尾的链接（特殊链接处理）
                 val urlStr = result.url.v()
-                if (urlStr.isNotBlank() && !urlStr.contains("proxy") &&
-                    urlStr.contains(".m3u8", ignoreCase = true) && !urlStr.endsWith(".m3u8", ignoreCase = true)) {
+                if (urlStr.isNotBlank() &&
+                    !urlStr.contains("proxy") &&
+                    urlStr.contains(".m3u8", ignoreCase = true) &&
+                    !urlStr.trim().endsWith(".m3u8", ignoreCase = true)) {
+
                     log.debug("检测到包含.m3u8的非M3U8链接，弹出弹窗")
                     if (!DialogState.userChoseOpenInBrowser) {
                         DialogState.showPngDialog(urlStr) // 显示特殊链接对话框
@@ -225,15 +231,14 @@ object SiteViewModel {
                     } else {
                         toggleSpecialVideoLink(false) // 取消特殊视频链接标记
                     }
+                }else{
+                    // 处理标准M3U8链接（以.m3u8结尾、不含proxy、非空）
+                    if (result.url.v().run {
+                            endsWith(".m3u8") && !contains("proxy") && isNotBlank()
+                        }) {
+                        result.url = processM3U8(result.url) // 调用M3U8处理函数
+                    }
                 }
-
-                // 处理标准M3U8链接（以.m3u8结尾、不含proxy、非空）
-                if (result.url.v().run {
-                        endsWith(".m3u8") && !contains("proxy") && isNotBlank()
-                    }) {
-                    result.url = processM3U8(result.url) // 调用M3U8处理函数
-                }
-
                 // 设置结果头信息
                 result.header = site.header
                 return result
@@ -258,8 +263,11 @@ object SiteViewModel {
 
                 // 检测包含.m3u8但不以.m3u8结尾的链接（特殊链接处理）
                 val urlStr = result.url.v()
-                if (urlStr.isNotBlank() && !urlStr.contains("proxy") &&
-                    urlStr.contains(".m3u8", ignoreCase = true) && !urlStr.endsWith(".m3u8", ignoreCase = true)) {
+                if (urlStr.isNotBlank() &&
+                    !urlStr.contains("proxy") &&
+                    urlStr.contains(".m3u8", ignoreCase = true) &&
+                    !urlStr.trim().endsWith(".m3u8", ignoreCase = true)) {
+
                     log.debug("检测到包含.m3u8的非M3U8链接，弹出弹窗")
                     if (!DialogState.userChoseOpenInBrowser) {
                         DialogState.showPngDialog(urlStr) // 显示特殊链接对话框
@@ -267,15 +275,14 @@ object SiteViewModel {
                     } else {
                         toggleSpecialVideoLink(false) // 取消特殊视频链接标记
                     }
+                }else{
+                    // 处理标准M3U8链接（以.m3u8结尾、不含proxy、非空）
+                    if (result.url.v().run {
+                            endsWith(".m3u8") && !contains("proxy") && isNotBlank()
+                        }) {
+                        result.url = processM3U8(result.url) // 调用M3U8处理函数
+                    }
                 }
-
-                // 处理标准M3U8链接（以.m3u8结尾、不含proxy、非空）
-                if (result.url.v().run {
-                        endsWith(".m3u8") && !contains("proxy") && isNotBlank()
-                    }) {
-                    result.url = processM3U8(result.url) // 调用M3U8处理函数
-                }
-
                 // 设置结果头信息、播放链接和解析标识
                 result.header = site.header
                 result.playUrl = site.playUrl
@@ -362,10 +369,28 @@ object SiteViewModel {
                 processedKeyContent
             }
 
-            // 2. 特殊链接检测（支持.png、.image后缀和无后缀名的链接）
-            // 新增正向预查确保URL正确终止，修复无后缀名链接匹配问题
-            if (Regex("https?://[^\\s\"']+?(\\.(png|image)|[^.\\s\"']+)(?=[\\s\"'>]|$)", RegexOption.IGNORE_CASE).containsMatchIn(processedJpgContent)) {
-                log.debug("检测到特殊链接，弹出弹窗")
+            // 2. 特殊链接检测（只匹配.png、.image和无后缀名链接）
+            val pattern = Regex(
+                // 匹配 http/https 协议
+                "https?://" +
+                        // 匹配域名部分（允许点号）
+                        "[^\\s\"'/?#]+" +
+                        // 匹配可选的路径部分（不包含点号）
+                        "(?:/[^\\s\"'.?#]*)*" +
+                        // 匹配三种情况：
+                        // 1. 以.png结尾
+                        // 2. 以.image结尾
+                        // 3. 无后缀名（路径中无点号）
+                        "(?:" +
+                        "\\.(?:png|image)(?=[\\s\"'>]|$)" +  // 情况1和2
+                        "|" +
+                        "(?<!\\.)(?=[\\s\"'>]|$)" +         // 情况3：无后缀名（前面无点号）
+                        ")",
+                RegexOption.IGNORE_CASE
+            )
+
+            if (pattern.containsMatchIn(processedJpgContent)) {
+                log.debug("process检测到特殊链接，弹出弹窗")
                 if (!DialogState.userChoseOpenInBrowser) {
                     DialogState.showPngDialog(url.v())
                     toggleSpecialVideoLink(true)
