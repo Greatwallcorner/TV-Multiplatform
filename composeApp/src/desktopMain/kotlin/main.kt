@@ -28,7 +28,7 @@ import kotlinx.coroutines.withTimeout
 import org.jetbrains.compose.resources.painterResource
 import org.slf4j.LoggerFactory
 import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.LumenTV_icon
+import tv_multiplatform.composeapp.generated.resources.LumenTV_icon_png
 import java.awt.Dimension
 
 
@@ -70,7 +70,7 @@ fun main() {
         val contextMenuRepresentation =
             if (isSystemInDarkTheme()) DarkDefaultContextMenuRepresentation else LightDefaultContextMenuRepresentation
         Window(
-            onCloseRequest = ::exitApplication, icon = painterResource(Res.drawable.LumenTV_icon), title = "LumenTV",
+            onCloseRequest = ::exitApplication, icon = painterResource(Res.drawable.LumenTV_icon_png), title = "LumenTV",
             state = windowState,
             undecorated = true,
             transparent = false,
