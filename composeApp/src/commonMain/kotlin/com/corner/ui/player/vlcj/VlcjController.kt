@@ -24,6 +24,7 @@ import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.base.State
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
+import java.io.File
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 
@@ -43,8 +44,9 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     override var tip = MutableStateFlow("")
     override var history: MutableStateFlow<History?> = MutableStateFlow(null)
     var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    private val vlcjArgs = listOf(
+    private val vlcjArgs = mutableListOf<String>(
         "-v",
+        "--no-video-on-top",  // 禁用窗口置顶
 //        "--network-caching=500",          // 设置网络缓存为 单位ms
 //        "--file-caching=500",             // 设置文件缓存为
 //        "--live-caching=500",             // 设置直播缓存为
@@ -218,13 +220,39 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         get() = _state.asStateFlow()
 
     override fun init() {
-        catch {
-//            dispose()
+        // 添加插件缓存检查和重建逻辑
+        val vlcDir = File("vlcdir")
+        val pluginsDir = File(vlcDir, "plugins")
+        val pluginCacheFile = File(pluginsDir, "plugins.dat")
+
+        // 添加缓存检查日志
+        println("[VLC Cache Check] 插件缓存路径: ${pluginCacheFile.absolutePath}")
+        println("[VLC Cache Check] 缓存文件存在: ${pluginCacheFile.exists()}")
+
+        // 检查缓存是否存在或需要重置
+        if (!pluginCacheFile.exists()) {
+            println("[VLC Cache Check] 缓存文件不存在，添加 --reset-plugins-cache 参数")
+            vlcjArgs.add("--reset-plugins-cache")
+            // 确保插件目录存在
+            if (pluginsDir.mkdirs()) {
+                println("[VLC Cache Check] 插件目录已创建: ${pluginsDir.absolutePath}")
+            } else {
+                println("[VLC Cache Check] 插件目录已存在或创建失败: ${pluginsDir.absolutePath}")
+            }
+        } else {
+            println("[VLC Cache Check] 缓存文件存在，无需重建")
+        }
+
+        try {
             factory = MediaPlayerFactory(vlcjArgs)
             player = factory.mediaPlayers()?.newEmbeddedMediaPlayer()?.apply {
                 events().addMediaPlayerEventListener(stateListener)
-                video().setScale(1.0f)
+                video().setScale(0.0f)
             }
+        } catch (e: Exception) {
+            // 处理异常
+            // dispose()
+            log.error("vlcj初始化失败", e)
         }
     }
 
