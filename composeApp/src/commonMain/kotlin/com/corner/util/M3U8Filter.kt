@@ -20,8 +20,6 @@ class M3U8Filter(
     private var violentFilterModeFlag = config.violentFilterModeFlag // 使用配置值
     fun filterLines(lines: List<String>): List<String> {
         val result = mutableListOf<String>()
-
-        println("获取 M3U8FilterConfig 配置，violentFilterModeFlag 为$violentFilterModeFlag")
         if (violentFilterModeFlag) {
             println("----------------------------暴力拆解模式--------------------------")
             tsType = 2 // ts命名模式

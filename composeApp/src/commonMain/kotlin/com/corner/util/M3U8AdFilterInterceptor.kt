@@ -18,13 +18,12 @@ class M3U8AdFilterInterceptor {
         override fun intercept(chain: okhttp3.Interceptor.Chain): okhttp3.Response {
             val request = chain.request()
             val url = request.url.toString()
-            logger.info("拦截请求，URL: $url")
 
             // 只拦截m3u8请求
             if (!url.endsWith(".m3u8", ignoreCase = true)) {
                 return chain.proceed(request)
             }
-
+            logger.info("拦截请求，URL: $url")
             val response = chain.proceed(request)
             if (!response.isSuccessful) return response
 
@@ -42,7 +41,6 @@ class M3U8AdFilterInterceptor {
             }
 
             val filteredContent = if (SettingStore.isAdFilterEnabled()) {
-                logger.debug("M3U8FilterConfig: {}", config)
                 // 2. 广告过滤处理
                 filter.safelyProcessM3u8(url, absolutePathContent)
             } else {

@@ -30,15 +30,27 @@ class VlcJInit {
          * */
 
         fun release() {
-            if (isReleased) return
-            isReleased = true
+            if (isReleased) {
+                log.debug("VLC已全局释放，跳过")
+                return
+            }
 
-            try {
-                controller?.release() // 让controller自己处理停止逻辑
-            } catch (e: Throwable) {
-                log.error("VLC释放异常", e)
-            } finally {
-                controller = null
+
+            synchronized(this) {
+                if (isReleased) return
+                isReleased = true
+
+                try {
+                    controller?.let { ctrl ->
+                        if (ctrl.hasPlayer()) {
+                            ctrl.release()
+                        }
+                    }
+                } catch (e: Throwable) {
+                    log.error("VLC释放异常", e)
+                } finally {
+                    controller = null
+                }
             }
         }
     }

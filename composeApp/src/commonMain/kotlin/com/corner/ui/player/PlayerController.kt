@@ -21,6 +21,11 @@ interface PlayerController {
 
     fun doWithMediaPlayer(block: (MediaPlayer) -> Unit)
 
+    // 添加异步方法
+    suspend fun initAsync()
+    suspend fun cleanupAsync()
+    // 添加带超时的加载方法
+    suspend fun loadAsync(url: String, timeoutMillis: Long = 10000): PlayerController
     fun play()
 
     fun play(url:String)

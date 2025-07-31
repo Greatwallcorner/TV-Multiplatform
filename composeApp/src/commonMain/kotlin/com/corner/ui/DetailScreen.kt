@@ -125,7 +125,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
             showWebSocketDisconnected = !isConnected
         }
     }
-    log.debug("用户选择在浏览器打开: ${DialogState.userChoseOpenInBrowser}")
 
     val internalPlayer = derivedStateOf {
         val playerSetting =
@@ -292,7 +291,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 if (internalPlayer.value) {
-                    log.debug("localShowPngDialog:{}",localShowPngDialog)
                     // 检查用户是否选择在浏览器打开，若选择则不显示对话框
                     if (localShowPngDialog && !DialogState.userChoseOpenInBrowser) {
                         PngFoundDialog(

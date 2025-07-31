@@ -46,7 +46,8 @@ fun FrameContainer(
     val playerState = controller.state.collectAsState()
     val bitmap by remember { controller.imageBitmapState }
     val interactionSource = remember { MutableInteractionSource() }
-    Box(modifier = modifier.background(Color.Black)
+    Box(
+        modifier = modifier.background(Color.Black)
         .combinedClickable(
             enabled = true,
             onDoubleClick = {
@@ -95,13 +96,25 @@ fun FrameContainer(
     ) {
         val frameSizeCalculator = remember { FrameContainerSizeCalculator() }
         val imageSize by derivedStateOf {
-            IntSize(playerState.value.mediaInfo!!.width, playerState.value.mediaInfo!!.height)
+            val mediaInfo = playerState.value.mediaInfo
+            if (mediaInfo != null) {
+                IntSize(mediaInfo.width, mediaInfo.height)
+            } else {
+                // 提供默认尺寸或跳过渲染
+                IntSize(1920, 1080) // 或根据实际情况调整
+            }
         }
+
         Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
             bitmap?.let {
-                Canvas(modifier = Modifier.matchParentSize()){
+                Canvas(modifier = Modifier.matchParentSize()) {
                     frameSizeCalculator.calculate(imageSize, size)
-                    drawImage(it, dstOffset = frameSizeCalculator.dstOffset, dstSize = frameSizeCalculator.dstSize,filterQuality = FilterQuality.High,)
+                    drawImage(
+                        it,
+                        dstOffset = frameSizeCalculator.dstOffset,
+                        dstSize = frameSizeCalculator.dstSize,
+                        filterQuality = FilterQuality.High,
+                    )
                 }
             }
             when (playerState.value.state) {
@@ -154,7 +167,7 @@ fun ProgressIndicator(modifier: Modifier, text: String = "加载中...", progres
     Column(modifier) {
         if (progression != -1f) {
             CircularProgressIndicator(
-                progress = { progression / 100},
+                progress = { progression / 100 },
             )
         } else {
             CircularProgressIndicator()
@@ -192,8 +205,8 @@ class FrameContainerSizeCalculator {
         val containerHeight = containerSize.height
 
         // 计算原始宽高比（添加安全检查避免除零）
-        val imageRatio = if (srcHeight > 0) srcWidth.toFloat() / srcHeight.toFloat() else 16f/9f // 默认16:9
-        val containerRatio = if (containerHeight > 0) containerWidth / containerHeight else 16f/9f
+        val imageRatio = if (srcHeight > 0) srcWidth.toFloat() / srcHeight.toFloat() else 16f / 9f // 默认16:9
+        val containerRatio = if (containerHeight > 0) containerWidth / containerHeight else 16f / 9f
 
         // 根据比例决定缩放方向，避免拉伸
         if (imageRatio > containerRatio) {
