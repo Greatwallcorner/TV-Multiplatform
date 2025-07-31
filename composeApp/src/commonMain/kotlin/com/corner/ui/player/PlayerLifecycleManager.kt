@@ -1,10 +1,8 @@
 package com.corner.ui.player
 
-import com.corner.ui.player.vlcj.VlcjController
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.swing.Swing
 import org.slf4j.LoggerFactory
 
 /**
