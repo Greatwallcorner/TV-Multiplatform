@@ -27,6 +27,12 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -47,6 +53,7 @@ import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.awt.Cursor
+import java.awt.MouseInfo
 import java.awt.Point
 import java.awt.Robot
 import java.awt.Toolkit
@@ -90,28 +97,30 @@ fun Player(
 
     DisposableEffect(videoFullScreen.value, showControllerBar.value) {
         try {
-            player_log.debug("robot cancle")
+            player_log.debug("robot cancel")
             keepScreenOnJob?.cancel()
+
             if (videoFullScreen.value && !showControllerBar.value) {
                 var time = 1
-                if (videoFullScreen.value) {
-                    focusRequester.requestFocus()
-                    keepScreenOnJob = Timer("keepScreenOn")
-                    keepScreenOnJob?.scheduleAtFixedRate(timerTask {
+                focusRequester.requestFocus()
+                keepScreenOnJob = Timer("keepScreenOn").apply {
+                    scheduleAtFixedRate(timerTask {
                         val robot = Robot()
+                        // 获取当前鼠标位置而不是使用固定值
+                        val currentMousePos = MouseInfo.getPointerInfo().location
                         val v = if (time % 2 == 0) 1 else -1
-                        robot.mouseMove((mousePosition.x + v).toInt(), mousePosition.y.toInt())
+
+                        // 只在x方向微动，y方向保持不变
+                        robot.mouseMove(currentMousePos.x + v, currentMousePos.y)
                         time++
-                        player_log.debug("robot moveMouse")
+                        //player_log.debug("robot moveMouse: ${currentMousePos.x + v}, ${currentMousePos.y}")
                     }, 0, 6000L)
-                } else {
-                    player_log.debug("robot cancle")
-                    keepScreenOnJob?.cancel()
                 }
             }
         } catch (e: Exception) {
             player_log.error("keep screen on timer err:", e)
         }
+
         onDispose {
             keepScreenOnJob?.cancel()
         }
@@ -128,10 +137,60 @@ fun Player(
         }
     }
 
+    // 键盘事件处理
+    val onKeyEvent: (KeyEvent) -> Boolean = { keyEvent ->
+        when {
+            // 空格键 - 暂停/播放
+            keyEvent.key == Key.Spacebar && keyEvent.type == KeyEventType.KeyDown -> {
+                controller.togglePlayStatus()
+                true
+            }
+
+            // 左箭头 - 回退5秒
+            keyEvent.key == Key.DirectionLeft && keyEvent.type == KeyEventType.KeyDown -> {
+                val currentTime = controller.state.value.timestamp
+                val newTime = (currentTime - 5000).coerceAtLeast(0)
+                controller.seekTo(newTime)
+                controller.showTips("快退5秒")
+                true
+            }
+
+            // 右箭头 - 前进5秒
+            keyEvent.key == Key.DirectionRight && keyEvent.type == KeyEventType.KeyDown -> {
+                val currentTime = controller.state.value.timestamp
+                val duration = controller.state.value.duration
+                val newTime = (currentTime + 5000).coerceAtMost(duration)
+                controller.seekTo(newTime)
+                controller.showTips("快进5秒")
+                true
+            }
+
+            // 上箭头 - 增加音量
+            keyEvent.key == Key.DirectionUp && keyEvent.type == KeyEventType.KeyDown -> {
+                controller.volumeUp()
+                true
+            }
+
+            // 下箭头 - 减少音量
+            keyEvent.key == Key.DirectionDown && keyEvent.type == KeyEventType.KeyDown -> {
+                controller.volumeDown()
+                true
+            }
+
+            // ESC键 - 退出全屏
+            keyEvent.key == Key.Escape && keyEvent.type == KeyEventType.KeyDown && videoFullScreen.value -> {
+                controller.toggleFullscreen()
+                true
+            }
+            else -> false
+        }
+    }
+
     val roundedShape = RoundedCornerShape(4.dp)
     Box(
         modifier
             .background(Color.Transparent, roundedShape)
+            .onKeyEvent(onKeyEvent)
             .onPointerEvent(PointerEventType.Move) {
                 val current = it.changes.first().position
                 val cel = mousePosition.minus(current)

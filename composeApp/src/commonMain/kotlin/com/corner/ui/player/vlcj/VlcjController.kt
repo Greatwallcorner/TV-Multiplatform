@@ -434,7 +434,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         player?.controls()?.setPause(true)
     }
 
-    private fun showTips(text: String) {
+    fun showTips(text: String) {
         runBlocking {
             tip.emit(text)
             showTip.emit(true)
@@ -470,15 +470,19 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     private val volumeStep = 5
 
     override fun volumeUp() {
-        player?.audio()?.setVolume((((player?.audio()?.volume() ?: 0) + volumeStep).coerceIn(0..150)))
-        _state.update { it.copy(volume = (player?.audio()?.volume() ?: 80) / 100f) }
-        showTips("音量：${player?.audio()?.volume()}")
+        val currentVolume = player?.audio()?.volume() ?: 0
+        val newVolume = (currentVolume + volumeStep).coerceIn(0..150)
+        player?.audio()?.setVolume(newVolume)
+        _state.update { it.copy(volume = newVolume / 100f) }
+        showTips("音量：$newVolume")
     }
 
     override fun volumeDown() {
-        player?.audio()?.setVolume((((player?.audio()?.volume() ?: 0) - volumeStep).coerceIn(0..150)))
-        _state.update { it.copy(volume = (player?.audio()?.volume() ?: 80) / 100f) }
-        showTips("音量：${player?.audio()?.volume()}")
+        val currentVolume = player?.audio()?.volume() ?: 0
+        val newVolume = (currentVolume - volumeStep).coerceIn(0..150)
+        player?.audio()?.setVolume(newVolume)
+        _state.update { it.copy(volume = newVolume / 100f) }
+        showTips("音量：$newVolume")
     }
 
     /**
