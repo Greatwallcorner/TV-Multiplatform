@@ -12,7 +12,8 @@ data class PlayerState(
     var opening:Long = -1,
     val ending:Long = -1,
     val mediaInfo: MediaInfo? = null,
-    val msg:String = ""
+    val msg:String = "",
+    val aspectRatio: String = ""
 )
 
 data class MediaInfo(

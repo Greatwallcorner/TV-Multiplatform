@@ -110,11 +110,12 @@ class VlcjFrameController(
         return controller
     }
 
-    override fun init() {
+    override fun vlcjFrameInit() {
         log.info("播放器初始化")
         // 创建lifecycleManager并设置给controller
         val lifecycleManager = PlayerLifecycleManager(controller, scope)
         controller.setLifecycleManager(lifecycleManager)
+        //初始化播放器
         controller.init()
         controller.player?.videoSurface()?.set(callbackSurFace)
         isReleased = false
@@ -231,41 +232,42 @@ class VlcjFrameController(
         return controller.player != null
     }
 
-    // 同步清理方法
-    // 在VlcjFrameController类中添加cleanup方法
-    fun cleanup() {
-        if (isReleased) return
+//    // 同步清理方法
+//    // 在VlcjFrameController类中添加cleanup方法
+//    fun cleanup() {
+//        if (isReleased) return
+//
+//        try {
+//            log.debug("VlcjFrameController开始执行cleanup")
+//
+//            // 取消历史收集协程
+//            historyCollectJob?.cancel()
+//
+//            // 调用内部的VlcjController进行清理
+//            controller.cleanup()
+//
+//            log.debug("VlcjFrameController cleanup完成")
+//        } catch (e: Exception) {
+//            log.error("VlcjFrameController cleanup失败", e)
+//        }
+//    }
 
-        try {
-            log.debug("VlcjFrameController开始执行cleanup")
 
-            // 取消历史收集协程
-            historyCollectJob?.cancel()
-
-            // 调用内部的VlcjController进行清理
-            controller.cleanup()
-
-            log.debug("VlcjFrameController cleanup完成")
-        } catch (e: Exception) {
-            log.error("VlcjFrameController cleanup失败", e)
-        }
-    }
-
-    // 添加异步初始化
-    override suspend fun initAsync() {
-        withContext(Dispatchers.IO) {
-            controller.initAsync()  // 调用VlcjController的异步方法
-            controller.player?.videoSurface()?.set(callbackSurFace)
-        }
-    }
-
-    // 添加异步清理
-    override suspend fun cleanupAsync() {
-        withContext(Dispatchers.IO) {
-            historyCollectJob?.cancel()
-            controller.cleanupAsync()// 调用VlcjController的异步方法
-        }
-    }
+//    // 添加异步初始化
+//    override suspend fun initAsync() {
+//        withContext(Dispatchers.IO) {
+//            controller.initAsync()  // 调用VlcjController的异步方法
+//            controller.player?.videoSurface()?.set(callbackSurFace)
+//        }
+//    }
+//
+//    // 添加异步清理
+//    override suspend fun cleanupAsync() {
+//        withContext(Dispatchers.IO) {
+//            historyCollectJob?.cancel()
+//            controller.cleanupAsync()// 调用VlcjController的异步方法
+//        }
+//    }
 
 
 }

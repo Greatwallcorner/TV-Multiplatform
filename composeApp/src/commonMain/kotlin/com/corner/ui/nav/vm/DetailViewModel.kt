@@ -1,7 +1,7 @@
 package com.corner.ui.nav.vm
 
 import SiteViewModel
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.bean.enums.PlayerType
@@ -21,6 +21,7 @@ import com.corner.database.entity.History
 import com.corner.server.KtorD
 import com.corner.ui.nav.BaseViewModel
 import com.corner.ui.nav.data.DetailScreenState
+import com.corner.ui.nav.data.DialogState.isSpecialVideoLink
 import com.corner.ui.player.PlayState
 import com.corner.ui.player.PlayerLifecycleManager
 import com.corner.ui.player.vlcj.VlcJInit
@@ -62,13 +63,17 @@ class DetailViewModel : BaseViewModel() {
         this
     ).apply { VlcJInit.setController(this) }
 
+
+
     // 单独创建lifecycleManager，在init块中设置controller
-    // 在初始化时创建lifecycleManager
     private var lifecycleManager: PlayerLifecycleManager = PlayerLifecycleManager(controller, scope)
 
     // 添加生命周期管理器
-    // Add lifecycle manager first
     val currentSelectedEpUrl = mutableStateOf<String?>(null) // 新增状态记录
+
+
+
+
 
     /**
      * 更新历史记录信息。
@@ -123,11 +128,13 @@ class DetailViewModel : BaseViewModel() {
      * 此方法会显示加载进度，初始化播放器控制器，根据详情页来源（搜索页或其他）
      * 加载不同的数据，最后隐藏加载进度。
      */
-    fun load() {
+    suspend fun load() {
         // 显示加载进度指示器
         showProgress()
+
         // 初始化播放器控制器
-        controller.init()
+        lifecycleManager.initialize_sync()
+
         // 获取当前选中的视频信息
         val chooseVod = getChooseVod()
         // 更新状态流中的详情信息为当前选中的视频信息
@@ -181,6 +188,9 @@ class DetailViewModel : BaseViewModel() {
                         detail.site = getChooseVod().site
                         // 更新状态流中的详情信息
                         _state.update { it.copy(detail = detail, isLoading = false) }
+
+                        lifecycleManager.loading()
+
                         // 开始播放视频
                         startPlay()
                     }
@@ -203,8 +213,6 @@ class DetailViewModel : BaseViewModel() {
     fun loadDetail(vod: Vod) {
         // 记录开始加载视频详情的日志，包含视频名称、ID 和站点信息
         log.info("加载详情 <${vod.vodName}> <${vod.vodId}> site:<${vod.site}>")
-        // 显示加载进度指示器
-        showProgress()
         try {
             // 获取视频对应的站点 key，使用安全调用符处理可能的空值
             val siteKey = vod.site?.key
@@ -224,7 +232,8 @@ class DetailViewModel : BaseViewModel() {
             }
             // 若获取的详情信息为空或详情本身为空，记录日志并尝试加载下一个视频
             if (dt == null || dt.detailIsEmpty()) {
-                log.info("请求详情为空 加载下一个")
+                log.info("请求详情为空 加载下一个站源数据")
+                SnackBar.postMsg("请求详情为空 加载下一个站源数据")
                 nextSite(vod)
             } else {
                 // 从详情列表中取出第一个元素
@@ -248,7 +257,6 @@ class DetailViewModel : BaseViewModel() {
         } finally {
             // 将 launched 标志置为 false
             launched = false
-            // 隐藏加载进度指示器
             hideProgress()
         }
     }
@@ -337,6 +345,7 @@ class DetailViewModel : BaseViewModel() {
                 _state.update { it.copy(detail = GlobalAppState.chooseVod.value, isLoading = false) }
                 // 提示用户暂无线路数据
                 SnackBar.postMsg("暂无线路数据")
+                hideProgress()
             }
         }.invokeOnCompletion {
             // 所有搜索任务完成后，更新状态流，标记搜索结束
@@ -352,11 +361,12 @@ class DetailViewModel : BaseViewModel() {
      *
      * @param lastVod 上一个尝试加载详情但失败的视频对象，可为 null。
      */
-    private fun nextSite(lastVod: Vod?) {
+    fun nextSite(lastVod: Vod?) {
         // 检查快速搜索结果列表是否为空
         if (_state.value.quickSearchResult.isEmpty()) {
             // 若为空，记录警告日志并结束函数
             log.warn("nextSite 快搜结果为空 返回")
+            hideProgress()
             return
         }
         // 获取当前的快速搜索结果列表
@@ -390,25 +400,27 @@ class DetailViewModel : BaseViewModel() {
     fun clear(releaseController: Boolean = true, onComplete: () -> Unit = {}) {
         log.debug("detail clear - 开始清理")
 
-        showProgress()
+        // 创建一个延迟2秒显示进度条的任务
+        var progressJob: Job? = null
 
         scope.launch(Dispatchers.IO) {
             try {
-                if (releaseController) {
-                    withTimeout(8000L) {
-                        // 使用生命周期管理器进行有序清理
-                        lifecycleManager.cleanup().onSuccess {
-                            log.debug("生命周期清理完成")
-                        }.onFailure { e ->
-                            log.error("生命周期清理失败", e)
-                        }
+                // 延迟2秒后显示进度条
+                progressJob = launch {
+                    delay(2000L)
+                    showProgress()
+                }
 
-                        lifecycleManager.release().onSuccess {
-                            log.debug("生命周期释放完成")
-                        }.onFailure { e ->
-                            log.error("生命周期释放失败", e)
+                if (releaseController) {
+                    // 使用串行清理，避免并发问题
+                    lifecycleManager.cleanup()
+                        .onSuccess {
+                            log.debug("生命周期清理完成")
+                            // 确保清理完成后再释放
+                            lifecycleManager.release()
+                                .onSuccess { log.debug("生命周期释放完成") }
+                                .onFailure { e -> log.error("生命周期释放失败", e) }
                         }
-                    }
                 }
 
                 // 清理协程任务
@@ -438,6 +450,8 @@ class DetailViewModel : BaseViewModel() {
             } catch (e: Exception) {
                 log.error("清理过程中出错", e)
             } finally {
+                // 取消进度条显示任务
+                progressJob?.cancel()
                 hideProgress()
             }
         }
@@ -481,6 +495,7 @@ class DetailViewModel : BaseViewModel() {
         }
         // 在开始播放新视频前，强制停止当前正在播放的视频
         controller.stop()
+        log.debug("setDetail - 开始准备播放")
         // 启动新视频的播放流程
         startPlay()
     }
@@ -509,23 +524,34 @@ class DetailViewModel : BaseViewModel() {
                 // 显示加载状态
                 _state.update { it.copy(isLoading = true, isBuffering = true) }
 
-                // 异步清理和初始化，添加超时保护
-                withTimeout(5000) {
-                    controller.cleanupAsync()
-                    controller.initAsync()
-                }
-
-                // 异步加载媒体，设置10秒超时
-                controller.loadAsync(result.url.v(), 10000)
+                //使用生命周期管理器停止播放
+                lifecycleManager.stop()
+                    .onSuccess {
+                        log.debug("停止播放成功")
+                    }
+                    .onFailure { e ->
+                        log.error("停止播放失败", e)
+                    }
 
                 // 更新播放状态
                 _state.update {
                     it.copy(
                         currentPlayUrl = result.url.v(),
                         playResult = result,
+                        isLoading = false,
+                        isBuffering = false
                     )
                 }
 
+                // 启动播放
+                lifecycleManager.start()
+                    .onSuccess {
+                        log.debug("启动播放成功")
+                    }
+                    .onFailure { e ->
+                        log.error("启动播放失败", e)
+                    }
+                controller.loadAsync(result.url.v(), 10000)
             } catch (e: TimeoutCancellationException) {
                 log.error("播放器初始化超时", e)
                 SnackBar.postMsg("播放器初始化超时，请重试")
@@ -536,8 +562,6 @@ class DetailViewModel : BaseViewModel() {
                 _state.update { it.copy() }
             }
         }
-        // 若播放结果有效，更新状态流中的当前播放 URL 和播放结果
-        _state.update { it.copy(currentPlayUrl = result.url.v(), playResult = result, isLoading = false, isBuffering = false) }
     }
 
 
@@ -561,16 +585,37 @@ class DetailViewModel : BaseViewModel() {
             detail.currentFlag.flag ?: "",
             ep.url
         )
-        // 更新状态流中的当前 URL 信息
-        _state.update { it.copy(currentUrl = result?.url, isLoading = true, isBuffering = true) }
+
+        val isSpecialLink = isSpecialVideoLink
+        log.debug("playEp - 特殊链接: $isSpecialLink")
+        // 如果是特殊链接，不更新VLCJ播放器的播放链接，只更新详情数据
+        if (isSpecialLink) {
+            log.debug("检测到特殊链接，跳过VLCJ播放器更新")
+            // 更新状态流中的当前 URL 信息（但不用于播放）
+            _state.update { it.copy(isLoading = false, isBuffering = false) }
+            // 更新剧集激活状态，将当前剧集标记为激活
+            updateEpisodeActivation(ep)
+            // 继续执行更新历史记录等操作
+            updateHistoryWithNewEpisode(ep)
+            return
+        }
+
         // 检查播放结果是否为空或无效
         if (result == null || result.playResultIsEmpty()) {
+            hideProgress()
             // 若为空或无效，提示用户加载内容失败并尝试切换线路
             SnackBar.postMsg("加载内容失败，尝试切换线路")
-            // 调用 nextFlag 方法切换到下一个可用线路
             nextFlag()
             return
         }
+
+        scope.launch {
+            lifecycleManager.start()
+        }
+
+        // 更新状态流中的当前 URL 信息
+        _state.update { it.copy(currentUrl = result?.url, isLoading = true, isBuffering = true) }
+
         // 更新控制器的历史记录，将剧集 URL 存入历史记录
         controller.doWithHistory { it.copy(episodeUrl = ep.url) }
         // 判断是否使用内置播放器
@@ -599,6 +644,11 @@ class DetailViewModel : BaseViewModel() {
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     fun startPlay() {
+
+        scope.launch {
+            lifecycleManager.ready()
+        }
+
         // 检查视频详情信息是否为空，若为空则不进行播放操作
         if (!_state.value.detail.isEmpty()) {
             // 检查播放器控制器是否已释放，若已释放则记录错误日志并返回
@@ -614,7 +664,7 @@ class DetailViewModel : BaseViewModel() {
             // 将 shouldPlay 标志置为 false，表示不需要重新播放
             _state.value.shouldPlay = false
             // 记录开始播放的日志
-            log.info("start play")
+            log.info("startPlay - 准备开始播放视频，正在获取信息...")
             // 获取当前视频详情信息
             val detail = _state.value.detail
             // 用于存储找到的要播放的剧集对象
@@ -674,7 +724,11 @@ class DetailViewModel : BaseViewModel() {
                 // 若未找到要播放的剧集，则选择第一个剧集
                 val ep = findEp ?: first()
 //                log.debug("detail is $detail, Ep is $ep")
+                hideProgress()
                 // 调用 playEp 方法开始播放指定剧集
+                log.debug("startPlay - 开始播放视频:{}", ep.name)
+
+
                 playEp(detail, ep)
             }
         }
@@ -943,21 +997,30 @@ class DetailViewModel : BaseViewModel() {
      * 若下一个线路有效但为空，清空视频 ID 并执行快速搜索。
      */
     fun nextFlag() {
+        hideProgress()
         // 记录开始尝试切换到下一个播放线路的日志
         log.info("nextFlag")
         // 复制当前视频详情信息，避免直接修改原始状态
         var detail = _state.value.detail.copy()
         // 调用 nextFlag 方法获取下一个可用的播放线路
         val nextFlag = _state.value.detail.nextFlag()
+
         // 若下一个播放线路为空
         if (nextFlag == null) {
-            // 提示用户没有更多线路
             SnackBar.postMsg("没有更多线路")
-            // 记录没有更多线路的日志
             log.info("没有更多线路")
-            // 结束当前方法
+            // 添加以下状态更新
+            _state.update {
+                it.copy(
+                    detail = it.detail.copy(),
+                    isLoading = false,
+                    isBuffering = false
+                )
+            }
+            hideProgress()  // 再次确保隐藏进度条
             return
         }
+
         // 将下一个播放线路设置为当前播放线路
         detail.currentFlag = nextFlag
         // 若当前播放线路为空
@@ -1057,11 +1120,6 @@ class DetailViewModel : BaseViewModel() {
         scope.launch {
 
             try {
-                // 切换线路前异步清理
-                withTimeout(3000) {
-                    controller.cleanupAsync()
-                }
-
                 // 遍历视频的所有播放线路
                 for (vodFlag in detail.vodFlags) {
                     // 若当前线路的显示信息与选中线路的显示信息相同
@@ -1141,11 +1199,12 @@ class DetailViewModel : BaseViewModel() {
      * 该方法会更新状态流中的 `showEpChooserDialog` 字段为 `false`，
      * 以此来控制界面上剧集选择对话框的显示状态，使其隐藏。
      */
+// 在showEpChooser方法中添加日志
     fun showEpChooser() {
-        // 使用 _state.update 更新状态流的值
+//        log.debug("Toggling ep chooser dialog")
         _state.update {
-            // 复制当前状态，将 showEpChooserDialog 字段设置为 false
-            it.copy()
+//            log.debug("Current state: ${it.showEpChooserDialog}")
+            it.copy(showEpChooserDialog = !it.showEpChooserDialog)
         }
     }
 
@@ -1186,6 +1245,7 @@ class DetailViewModel : BaseViewModel() {
     fun chooseEp(it: Episode, openUri: (String) -> Unit) {
         // 标记视频正在加载
         videoLoading.value = true
+
         currentSelectedEpUrl.value = it.url
         val detail = _state.value.detail
 
@@ -1230,24 +1290,17 @@ class DetailViewModel : BaseViewModel() {
                         detail.currentTabIndex
                     ).toMutableList().toList().toMutableList(),
                 )
-
-                // 使用异步清理和初始化
-                controller.cleanupAsync()
-                controller.initAsync()
-
-
                 _state.update { it.copy(detail = dt, isLoading = false, isBuffering = false) }
 
                 // 获取当前剧集的播放内容信息
                 val result = SiteViewModel.playerContent(
                     detail.site?.key ?: "", detail.currentFlag.flag ?: "", it.url
                 )
-
-
                 _state.update { it.copy(currentUrl = result?.url, isLoading = false, isBuffering = false) }
+
                 // 获取播放器设置
-                val playerType =
-                    SettingStore.getSettingItem(SettingType.PLAYER.id).getPlayerSetting(detail.site?.playerType)
+                val playerType = SettingStore.getSettingItem(SettingType.PLAYER.id).getPlayerSetting(detail.site?.playerType)
+
                 // 根据播放器类型执行不同的播放操作
                 when (playerType.first()) {
                     PlayerType.Innie.id -> play(result)

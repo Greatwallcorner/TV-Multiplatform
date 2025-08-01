@@ -47,6 +47,11 @@ class PlayerLifecycleManager(
                     PlayerLifecycleState.Initializing -> initializeInternal()
                     PlayerLifecycleState.Cleaning -> cleanupInternal()
                     PlayerLifecycleState.Released -> releaseInternal()
+                    PlayerLifecycleState.Paused -> stopInternal()
+                    PlayerLifecycleState.Initializing_Sync -> initializeSyncInternal()
+                    PlayerLifecycleState.Ready -> readyInternal()
+                    PlayerLifecycleState.Loading -> loadingInternal()
+                    PlayerLifecycleState.Playing -> playingInternal()
                     else -> Result.success(Unit)
                 }
             } catch (e: Exception) {
@@ -75,6 +80,24 @@ class PlayerLifecycleManager(
     }
 
     /**
+     * 同步初始化
+     */
+    suspend fun initialize_sync(): Result<Unit> = transitionTo(PlayerLifecycleState.Initializing_Sync)
+
+    private suspend fun initializeSyncInternal(): Result<Unit> {
+        return withContext(lifecycleDispatcher) {
+            try {
+                controller.vlcjFrameInit()
+                Result.success(Unit)
+            } catch (e: Exception) {
+                log.error("同步初始化失败", e)
+                Result.failure(e)
+            }
+        }
+    }
+
+
+    /**
      * 异步清理
      */
     suspend fun cleanup(): Result<Unit> = transitionTo(PlayerLifecycleState.Cleaning)
@@ -84,6 +107,7 @@ class PlayerLifecycleManager(
             try {
                 _isCleaning.value = true
                 controller.cleanupAsync()
+                log.debug("LifecycleManager - 清理完成")
                 Result.success(Unit)
             } finally {
                 _isCleaning.value = false
@@ -91,6 +115,22 @@ class PlayerLifecycleManager(
         }
     }
 
+    /**
+     * 停止播放
+     */
+    suspend fun stop(): Result<Unit> = transitionTo(PlayerLifecycleState.Paused)
+
+    private suspend fun stopInternal(): Result<Unit> {
+        return withContext(lifecycleDispatcher) {
+            try {
+                controller.stop()
+                Result.success(Unit)
+            } catch (e: Exception) {
+                log.error("停止播放失败", e)
+                Result.failure(e)
+            }
+        }
+    }
 
     /**
      * 完全释放资源
@@ -100,15 +140,6 @@ class PlayerLifecycleManager(
     private suspend fun releaseInternal(): Result<Unit> {
         return withContext(lifecycleDispatcher) {
             try {
-                // 检查当前状态，避免重复释放
-                if (_lifecycleState.value == PlayerLifecycleState.Released) {
-                    log.debug("资源已释放，跳过重复释放")
-                    return@withContext Result.success(Unit)
-                }
-
-                // 先设置状态，再执行释放
-                _lifecycleState.value = PlayerLifecycleState.Released
-
                 synchronized(controller) {
                     try {
                         controller.dispose()
@@ -131,6 +162,58 @@ class PlayerLifecycleManager(
         }
     }
 
+    suspend fun ready(): Result<Unit> = transitionTo(PlayerLifecycleState.Ready)
+    private suspend fun readyInternal(): Result<Unit> {
+        return withContext(lifecycleDispatcher) {
+            try {
+                controller.playerReady.let { player ->
+                    if (player) {
+                        return@withContext Result.success(Unit)
+                    }
+                }
+                return@withContext Result.failure(IllegalStateException("Player not initialized"))
+            } catch (e: Exception) {
+                log.error("就绪失败", e)
+                Result.failure(e)
+            }
+        }
+    }
+
+    suspend fun loading(): Result<Unit> = transitionTo(PlayerLifecycleState.Loading)
+    private suspend fun loadingInternal(): Result<Unit> {
+        return withContext(lifecycleDispatcher) {
+            try {
+                controller.playerLoading.let { player ->
+                    if (player) {
+                        return@withContext Result.success(Unit)
+                    }
+                }
+                return@withContext Result.failure(IllegalStateException("Player not initialized"))
+            } catch (e: Exception) {
+                log.error("加载失败", e)
+                Result.failure(e)
+            }
+        }
+    }
+
+    suspend fun start() = transitionTo(PlayerLifecycleState.Playing)
+
+    private suspend fun playingInternal(): Result<Unit> {
+        return withContext(lifecycleDispatcher) {
+            try {
+                controller.playerPlayering.let { player ->
+                    if (player) {
+                        return@withContext Result.success(Unit)
+                    }
+                }
+                Result.success(Unit)
+            } catch (e: Exception) {
+                log.error("播放失败", e)
+                Result.failure(e)
+            }
+        }
+    }
+
 
     /**
      * 验证状态转换的合法性
@@ -139,14 +222,15 @@ class PlayerLifecycleManager(
         return when (from) {
             PlayerLifecycleState.Idle -> to in listOf(
                 PlayerLifecycleState.Initializing,
-                PlayerLifecycleState.Cleaning,  // 新增：允许从Idle直接清理
-                PlayerLifecycleState.Released
+                PlayerLifecycleState.Released,
+                PlayerLifecycleState.Initializing_Sync,
             )
 
             PlayerLifecycleState.Initializing -> to in listOf(
                 PlayerLifecycleState.Initialized,
                 PlayerLifecycleState.Error,
-                PlayerLifecycleState.Cleaning
+                PlayerLifecycleState.Cleaning,
+                PlayerLifecycleState.Paused
             )
 
             PlayerLifecycleState.Initialized -> to in listOf(
@@ -192,6 +276,13 @@ class PlayerLifecycleManager(
             PlayerLifecycleState.Error -> to in listOf(
                 PlayerLifecycleState.Cleaning,
                 PlayerLifecycleState.Released
+            )
+
+            PlayerLifecycleState.Initializing_Sync -> to in listOf(
+                PlayerLifecycleState.Error,
+                PlayerLifecycleState.Cleaning,
+                PlayerLifecycleState.Loading,
+                PlayerLifecycleState.Paused
             )
 
             PlayerLifecycleState.Released -> to == PlayerLifecycleState.Idle

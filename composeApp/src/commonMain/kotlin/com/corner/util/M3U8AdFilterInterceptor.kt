@@ -24,6 +24,7 @@ class M3U8AdFilterInterceptor {
                 return chain.proceed(request)
             }
             logger.info("拦截请求，URL: $url")
+
             val response = chain.proceed(request)
             if (!response.isSuccessful) return response
 

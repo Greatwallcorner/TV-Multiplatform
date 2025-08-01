@@ -21,7 +21,7 @@ import java.io.File
 import java.io.FilenameFilter
 import java.util.*
 
-private val log = LoggerFactory.getLogger("Player")
+private val log = LoggerFactory.getLogger("Play")
 
 class Play {
     companion object{

@@ -47,7 +47,7 @@ fun FrameContainer(
     val bitmap by remember { controller.imageBitmapState }
     val interactionSource = remember { MutableInteractionSource() }
     Box(
-        modifier = modifier.background(Color.Black)
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant)
         .combinedClickable(
             enabled = true,
             onDoubleClick = {
@@ -95,13 +95,17 @@ fun FrameContainer(
         }, contentAlignment = Alignment.Center
     ) {
         val frameSizeCalculator = remember { FrameContainerSizeCalculator() }
+        // 添加状态同步
+        LaunchedEffect(playerState.value.aspectRatio) {
+            frameSizeCalculator.aspectRatio = playerState.value.aspectRatio
+        }
+
         val imageSize by derivedStateOf {
             val mediaInfo = playerState.value.mediaInfo
             if (mediaInfo != null) {
                 IntSize(mediaInfo.width, mediaInfo.height)
             } else {
-                // 提供默认尺寸或跳过渲染
-                IntSize(1920, 1080) // 或根据实际情况调整
+                IntSize(1920, 1080)
             }
         }
 
@@ -193,6 +197,7 @@ class FrameContainerSizeCalculator {
     var offsetX = 0f
     var offsetY = 0f
 
+    var aspectRatio: String = ""
     val dstOffset: IntOffset get() = IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
     val dstSize: IntSize get() = IntSize(dstWidth.roundToInt(), dstHeight.roundToInt())
 
@@ -203,10 +208,29 @@ class FrameContainerSizeCalculator {
 
         val containerWidth = containerSize.width
         val containerHeight = containerSize.height
+        val containerRatio = if (containerHeight > 0) containerWidth / containerHeight else 16f / 9f
+
+        // 根据选择的视频比例调整显示
+        if (aspectRatio.isNotBlank() && aspectRatio.contains(":")) {
+            val parts = aspectRatio.split(":")
+            if (parts.size == 2) {
+                val targetRatio = parts[0].toFloat() / parts[1].toFloat()
+                // 使用目标比例重新计算
+                if (targetRatio > containerRatio) {
+                    dstWidth = containerWidth
+                    dstHeight = containerWidth / targetRatio
+                } else {
+                    dstHeight = containerHeight
+                    dstWidth = containerHeight * targetRatio
+                }
+                offsetX = (containerWidth - dstWidth) / 2
+                offsetY = (containerHeight - dstHeight) / 2
+                return
+            }
+        }
 
         // 计算原始宽高比（添加安全检查避免除零）
         val imageRatio = if (srcHeight > 0) srcWidth.toFloat() / srcHeight.toFloat() else 16f / 9f // 默认16:9
-        val containerRatio = if (containerHeight > 0) containerWidth / containerHeight else 16f / 9f
 
         // 根据比例决定缩放方向，避免拉伸
         if (imageRatio > containerRatio) {

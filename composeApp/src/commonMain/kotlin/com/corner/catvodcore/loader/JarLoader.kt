@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.lang.reflect.Method
 import java.net.URLClassLoader
+import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 
 object JarLoader {
@@ -61,7 +62,7 @@ object JarLoader {
                 if (StringUtils.isBlank(currentSpider)) return
 
                 val texts = currentSpider.split(Constant.md5Split)
-                val md5 = if(texts.size<=1) "" else texts[1].trim()
+                val md5 = if (texts.size <= 1) "" else texts[1].trim()
                 val jar = texts[0]
 
                 when {
@@ -69,14 +70,17 @@ object JarLoader {
                         load(key, Paths.jar(parseJarUrl(jar)))
                         return
                     }
+
                     jar.startsWith("file") -> {
                         load(key, Paths.local(jar))
                         return
                     }
+
                     jar.startsWith("http") -> {
                         load(key, download(jar))
                         return
                     }
+
                     else -> {
                         currentProcessedUrl = parseJarUrl(jar)
                         if (currentProcessedUrl == jar) {
@@ -95,13 +99,15 @@ object JarLoader {
                     }
                 }
             } catch (e: Exception) {
-                log.error("""
+                log.error(
+                    """
                 加载失败！
                 原始路径: $currentSpider
                 解析后路径: ${currentProcessedUrl ?: "N/A"}
                 重试次数: $currentRetryCount/$MAX_RETRY_COUNT
                 错误类型: ${e.javaClass.simpleName}
-            """.trimIndent(), e)
+            """.trimIndent(), e
+                )
 
                 if (currentRetryCount < MAX_RETRY_COUNT) {
                     currentRetryCount++
@@ -129,7 +135,7 @@ object JarLoader {
 
     private fun load(key: String, jar: File) {
         log.debug("load jar {}", jar)
-        loaders[key] =  URLClassLoader(arrayOf(jar.toURI().toURL()),this.javaClass.classLoader)
+        loaders[key] = URLClassLoader(arrayOf(jar.toURI().toURL()), this.javaClass.classLoader)
         putProxy(key)
         invokeInit(key)
     }
@@ -188,10 +194,30 @@ object JarLoader {
         return try {
             val md5 = Utils.md5(recent ?: "")
             val proxy = methods[md5]
-            proxy?.invoke(null, params) as Array<Any>
+
+            // 过滤或验证参数值
+            val safeParams = params.mapValues { entry ->
+                // 检查是否是有效的 base64 字符串
+                if (isValidBase64(entry.value)) {
+                    entry.value
+                } else {
+                    entry.value // 保持原值，不尝试解码
+                }
+            }
+
+            proxy?.invoke(null, safeParams) as Array<Any>
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        }
+    }
+
+    private fun isValidBase64(str: String): Boolean {
+        return try {
+            Base64.getDecoder().decode(str)
+            true
+        } catch (e: IllegalArgumentException) {
+            false
         }
     }
 
@@ -199,3 +225,4 @@ object JarLoader {
         recent = jar
     }
 }
+

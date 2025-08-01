@@ -40,6 +40,7 @@ class PlayerLifecycleMonitor(
             PlayerLifecycleState.Cleaning -> "正在清理资源"
             PlayerLifecycleState.Released -> "播放器已释放"
             PlayerLifecycleState.Error -> "播放器发生错误"
+            PlayerLifecycleState.Initializing_Sync -> "同步初始化中"
         }
     }
 }

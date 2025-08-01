@@ -57,7 +57,7 @@ import kotlin.math.abs
 
 const val VIDEO_URL = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
 
-private val log = LoggerFactory.getLogger("Player")
+private val player_log = LoggerFactory.getLogger("Player")
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -90,7 +90,7 @@ fun Player(
 
     DisposableEffect(videoFullScreen.value, showControllerBar.value) {
         try {
-            log.debug("robot cancle")
+            player_log.debug("robot cancle")
             keepScreenOnJob?.cancel()
             if (videoFullScreen.value && !showControllerBar.value) {
                 var time = 1
@@ -102,15 +102,15 @@ fun Player(
                         val v = if (time % 2 == 0) 1 else -1
                         robot.mouseMove((mousePosition.x + v).toInt(), mousePosition.y.toInt())
                         time++
-                        log.debug("robot moveMouse")
+                        player_log.debug("robot moveMouse")
                     }, 0, 6000L)
                 } else {
-                    log.debug("robot cancle")
+                    player_log.debug("robot cancle")
                     keepScreenOnJob?.cancel()
                 }
             }
         } catch (e: Exception) {
-            log.error("keep screen on timer err:", e)
+            player_log.error("keep screen on timer err:", e)
         }
         onDispose {
             keepScreenOnJob?.cancel()

@@ -31,7 +31,7 @@ import java.io.File
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 
-private val log = LoggerFactory.getLogger("PlayerController")
+private val log = LoggerFactory.getLogger("VlcjController")
 
 class VlcjController(val vm: DetailViewModel) : PlayerController {
 
@@ -47,12 +47,21 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     private var isAccelerating = false
     private var originSpeed = 1.0F
     private var currentSpeed = 1.0F
-    private var playerReady = false
+    override var playerReady = false
+
+    override var playerLoading = false
+
+    override var playerPlayering = false
 
     override var showTip = MutableStateFlow(false)
     override var tip = MutableStateFlow("")
+
     override var history: MutableStateFlow<History?> = MutableStateFlow(null)
+
     var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
+    private var cleanupJob: Job? = null  // 添加清理任务跟踪变量
+
     companion object {
         // 全局标志：插件缓存是否已检查
         private var pluginCacheChecked = false
@@ -98,10 +107,11 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     }
 
     private val stateListener = object : MediaPlayerEventAdapter() {
+
         override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
             log.info("播放器初始化完成")
             playerReady = true
-            _state.update { it.copy(duration = mediaPlayer.status().length()) }
+            _state.update { it.copy(duration = mediaPlayer.status().length(), state = PlayState.PLAY) }
             play()
         }
 
@@ -133,11 +143,14 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         }
 
         override fun opening(mediaPlayer: MediaPlayer?) {
+            playerLoading = true
             _state.update { it.copy(state = PlayState.BUFFERING) }
         }
 
 
         override fun playing(mediaPlayer: MediaPlayer) {
+            playerLoading = false
+            playerPlayering = true
             _state.update { it.copy(state = PlayState.PLAY) }
         }
 
@@ -147,11 +160,13 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
 
         override fun stopped(mediaPlayer: MediaPlayer) {
             println("stopped")
+            playerPlayering = false
             _state.update { it.copy(state = PlayState.PAUSE) }
         }
 
         override fun finished(mediaPlayer: MediaPlayer) {
             println("finished")
+            playerPlayering = false
             _state.update { it.copy(state = PlayState.PAUSE) }
             scope.launch {
                 try {
@@ -196,7 +211,6 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             _state.update { it.copy(timestamp = newTime) }
         }
 
-//        over
 
         override fun error(mediaPlayer: MediaPlayer?) {
             log.error("播放错误: ${mediaPlayer?.media()?.info()?.mrl()}")
@@ -240,6 +254,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         get() = _state.asStateFlow()
 
     override fun init() {
+        isCleaned = false
         // 仅在第一次初始化时检查插件缓存
         if (!pluginCacheChecked) {
             // 添加插件缓存检查和重建逻辑
@@ -284,10 +299,10 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         }
     }
 
-
     // 添加异步初始化方法
     override suspend fun initAsync() = withContext(Dispatchers.IO) {
         try {
+            isCleaned = false
             // 仅在第一次初始化时检查插件缓存
             if (!pluginCacheChecked) {
                 val vlcDir = File("vlcdir")
@@ -316,50 +331,29 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
      * 改进的异步清理方法，确保线程安全和资源完整释放
      */
     override suspend fun cleanupAsync() = withContext(Dispatchers.IO) {
+        if (isCleaned) return@withContext
+        isCleaned = true
         try {
             log.debug("开始异步清理播放器资源")
 
-            // 设置超时时间，避免无限等待
-            withTimeout(3000) {  // 3秒超时
-                player?.let { p ->
-                    try {
-                        // 快速停止，不等待缓冲完成
-                        p.controls()?.stop()
-                    } catch (e: Exception) {
-                        log.warn("停止播放时出错", e)
-                    }
-
-                    try {
-                        p.release()
-                    } catch (e: Exception) {
-                        log.error("释放播放器时出错", e)
-                    }
+            player?.let { p ->
+                try {
+                    // 快速停止，不等待缓冲完成
+                    p.controls()?.stop()
+                } catch (e: Exception) {
+                    log.warn("停止播放时出错", e)
                 }
             }
 
             // 异步清理，不等待
             scope.cancel("播放器清理")
-            player = null
             defferredEffects.clear()
 
             log.debug("异步清理完成")
-        } catch (e: TimeoutCancellationException) {
-            log.warn("清理超时，强制终止")
-            // 强制清理
-            player = null
-            scope.cancel("播放器清理")
+        } catch (e: Exception) {
+            log.warn("清理超时")
         }
     }
-
-    /**
-     * 同步清理方法，用于同步场景
-     */
-    fun cleanupSync() {
-        runBlocking {
-            cleanupAsync()
-        }
-    }
-
 
     override fun load(url: String): PlayerController {
         log.debug("加载：$url")
@@ -367,10 +361,8 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             SnackBar.postMsg("播放地址为空")
             return this
         }
-//        val optionsList = mutableListOf("http-user-agent=${Constants.ChromeUserAgent}", "http-referrer=www.bing.com")
-        val optionsList =
-            mutableListOf("http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0")
 
+        val optionsList = mutableListOf("http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0")
 
         catch {
             player?.media()?.prepare(url, *buildList {
@@ -382,6 +374,11 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
 
     // 添加带超时的异步加载方法
     override suspend fun loadAsync(url: String, timeoutMillis: Long): PlayerController = withContext(Dispatchers.IO) {
+        // 确保清理完成
+        if (isCleaned) {
+            cleanupJob?.join() // 等待清理完成
+        }
+
         if (StringUtils.isBlank(url)) {
             withContext(Dispatchers.Swing) {
                 SnackBar.postMsg("播放地址为空")
@@ -390,13 +387,10 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         }
 
         try {
-            val optionsList =
-                mutableListOf("http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0")
+            val optionsList = mutableListOf("http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0")
 
-            // 使用withTimeout添加超时机制
-            withTimeout(timeoutMillis) {
-                player?.media()?.prepare(url, *optionsList.toTypedArray())
-            }
+            player?.media()?.prepare(url, *optionsList.toTypedArray())
+
         } catch (e: TimeoutCancellationException) {
             log.error("媒体加载超时: ${e.message}")
             withContext(Dispatchers.Swing) {
@@ -404,7 +398,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             }
         } catch (e: Exception) {
             log.error("媒体加载失败", e)
-            withContext(Dispatchers.Swing) {
+            withContext(Dispatchers.Default) {
                 SnackBar.postMsg("媒体加载失败: ${e.message}")
             }
         }
@@ -454,11 +448,13 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     }
 
     override fun dispose() = catch {
-        log.debug("dispose")
+        log.debug("dispose - 释放播放器资源")
         stop()
+        player?.events()?.removeMediaPlayerEventListener(stateListener)
         player?.release()
         factory.release()
         player = null
+        log.debug("dispose - 释放成功")
     }
 
     override fun seekTo(timestamp: Long) = catch {
@@ -577,11 +573,11 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     override fun setStartEnding(opening: Long, ending: Long) {
         _state.update { it.copy(opening = opening, ending = ending) }
     }
-
     /**
      * 清理播放器资源
      */
     fun cleanup() {
+
         if (isCleaned) {
             log.debug("控制器已清理，跳过重复清理")
             return
@@ -612,10 +608,6 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             // 5. 清理缓存和回调
             defferredEffects.clear()
 
-            // 在cleanup中同步状态
-            runBlocking {
-                lifecycleManager?.transitionTo(PlayerLifecycleState.Cleaning)
-            }
             log.debug("VlcjController cleanup completed")
         } catch (e: Exception) {
             log.error("Cleanup error", e)
@@ -637,14 +629,28 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         }
     }
 
-    // 添加主动状态检查方法
-    private fun syncState() {
-        player?.let { mp ->
-            val currentState = when {
-                mp.status().isPlaying -> PlayState.PLAY
-                else -> PlayState.PAUSE
-            }
-            _state.update { it.copy(state = currentState) }
+    override fun setAspectRatio(aspectRatio: String) = catch {
+        player?.video()?.setAspectRatio(aspectRatio)
+        _state.update { it.copy(aspectRatio = aspectRatio) }
+        showTips("视频比例: ${getAspectRatioDisplayName(aspectRatio)}")
+    }
+
+    override fun getAspectRatio(): String {
+        return player?.video()?.aspectRatio() ?: ""
+    }
+
+    private fun getAspectRatioDisplayName(ratio: String): String {
+        return when (ratio) {
+            "16:9" -> "16:9"
+            "4:3" -> "4:3"
+            "1:1" -> "1:1"
+            "16:10" -> "16:10"
+            "21:9" -> "21:9"
+            "2.35:1" -> "2.35:1"
+            "2.39:1" -> "2.39:1"
+            "5:4" -> "5:4"
+            "" -> "原始比例"
+            else -> ratio
         }
     }
 }

@@ -36,5 +36,8 @@ enum class PlayerLifecycleState {
     Released,
 
     /** 发生错误 */
-    Error
+    Error,
+
+    /** 同步初始化 */
+    Initializing_Sync
 }

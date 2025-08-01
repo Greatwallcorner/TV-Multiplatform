@@ -152,12 +152,12 @@ object SiteViewModel {
         return rst
     }
 
-        /**
+    /**
      * 获取视频播放信息并处理播放链接
      * @param key 站点唯一标识
      * @param flag 播放标识（区分不同播放源）
      * @param id 视频唯一标识
-     * @return 包含播放链接、头信息等的Result对象，异常时返回null
+     * @return Pair对象，第一个元素为Result对象，第二个元素表示是否为特殊链接
      */
     fun playerContent(key: String, flag: String, id: String): Result? {
         // 根据key获取站点信息，若站点不存在则返回null
@@ -179,19 +179,19 @@ object SiteViewModel {
                 // 检测包含.m3u8但不以.m3u8结尾的链接（特殊链接处理）
                 // 提取URL基础部分（去除查询参数和片段标识后的部分）
                 val urlStr = result.url.v()
-                if (urlStr.isNotBlank() &&
-                    !urlStr.contains("proxy") &&
-                    urlStr.contains(".m3u8", ignoreCase = true) &&
-                    !urlStr.trim().endsWith(".m3u8", ignoreCase = true)) {
-
-                    log.debug("检测到包含.m3u8的非M3U8链接，弹出弹窗")
+                val isSpecialLink = urlStr.isNotBlank() &&
+                        !urlStr.contains("proxy") &&
+                        urlStr.contains(".m3u8", ignoreCase = true) &&
+                        !urlStr.trim().endsWith(".m3u8", ignoreCase = true)
+                if (isSpecialLink) {
+                    log.debug("检测到包含.m3u8的非M3U8链接，标记为特殊链接")
                     if (!DialogState.userChoseOpenInBrowser) {
                         DialogState.showPngDialog(urlStr) // 显示特殊链接对话框
                         toggleSpecialVideoLink(true) // 标记为特殊视频链接
                     } else {
                         toggleSpecialVideoLink(false) // 取消特殊视频链接标记
                     }
-                }else{
+                } else {
                     // 处理标准M3U8链接（以.m3u8结尾、不含proxy、非空）
                     if (result.url.v().run {
                             endsWith(".m3u8") && !contains("proxy") && isNotBlank()
@@ -218,20 +218,22 @@ object SiteViewModel {
                 if (StringUtils.isNotBlank(result.flag)) result.flag = flag
 
                 // 检测包含.m3u8但不以.m3u8结尾的链接（特殊链接处理）
+                // 提取URL基础部分（去除查询参数和片段标识后的部分）
                 val urlStr = result.url.v()
-                if (urlStr.isNotBlank() &&
-                    !urlStr.contains("proxy") &&
-                    urlStr.contains(".m3u8", ignoreCase = true) &&
-                    !urlStr.trim().endsWith(".m3u8", ignoreCase = true)) {
+                val isSpecialLink = urlStr.isNotBlank() &&
+                        !urlStr.contains("proxy") &&
+                        urlStr.contains(".m3u8", ignoreCase = true) &&
+                        !urlStr.trim().endsWith(".m3u8", ignoreCase = true)
 
-                    log.debug("检测到包含.m3u8的非M3U8链接，弹出弹窗")
+                if (isSpecialLink) {
+                    log.debug("检测到包含.m3u8的非M3U8链接，标记为特殊链接")
                     if (!DialogState.userChoseOpenInBrowser) {
                         DialogState.showPngDialog(urlStr) // 显示特殊链接对话框
                         toggleSpecialVideoLink(true) // 标记为特殊视频链接
                     } else {
                         toggleSpecialVideoLink(false) // 取消特殊视频链接标记
                     }
-                }else{
+                } else {
                     // 处理标准M3U8链接（以.m3u8结尾、不含proxy、非空）
                     if (result.url.v().run {
                             endsWith(".m3u8") && !contains("proxy") && isNotBlank()
@@ -262,20 +264,22 @@ object SiteViewModel {
                 result.flag = flag
 
                 // 检测包含.m3u8但不以.m3u8结尾的链接（特殊链接处理）
+                // 提取URL基础部分（去除查询参数和片段标识后的部分）
                 val urlStr = result.url.v()
-                if (urlStr.isNotBlank() &&
-                    !urlStr.contains("proxy") &&
-                    urlStr.contains(".m3u8", ignoreCase = true) &&
-                    !urlStr.trim().endsWith(".m3u8", ignoreCase = true)) {
+                val isSpecialLink = urlStr.isNotBlank() &&
+                        !urlStr.contains("proxy") &&
+                        urlStr.contains(".m3u8", ignoreCase = true) &&
+                        !urlStr.trim().endsWith(".m3u8", ignoreCase = true)
 
-                    log.debug("检测到包含.m3u8的非M3U8链接，弹出弹窗")
+                if (isSpecialLink) {
+                    log.debug("检测到包含.m3u8的非M3U8链接，标记为特殊链接")
                     if (!DialogState.userChoseOpenInBrowser) {
                         DialogState.showPngDialog(urlStr) // 显示特殊链接对话框
                         toggleSpecialVideoLink(true) // 标记为特殊视频链接
                     } else {
                         toggleSpecialVideoLink(false) // 取消特殊视频链接标记
                     }
-                }else{
+                } else {
                     // 处理标准M3U8链接（以.m3u8结尾、不含proxy、非空）
                     if (result.url.v().run {
                             endsWith(".m3u8") && !contains("proxy") && isNotBlank()
@@ -355,19 +359,19 @@ object SiteViewModel {
                 content
             }
 
-            // 1. 处理.jpg链接（增强版正则）
-            val jpgRegex = Regex("""(https?://[^\s"']+?\.jpg)[^\s"']*(?=[\s"'>]|$)""", RegexOption.IGNORE_CASE)
-            val processedJpgContent = if (jpgRegex.containsMatchIn(processedKeyContent)) {
-                log.debug("检测到.jpg链接，执行替换...")
-                processedKeyContent.replace(jpgRegex) { match ->
-                    val newUrl = match.groupValues[1].replace(".jpg", ".ts", ignoreCase = true)
-                    log.debug("替换链接: ${match.value} → $newUrl")
-                    newUrl
-                }
-            } else {
-                log.debug("未检测到.jpg链接，跳过替换")
-                processedKeyContent
-            }
+//            // 1. 处理.jpg链接（增强版正则）
+//            val jpgRegex = Regex("""(https?://[^\s"']+?\.jpg)[^\s"']*(?=[\s"'>]|$)""", RegexOption.IGNORE_CASE)
+//            val processedJpgContent = if (jpgRegex.containsMatchIn(processedKeyContent)) {
+//                log.debug("检测到.jpg链接，执行替换...")
+//                processedKeyContent.replace(jpgRegex) { match ->
+//                    val newUrl = match.groupValues[1].replace(".jpg", ".ts", ignoreCase = true)
+//                    log.debug("替换链接: ${match.value} → $newUrl")
+//                    newUrl
+//                }
+//            } else {
+//                log.debug("未检测到.jpg链接，跳过替换")
+//                processedKeyContent
+//            }
 
             // 2. 特殊链接检测（只匹配.png、.image和无后缀名链接）
             val pattern = Regex(
@@ -380,16 +384,17 @@ object SiteViewModel {
                         // 匹配三种情况：
                         // 1. 以.png结尾
                         // 2. 以.image结尾
-                        // 3. 无后缀名（路径中无点号）
+                        // 3. 以.jpg结尾
+                        // 4. 无后缀名（路径中无点号）
                         "(?:" +
-                        "\\.(?:png|image)(?=[\\s\"'>]|$)" +  // 情况1和2
+                        "\\.(?:png|image|jpg)(?=[\\s\"'>]|$)" +  // 情况1和2
                         "|" +
                         "(?<!\\.)(?=[\\s\"'>]|$)" +         // 情况3：无后缀名（前面无点号）
                         ")",
                 RegexOption.IGNORE_CASE
             )
 
-            if (pattern.containsMatchIn(processedJpgContent)) {
+            if (pattern.containsMatchIn(processedKeyContent)) {
                 log.debug("process检测到特殊链接，弹出弹窗")
                 if (!DialogState.userChoseOpenInBrowser) {
                     DialogState.showPngDialog(url.v())
@@ -401,7 +406,7 @@ object SiteViewModel {
             }
 
             // 3. 处理嵌套M3U8
-            val processedContent = Regex("(?m)^(?!#).*\\.m3u8$").replace(processedJpgContent) { match ->
+            val processedContent = Regex("(?m)^(?!#).*\\.m3u8$").replace(processedKeyContent) { match ->
                 val nestedUrl = match.value.let {
                     if (it.startsWith("http")) it else "${url.v().substringBeforeLast("/")}/$it"
                 }
@@ -437,6 +442,7 @@ object SiteViewModel {
                         val baseUri = java.net.URI(baseUrl)
                         "${baseUri.scheme}://${baseUri.host}$uri"
                     }
+
                     else -> {
                         // 处理相对路径
                         val basePath = baseUrl.substringBeforeLast("/")
