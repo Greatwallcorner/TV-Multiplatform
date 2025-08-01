@@ -1118,7 +1118,8 @@ class DetailViewModel : BaseViewModel() {
     fun chooseFlag(detail: Vod, it: Flag) {
         // 在协程作用域中启动一个协程来处理线路选择操作
         scope.launch {
-
+            log.debug("切换线路，暂停播放")
+            lifecycleManager.stop()
             try {
                 // 遍历视频的所有播放线路
                 for (vodFlag in detail.vodFlags) {
@@ -1153,8 +1154,6 @@ class DetailViewModel : BaseViewModel() {
                     }
                 }
 
-                // 重新初始化播放器
-                controller.initAsync()
                 _state.update { it.copy() }
 
                 // 更新状态流中的视频详情信息，并标记需要播放视频

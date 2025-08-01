@@ -35,7 +35,6 @@ class VlcJInit {
                 return
             }
 
-
             synchronized(this) {
                 if (isReleased) return
                 isReleased = true

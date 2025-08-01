@@ -39,16 +39,19 @@ class VlcjFrameController(
     private val log = LoggerFactory.getLogger(this::class.java)
 
     private var byteArray: ByteArray? = null
+
     private var info: ImageInfo? = null
+
     val imageBitmapState: MutableState<ImageBitmap?> = mutableStateOf(null)
 
     // 添加volatile确保线程安全
     @Volatile
     private var isReleased = false
+
     // 添加公开的getter方法
     fun isReleased(): Boolean = isReleased
-    private var historyCollectJob: Job? = null
 
+    private var historyCollectJob: Job? = null
 
     private val _size = MutableStateFlow(0 to 0)
     override val size = _size.asStateFlow()
