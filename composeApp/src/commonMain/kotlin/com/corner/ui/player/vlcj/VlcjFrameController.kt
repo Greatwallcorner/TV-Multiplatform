@@ -233,6 +233,11 @@ class VlcjFrameController(
         return controller.player != null
     }
 
+    //代理showTips方法
+    fun showTips(tips: String) {
+        controller.showTips(tips)
+    }
+
 //    // 同步清理方法
 //    // 在VlcjFrameController类中添加cleanup方法
 //    fun cleanup() {
