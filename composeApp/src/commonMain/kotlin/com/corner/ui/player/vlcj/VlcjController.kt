@@ -10,7 +10,6 @@ import com.corner.ui.player.MediaInfo
 import com.corner.ui.player.PlayState
 import com.corner.ui.player.PlayerController
 import com.corner.ui.player.PlayerLifecycleManager
-import com.corner.ui.player.PlayerLifecycleState
 import com.corner.ui.player.PlayerState
 import com.corner.ui.scene.SnackBar
 import com.corner.util.catch
