@@ -86,6 +86,11 @@ fun Player(
     val tip = controller.tip.collectAsState()
     val videoFullScreen = GlobalAppState.videoFullScreen.collectAsState()
     val showMediaInfoDialog = remember { mutableStateOf(false) }
+    var isRightArrowPressed by remember { mutableStateOf(false) }
+    var rightArrowPressTime by remember { mutableStateOf(0L) }
+    var isSpeedUp by remember { mutableStateOf(false) }
+    var longPressJob by remember { mutableStateOf<Job?>(null) }
+
 
     LaunchedEffect(Unit) {
         val volume = SettingStore.getCache("playerState")
@@ -155,14 +160,40 @@ fun Player(
                 true
             }
 
-            // 右箭头 - 前进5秒
-            keyEvent.key == Key.DirectionRight && keyEvent.type == KeyEventType.KeyDown -> {
-                val currentTime = controller.state.value.timestamp
-                val duration = controller.state.value.duration
-                val newTime = (currentTime + 5000).coerceAtMost(duration)
-                controller.seekTo(newTime)
-                controller.showTips("快进5秒")
-                true
+            keyEvent.key == Key.DirectionRight -> {
+                when (keyEvent.type) {
+                    KeyEventType.KeyDown -> {
+                        // 检查是否已经按下（避免重复触发）
+                        if (!isRightArrowPressed) {
+                            isRightArrowPressed = true
+                            rightArrowPressTime = System.currentTimeMillis()
+                            // 启动长按检测
+                            longPressJob = scope.launch {
+                                delay(300) // 长按判定时间300ms
+                                if (isRightArrowPressed) {
+                                    // 长按触发3倍速
+                                    controller.speed(3.0f)
+                                    isSpeedUp = true
+                                }
+                            }
+                        }
+                        true
+                    }
+                    KeyEventType.KeyUp -> {
+                        isRightArrowPressed = false
+                        longPressJob?.cancel()
+                        if (isSpeedUp) {
+                            // 松开恢复1倍速
+                            controller.speed(1.0f)
+                            isSpeedUp = false
+                        } else if (System.currentTimeMillis() - rightArrowPressTime < 300) {
+                            // 短按前进5秒
+                            controller.forward("5s")
+                        }
+                        true
+                    }
+                    else -> false
+                }
             }
 
             // 上箭头 - 增加音量

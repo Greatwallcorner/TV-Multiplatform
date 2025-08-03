@@ -27,8 +27,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.compose.resources.painterResource
 import org.slf4j.LoggerFactory
-import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.LumenTV_icon_png
+import lumentv_compose.composeapp.generated.resources.Res
+import lumentv_compose.composeapp.generated.resources.LumenTV_icon_png
 import java.awt.Dimension
 
 

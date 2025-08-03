@@ -215,13 +215,24 @@ object BrowserUtils {
     }
 
     fun cleanup() {
-        VideoEventServer.stop()
-        log.info("WebSocket 服务器已停止")
+        // 检查WebSocket服务器是否正在运行
+        if (VideoEventServer.isRunning()) {
+            VideoEventServer.stop()
+            log.info("WebSocket 服务器已停止")
+        } else {
+            log.info("WebSocket 服务器未运行，跳过停止操作")
+        }
     }
 }
 
 // WebSocket 服务器实现
 object VideoEventServer : WebSocketServer(InetSocketAddress("localhost", 8888)) {
+    // 添加状态标记
+    private var _isRunning = AtomicBoolean(false)
+
+    // 提供公共方法检查运行状态
+    fun isRunning(): Boolean = _isRunning.get()
+
     override fun onOpen(conn: WebSocket?, handshake: ClientHandshake?) {
         log.debug("WebSocket 连接已建立")
         // 连接建立后，重置播放状态
@@ -268,6 +279,13 @@ object VideoEventServer : WebSocketServer(InetSocketAddress("localhost", 8888)) 
 
     // 重写 onStart 方法
     override fun onStart() {
+        _isRunning.set(true)
         log.info("WebSocket 服务器已启动")
+    }
+
+    // 重写 stop 方法
+    override fun stop() {
+        super.stop()
+        _isRunning.set(false)
     }
 }

@@ -39,8 +39,8 @@ import com.corner.ui.scene.ControlBar
 import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
-import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.loading
+import lumentv_compose.composeapp.generated.resources.Res
+import lumentv_compose.composeapp.generated.resources.loading
 
 @Composable
 fun HistoryItem(

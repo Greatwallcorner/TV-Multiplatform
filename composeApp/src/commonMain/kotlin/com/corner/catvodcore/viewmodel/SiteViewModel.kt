@@ -449,7 +449,7 @@ object SiteViewModel {
                         "$basePath/$uri".replace(Regex("(?<!:)//"), "/")
                     }
                 }
-                log.debug("处理出的密钥链接: $keyUrl")
+//                log.debug("处理出的密钥链接: $keyUrl")
                 val cacheId = downloadAndStoreKey(keyUrl)
 
                 "#EXT-X-KEY:METHOD=$method,URI=\"$cacheId\"" +

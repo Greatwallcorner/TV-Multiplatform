@@ -7,7 +7,7 @@ plugins {
 }
 
 version = 1
-group = "TV-Multiplatform"
+group = "LumenTV-Compose"
 
 allprojects{
     repositories{

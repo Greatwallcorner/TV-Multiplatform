@@ -30,7 +30,7 @@ class PlayerLifecycleManager(
     suspend fun transitionTo(newState: PlayerLifecycleState): Result<Unit> {
         return withContext(lifecycleDispatcher) {
             try {
-                log.debug("播放器状态转换: ${_lifecycleState.value} -> $newState")
+                log.debug("播放器状态转换: {} -> {}", _lifecycleState.value, newState)
 
                 // 状态验证
                 if (!isValidTransition(_lifecycleState.value, newState)) {
@@ -52,6 +52,7 @@ class PlayerLifecycleManager(
                     PlayerLifecycleState.Ready -> readyInternal()
                     PlayerLifecycleState.Loading -> loadingInternal()
                     PlayerLifecycleState.Playing -> playingInternal()
+                    PlayerLifecycleState.Ended -> endedInternal()
                     else -> Result.success(Unit)
                 }
             } catch (e: Exception) {
@@ -123,10 +124,23 @@ class PlayerLifecycleManager(
     private suspend fun stopInternal(): Result<Unit> {
         return withContext(lifecycleDispatcher) {
             try {
-                controller.stop()
+                controller.pause()
                 Result.success(Unit)
             } catch (e: Exception) {
                 log.error("停止播放失败", e)
+                Result.failure(e)
+            }
+        }
+    }
+
+    suspend fun ended(): Result<Unit> = transitionTo(PlayerLifecycleState.Ended)
+    private suspend fun endedInternal(): Result<Unit> {
+        return withContext(lifecycleDispatcher) {
+            try {
+                controller.stop()
+                Result.success(Unit)
+            } catch (e: Exception) {
+                log.error("播放结束失败", e)
                 Result.failure(e)
             }
         }

@@ -91,6 +91,8 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
         onDispose {
             //重置播放器状态
             vm.clear()
+            //关闭websocket服务
+            BrowserUtils.cleanup()
         }
     }
 
@@ -121,7 +123,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
 
 // 监听 DialogState 中的状态变化
     LaunchedEffect(DialogState.showPngDialog, DialogState.currentM3U8Url) {
-        log.debug("DialogState.showPngDialog:{}",DialogState.showPngDialog)
+//        log.debug("DialogState.showPngDialog:{}",DialogState.showPngDialog)
         localShowPngDialog = DialogState.showPngDialog
         localCurrentM3U8Url = DialogState.currentM3U8Url
     }
