@@ -1,138 +1,239 @@
-package com.corner.ui.scene
-
-import AppTheme
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicInteger
 
 object SnackBar {
+    private val msgQueue = ConcurrentLinkedQueue<Message>()
+    private val msgList = List(4) { MutableStateFlow<Message?>(null) }
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val activeMessages = AtomicInteger(0)
 
-    private val msgQueue = ConcurrentLinkedQueue<String>()
-    private val msgList = MutableList(2) { MutableStateFlow("") }
+    private val animationMutex = List(4) { Mutex() }
 
-    private val CoroutineScope = CoroutineScope(Dispatchers.Default)
+    private const val BURST_THRESHOLD = 3
+    private const val MAX_QUEUE_SIZE = 10
 
-    private var isRunningSemaphore = Semaphore(2)
+    data class Message(
+        val content: String,
+        val priority: Int = 0,
+        val type: MessageType = MessageType.INFO,
+        val timestamp: Long = System.currentTimeMillis()
+    )
+
+    enum class MessageType {
+        INFO, SUCCESS, WARNING, ERROR
+    }
 
     init {
-        CoroutineScope.launch {
-            delay(100)
-            msgCheck()
+        startMessageProcessors()
+    }
+
+    private fun startMessageProcessors() {
+        msgList.forEachIndexed { index, stateFlow ->
+            scope.launch {
+                while (true) {
+                    val message = msgQueue.poll()
+                    if (message != null) {
+                        stateFlow.value = message
+                        activeMessages.incrementAndGet()
+
+                        val displayTime = calculateDisplayTime(message.content)
+                        delay(displayTime)
+
+                        stateFlow.value = null
+                        activeMessages.decrementAndGet()
+                    } else {
+                        delay(100)
+                    }
+                }
+            }
         }
     }
 
-    private fun msgCheck() {
-        for (i in 0 until msgList.size) {
-            CoroutineScope.launch {
-                isRunningSemaphore.acquire()
-                while (true) {
-                    if (msgList[i].value.isBlank()) {
-                        val poll = msgQueue.poll() ?: break
-                        msgList[i].value = poll
-                        // 显示三秒
-                        delay(3000)
-                        msgList[i].value = ""
-                        // 等待消失
-                        delay(200)
-                    }
-                }
-                isRunningSemaphore.release()
-            }
+    private fun calculateDisplayTime(content: String): Long {
+        return (2000L + content.length * 50L).coerceIn(2000L, 5000L)
+    }
+
+    private fun shouldMergeMessages(): Boolean {
+        val recentMessages = msgQueue.filter {
+            System.currentTimeMillis() - it.timestamp < 1000
+        }
+        return recentMessages.size >= BURST_THRESHOLD
+    }
+
+    fun postMsg(msg: String, priority: Int = 0, type: MessageType = MessageType.INFO) {
+        val newMessage = Message(msg, priority, type)
+
+        // 智能合并突发消息
+        if (shouldMergeMessages()) {
+            val merged = Message("已处理 ${msgQueue.size + 1} 条消息", priority, MessageType.INFO)
+            msgQueue.clear()
+            msgQueue.add(merged)
+        } else {
+            // 按优先级排序插入，高优先级在前
+            val tempList = msgQueue.toMutableList()
+            tempList.add(newMessage)
+            tempList.sortByDescending { it.priority }
+
+            msgQueue.clear()
+            tempList.forEach { msgQueue.add(it) }
+        }
+
+        // 限制队列长度
+        if (msgQueue.size > MAX_QUEUE_SIZE) {
+            repeat(msgQueue.size - MAX_QUEUE_SIZE) { msgQueue.poll() }
         }
     }
 
     @Composable
     fun SnackBarItem(index: Int) {
-        val msg = msgList[index].collectAsState()
-        LaunchedEffect(msg) {
-            if (msg.value.isNotBlank()) {
-                delay(3000)
-                msgList[index].value = ""
-                delay(50)
-                msgList[index].value = msgQueue.poll() ?: ""
+        val message = msgList[index].collectAsState()
+        var visible by remember { mutableStateOf(false) }
+        var currentMessage by remember { mutableStateOf<Message?>(null) }
+
+        LaunchedEffect(message.value) {
+            if (message.value != null) {
+                currentMessage = message.value
+                visible = true
+            } else {
+                // 先触发退出动画
+                visible = false
+                // 等待动画完成后再清除消息
+                delay(600) // 等待动画完成
+                currentMessage = null
             }
         }
+
         AnimatedVisibility(
-            visible = msg.value.trim().isNotBlank(),
+            visible = visible,
             enter = slideInVertically(
-                initialOffsetY = { fullHeight -> -fullHeight },
-                animationSpec = tween(durationMillis = 150, easing = LinearOutSlowInEasing)
+                initialOffsetY = { it },
+                animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+            ) + fadeIn(
+                animationSpec = tween(durationMillis = 400)
             ),
             exit = slideOutVertically(
-                targetOffsetY = { fullHeight -> -fullHeight },
-                animationSpec = tween(durationMillis = 250, easing = FastOutLinearInEasing)
+                targetOffsetY = {  fullHeight -> fullHeight * 2 },
+                animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing) // 延长渐隐时间
+            ) + fadeOut(
+                animationSpec = tween(durationMillis = 400) // 更平滑的渐隐
             )
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp), // 顶部留白，避免贴边
-                contentAlignment = Alignment.TopCenter
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    shadowElevation = 6.dp, // 添加阴影提升层次感
-                    modifier = Modifier
-                        .widthIn(max = 500.dp) // 最大宽度限制
-                        .padding(horizontal = 16.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .height(60.dp)
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        // 提示文字
-                        Text(
-                            text = msg.value,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            textAlign = TextAlign.Center, // 文字居中对齐
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f)
-                        )
+            currentMessage?.let { msg ->
+                // 根据优先级调整显示位置
+                val bottomPadding = if (msg.priority > 0) {
+                    8.dp + (index * 2).dp // 高优先级消息更靠上
+                } else {
+                    16.dp + (index * 4).dp // 普通优先级消息正常间距
+                }
 
-                        // 关闭按钮
-                        IconButton(
-                            onClick = { msgList[index].value = "" },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Close,
-                                contentDescription = "Close",
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            bottom = bottomPadding,
+                            start = 16.dp,
+                            end = 16.dp
+                        )
+                        .animateContentSize(), // 添加内容大小动画
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .widthIn(max = 420.dp)
+                            .shadow(
+                                elevation = if (msg.priority > 0) 12.dp else 8.dp, // 高优先级阴影更强
+                                shape = RoundedCornerShape(12.dp),
+                                ambientColor = Color.Black.copy(alpha = 0.1f),
+                                spotColor = Color.Black.copy(alpha = 0.2f)
                             )
+                            .animateContentSize(), // 添加阴影大小动画
+                        shape = RoundedCornerShape(12.dp),
+                        color = getMessageBackgroundColor(msg.type).let {
+                            if (msg.priority > 0) it.copy(alpha = 0.95f) else it
+                        },
+                        tonalElevation = if (msg.priority > 0) 4.dp else 2.dp
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // 优先级指示器
+                            if (msg.priority > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(4.dp)
+                                        .background(
+                                            color = Color.Red,
+                                            shape = RoundedCornerShape(2.dp)
+                                        )
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
+
+                            Icon(
+                                imageVector = getMessageIcon(msg.type),
+                                contentDescription = null,
+                                tint = getMessageIconColor(msg.type),
+                                modifier = Modifier.size(20.dp)
+                            )
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Text(
+                                text = msg.content,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = if (msg.priority > 0) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 14.sp
+                                ),
+                                color = getMessageTextColor(msg.type),
+                                modifier = Modifier.weight(1f),
+                                maxLines = 3,
+                                textAlign = TextAlign.Start
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            IconButton(
+                                onClick = {
+                                    msgList[index].value = null
+                                },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "关闭",
+                                    tint = getMessageIconColor(msg.type).copy(alpha = 0.7f),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -142,32 +243,61 @@ object SnackBar {
 
     @Composable
     fun SnackBarList() {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(bottom = 15.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.aligned(Alignment.Bottom)
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
         ) {
-            repeat(msgList.size) {
-                SnackBarItem(it)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                msgList.forEachIndexed { index, _ ->
+                    SnackBarItem(index)
+                }
             }
         }
     }
 
-    fun postMsg(msg: String) {
-        if (msgQueue.size > 6) {
-            msgQueue.poll()
+    // 颜色配置函数
+    @Composable
+    private fun getMessageBackgroundColor(type: MessageType): Color {
+        return when (type) {
+            MessageType.INFO -> MaterialTheme.colorScheme.primaryContainer
+            MessageType.SUCCESS -> MaterialTheme.colorScheme.secondaryContainer
+            MessageType.WARNING -> MaterialTheme.colorScheme.tertiaryContainer
+            MessageType.ERROR -> MaterialTheme.colorScheme.errorContainer
         }
-        msgQueue.add(msg)
-        msgCheck()
     }
 
-}
+    @Composable
+    private fun getMessageTextColor(type: MessageType): Color {
+        return when (type) {
+            MessageType.INFO -> MaterialTheme.colorScheme.onPrimaryContainer
+            MessageType.SUCCESS -> MaterialTheme.colorScheme.onSecondaryContainer
+            MessageType.WARNING -> MaterialTheme.colorScheme.onTertiaryContainer
+            MessageType.ERROR -> MaterialTheme.colorScheme.onErrorContainer
+        }
+    }
 
-@Composable
-@Preview
-fun previewSnackBar() {
-    AppTheme {
-        SnackBar.postMsg("TEST")
-        SnackBar.SnackBarItem(0)
+    @Composable
+    private fun getMessageIconColor(type: MessageType): Color {
+        return when (type) {
+            MessageType.INFO -> MaterialTheme.colorScheme.primary
+            MessageType.SUCCESS -> MaterialTheme.colorScheme.secondary
+            MessageType.WARNING -> MaterialTheme.colorScheme.tertiary
+            MessageType.ERROR -> MaterialTheme.colorScheme.error
+        }
+    }
+
+    private fun getMessageIcon(type: MessageType): ImageVector {
+        return when (type) {
+            MessageType.INFO -> Icons.Default.Info
+            MessageType.SUCCESS -> Icons.Default.CheckCircle
+            MessageType.WARNING -> Icons.Default.Warning
+            MessageType.ERROR -> Icons.Default.Error
+        }
     }
 }

@@ -32,7 +32,6 @@ import com.corner.ui.SettingScene
 import com.corner.ui.nav.vm.*
 import com.corner.ui.navigation.TVScreen
 import com.corner.ui.scene.LoadingIndicator
-import com.corner.ui.scene.SnackBar
 import com.corner.ui.search.SearchScene
 import com.corner.ui.video.VideoScene
 import com.corner.util.FirefoxGray

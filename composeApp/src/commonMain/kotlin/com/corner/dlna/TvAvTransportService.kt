@@ -1,7 +1,6 @@
 package upnp
 
 import com.corner.catvodcore.viewmodel.GlobalAppState
-import com.corner.ui.scene.SnackBar
 import kotlinx.coroutines.runBlocking
 import org.jupnp.model.types.UnsignedIntegerFourBytes
 import org.jupnp.support.avtransport.AbstractAVTransportService
@@ -24,7 +23,7 @@ class TvAvTransportService : AbstractAVTransportService() {
         runBlocking {
             GlobalAppState.DLNAUrl.emit("")
             GlobalAppState.DLNAUrl.emit(currentURI)
-            SnackBar.postMsg("投屏：$currentURI")
+            SnackBar.postMsg("投屏：$currentURI", type = SnackBar.MessageType.INFO)
         }
 //        Play.start(currentURI, "test")
         log.info("setAvTransportURI instance id: $instanceId currentURI: $currentURI currentURIMetaData: $currentURIMetaData")

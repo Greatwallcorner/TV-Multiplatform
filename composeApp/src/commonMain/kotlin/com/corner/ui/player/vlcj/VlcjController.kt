@@ -11,7 +11,6 @@ import com.corner.ui.player.PlayState
 import com.corner.ui.player.PlayerController
 import com.corner.ui.player.PlayerLifecycleManager
 import com.corner.ui.player.PlayerState
-import com.corner.ui.scene.SnackBar
 import com.corner.util.catch
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -357,7 +356,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     override fun load(url: String): PlayerController {
         log.debug("加载：$url")
         if (StringUtils.isBlank(url)) {
-            SnackBar.postMsg("播放地址为空")
+            SnackBar.postMsg("播放地址为空", type = SnackBar.MessageType.WARNING)
             return this
         }
 
@@ -380,7 +379,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
 
         if (StringUtils.isBlank(url)) {
             withContext(Dispatchers.Swing) {
-                SnackBar.postMsg("播放地址为空")
+                SnackBar.postMsg("播放地址为空", type = SnackBar.MessageType.WARNING)
             }
             return@withContext this@VlcjController
         }
@@ -393,12 +392,12 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         } catch (e: TimeoutCancellationException) {
             log.error("媒体加载超时: ${e.message}")
             withContext(Dispatchers.Swing) {
-                SnackBar.postMsg("媒体加载超时，请检查网络连接")
+                SnackBar.postMsg("媒体加载超时，请检查网络连接", type = SnackBar.MessageType.WARNING)
             }
         } catch (e: Exception) {
             log.error("媒体加载失败", e)
             withContext(Dispatchers.Default) {
-                SnackBar.postMsg("媒体加载失败: ${e.message}")
+                SnackBar.postMsg("媒体加载失败: ${e.message}", type = SnackBar.MessageType.ERROR)
             }
         }
 
@@ -626,7 +625,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         } catch (e: Exception) {
             log.error("播放器操作失败", e)
             withContext(Dispatchers.Swing) {
-                SnackBar.postMsg("播放器操作失败: ${e.message}")
+                SnackBar.postMsg("播放器操作失败: ${e.message}", type = SnackBar.MessageType.ERROR)
             }
             onError(e)
         }

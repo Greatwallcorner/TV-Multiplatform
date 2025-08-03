@@ -28,14 +28,11 @@ object JarLoader {
 
     var recent: String? = null
 
-    /**
-     * CLEAR了个什么？？？？？
-     * */
     fun clear() {
         spiders.values.forEach { spider ->
             CoroutineScope(Dispatchers.IO).launch {
                 spider.destroy()
-                spiders.clear()//???
+                spiders.clear()
             }
         }
         loaders.clear()
@@ -43,10 +40,7 @@ object JarLoader {
         recent = null
     }
 
-    // 类级别变量
-    private var loadJarStackDepth = 0
     private const val MAX_RETRY_COUNT = 30
-    private const val STACK_OVERFLOW_THRESHOLD = 50 // 根据实际JVM栈深度调整
 
     /**
      * 改为迭代方式，不要使用递归，会出现问题
@@ -117,12 +111,6 @@ object JarLoader {
                 }
             }
         }
-    }
-
-
-    private fun resetLoadJarState() {
-        loadJarStackDepth = 0
-        log.error("重置loadJar状态，防止堆栈溢出")
     }
 
     /**

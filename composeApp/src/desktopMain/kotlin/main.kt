@@ -17,7 +17,6 @@ import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.init.Init
 import com.corner.init.generateImageLoader
 import com.corner.ui.Util
-import com.corner.ui.scene.SnackBar
 import com.corner.util.SysVerUtil
 import com.seiko.imageloader.LocalImageLoader
 import kotlinx.coroutines.Dispatchers
@@ -131,7 +130,7 @@ private fun getSystemPropAndAppend(key: String, s: StringBuilder) {
 
 private fun launchErrorCatcher() {
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
-        SnackBar.postMsg("未知异常， 请查看日志")
+        SnackBar.postMsg("未知异常， 请查看日志", type = SnackBar.MessageType.ERROR)
         log.error("未知异常", e)
         Init.stop()
 //        Dialog(Frame(), e.message ?: "Error").apply {

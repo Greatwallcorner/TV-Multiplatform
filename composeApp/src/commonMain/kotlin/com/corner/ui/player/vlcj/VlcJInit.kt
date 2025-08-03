@@ -2,7 +2,6 @@ package com.corner.ui.player.vlcj
 
 import com.corner.bean.SettingStore
 import com.corner.ui.getPlayerSetting
-import com.corner.ui.scene.SnackBar
 import com.corner.util.thisLogger
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 
@@ -20,9 +19,9 @@ class VlcJInit {
         fun init(notify: Boolean = false) {
             val discover = NativeDiscovery().discover()
             if (!discover && SettingStore.getPlayerSetting()[0] as Boolean) {
-                SnackBar.postMsg("未找到VLC播放器组件，请安装VLC或者配置vlc可执行文件位置")
+                SnackBar.postMsg("未找到VLC播放器组件，请安装VLC或者配置vlc可执行文件位置", type = SnackBar.MessageType.ERROR)
             }
-            if (notify) SnackBar.postMsg("VLC加载${if (discover) "成功" else "失败"}")
+            if (notify) SnackBar.postMsg("VLC加载${if (discover) "成功" else "失败"}", type = SnackBar.MessageType.INFO)
         }
 
         /**

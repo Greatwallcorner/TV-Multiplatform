@@ -200,7 +200,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
 
                                         vm.clear(false)
                                         vm.quickSearch()
-                                        SnackBar.postMsg("重新加载")
+                                        SnackBar.postMsg("重新加载", type = SnackBar.MessageType.INFO)
                                     }
                                 },
                                 enabled = !model.isLoading,

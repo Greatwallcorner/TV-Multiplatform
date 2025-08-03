@@ -24,9 +24,9 @@ import com.corner.ui.nav.data.DetailScreenState
 import com.corner.ui.nav.data.DialogState.isSpecialVideoLink
 import com.corner.ui.player.PlayState
 import com.corner.ui.player.PlayerLifecycleManager
+import com.corner.ui.player.PlayerLifecycleState
 import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.ui.player.vlcj.VlcjFrameController
-import com.corner.ui.scene.SnackBar
 import com.corner.util.Constants
 import com.corner.util.cancelAll
 import com.corner.util.play.Play
@@ -69,7 +69,6 @@ class DetailViewModel : BaseViewModel() {
 
     // 添加生命周期管理器
     val currentSelectedEpUrl = mutableStateOf<String?>(null) // 新增状态记录
-
 
     /**
      * 更新历史记录信息。
@@ -237,7 +236,7 @@ class DetailViewModel : BaseViewModel() {
             // 若获取的详情信息为空或详情本身为空，记录日志并尝试加载下一个视频
             if (dt == null || dt.detailIsEmpty()) {
                 log.info("请求详情为空 加载下一个站源数据")
-                SnackBar.postMsg("请求详情为空 加载下一个站源数据")
+                SnackBar.postMsg("请求详情为空 加载下一个站源数据", type = SnackBar.MessageType.INFO)
                 nextSite(vod)
             } else {
                 // 从详情列表中取出第一个元素
@@ -279,8 +278,14 @@ class DetailViewModel : BaseViewModel() {
         searchScope.launch {
             // 筛选出可切换的站点列表，并打乱顺序
             val quickSearchSites = ApiConfig.api.sites.filter { it.changeable == 1 }.shuffled()
+
+            val totalSites = quickSearchSites.size  // 获取总站点数
+            var completedCount = 0  // 已完成计数器
+
             // 记录开始执行快速搜索的日志，包含参与搜索的站点名称
             log.debug("开始执行快搜 sites:{}", quickSearchSites.map { it.name }.toString())
+            // 发送开始搜索消息
+            postQuickSearchProgress(0, totalSites)
             // 创建一个信号量，限制同时执行的搜索任务数量为 2
             val semaphore = Semaphore(2)
             // 遍历可搜索的站点列表
@@ -304,11 +309,16 @@ class DetailViewModel : BaseViewModel() {
                 }
 
                 // 为每个搜索任务添加完成回调
-                job.invokeOnCompletion { it ->
-                    if (it != null) {
+                job.invokeOnCompletion { throwable ->
+                    completedCount++
+                    if (throwable  != null) {
                         // 若协程执行过程中出现异常，记录错误日志
-                        log.error("quickSearch 协程执行异常 msg:{}", it.message)
+                        log.error("quickSearch 协程执行异常 msg:{}", throwable .message)
                     }
+
+                    // 更新进度显示
+                    postQuickSearchProgress(completedCount, totalSites)
+
                     // 更新状态流，将搜索结果添加到快速搜索结果列表中
                     _state.update {
                         val list = CopyOnWriteArrayList<Vod>()
@@ -320,7 +330,7 @@ class DetailViewModel : BaseViewModel() {
                     }
                     if (it == null) {
                         // 若协程正常完成，记录完成日志并输出结果列表大小
-                        log.debug("一个job执行完毕 result size:{}", _state.value.quickSearchResult.size)
+                        log.debug("一个job执行完毕 {}/{} result size:{}", completedCount, totalSites, _state.value.quickSearchResult.size)
                     }
 
                     // 使用同步锁确保线程安全
@@ -350,7 +360,7 @@ class DetailViewModel : BaseViewModel() {
                 // 更新状态流，将详情信息设置为全局选中的视频信息
                 _state.update { it.copy(detail = GlobalAppState.chooseVod.value, isLoading = false) }
                 // 提示用户暂无线路数据
-                SnackBar.postMsg("暂无线路数据")
+                SnackBar.postMsg("暂无线路数据", type = SnackBar.MessageType.INFO)
                 hideProgress()
             }
         }.invokeOnCompletion {
@@ -359,6 +369,10 @@ class DetailViewModel : BaseViewModel() {
         }
     }
 
+    // 快搜专用消息
+    fun postQuickSearchProgress(current: Int, total: Int) {
+        SnackBar.postMsg("搜索进度: $current/$total", priority = 1, type = SnackBar.MessageType.INFO)
+    }
 
     /**
      * 尝试从快速搜索结果中加载下一个视频的详情。
@@ -488,7 +502,7 @@ class DetailViewModel : BaseViewModel() {
         // 检查当前站点 key 是否与传入视频的站点 key 不同
         if (currentSiteKey.value != vod.site?.key) {
             // 若不同，提示用户正在切换站源至传入视频所在的站点
-            SnackBar.postMsg("正在切换站源至 [${vod.site!!.name}]")
+            SnackBar.postMsg("正在切换站源至 [${vod.site!!.name}]", type = SnackBar.MessageType.INFO)
         }
         // 更新状态流中的详情信息
         _state.update {
@@ -527,7 +541,7 @@ class DetailViewModel : BaseViewModel() {
         // 检查播放结果是否为空或者播放结果无效
         if (result == null || result.playResultIsEmpty()) {
             // 若为空或无效，提示用户加载内容失败，尝试切换线路
-            SnackBar.postMsg("加载内容失败，尝试切换线路")
+            SnackBar.postMsg("加载内容失败，尝试切换线路", type = SnackBar.MessageType.WARNING)
             // 调用 nextFlag 函数尝试切换到下一个可用线路
             nextFlag()
             // 结束当前函数执行
@@ -577,11 +591,11 @@ class DetailViewModel : BaseViewModel() {
                 controller.loadAsync(result.url.v(), 10000)
             } catch (e: TimeoutCancellationException) {
                 log.error("播放器初始化超时", e)
-                SnackBar.postMsg("播放器初始化超时，请重试")
+                SnackBar.postMsg("播放器初始化超时，请重试", type = SnackBar.MessageType.ERROR)
                 _state.update { it.copy() }
             } catch (e: Exception) {
                 log.error("播放器初始化失败", e)
-                SnackBar.postMsg("播放器初始化失败: ${e.message}")
+                SnackBar.postMsg("播放器初始化失败: ${e.message}", type = SnackBar.MessageType.ERROR)
                 _state.update { it.copy() }
             }
         }
@@ -634,7 +648,7 @@ class DetailViewModel : BaseViewModel() {
         if (result == null || result.playResultIsEmpty()) {
             hideProgress()
             // 提示用户加载失败，并尝试切换到下一个线路
-            SnackBar.postMsg("加载内容失败，尝试切换线路")
+            SnackBar.postMsg("加载内容失败，尝试切换线路", type = SnackBar.MessageType.WARNING)
             nextFlag()
             return
         }
@@ -679,7 +693,7 @@ class DetailViewModel : BaseViewModel() {
         // 如果使用外部播放器，提示用户上次观看的剧集
         if (!internalPlayer) {
             // 提示用户上次看到的剧集名称
-            SnackBar.postMsg("上次看到" + ": ${ep.name}")
+            SnackBar.postMsg("上次看到" + ": ${ep.name}", type = SnackBar.MessageType.INFO)
         }
     }
 
@@ -1029,7 +1043,7 @@ class DetailViewModel : BaseViewModel() {
         // 若总剧集数量小于等于下一集的索引，说明没有更多剧集了
         if (size <= nextIndex) {
             // 提示用户没有更多剧集了
-            SnackBar.postMsg("没有更多了")
+            SnackBar.postMsg("没有更多了", type = SnackBar.MessageType.INFO)
             // 结束当前方法
             return
         }
@@ -1038,7 +1052,6 @@ class DetailViewModel : BaseViewModel() {
             playEp(detail, it)
         }
     }
-
 
     /**
      * 尝试切换到下一个视频播放线路。
@@ -1050,6 +1063,14 @@ class DetailViewModel : BaseViewModel() {
         hideProgress()
         // 记录开始尝试切换到下一个播放线路的日志
         log.info("nextFlag")
+        scope.launch {
+            if (lifecycleManager.lifecycleState.value != PlayerLifecycleState.Ended){
+                if (lifecycleManager.lifecycleState.value == PlayerLifecycleState.Playing){
+                    lifecycleManager.stop()
+                }
+                lifecycleManager.ended()
+            }
+        }
         // 复制当前视频详情信息，避免直接修改原始状态
         var detail = _state.value.detail.copy()
         // 调用 nextFlag 方法获取下一个可用的播放线路
@@ -1057,7 +1078,7 @@ class DetailViewModel : BaseViewModel() {
 
         // 若下一个播放线路为空
         if (nextFlag == null) {
-            SnackBar.postMsg("没有更多线路")
+            SnackBar.postMsg("没有更多线路", type = SnackBar.MessageType.INFO)
             log.info("没有更多线路")
             // 添加以下状态更新
             _state.update {
@@ -1085,7 +1106,7 @@ class DetailViewModel : BaseViewModel() {
         // 复制视频详情信息，更新子剧集列表为当前播放线路对应页的剧集
         detail = detail.copy(subEpisode = detail.currentFlag.episodes.getPage(_state.value.detail.currentTabIndex))
         // 提示用户已切换至新的播放线路
-        SnackBar.postMsg("切换至线路[${detail.currentFlag.flag}]")
+        SnackBar.postMsg("切换至线路[${detail.currentFlag.flag}]", type = SnackBar.MessageType.INFO)
         // 更新控制器的历史记录，记录当前播放线路标识
         controller.doWithHistory { it.copy(vodFlag = detail.currentFlag.flag) }
         // 将全局应用状态中选中的视频信息更新为当前视频详情信息
@@ -1242,7 +1263,7 @@ class DetailViewModel : BaseViewModel() {
             } catch (e: Exception) {
                 // 异常处理：记录错误并提示用户
                 log.error("切换线路失败", e)
-                SnackBar.postMsg("切换线路失败: ${e.message}")
+                SnackBar.postMsg("切换线路失败: ${e.message}", type = SnackBar.MessageType.ERROR)
                 _state.update { it.copy() }
             }
         }

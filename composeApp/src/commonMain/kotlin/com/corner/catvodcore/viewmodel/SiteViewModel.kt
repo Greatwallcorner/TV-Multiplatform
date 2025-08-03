@@ -15,7 +15,6 @@ import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
 import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
-import com.corner.ui.scene.SnackBar
 import com.corner.util.copyAdd
 import com.corner.util.createCoroutineScope
 import com.github.catvod.crawler.Spider
@@ -641,10 +640,9 @@ object SiteViewModel {
 
     private fun post(site: Site, result: Result, quick: Boolean) {
         if (site.name.isNotEmpty()) {
-            SnackBar.postMsg("开始在${site.name}搜索")
+            SnackBar.postMsg("开始在${site.name}搜索", type = SnackBar.MessageType.INFO)
         }
         if (result.list.isEmpty()) {
-            SnackBar.postMsg("${site.name}搜索结果为空,可能是站源问题或尝试换个关键词")
             return
         }
         for (vod in result.list) vod.site = site

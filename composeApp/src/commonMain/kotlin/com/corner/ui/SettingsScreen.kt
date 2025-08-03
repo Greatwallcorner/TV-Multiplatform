@@ -450,7 +450,7 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                                 onClick = {
                                     SettingStore.setValue(SettingType.LOG, level)
                                     vm.sync()
-                                    SnackBar.postMsg("重启生效")
+                                    SnackBar.postMsg("重启生效", type = SnackBar.MessageType.INFO)
                                 },
                                 label = { Text(level) },
                                 modifier = Modifier.weight(1f),
@@ -500,9 +500,9 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                                             "${type.id}#${playerSetting.value[1]}"
                                         )
                                         when (type.id) {
-                                            PlayerType.Innie.id -> SnackBar.postMsg("使用内置播放器")
-                                            PlayerType.Outie.id -> SnackBar.postMsg("使用外部播放器 请配置播放器路径")
-                                            PlayerType.Web.id -> SnackBar.postMsg("使用浏览器播放器")
+                                            PlayerType.Innie.id -> SnackBar.postMsg("使用内置播放器", type = SnackBar.MessageType.INFO)
+                                            PlayerType.Outie.id -> SnackBar.postMsg("使用外部播放器 请配置播放器路径", type = SnackBar.MessageType.INFO)
+                                            PlayerType.Web.id -> SnackBar.postMsg("使用浏览器播放器", type = SnackBar.MessageType.INFO)
                                         }
                                         vm.sync()
                                     },
@@ -598,7 +598,7 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                     onClick = {
                         SettingStore.reset()
                         vm.sync()
-                        SnackBar.postMsg("重置设置 重启生效")
+                        SnackBar.postMsg("重置设置 重启生效", type = SnackBar.MessageType.INFO)
                     },
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -796,7 +796,7 @@ fun setConfig(textFieldValue: String?) {
     showProgress()
     SiteViewModel.viewModelScope.launch {
         if (textFieldValue == null || textFieldValue == "") {
-            SnackBar.postMsg("不可为空")
+            SnackBar.postMsg("不可为空", type = SnackBar.MessageType.ERROR)
             return@launch
         }
         SettingStore.setValue(SettingType.VOD, textFieldValue)
