@@ -40,6 +40,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.zIndex
+import androidx.compose.ui.graphics.Brush
 import com.corner.catvod.enum.bean.Site
 import com.corner.catvod.enum.bean.Vod
 import com.corner.catvodcore.bean.Type
@@ -59,10 +60,10 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.folder_back
-import tv_multiplatform.composeapp.generated.resources.loading
-import tv_multiplatform.composeapp.generated.resources.undraw_loading
+import lumentv_compose.composeapp.generated.resources.Res
+import lumentv_compose.composeapp.generated.resources.folder_back
+import lumentv_compose.composeapp.generated.resources.loading
+import lumentv_compose.composeapp.generated.resources.undraw_loading
 
 val log: Logger? = LoggerFactory.getLogger("VideoScreen")
 
@@ -630,37 +631,81 @@ fun ClassRow(vm: VideoViewModel, onCLick: (Type) -> Unit) {
     val state = rememberLazyListState(0)
     val scope = rememberCoroutineScope()
     val visible = derivedStateOf { state.layoutInfo.visibleItemsInfo.size < model.value.classList.size }
-    Box(modifier = Modifier) {
-        LazyRow(
-            state = state,
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .onPointerEvent(PointerEventType.Scroll) {
-                    scope.launch {
-                        state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
-                    }
-                },
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            contentPadding = PaddingValues(top = 5.dp, start = 5.dp, end = 5.dp, bottom = 5.dp),
-            userScrollEnabled = true
+                .padding(horizontal = 16.dp)
         ) {
-            val list = derivedStateOf { model.value.classList.toList() }
-            items(list.value) { type ->
-                RatioBtn(text = type.typeName, onClick = {
-                    vm.chooseClass(type) {
-                        onCLick(type)
-                    }
-                }, selected = type.selected)
+            LazyRow(
+                state = state,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onPointerEvent(PointerEventType.Scroll) {
+                        scope.launch {
+                            state.scrollBy(it.changes.first().scrollDelta.y * state.layoutInfo.visibleItemsInfo.first().size)
+                        }
+                    },
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                contentPadding = PaddingValues(top = 5.dp, start = 5.dp, end = 5.dp, bottom = 5.dp),
+                userScrollEnabled = true
+            ) {
+                val list = derivedStateOf { model.value.classList.toList() }
+                items(list.value) { type ->
+                    RatioBtn(text = type.typeName, onClick = {
+                        vm.chooseClass(type) {
+                            onCLick(type)
+                        }
+                    }, selected = type.selected)
+                }
             }
+
+            // 左侧渐隐效果
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .height(48.dp) // 限制高度为按钮高度
+                    .width(16.dp)
+                    .zIndex(1f) // 确保在上方但不阻挡交互
+                    .background(
+                        Brush.horizontalGradient(
+                            0f to MaterialTheme.colorScheme.surface,
+                            1f to Color.Transparent
+                        )
+                    )
+            )
+
+            // 右侧渐隐效果 - 使用zIndex和限制高度
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .height(48.dp) // 限制高度为按钮高度
+                    .width(16.dp)
+                    .zIndex(1f) // 确保在上方但不阻挡交互
+                    .background(
+                        Brush.horizontalGradient(
+                            0f to Color.Transparent,
+                            1f to MaterialTheme.colorScheme.surface
+                        )
+                    )
+            )
         }
+
         if (visible.value) {
             HorizontalScrollbar(
-                rememberScrollbarAdapter(state), modifier = Modifier.align(Alignment.BottomCenter)
-                    .padding(top = 10.dp)
+                rememberScrollbarAdapter(state),
+                modifier = Modifier
+                    .padding(top = 2.dp)
+                    .padding(horizontal = 20.dp)
             )
         }
     }
 }
+
 
 //@Composable
 //@Preview

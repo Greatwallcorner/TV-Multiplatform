@@ -46,7 +46,8 @@ fun FrameContainer(
     val playerState = controller.state.collectAsState()
     val bitmap by remember { controller.imageBitmapState }
     val interactionSource = remember { MutableInteractionSource() }
-    Box(modifier = modifier.background(Color.Black)
+    Box(
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant)
         .combinedClickable(
             enabled = true,
             onDoubleClick = {
@@ -94,14 +95,30 @@ fun FrameContainer(
         }, contentAlignment = Alignment.Center
     ) {
         val frameSizeCalculator = remember { FrameContainerSizeCalculator() }
-        val imageSize by derivedStateOf {
-            IntSize(playerState.value.mediaInfo!!.width, playerState.value.mediaInfo!!.height)
+        // 添加状态同步
+        LaunchedEffect(playerState.value.aspectRatio) {
+            frameSizeCalculator.aspectRatio = playerState.value.aspectRatio
         }
+
+        val imageSize by derivedStateOf {
+            val mediaInfo = playerState.value.mediaInfo
+            if (mediaInfo != null) {
+                IntSize(mediaInfo.width, mediaInfo.height)
+            } else {
+                IntSize(1920, 1080)
+            }
+        }
+
         Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
             bitmap?.let {
-                Canvas(modifier = Modifier.matchParentSize()){
+                Canvas(modifier = Modifier.matchParentSize()) {
                     frameSizeCalculator.calculate(imageSize, size)
-                    drawImage(it, dstOffset = frameSizeCalculator.dstOffset, dstSize = frameSizeCalculator.dstSize,filterQuality = FilterQuality.High,)
+                    drawImage(
+                        it,
+                        dstOffset = frameSizeCalculator.dstOffset,
+                        dstSize = frameSizeCalculator.dstSize,
+                        filterQuality = FilterQuality.High,
+                    )
                 }
             }
             when (playerState.value.state) {
@@ -154,7 +171,7 @@ fun ProgressIndicator(modifier: Modifier, text: String = "加载中...", progres
     Column(modifier) {
         if (progression != -1f) {
             CircularProgressIndicator(
-                progress = { progression / 100},
+                progress = { progression / 100 },
             )
         } else {
             CircularProgressIndicator()
@@ -172,31 +189,63 @@ fun ProgressIndicator(modifier: Modifier, text: String = "加载中...", progres
     }
 }
 
-private class FrameContainerSizeCalculator(){
-    private var lastContainerSize = Size.Zero
-    private var lastSize = IntSize.Zero
+class FrameContainerSizeCalculator {
+    var srcWidth = 0
+    var srcHeight = 0
+    var dstWidth = 0f
+    var dstHeight = 0f
+    var offsetX = 0f
+    var offsetY = 0f
 
-    var dstSize = IntSize.Zero
-    var dstOffset = IntOffset.Zero
+    var aspectRatio: String = ""
+    val dstOffset: IntOffset get() = IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
+    val dstSize: IntSize get() = IntSize(dstWidth.roundToInt(), dstHeight.roundToInt())
 
-    fun calculate(imageSize: IntSize, containerSize: Size){
-        if(lastSize == imageSize && containerSize == lastContainerSize) {
-            return
+    fun calculate(imageSize: IntSize, containerSize: Size) {
+        // 修复：过滤无效尺寸（避免宽高为0导致NaN）
+        srcWidth = if (imageSize.width > 0) imageSize.width else 1280
+        srcHeight = if (imageSize.height > 0) imageSize.height else 720
+
+        val containerWidth = containerSize.width
+        val containerHeight = containerSize.height
+        val containerRatio = if (containerHeight > 0) containerWidth / containerHeight else 16f / 9f
+
+        // 根据选择的视频比例调整显示
+        if (aspectRatio.isNotBlank() && aspectRatio.contains(":")) {
+            val parts = aspectRatio.split(":")
+            if (parts.size == 2) {
+                val targetRatio = parts[0].toFloat() / parts[1].toFloat()
+                // 使用目标比例重新计算
+                if (targetRatio > containerRatio) {
+                    dstWidth = containerWidth
+                    dstHeight = containerWidth / targetRatio
+                } else {
+                    dstHeight = containerHeight
+                    dstWidth = containerHeight * targetRatio
+                }
+                offsetX = (containerWidth - dstWidth) / 2
+                offsetY = (containerHeight - dstHeight) / 2
+                return
+            }
         }
-        lastContainerSize = containerSize
-        lastSize = imageSize
 
-        val imageRatio = imageSize.width.toFloat() / imageSize.height.toFloat()
-        var finalWidth = containerSize.width
-        var finalHeight = containerSize.width / imageRatio
-        if(imageRatio == 0.0f || imageSize == IntSize.Zero){
-            finalHeight = containerSize.height
-        }else if(finalHeight > containerSize.height) {
-            finalHeight = containerSize.height
-            finalWidth = containerSize.height * imageRatio
+        // 计算原始宽高比（添加安全检查避免除零）
+        val imageRatio = if (srcHeight > 0) srcWidth.toFloat() / srcHeight.toFloat() else 16f / 9f // 默认16:9
+
+        // 根据比例决定缩放方向，避免拉伸
+        if (imageRatio > containerRatio) {
+            dstWidth = containerWidth
+            dstHeight = containerWidth / imageRatio
+            offsetY = (containerHeight - dstHeight) / 2
+            offsetX = 0f
+        } else {
+            dstHeight = containerHeight
+            dstWidth = containerHeight * imageRatio
+            offsetX = (containerWidth - dstWidth) / 2
+            offsetY = 0f
         }
-
-        dstSize = IntSize(finalWidth.roundToInt(), finalHeight.roundToInt())
-        dstOffset = IntOffset(((containerSize.width-finalWidth) / 2).toInt(), ((containerSize.height - finalHeight) / 2).toInt())
     }
 }
+
+
+

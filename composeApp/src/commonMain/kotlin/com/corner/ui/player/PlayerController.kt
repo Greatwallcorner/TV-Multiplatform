@@ -15,14 +15,26 @@ interface PlayerController {
 
     var history:MutableStateFlow<History?>
 
+    var playerReady:Boolean
+
+    var playerLoading:Boolean
+
+    var playerPlayering:Boolean
     fun load(url: String): PlayerController
 
     fun onMediaPlayerReady(mediaPlayer: EmbeddedMediaPlayer)
 
     fun doWithMediaPlayer(block: (MediaPlayer) -> Unit)
 
+    // 添加异步方法
+    suspend fun initAsync()
+    suspend fun cleanupAsync()
+    // 添加带超时的加载方法
+    suspend fun loadAsync(url: String, timeoutMillis: Long = 10000): PlayerController
     fun play()
-
+    //视频比例调整
+    fun setAspectRatio(aspectRatio: String)
+    fun getAspectRatio(): String
     fun play(url:String)
     fun pause()
     fun stop()
@@ -53,4 +65,5 @@ interface PlayerController {
     fun setStartEnding(opening: Long, ending: Long)
     fun doWithPlayState(func: (MutableStateFlow<PlayerState>) -> Unit)
     fun resetOpeningEnding()
+    fun vlcjFrameInit() {}
 }

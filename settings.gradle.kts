@@ -1,4 +1,4 @@
-rootProject.name = "TV-Multiplatform"
+rootProject.name = "LumenTV-Compose"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

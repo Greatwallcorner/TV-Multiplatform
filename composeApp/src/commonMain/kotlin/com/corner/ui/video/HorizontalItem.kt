@@ -16,8 +16,8 @@ import androidx.compose.ui.unit.dp
 import com.corner.catvod.enum.bean.Vod
 import com.seiko.imageloader.ui.AutoSizeImage
 import org.jetbrains.compose.resources.painterResource
-import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.loading
+import lumentv_compose.composeapp.generated.resources.Res
+import lumentv_compose.composeapp.generated.resources.loading
 
 @Composable
 fun HorizontalItem(modifier: Modifier, vod:Vod, onClick:(Vod)->Unit){

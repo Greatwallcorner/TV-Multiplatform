@@ -4,7 +4,9 @@ import ch.qos.logback.classic.Level
 import com.corner.bean.enums.PlayerType
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Paths
+import com.corner.util.M3U8FilterConfig
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.apache.commons.lang3.StringUtils
 import java.nio.file.Files
 import kotlin.io.path.exists
@@ -32,7 +34,7 @@ class SearchHistoryCache:Cache{
 
     private val maxSize:Int = 30
 
-    private var searchHistoryList:LinkedHashSet<String> = linkedSetOf()
+    var searchHistoryList:LinkedHashSet<String> = linkedSetOf()
     override fun getName(): String {
         return "searchHistory"
     }
@@ -49,6 +51,10 @@ class SearchHistoryCache:Cache{
 
     fun getSearchList():List<String>{
         return searchHistoryList.toList().reversed()
+    }
+
+    fun remove(query: String) {
+        searchHistoryList.remove(query)
     }
 
 }
@@ -89,7 +95,9 @@ enum class SettingType(val id: String) {
     SEARCHHISTORY("searchHistory"),
     PROXY("proxy"),
     // 新增主题设置类型
-    THEME("theme")
+    THEME("theme"),
+    AD_FILTER("adFilter"),
+    M3U8_FILTER_CONFIG("m3u8FilterConfig");
 }
 
 object SettingStore {
@@ -98,7 +106,9 @@ object SettingStore {
         Setting("log", "日志级别", Level.DEBUG.levelStr),
         Setting("player", "播放器", "false#"),
         Setting("proxy", "代理", "false#"),
-        Setting("theme", "主题", "light")
+        Setting("theme", "主题", "light"),
+        Setting("adFilter", "广告过滤", "true"),
+        Setting("m3u8FilterConfig", "M3U8 过滤配置", "")
     )
 
     private var settingFile = SettingFile(mutableListOf<Setting>(), mutableMapOf())
@@ -140,7 +150,6 @@ object SettingStore {
         settingFile.list.find { i -> i.id == type.id }?.value = s
         write()
     }
-    
     fun doWithCache(func:(MutableMap<String, Cache>) -> Unit){
         func(settingFile.cache)
         write()
@@ -184,6 +193,40 @@ object SettingStore {
         if(cache == null) settingFile.cache[SettingType.SEARCHHISTORY.id] = SearchHistoryCache()
         if(s.trim().isNotBlank()){
             getCache(SettingType.SEARCHHISTORY.id)!!.add(s)
+            write()
+        }
+    }
+
+    fun isAdFilterEnabled(): Boolean {
+        return getSettingItem(SettingType.AD_FILTER.id).toBoolean()
+    }
+
+    fun setAdFilterEnabled(enabled: Boolean) {
+        setValue(SettingType.AD_FILTER, enabled.toString())
+    }
+
+    fun getM3U8FilterConfig(): M3U8FilterConfig {
+        val configJson = getSettingItem(SettingType.M3U8_FILTER_CONFIG)
+        return if (configJson.isNullOrBlank()) {
+            M3U8FilterConfig()
+        } else {
+            try {
+                Json.decodeFromString(configJson)
+            } catch (e: Exception) {
+                println("反序列化 M3U8FilterConfig 失败，使用默认配置: ${e.message}")
+                M3U8FilterConfig()
+            }
+        }
+    }
+
+    fun setM3U8FilterConfig(config: M3U8FilterConfig) {
+        val configJson = Json.encodeToString(config)
+        setValue(SettingType.M3U8_FILTER_CONFIG, configJson)
+    }
+
+    fun deleteSearchHistory(query: String) {
+        getCache(SettingType.SEARCHHISTORY.id)?.let { cache ->
+            (cache as? SearchHistoryCache)?.remove(query)
             write()
         }
     }

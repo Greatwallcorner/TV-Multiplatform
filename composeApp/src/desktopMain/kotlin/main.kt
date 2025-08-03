@@ -27,8 +27,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.compose.resources.painterResource
 import org.slf4j.LoggerFactory
-import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.LumenTV_icon
+import lumentv_compose.composeapp.generated.resources.Res
+import lumentv_compose.composeapp.generated.resources.LumenTV_icon_png
 import java.awt.Dimension
 
 
@@ -70,7 +70,7 @@ fun main() {
         val contextMenuRepresentation =
             if (isSystemInDarkTheme()) DarkDefaultContextMenuRepresentation else LightDefaultContextMenuRepresentation
         Window(
-            onCloseRequest = ::exitApplication, icon = painterResource(Res.drawable.LumenTV_icon), title = "LumenTV",
+            onCloseRequest = ::exitApplication, icon = painterResource(Res.drawable.LumenTV_icon_png), title = "LumenTV",
             state = windowState,
             undecorated = true,
             transparent = false,
@@ -83,10 +83,6 @@ fun main() {
                 RootContent(modifier = Modifier.fillMaxSize())
             }
 
-            /**
-            * 代码水平不太正常
-            **/
-
             scope.launch {
                 GlobalAppState.closeApp.collect {
                     if (it) {
@@ -97,15 +93,12 @@ fun main() {
                             // 2. 保存设置
                             SettingStore.write()
 
-                            // 3. 执行清理（新增）
-                            GlobalAppState.cleanupBeforeExit()
-
-                            // 4. 等待500ms确保清理完成
+                            // 3. 等待500ms确保清理完成
                             delay(500)
                         } catch (e: Exception) {
                             log.error("关闭应用异常", e)
                         } finally {
-                            // 5. 退出应用
+                            // 4. 退出应用
                             exitApplication()
                         }
                     }

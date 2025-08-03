@@ -83,6 +83,10 @@ class Init {
                 return
             }
 
+            // 新增：初始化广告过滤配置
+            val filterConfig = SettingStore.getM3U8FilterConfig()
+            log.debug("加载广告过滤配置: $filterConfig")
+
             val siteConfig = runBlocking {
                 withContext(Dispatchers.IO) {
                     Db.Config.findOneByType(ConfigType.SITE.ordinal.toLong())

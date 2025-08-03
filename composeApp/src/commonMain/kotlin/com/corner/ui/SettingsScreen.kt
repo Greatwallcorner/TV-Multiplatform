@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.ContentPaste
@@ -75,8 +76,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
-import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.avatar
+import lumentv_compose.composeapp.generated.resources.Res
 import java.awt.Desktop
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
@@ -84,15 +84,20 @@ import java.io.File
 import java.net.URI
 import androidx.compose.runtime.collectAsState
 import com.corner.catvodcore.viewmodel.GlobalAppState
+import com.corner.util.M3U8FilterConfig
+import lumentv_compose.composeapp.generated.resources.LumenTV_icon_svg
 
 @Composable
-fun WindowScope.SettingScene(vm: SettingViewModel, onClickBack: () -> Unit) {
+fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onClickBack: () -> Unit) {
     val model = vm.state.collectAsState()
     var showAboutDialog by remember { mutableStateOf(false) }
 
     // 收集全局主题状态
     val isDarkTheme by GlobalAppState.isDarkTheme.collectAsState()
-
+    val config = remember { mutableStateOf(SettingStore.getM3U8FilterConfig()) }
+    val isAdFilterEnabled by remember { mutableStateOf(SettingStore.isAdFilterEnabled()) }
+    var adFilterChecked by remember { mutableStateOf(isAdFilterEnabled) }
+    var showRestartDialog by remember { mutableStateOf(false) }
     DisposableEffect("setting") {
         vm.sync()
         onDispose {
@@ -174,76 +179,86 @@ fun WindowScope.SettingScene(vm: SettingViewModel, onClickBack: () -> Unit) {
             modifier = Modifier.fillMaxSize().padding(16.dp, top = 80.dp, end = 16.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-//            item {
-//                SettingCard(title = "点播源配置", icon = Icons.Default.LiveTv) {
-//                    val focusRequester = remember { FocusRequester() }
-//                    val isExpand = remember { mutableStateOf(false) }
-//                    val setting = derivedStateOf { model.value.settingList.getSetting(SettingType.VOD) }
-//                    val vodConfigList = derivedStateOf { model.value.dbConfigList }
-//                    LaunchedEffect(isExpand.value) {
-//                        if (isExpand.value) {
-//                            vm.getConfigAll()
-//                            focusRequester.requestFocus()
-//                        }
-//                    }
-//                    val label = derivedStateOf { setting.value?.label ?: "" }
-//                    val value = derivedStateOf { setting.value?.value ?: "" }
-//                    SettingItemTemplate(label.value) {
-//                        Box(Modifier.fillMaxSize()) {
-//                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-//                                TextField(
-//                                    value = value.value,
-//                                    onValueChange = {
-//                                        SettingStore.setValue(SettingType.VOD, it)
-////                                        focusRequester.requestFocus()
-//                                        vm.sync()
-//                                    },
-//                                    maxLines = 1,
-//                                    enabled = true,
-//                                    modifier = Modifier.focusRequester(focusRequester)
-//                                        .fillMaxHeight(0.6f)
-//                                        .weight(0.9f)
-//                                        .align(Alignment.CenterVertically)
-//                                        .clip(RoundedCornerShape(5.dp))
-//                                        .onFocusEvent {
-//                                            isExpand.value = it.isFocused
-//                                        }
-//                                )
-//                                Button(
-//                                    onClick = {
-//                                        setConfig(setting.value!!.value)
-//                                    },
-//                                    modifier = Modifier.weight(0.1f)
-//                                ) {
-//                                    Text("确定")
-//                                }
-//                            }
-//                            DropdownMenu(
-//                                isExpand.value,
-//                                { isExpand.value = false },
-//                                modifier = Modifier.fillMaxWidth(0.8f),
-//                                properties = PopupProperties(focusable = true)
-//                            ) {
-//                                vodConfigList.value.forEach {
-//                                    DropdownMenuItem(
-//                                        modifier = Modifier.fillMaxWidth(),
-//                                        text = { Text(it.url ?: "") },
-//                                        onClick = {
-//                                            setConfig(it.url)
-//                                            isExpand.value = false
-//                                        }, trailingIcon = {
-//                                            IconButton(onClick = {
-//                                                vm.deleteHistoryById(it)
-//                                            }) {
-//                                                Icon(Icons.Default.Close, "delete the config")
-//                                            }
-//                                        })
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            // 广告过滤设置项
+            item {
+                SettingCard(
+                    title = "广告过滤设置(实验性)",
+                    icon = Icons.Default.Block
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = if (adFilterChecked) "广告过滤：开启" else "广告过滤：关闭",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Switch(
+                            checked = adFilterChecked,
+                            onCheckedChange = {
+                                adFilterChecked = it
+                                SettingStore.setAdFilterEnabled(it)
+                                vm.sync()
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        )
+                    }
+
+                    // 仅在广告过滤开启时显示配置项
+                    if (adFilterChecked) {
+                        var tsNameLenExtend by remember { mutableStateOf(config.value.tsNameLenExtend.toFloat()) }
+                        var theExtinfBenchmarkN by remember { mutableStateOf(config.value.theExtinfBenchmarkN.toFloat()) }
+                        var violentFilterModeFlag by remember { mutableStateOf(config.value.violentFilterModeFlag) }
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp)
+                        ) {
+                            Text("TS 前缀长度容错值")
+                            Slider(
+                                value = tsNameLenExtend,
+                                onValueChange = {
+                                    tsNameLenExtend = it
+                                    config.value.tsNameLenExtend = it.toInt()
+                                    SettingStore.setM3U8FilterConfig(config.value)
+                                    showRestartDialog = true
+                                },
+                                valueRange = 1f..5f,
+                                steps = 4
+                            )
+
+                            Text("EXTINF 基准值")
+                            Slider(
+                                value = theExtinfBenchmarkN,
+                                onValueChange = {
+                                    theExtinfBenchmarkN = it
+                                    config.value.theExtinfBenchmarkN = it.toInt()
+                                    SettingStore.setM3U8FilterConfig(config.value)
+                                    showRestartDialog = true
+                                },
+                                valueRange = 1f..10f,
+                                steps = 9
+                            )
+
+                            Text("启用暴力拆解模式")
+                            Switch(
+                                checked = violentFilterModeFlag,
+                                onCheckedChange = {
+                                    violentFilterModeFlag = it
+                                    config.value.violentFilterModeFlag = it
+                                    SettingStore.setM3U8FilterConfig(config.value)
+                                    showRestartDialog = true
+                                }
+                            )
+                        }
+                    }
+                }
+            }
             // 新增主题切换卡片
             item {
                 SettingCard(
@@ -616,6 +631,36 @@ fun WindowScope.SettingScene(vm: SettingViewModel, onClickBack: () -> Unit) {
             contentPadding = PaddingValues(16.dp)  // 可调整内边距
         )
     }
+
+    // 显示重启提示弹窗
+    if (showRestartDialog) {
+        Dialog(
+            onDismissRequest = { showRestartDialog = false }
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .padding(16.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "重启应用后生效",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    Button(
+                        onClick = { showRestartDialog = false }
+                    ) {
+                        Text("确定")
+                    }
+                }
+            }
+        }
+    }
 }
 
 // 设置项卡片组件
@@ -812,7 +857,7 @@ fun AboutDialog(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Image(
-                            painter = painterResource(Res.drawable.avatar),
+                            painter = painterResource(Res.drawable.LumenTV_icon_svg),
                             contentDescription = "App Logo",
                             modifier = Modifier
                                 .size(120.dp)
@@ -828,13 +873,13 @@ fun AboutDialog(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            "TV Multiplatform",
+                            "LumenTV Compose",
                             style = MaterialTheme.typography.headlineSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
 
                         Text(
-                            "Alpha 1.0.2",
+                            "1.0.4",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -847,15 +892,15 @@ fun AboutDialog(
                     title = "开发团队",
                     items = listOf(
                         AboutItem(
-                            name = "Greatwallcorner",
-                            role = "主要开发者",
-                            link = "https://github.com/Greatwallcorner",
-                            icon = Icons.Default.Person
-                        ),
-                        AboutItem(
                             name = "Clevebitr",
                             role = "该版本开发者",
                             link = "https://github.com/clevebitr",
+                            icon = Icons.Default.Person
+                        ),
+                        AboutItem(
+                            name = "Greatwallcorner",
+                            role = "主要开发者",
+                            link = "https://github.com/Greatwallcorner",
                             icon = Icons.Default.Person
                         ),
                         AboutItem(
@@ -889,7 +934,7 @@ fun AboutDialog(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null)
-                            Text("加入Telegram群组")
+                            Text("加入原项目Telegram群组")
                         }
                     }
                     FilledTonalButton(
@@ -924,7 +969,7 @@ fun AboutDialog(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(Icons.Default.Code, contentDescription = null)
-                            Text("查看源代码")
+                            Text("查看原项目源代码")
                         }
                     }
                 }

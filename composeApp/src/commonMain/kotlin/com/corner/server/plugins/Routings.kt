@@ -1,7 +1,6 @@
 package com.corner.server.plugins
 
 import cn.hutool.core.io.file.FileNameUtil
-import com.corner.catvodcore.util.Http
 import com.corner.server.logic.proxy
 import com.corner.ui.scene.SnackBar
 import com.corner.util.toSingleValueMap
@@ -10,11 +9,14 @@ import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import okhttp3.Headers.Companion.toHeaders
 import okhttp3.Response
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.InputStream
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.File
+import java.net.URLDecoder
 
 fun Application.configureRouting() {
     val log = LoggerFactory.getLogger("Routing")
@@ -36,7 +38,15 @@ fun Application.configureRouting() {
 //        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
 
         get("/") {
-            call.respondText("hello world!")
+            // 创建 File 对象
+            val htmlFile = File("src/commonMain/resources/LumenTV Proxy Placeholder Webpage.html")
+            // 检查文件是否存在
+            if (htmlFile.exists()) {
+                call.respondFile(htmlFile)
+            } else {
+                // 文件不存在时返回错误信息
+                call.respondText("文件未找到", status = HttpStatusCode.NotFound)
+            }
         }
 
         get("/postMsg") {
@@ -105,72 +115,59 @@ fun Application.configureRouting() {
                 log.error("proxy处理失败", e)
             }
         }
+
+        //添加缓存文件本地代理
         get("/proxy/m3u8") {
-            val url = call.request.queryParameters["url"] ?: run {
+            val encodedUrl = call.request.queryParameters["url"] ?: run {
                 errorResp(call, "URL参数缺失")
                 return@get
             }
-            // 1. 构建完整的请求头（直接从浏览器复制）
-            var header: Map<String, String> = mapOf(
-                "Accept" to "application/json, text/javascript, */*; q=0.01",
-                "Accept-Encoding" to "gzip, deflate, br, zstd",
-                "Accept-Language" to "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-                "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
-                "DNT" to "1",
-                "Origin" to "https://hhjx.hhplayer.com",
-                "Priority" to "u=1, i",
-                "Sec-Ch-Ua" to "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Microsoft Edge\";v=\"138\"",
-                "Sec-Ch-Ua-Mobile" to "?0",
-                "Sec-Ch-Ua-Platform" to "\"Windows\"",
-                "Sec-Fetch-Dest" to "empty",
-                "Sec-Fetch-Mode" to "cors",
-                "Sec-Fetch-Site" to "same-origin",
-                "Sec-Fetch-Storage-Access" to "active",
-                "Sec-Gpc" to "1",
-                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
-                "X-Requested-With" to "XMLHttpRequest"
-            )
+
+            // 1. 解码并验证URL安全性
+            val decodedUrl = try {
+                URLDecoder.decode(encodedUrl, "UTF-8").also { url ->
+                    if (url.contains("proxy/m3u8") || !url.startsWith("https://")) {
+                        errorResp(call, "非法的目标URL")
+                        return@get
+                    }
+                }
+            } catch (e: Exception) {
+                errorResp(call, "URL解码失败")
+                return@get
+            }
+
+            // 2. 发起请求（代理不重复过滤）
+            val client = OkHttpClient.Builder().build()
             try {
-                // 使用use自动关闭资源
-                val content = Http.newCall(url, headers = header.toHeaders())
-                    .execute()
-                    .use { response ->
-                        response.body.string()
+                val content = client.newCall(Request.Builder().url(decodedUrl).build())
+                    .execute().use { response ->
+                        if (!response.isSuccessful) {
+                            errorResp(call, "上游服务器返回错误: ${response.code}")
+                            return@get
+                        }
+                        response.body?.string() ?: ""
                     }
 
-                // 定义需要检测的图片扩展名
-                val imageExtensions = listOf("png", "jpg", "jpeg", "webp", "bmp", "gif")
-                val extensionPattern = imageExtensions.joinToString("|")
-
-                // 关键修正：调整正则表达式捕获组
-                val regex = Regex("""(https?://[^\s"']+?\.)($extensionPattern)(?=[\s"'>]|$)""")
-
-                // 执行替换（保留完整URL路径，只替换扩展名）
-                val processedContent = content.replace(regex) {
-                    "${it.groupValues[1]}ts"  // groupValues[1]是URL路径+点号，groupValues[2]是原扩展名
-                }
-
-                // 返回处理后的内容
-                call.respondText(processedContent, ContentType.Application.OctetStream)
+                // 3. 返回原始内容（拦截器已预先处理过）
+                call.respondText(content, ContentType.Application.OctetStream)
             } catch (e: Exception) {
-                log.error("处理M3U8代理失败", e)
-                errorResp(call, "处理M3U8文件失败")
+                log.error("代理请求失败: URL=$decodedUrl", e)
+                errorResp(call, "代理请求失败: ${e.message}")
             }
         }
+        get("/proxy/cached_m3u8") {
+            val id = call.request.queryParameters["id"] ?: run {
+                call.respond(HttpStatusCode.BadRequest, "Missing cache ID")
+                return@get
+            }
 
-//        get("/multi") {
-//            val params = call.request.queryParameters
-//            val url = params["url"]
-//            if (StringUtils.isEmpty(url) || url!!.startsWith("http")) {
-//                errorResp(call, "url不合法")
-//                return@get
-//            }
-//            var thread = 5
-//            if (StringUtils.isNotEmpty(params.get("thread"))) {
-//                thread = params.get("thread")!!.toInt()
-//            }
-//            multiThreadDownload(url, thread, call)
-//        }
+            val content = M3U8Cache.get(id) ?: run {
+                call.respond(HttpStatusCode.NotFound, "Cache expired or invalid")
+                return@get
+            }
+
+            call.respondText(content, ContentType.Application.OctetStream)
+        }
     }
 }
 

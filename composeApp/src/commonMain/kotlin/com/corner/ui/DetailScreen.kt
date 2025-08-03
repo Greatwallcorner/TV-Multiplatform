@@ -10,6 +10,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -36,6 +37,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -66,6 +68,9 @@ import com.corner.util.BrowserUtils
 import com.corner.util.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
+
+val log = LoggerFactory.getLogger("DetailScreen")
 
 @Composable
 fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
@@ -80,10 +85,14 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
 
     DisposableEffect(Unit) {
         //进入界面时加载数据
-        vm.load()
+        scope.launch {
+            vm.load()
+        }
         onDispose {
             //重置播放器状态
             vm.clear()
+            //关闭websocket服务
+            BrowserUtils.cleanup()
         }
     }
 
@@ -114,7 +123,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
 
 // 监听 DialogState 中的状态变化
     LaunchedEffect(DialogState.showPngDialog, DialogState.currentM3U8Url) {
-        log.debug("DialogState.showPngDialog:{}",DialogState.showPngDialog)
+//        log.debug("DialogState.showPngDialog:{}",DialogState.showPngDialog)
         localShowPngDialog = DialogState.showPngDialog
         localCurrentM3U8Url = DialogState.currentM3U8Url
     }
@@ -125,7 +134,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
             showWebSocketDisconnected = !isConnected
         }
     }
-    log.debug("用户选择在浏览器打开: ${DialogState.userChoseOpenInBrowser}")
 
     val internalPlayer = derivedStateOf {
         val playerSetting =
@@ -276,7 +284,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                         TopEmptyShow(
                             title = "当前播放器无法播放",
                             subtitle = "请使用 Web 播放器；点击选集按钮重新进入浏览器播放，或点击刷新重试",
-                            onRefresh = { vm.load() },
+                            onRefresh = { scope.launch { vm.load() } },
                             modifier = Modifier
                                 .height(50.dp)
                                 .fillMaxWidth(),
@@ -292,7 +300,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 if (internalPlayer.value) {
-                    log.debug("localShowPngDialog:{}",localShowPngDialog)
                     // 检查用户是否选择在浏览器打开，若选择则不显示对话框
                     if (localShowPngDialog && !DialogState.userChoseOpenInBrowser) {
                         PngFoundDialog(
@@ -316,16 +323,20 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                         )
                         NoPlayerContent(message = "正在 Web 播放器中播放", subtitle = "请使用 Web 播放器")
                     } else if (!DialogState.userChoseOpenInBrowser) {
-                        Player(
-                            mrl.value,
-                            controller.value,
-                            Modifier
-                                .fillMaxWidth(videoWidth.value)
-                                .focusable()
-                                .focusRequester(focus),
-                            vm,
-                            focusRequester = focus
-                        )
+                        if (!isSpecialVideoLink){
+                            Player(
+                                mrl.value,
+                                controller.value,
+                                Modifier
+                                    .fillMaxWidth(videoWidth.value)
+                                    .focusable()
+                                    .focusRequester(focus),
+                                vm,
+                                focusRequester = focus
+                            )
+                        }else{
+                            NoPlayerContent(message = "需要使用 Web 播放器播放", subtitle = "请使用 Web 播放器")
+                        }
                     } else {
                         NoPlayerContent(message = "正在 Web 播放器中播放", subtitle = "请使用 Web 播放器")
                     }
@@ -389,7 +400,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                 TopEmptyShow(
                                     title = "当前源不可用",
                                     subtitle = "或加载缓慢，请刷新重试",
-                                    onRefresh = { vm.load() },
+                                    onRefresh = { scope.launch { vm.load() } },
                                     modifier = Modifier.fillMaxWidth().fillMaxHeight().background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(10.dp)),
                                     buttonAlignment = ButtonAlignment.LEFT
                                 )
@@ -494,34 +505,49 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                 }
             }
         }
+
         //全屏选集弹窗
         if (isFullScreen.value && vm.state.value.showEpChooserDialog) {
             Dialog(
-                onDismissRequest = { vm.showEpChooser() },
+                onDismissRequest = { vm.showEpChooser() }, // 这是点击外部关闭的关键
                 properties = DialogProperties(
                     usePlatformDefaultWidth = false,
+                    dismissOnClickOutside = true // 明确启用点击外部关闭
                 )
             ) {
+                // 1. 透明点击层 - 确保覆盖整个屏幕
                 Box(
-                    modifier = Modifier.fillMaxSize().clickable { vm.showEpChooser() },
-                    contentAlignment = Alignment.CenterEnd, // 关键：内容右对齐
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Transparent)
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                vm.showEpChooser() // 直接处理点击事件
+                            }
+                        },
+                    contentAlignment = Alignment.CenterEnd
                 ) {
+                    // 2. 内容区域 - 阻止事件冒泡
                     Surface(
                         modifier = Modifier
-                            .widthIn(max = 400.dp)  // 控制最大宽度
-                            .fillMaxHeight(0.8f)    // 高度占比80%
-                            .padding(end = 16.dp),  // 右侧留白
+                            .widthIn(max = 400.dp)
+                            .fillMaxHeight(0.8f)
+                            .padding(end = 16.dp)
+                            .pointerInput(Unit) {
+                                detectTapGestures {
+                                    // 空实现，阻止事件冒泡
+                                }
+                            },
                         shape = RoundedCornerShape(
                             topStart = 16.dp,
-                            bottomStart = 16.dp    // 仅左侧圆角
+                            bottomStart = 16.dp
                         ),
                         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        tonalElevation = 8.dp      // 增加阴影深度
+                        tonalElevation = 8.dp
                     ) {
                         EpChooser(
                             vm,
-                            Modifier
-                                .fillMaxSize()
+                            Modifier.fillMaxSize()
                         )
                     }
                 }
@@ -677,7 +703,9 @@ private fun quickSearchResult(
                     QuickSearchItem(it) {
                         SiteViewModel.viewModelScope.launch {
                             log.debug("开始加载新内容...")
+                            showProgress()
                             component.loadDetail(it)
+                            hideProgress()
                             log.debug("加载新内容完毕...")
                         }
                     }

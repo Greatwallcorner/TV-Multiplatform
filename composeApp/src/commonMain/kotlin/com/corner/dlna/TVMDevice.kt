@@ -10,7 +10,7 @@ import org.jupnp.model.meta.*
 import org.jupnp.model.types.UDADeviceType
 import org.jupnp.model.types.UDN
 import org.jupnp.support.renderingcontrol.AbstractAudioRenderingControl
-import tv_multiplatform.composeapp.generated.resources.Res
+import lumentv_compose.composeapp.generated.resources.Res
 
 
 class TVMDevice

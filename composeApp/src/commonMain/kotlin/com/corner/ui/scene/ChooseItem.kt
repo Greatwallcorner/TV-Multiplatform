@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -81,7 +82,8 @@ fun RatioBtn(
             Box(contentAlignment = Alignment.Center) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     if (loading) {
                         Box(modifier = modifier.width(24.dp).height(24.dp)) {
@@ -107,7 +109,7 @@ fun RatioBtn(
                         }
                         Spacer(modifier = Modifier.width(6.dp))
                     }
-
+                    val tags = remember { tag() }
                     Text(
                         text = text,
                         color = when {
@@ -118,12 +120,11 @@ fun RatioBtn(
                         fontSize = 14.sp,
                         fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = if (tags.first) Modifier.weight(1f, fill = false) else Modifier
                     )
 
-                    val tags = remember { tag() }
                     if (tags.first) {
-                        Spacer(modifier = Modifier.width(6.dp))
                         Surface(
                             shape = RoundedCornerShape(4.dp),
                             color = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
@@ -140,7 +141,8 @@ fun RatioBtn(
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (selected) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSecondaryContainer
+                                else MaterialTheme.colorScheme.onSecondaryContainer,
+                                maxLines = 1
                             )
                         }
                     }

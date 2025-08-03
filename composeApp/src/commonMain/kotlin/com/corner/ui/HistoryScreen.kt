@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -38,8 +39,8 @@ import com.corner.ui.scene.ControlBar
 import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
-import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.loading
+import lumentv_compose.composeapp.generated.resources.Res
+import lumentv_compose.composeapp.generated.resources.loading
 
 @Composable
 fun HistoryItem(
@@ -49,6 +50,10 @@ fun HistoryItem(
     onDelete: (String) -> Unit,
     click: (History) -> Unit
 ) {
+
+    // 添加删除确认状态
+    var deleteConfirmed by remember { mutableStateOf(false) }
+
     Card(
         modifier = modifier.clickable(enabled = true, onClick = { click(history) }),
         elevation = CardDefaults.cardElevation(8.dp),
@@ -59,36 +64,63 @@ fun HistoryItem(
                 onDelete(history.key)
             })
         }) {
-            Box(modifier = modifier) {
-                AutoSizeImage(
-                    url = history.vodPic!!,
-                    modifier = Modifier.height(220.dp),
-                    contentDescription = history.vodName,
-                    contentScale = ContentScale.Crop,
-                    placeholderPainter = { painterResource(Res.drawable.loading) },
-                    errorPainter = { painterResource(Res.drawable.loading) })
-                Text(
-                    text = history.vodName!!,
-                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth().padding(0.dp, 10.dp),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f),
-                    maxLines = 1,
-                    softWrap = true,
-                    overflow = TextOverflow.Ellipsis,
-                    style = TextStyle(textAlign = TextAlign.Center)
-                )
-                Text(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(3.dp))
-                        .padding(5.dp),
-                    text = if (showSite) history.vodFlag ?: "" else history.vodRemarks!!,
-                    fontWeight = FontWeight.Bold,
-                    style = TextStyle(
-                        color = Color.White,
-                        shadow = Shadow(Color.Black, offset = Offset(2F, 2F), blurRadius = 1.5F)
+            // 将Box布局改为Column以垂直排列内容
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Box(modifier = modifier) {
+                    AutoSizeImage(
+                        url = history.vodPic!!,
+                        modifier = Modifier.height(220.dp),
+                        contentDescription = history.vodName,
+                        contentScale = ContentScale.Crop,
+                        placeholderPainter = { painterResource(Res.drawable.loading) },
+                        errorPainter = { painterResource(Res.drawable.loading) })
+                    Text(
+                        text = history.vodName!!,
+                        modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth().padding(0.dp, 10.dp),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f),
+                        maxLines = 1,
+                        softWrap = true,
+                        overflow = TextOverflow.Ellipsis,
+                        style = TextStyle(textAlign = TextAlign.Center)
                     )
-                )
+                    Text(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(3.dp))
+                            .padding(5.dp),
+                        text = if (showSite) history.vodFlag ?: "" else history.vodRemarks!!,
+                        fontWeight = FontWeight.Bold,
+                        style = TextStyle(
+                            color = Color.White,
+                            shadow = Shadow(Color.Black, offset = Offset(2F, 2F), blurRadius = 1.5F)
+                        )
+                    )
+                }
+                // 添加底部删除按钮
+                Button(
+                    onClick = {
+                        if (deleteConfirmed) {
+                            onDelete(history.key)
+                            deleteConfirmed = false
+                        } else {
+                            deleteConfirmed = true
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (deleteConfirmed) Color.Red else MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Icon(
+                        imageVector = if (deleteConfirmed) Icons.Default.Delete else Icons.Default.Close,
+                        contentDescription = if (deleteConfirmed) "确认删除" else "删除"
+                    )
+                }
             }
         }
     }
@@ -112,7 +144,7 @@ fun WindowScope.HistoryScene(vm: HistoryViewModel, onClickItem: (Vod) -> Unit, o
         modifier = Modifier.fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),) {
+        Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp)) {
             WindowDraggableArea {
                 ControlBar(
                     leading = {
@@ -226,12 +258,11 @@ fun WindowScope.HistoryScene(vm: HistoryViewModel, onClickItem: (Vod) -> Unit, o
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 userScrollEnabled = true,
             ) {
-                itemsIndexed(items = model.value.historyList) { _:Int, it:History ->
+                itemsIndexed(items = model.value.historyList) { _: Int, it: History ->
                     HistoryItem(
                         Modifier,
                         it, showSite = false, onDelete = { key ->
                             vm.deleteBatchHistory(listOf(key))
-                            vm.fetchHistoryList()
                         }) {
                         onClickItem(it.buildVod())
                         chooseHistory = it

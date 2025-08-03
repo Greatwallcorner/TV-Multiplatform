@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeDown
 import androidx.compose.material.icons.automirrored.rounded.VolumeOff
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
+import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.rounded.Pause
@@ -53,8 +54,8 @@ import com.corner.ui.player.vlcj.VlcjFrameController
 import com.corner.util.formatTimestamp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import tv_multiplatform.composeapp.generated.resources.Res
-import tv_multiplatform.composeapp.generated.resources.speed
+import lumentv_compose.composeapp.generated.resources.Res
+import lumentv_compose.composeapp.generated.resources.speed
 import kotlin.math.roundToLong
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
@@ -81,6 +82,17 @@ fun DefaultControls(
     val animatedTimestamp by animateFloatAsState(playerState.timestamp.toFloat())
     // 收集全屏状态
     val isFullScreen = GlobalAppState.videoFullScreen.collectAsState()
+    var showAspectRatioDropdown by remember { mutableStateOf(false) }
+    // 视频比例选项
+    val aspectRatios = listOf(
+        "" to "原始比例",
+        "16:9" to "16:9",
+        "4:3" to "4:3",
+        "1:1" to "1:1",
+        "16:10" to "16:10",
+        "21:9" to "21:9",
+        "2.35:1" to "2.35:1"
+    )
 
     PlayerControlsTheme {
         Box(modifier.background(Color.Black.copy(alpha = 0.7f))) {
@@ -174,6 +186,30 @@ fun DefaultControls(
                                     contentDescription = "重置片头片尾",
                                     tint = MaterialTheme.colorScheme.primary
                                 )
+                            }
+                            Box {
+                                IconButton(onClick = { showAspectRatioDropdown = true }) {
+                                    Icon(
+                                        Icons.Default.AspectRatio,
+                                        contentDescription = "视频比例",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+
+                                DropdownMenu(
+                                    expanded = showAspectRatioDropdown,
+                                    onDismissRequest = { showAspectRatioDropdown = false }
+                                ) {
+                                    aspectRatios.forEach { (ratio, displayName) ->
+                                        DropdownMenuItem(
+                                            text = { Text(displayName) },
+                                            onClick = {
+                                                controller.setAspectRatio(ratio)
+                                                showAspectRatioDropdown = false
+                                            }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
