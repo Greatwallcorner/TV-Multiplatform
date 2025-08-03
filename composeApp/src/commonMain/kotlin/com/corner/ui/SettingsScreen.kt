@@ -86,6 +86,7 @@ import java.net.URI
 import androidx.compose.runtime.collectAsState
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.util.M3U8FilterConfig
+import lumentv_compose.composeapp.generated.resources.LumenTV_icon_svg
 
 @Composable
 fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onClickBack: () -> Unit) {
@@ -857,7 +858,7 @@ fun AboutDialog(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Image(
-                            painter = painterResource(Res.drawable.avatar),
+                            painter = painterResource(Res.drawable.LumenTV_icon_svg),
                             contentDescription = "App Logo",
                             modifier = Modifier
                                 .size(120.dp)
@@ -873,13 +874,13 @@ fun AboutDialog(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            "TV Multiplatform",
+                            "LumenTV Compose",
                             style = MaterialTheme.typography.headlineSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
 
                         Text(
-                            "Alpha 1.0.3",
+                            "1.0.4",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -892,15 +893,15 @@ fun AboutDialog(
                     title = "开发团队",
                     items = listOf(
                         AboutItem(
-                            name = "Greatwallcorner",
-                            role = "主要开发者",
-                            link = "https://github.com/Greatwallcorner",
-                            icon = Icons.Default.Person
-                        ),
-                        AboutItem(
                             name = "Clevebitr",
                             role = "该版本开发者",
                             link = "https://github.com/clevebitr",
+                            icon = Icons.Default.Person
+                        ),
+                        AboutItem(
+                            name = "Greatwallcorner",
+                            role = "主要开发者",
+                            link = "https://github.com/Greatwallcorner",
                             icon = Icons.Default.Person
                         ),
                         AboutItem(
@@ -934,7 +935,7 @@ fun AboutDialog(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null)
-                            Text("加入Telegram群组")
+                            Text("加入原项目Telegram群组")
                         }
                     }
                     FilledTonalButton(
@@ -969,7 +970,7 @@ fun AboutDialog(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(Icons.Default.Code, contentDescription = null)
-                            Text("查看源代码")
+                            Text("查看原项目源代码")
                         }
                     }
                 }
