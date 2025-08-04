@@ -26,6 +26,7 @@ import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.base.State
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
 import java.io.File
+import kotlin.math.abs
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 
@@ -58,12 +59,21 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
 
     var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
+    private var lastVolume = -1f
+    private val VOLUME_THRESHOLD = 0.02f // 提高阈值到2%
+    private val LOG_DEBOUNCE_MS = 500L // 日志防抖
+
     private var cleanupJob: Job? = null  // 添加清理任务跟踪变量
 
     companion object {
         // 全局标志：插件缓存是否已检查
         private var pluginCacheChecked = false
+        private const val VOLUME_LOG_THRESHOLD = 0.05f  // 音量变化阈值
+        private const val VOLUME_LOG_DEBOUNCE_MS = 1000L  // 日志防抖时间
     }
+
+    private var lastLoggedVolume = -1f
+    private var lastVolumeLogTime = 0L
 
     // 添加清理状态标志
     private var isCleaned = false
@@ -183,6 +193,13 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         }
 
         override fun volumeChanged(mediaPlayer: MediaPlayer, volume: Float) {
+            // 防抖处理：检查音量变化阈值和时间间隔
+            val currentTime = System.currentTimeMillis()
+            if (abs(volume - lastLoggedVolume) < VOLUME_LOG_THRESHOLD &&
+                currentTime - lastVolumeLogTime < VOLUME_LOG_DEBOUNCE_MS) {
+                return
+            }
+
             if (volume > 0f) {
                 SettingStore.doWithCache {
                     var state = it["playerState"]
@@ -193,14 +210,21 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
                     (state as PlayerStateCache).add("volume", volume.toString())
                 }
             }
-            log.debug("volume:{}", volume)
+
+            // 只在音量显著变化时记录日志
+            if (abs(volume - lastLoggedVolume) >= VOLUME_LOG_THRESHOLD) {
+                log.debug("volume:{}", volume)
+                lastLoggedVolume = volume
+                lastVolumeLogTime = currentTime
+            }
+
             _state.update { it.copy(volume = volume) }
         }
 
         override fun timeChanged(mediaPlayer: MediaPlayer, newTime: Long) {
             scope.launch {
                 if (history.value == null) {
-                    println("history is null")
+//                    println("history is null")
                     return@launch
                 }
                 if (history.value?.ending != null && history.value?.ending != -1L && history.value?.ending!! <= newTime) vm.nextEP()
@@ -461,9 +485,20 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     }
 
     override fun setVolume(value: Float) = catch {
-        player?.audio()?.setVolume((value * 100).toInt().coerceIn(0..150))
-        _state.update { it.copy(volume = value) }
-        showTips("音量：${player?.audio()?.volume()}")
+        val now = System.currentTimeMillis()
+
+        // 1. 音量防抖：只有当音量变化超过阈值时才设置
+        if (abs(value - lastVolume) > VOLUME_THRESHOLD) {
+            lastVolume = value
+            player?.audio()?.setVolume((value * 100).toInt().coerceIn(0..150))
+            _state.update { it.copy(volume = value) }
+
+            // 2. 日志防抖：限制日志输出频率
+            if (now - lastVolumeLogTime > LOG_DEBOUNCE_MS) {
+                showTips("音量：${player?.audio()?.volume()}")
+                lastVolumeLogTime = now
+            }
+        }
     }
 
     private val volumeStep = 5

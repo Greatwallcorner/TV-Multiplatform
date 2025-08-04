@@ -125,7 +125,7 @@ fun WindowScope.RootContent(
 
                 composable(TVScreen.DLNAPlayerScreen.name) {
                     val viewModel = viewModel { DetailViewModel() }
-                    viewModel.setPlayUrl(GlobalAppState.DLNAUrl.value ?: "")
+//                    viewModel.setPlayUrl(GlobalAppState.DLNAUrl.value ?: "")
                     DLNAPlayer(viewModel){
                         navController.popBackStack()
                     }

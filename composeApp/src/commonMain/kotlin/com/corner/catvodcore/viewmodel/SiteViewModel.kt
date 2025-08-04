@@ -65,12 +65,12 @@ object SiteViewModel {
                 3 -> {
                     val spider = ApiConfig.getSpider(site)
                     val homeContent = spider.homeContent(true)
-                    log.debug("home: $homeContent")
+//                    log.debug("home: $homeContent")
                     ApiConfig.setRecent(site)
                     val rst: Result = Jsons.decodeFromString<Result>(homeContent)
                     if (rst.list.size > 0) result.value = rst
                     val homeVideoContent = spider.homeVideoContent()
-                    log.debug("homeContent: $homeVideoContent")
+//                    log.debug("homeContent: $homeVideoContent")
                     rst.list.addAll(Jsons.decodeFromString<Result>(homeVideoContent).list)
                     result.value = rst.also { this.result.value = it }
                 }

@@ -101,7 +101,9 @@ class VlcjFrameController(
     )
 
     override fun load(url: String): PlayerController {
+
         controller.load(url)
+
         speed(controller.history.value?.speed?.toFloat() ?: 1f)
         controller.stop()
 //        if(controller.player?.status()?.isPlaying == true){
@@ -113,15 +115,36 @@ class VlcjFrameController(
 
     override fun vlcjFrameInit() {
         log.info("播放器初始化")
-        // 创建lifecycleManager并设置给controller
-        val lifecycleManager = PlayerLifecycleManager(controller, scope)
-        controller.setLifecycleManager(lifecycleManager)
-        //初始化播放器
-        controller.init()
-        controller.player?.videoSurface()?.set(callbackSurFace)
-        isReleased = false
+//        // 创建lifecycleManager并设置给controller
+//        val lifecycleManager = PlayerLifecycleManager(controller, scope)
+//        controller.setLifecycleManager(lifecycleManager)
+//        //初始化播放器
+//        controller.init()
+//        controller.player?.videoSurface()?.set(callbackSurFace)
+//        isReleased = false
+
+        // 添加窗口绑定检查
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater { doInit() }
+        } else {
+            doInit()
+        }
     }
 
+    private fun doInit() {
+        try {
+            val lifecycleManager = PlayerLifecycleManager(controller, scope)
+            controller.setLifecycleManager(lifecycleManager)
+            controller.init()
+
+            controller.player?.videoSurface()?.set(callbackSurFace)
+
+            isReleased = false
+        } catch (e: Exception) {
+            log.error("视频表面初始化失败", e)
+            // 回退到独立窗口模式
+        }
+    }
     fun isPlaying(): Boolean {
         return !isReleased && controller.player?.status()?.isPlayable == true && controller.player?.status()?.isPlaying == true
     }

@@ -35,7 +35,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 import org.apache.commons.lang3.StringUtils
 import java.util.concurrent.CopyOnWriteArrayList
@@ -65,7 +67,7 @@ class DetailViewModel : BaseViewModel() {
 
 
     // 单独创建lifecycleManager，在init块中设置controller
-    private var lifecycleManager: PlayerLifecycleManager = PlayerLifecycleManager(controller, scope)
+    val lifecycleManager: PlayerLifecycleManager = PlayerLifecycleManager(controller, scope)
 
     // 添加生命周期管理器
     val currentSelectedEpUrl = mutableStateOf<String?>(null) // 新增状态记录
@@ -1419,11 +1421,58 @@ class DetailViewModel : BaseViewModel() {
      *
      * @param string 要设置的播放 URL 字符串。
      */
+
+    private val playerStateLock = Mutex()
+
     fun setPlayUrl(string: String) {
-        // 使用 _state.update 更新状态流的值
-        _state.update {
-            // 复制当前状态，将 currentPlayUrl 字段更新为传入的 string
-            it.copy(currentPlayUrl = string, isLoading = false, isBuffering = false)
+        scope.launch {
+            // 加锁确保状态转换原子性
+            playerStateLock.withLock {
+                log.debug("DLNA - 开始播放 (加锁状态)")
+
+                // 检查当前状态
+                when (lifecycleManager.lifecycleState.value) {
+                    PlayerLifecycleState.Idle -> {
+                        log.debug("播放器未初始化，开始初始化...")
+                        lifecycleManager.initialize_sync().onSuccess {
+                            proceedToPlay(string)
+                        }
+                    }
+                    PlayerLifecycleState.Playing -> {
+                        log.warn("播放器正在播放，先停止当前播放")
+                        lifecycleManager.stop().onSuccess {
+                            proceedToPlay(string)
+                        }
+                    }
+                    else -> {
+                        log.debug("播放器已初始化，直接播放")
+                        proceedToPlay(string)
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun proceedToPlay(url: String) {
+        // 添加状态转换检查
+        if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Loading)) {
+            lifecycleManager.loading()
+        }
+
+        if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Ready)) {
+            lifecycleManager.ready()
+        }
+
+        // 如果已经在播放相同URL，跳过
+        if (lifecycleManager.lifecycleState.value == PlayerLifecycleState.Playing && _state.value.currentPlayUrl == url) {
+            log.debug("已经在播放相同URL，跳过")
+            return
+        }
+
+        lifecycleManager.start().onSuccess {
+            _state.update {
+                it.copy(currentPlayUrl = url)
+            }
         }
     }
 }
