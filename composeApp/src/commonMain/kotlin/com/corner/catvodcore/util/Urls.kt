@@ -1,10 +1,10 @@
 package com.corner.catvodcore.util
 
-import org.slf4j.LoggerFactory
+import com.corner.util.thisLogger
 import java.net.URI
 
 object Urls {
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log = thisLogger()
 
     fun convert(url:String):String{
         if(url.startsWith("file:/")) return url.replace("file://","").replace("file:/","")

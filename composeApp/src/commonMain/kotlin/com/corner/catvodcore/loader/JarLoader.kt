@@ -6,6 +6,7 @@ import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Paths
 import com.corner.catvodcore.util.Urls
 import com.corner.catvodcore.util.Utils
+import com.corner.util.thisLogger
 import com.github.catvod.crawler.Spider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +20,7 @@ import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 
 object JarLoader {
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log = thisLogger()
     private val loaders: ConcurrentHashMap<String, URLClassLoader> by lazy { ConcurrentHashMap() }
 
     //proxy method

@@ -10,6 +10,7 @@ import com.corner.ui.player.PlayerController
 import com.corner.ui.player.PlayerLifecycleManager
 import com.corner.ui.player.frame.FrameRenderer
 import com.corner.util.BrowserUtils.scope
+import com.corner.util.thisLogger
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +20,6 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ImageInfo
-import org.slf4j.LoggerFactory
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.embedded.videosurface.CallbackVideoSurface
 import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapters
@@ -36,7 +36,7 @@ class VlcjFrameController(
     component: DetailViewModel,
     private val controller: VlcjController = VlcjController(component),
 ) : FrameRenderer, PlayerController by controller {
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log = thisLogger()
 
     private var byteArray: ByteArray? = null
 

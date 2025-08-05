@@ -1,15 +1,15 @@
 package upnp
 
 import com.corner.catvodcore.viewmodel.GlobalAppState
+import com.corner.util.thisLogger
 import kotlinx.coroutines.runBlocking
 import org.jupnp.model.types.UnsignedIntegerFourBytes
 import org.jupnp.support.avtransport.AbstractAVTransportService
 import org.jupnp.support.model.*
-import org.slf4j.LoggerFactory
 
 
 class TvAvTransportService : AbstractAVTransportService() {
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log = thisLogger()
     override fun getCurrentInstanceIds(): Array<UnsignedIntegerFourBytes> {
         return arrayOf(UnsignedIntegerFourBytes(0x01))
     }
