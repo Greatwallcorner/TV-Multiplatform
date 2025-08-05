@@ -167,13 +167,13 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         }
 
         override fun stopped(mediaPlayer: MediaPlayer) {
-            println("stopped")
+            log.info("stopped")
             playerPlayering = false
             _state.update { it.copy(state = PlayState.PAUSE) }
         }
 
         override fun finished(mediaPlayer: MediaPlayer) {
-            println("finished")
+            log.info("finished")
             playerPlayering = false
             _state.update { it.copy(state = PlayState.PAUSE) }
             scope.launch {
@@ -254,7 +254,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         private fun checkEnd(mediaPlayer: MediaPlayer?): Boolean {
             try {
                 val len = mediaPlayer?.status()?.length() ?: 0
-                println("playable: " + mediaPlayer?.status()?.isPlayable)
+                log.info("playable: " + mediaPlayer?.status()?.isPlayable)
                 if (mediaPlayer?.status()?.isPlayable == false) {
                     return true
                 }
@@ -285,27 +285,27 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             val pluginCacheFile = File(pluginsDir, "plugins.dat")
 
             // 添加缓存检查日志
-            println("[VLC Cache Check] 插件缓存路径: ${pluginCacheFile.absolutePath}")
-            println("[VLC Cache Check] 缓存文件存在: ${pluginCacheFile.exists()}")
+            log.info("[VLC Cache Check] 插件缓存路径: ${pluginCacheFile.absolutePath}")
+            log.info("[VLC Cache Check] 缓存文件存在: ${pluginCacheFile.exists()}")
 
             // 检查缓存是否存在或需要重置
             if (!pluginCacheFile.exists()) {
-                println("[VLC Cache Check] 缓存文件不存在，添加 --reset-plugins-cache 参数")
+                log.warn("[VLC Cache Check] 缓存文件不存在，添加 --reset-plugins-cache 参数")
                 vlcjArgs.add("--reset-plugins-cache")
                 // 确保插件目录存在
                 if (pluginsDir.mkdirs()) {
-                    println("[VLC Cache Check] 插件目录已创建: ${pluginsDir.absolutePath}")
+                    log.info("[VLC Cache Check] 插件目录已创建: ${pluginsDir.absolutePath}")
                 } else {
-                    println("[VLC Cache Check] 插件目录已存在或创建失败: ${pluginsDir.absolutePath}")
+                    log.warn("[VLC Cache Check] 插件目录已存在或创建失败: ${pluginsDir.absolutePath}")
                 }
             } else {
-                println("[VLC Cache Check] 缓存文件存在，无需重建")
+                log.info("[VLC Cache Check] 缓存文件存在，无需重建")
             }
 
             // 标记已检查过插件缓存
             pluginCacheChecked = true
         } else {
-            println("[VLC Cache Check] 插件缓存已检查过，跳过")
+            log.info("[VLC Cache Check] 插件缓存已检查过，跳过")
         }
 
         try {
@@ -579,7 +579,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             currentSpeed += 0.5f
             currentSpeed = Math.min(currentSpeed, maxSpeed)
             speed(currentSpeed)
-            println("Playback rate: $currentSpeed x")
+            log.info("Playback rate: $currentSpeed x")
         }
     }
 

@@ -14,7 +14,7 @@ import java.net.URI
 class KtorClient {
     companion object {
         val client = HttpClient(OkHttp)
-        val log = LoggerFactory.getLogger(KtorClient::class.java)
+        private val log = LoggerFactory.getLogger(KtorClient::class.java)
 
         fun createHttpClient(block: HttpClientConfig<OkHttpConfig>.() -> Unit = {}) = HttpClient(OkHttp) {
             engine {

@@ -132,7 +132,7 @@ class DetailViewModel : BaseViewModel() {
         showProgress()
 
         // 初始化播放器控制器
-        lifecycleManager.initialize_sync()
+        lifecycleManager.initializeSync()
 
         // 获取当前选中的视频信息
         val chooseVod = getChooseVod()
@@ -1434,7 +1434,7 @@ class DetailViewModel : BaseViewModel() {
                 when (lifecycleManager.lifecycleState.value) {
                     PlayerLifecycleState.Idle -> {
                         log.debug("播放器未初始化，开始初始化...")
-                        lifecycleManager.initialize_sync().onSuccess {
+                        lifecycleManager.initializeSync().onSuccess {
                             proceedToPlay(string)
                         }
                     }

@@ -86,6 +86,9 @@ import androidx.compose.runtime.collectAsState
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.util.M3U8FilterConfig
 import lumentv_compose.composeapp.generated.resources.LumenTV_icon_svg
+import org.slf4j.LoggerFactory
+
+private val log = LoggerFactory.getLogger("SettingsScreen")
 
 @Composable
 fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onClickBack: () -> Unit) {
@@ -106,7 +109,7 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
     }
 
     DisposableEffect(model.value.settingList) {
-        println("settingList 修改")
+        log.info("settingList 修改")
         onDispose { }
     }
 
@@ -376,7 +379,7 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                                                             vm.sync()
                                                         }
                                                     } catch (e: Exception) {
-                                                        println("粘贴失败: ${e.message}")
+                                                        log.error("粘贴失败: ${e.message}")
                                                     }
                                                 }
                                             ) {

@@ -64,7 +64,7 @@ class PlayerLifecycleManager(
     }
 
     // 状态可转换检查函数
-    public fun canTransitionTo(target: PlayerLifecycleState): Boolean {
+    fun canTransitionTo(target: PlayerLifecycleState): Boolean {
         // 相同状态转换允许（幂等操作）
         if (lifecycleState.value == target) return true
 
@@ -91,7 +91,7 @@ class PlayerLifecycleManager(
     /**
      * 同步初始化
      */
-    suspend fun initialize_sync(): Result<Unit> = transitionTo(PlayerLifecycleState.Initializing_Sync)
+    suspend fun initializeSync(): Result<Unit> = transitionTo(PlayerLifecycleState.Initializing_Sync)
 
     private suspend fun initializeSyncInternal(): Result<Unit> {
         return withContext(lifecycleDispatcher) {

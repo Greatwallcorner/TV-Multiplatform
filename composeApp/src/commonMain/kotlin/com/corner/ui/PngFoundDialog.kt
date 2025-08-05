@@ -25,8 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.corner.ui.nav.data.DialogState
 import com.corner.ui.nav.vm.DetailViewModel
-import com.corner.ui.video.log
 import com.corner.util.BrowserUtils
+import org.slf4j.LoggerFactory
+
+private val pngLog = LoggerFactory.getLogger("PngFoundDialog")
 
 @Composable
 fun PngFoundDialog(
@@ -102,7 +104,7 @@ fun PngFoundDialog(
                                 val episodeNumber = currentEpisode?.number ?: 0
                                 // 记录用户选择在浏览器打开
                                 DialogState.userChoseOpenInBrowser = true
-                                log?.debug("Name is {},Number is {}",episodeName,episodeNumber)
+                                pngLog.debug("Name is {},Number is {}",episodeName,episodeNumber)
                                 BrowserUtils.openBrowserWithHtml(m3u8Url,episodeName,episodeNumber)
                                 onDismiss()
                             },

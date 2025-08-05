@@ -70,7 +70,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 
-val log = LoggerFactory.getLogger("DetailScreen")
+private val log = LoggerFactory.getLogger("DetailScreen")
 
 @Composable
 fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {

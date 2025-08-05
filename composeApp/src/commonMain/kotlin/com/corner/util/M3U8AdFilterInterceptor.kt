@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory
 import java.net.URI
 
 
-val logger = LoggerFactory.getLogger("M3U8AdFilterInterceptor")
+private val log = LoggerFactory.getLogger("M3U8AdFilterInterceptor")
 
 class M3U8AdFilterInterceptor {
     class Interceptor() : okhttp3.Interceptor {
@@ -23,7 +23,7 @@ class M3U8AdFilterInterceptor {
             if (!url.endsWith(".m3u8", ignoreCase = true)) {
                 return chain.proceed(request)
             }
-            logger.info("拦截请求，URL: $url")
+            log.info("拦截请求，URL: $url")
 
             val response = chain.proceed(request)
             if (!response.isSuccessful) return response
@@ -47,6 +47,9 @@ class M3U8AdFilterInterceptor {
             } else {
                 absolutePathContent
             }
+
+            val adCount = filter.getFilteredAdCount()
+            log.info("广告过滤完成，共过滤 $adCount 条广告")
 
             // 3. 直接返回处理后的内容（不再走代理）
             return response.newBuilder()

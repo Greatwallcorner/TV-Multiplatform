@@ -32,7 +32,9 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.slf4j.LoggerFactory
 
+private val log = LoggerFactory.getLogger("DLNAPlayer")
 
 @OptIn(FlowPreview::class)
 @Composable

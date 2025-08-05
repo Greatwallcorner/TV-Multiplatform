@@ -65,7 +65,7 @@ import lumentv_compose.composeapp.generated.resources.folder_back
 import lumentv_compose.composeapp.generated.resources.loading
 import lumentv_compose.composeapp.generated.resources.undraw_loading
 
-val log: Logger? = LoggerFactory.getLogger("VideoScreen")
+private val log: Logger? = LoggerFactory.getLogger("VideoScreen")
 
 @Composable
 fun VideoItem(modifier: Modifier, vod: Vod, showSite: Boolean, click: (Vod) -> Unit) {

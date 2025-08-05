@@ -5,7 +5,6 @@ import org.jupnp.UpnpServiceImpl
 import org.jupnp.model.meta.LocalDevice
 import org.jupnp.protocol.ProtocolFactory
 import org.jupnp.registry.Registry
-import upnp.TVMDevice
 
 
 class TVMUpnpService: UpnpServiceImpl(DefaultUpnpServiceConfiguration()/*MyUpnpServiceConfiguration()*/) {
