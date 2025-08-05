@@ -80,15 +80,28 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
 
     private val vlcjArgs = mutableListOf<String>(
         "-v",
-        "--no-video-on-top",                // 禁用窗口置顶
-        ":network-caching=500",            // 设置网络缓存为 单位ms
-        ":live-caching=300",               // 减少直播缓存
-        ":http-timeout=5000",              // 设置HTTP超时时间 单位ms
-        ":tcp-timeout=3000"                // 设置TCP超时时间 单位ms
-//        "--file-caching=500",             // 设置文件缓存为
-//        "--live-caching=500",             // 设置直播缓存为
-//        "--sout-mux-caching=500"          // 设置输出缓存为
+        "--stats",
+        "--no-video-on-top",                    // 禁用窗口置顶
+        "--avcodec-hw=any",                     // 系统自动选择解码器
+        "--network-caching=500",                // 设置网络缓存为单位ms
+        "--live-caching=300",                   // 减少直播缓存
+        "--preparse-timeout=500",               // 与预解析超时单位ms
     )
+
+    // 添加方法获取当前媒体信息
+    fun getCurrentMediaInfo(): String {
+        return player?.let { mediaPlayer ->
+            val info = StringBuilder()
+            // 获取视频轨道信息
+            mediaPlayer.media()?.info()?.videoTracks()?.forEach { track ->
+                info.append("视频编码格式: ${track.codecName()}")
+                info.append(" | 视频编码说明: ${track.codecDescription()}")
+                info.append(" | 分辨率: ${track.width()}x${track.height()}")
+            }
+
+            info.toString()
+        } ?: "播放器未初始化"
+    }
 
     override fun resetOpeningEnding() {
         _state.update { it.copy(opening = -1L, ending = -1L) }
@@ -119,6 +132,14 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
             log.info("播放器初始化完成")
             playerReady = true
+
+            // 添加解码器检测
+            CoroutineScope(Dispatchers.IO).launch {
+                delay(1000) // 等待解码器初始化
+                val mediaInfo = getCurrentMediaInfo()
+                log.info("当前媒体信息: $mediaInfo")
+            }
+
             _state.update { it.copy(duration = mediaPlayer.status().length(), state = PlayState.PLAY) }
             play()
         }
@@ -196,7 +217,8 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             // 防抖处理：检查音量变化阈值和时间间隔
             val currentTime = System.currentTimeMillis()
             if (abs(volume - lastLoggedVolume) < VOLUME_LOG_THRESHOLD &&
-                currentTime - lastVolumeLogTime < VOLUME_LOG_DEBOUNCE_MS) {
+                currentTime - lastVolumeLogTime < VOLUME_LOG_DEBOUNCE_MS
+            ) {
                 return
             }
 
@@ -318,6 +340,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             // 处理异常
             // dispose()
             log.error("vlcj初始化失败", e)
+            SnackBar.postMsg("vlcj初始化失败!", type = SnackBar.MessageType.ERROR)
         }
     }
 
@@ -384,7 +407,8 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             return this
         }
 
-        val optionsList = mutableListOf("http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0")
+        val optionsList =
+            mutableListOf("http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0")
 
         catch {
             player?.media()?.prepare(url, *buildList {
@@ -409,7 +433,8 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         }
 
         try {
-            val optionsList = mutableListOf("http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0")
+            val optionsList =
+                mutableListOf("http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0")
 
             player?.media()?.prepare(url, *optionsList.toTypedArray())
 
@@ -610,6 +635,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     override fun setStartEnding(opening: Long, ending: Long) {
         _state.update { it.copy(opening = opening, ending = ending) }
     }
+
     /**
      * 清理播放器资源
      */

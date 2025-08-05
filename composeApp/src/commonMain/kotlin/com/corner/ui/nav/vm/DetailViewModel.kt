@@ -555,14 +555,16 @@ class DetailViewModel : BaseViewModel() {
                 // 显示加载状态
                 _state.update { it.copy(isLoading = true, isBuffering = true) }
 
-                //使用生命周期管理器停止播放
-                lifecycleManager.ended()
-                    .onSuccess {
-                        log.debug("停止播放成功")
-                    }
-                    .onFailure { e ->
-                        log.error("停止播放失败", e)
-                    }
+                if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Ended)) {
+                    //使用生命周期管理器停止播放
+                    lifecycleManager.ended()
+                        .onSuccess {
+                            log.debug("停止播放成功")
+                        }
+                        .onFailure { e ->
+                            log.error("停止播放失败", e)
+                        }
+                }
 
                 // 更新播放状态
                 _state.update {
@@ -573,14 +575,16 @@ class DetailViewModel : BaseViewModel() {
                         isBuffering = false
                     )
                 }
-                //转换播放器状态为ready
-                lifecycleManager.ready()
-                    .onSuccess {
-                        log.debug("转换为ready成功")
-                    }
-                    .onFailure { e ->
-                        log.error("转换为ready失败", e)
-                    }
+                if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Ready)) {
+                    //转换播放器状态为ready
+                    lifecycleManager.ready()
+                        .onSuccess {
+                            log.debug("转换为ready成功")
+                        }
+                        .onFailure { e ->
+                            log.error("转换为ready失败", e)
+                        }
+                }
 
                 // 启动播放
                 lifecycleManager.start()

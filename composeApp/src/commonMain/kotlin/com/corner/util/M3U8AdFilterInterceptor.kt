@@ -49,7 +49,10 @@ class M3U8AdFilterInterceptor {
             }
 
             val adCount = filter.getFilteredAdCount()
-            log.info("广告过滤完成，共过滤 $adCount 条广告")
+            if (adCount > 0) {
+                log.info("广告过滤完成，共过滤 $adCount 条广告")
+                SnackBar.postMsg("广告过滤完成，共过滤 $adCount 条广告")
+            }
 
             // 3. 直接返回处理后的内容（不再走代理）
             return response.newBuilder()

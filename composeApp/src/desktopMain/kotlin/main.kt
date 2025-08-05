@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
@@ -34,6 +35,17 @@ import java.awt.Dimension
 private val log = LoggerFactory.getLogger("main")
 
 fun main() {
+
+    log.info(
+        """
+            __                                  _______    __
+           / /   __  ______ ___  ___  ____     /_  __/ |  / /
+          / /   / / / / __ `__ \/ _ \/ __ \     / /  | | / / 
+         / /___/ /_/ / / / / / /  __/ / / /    / /   | |/ /  
+        /_____/\__,_/_/ /_/ /_/\___/_/ /_/    /_/    |___/                                       
+        """
+    )
+
     launchErrorCatcher()
     printSystemInfo()
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -105,7 +117,7 @@ fun main() {
             }
         }
 
- 
+
     }
 }
 

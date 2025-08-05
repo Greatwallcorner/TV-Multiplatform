@@ -44,7 +44,6 @@ class VlcjFrameController(
 
     val imageBitmapState: MutableState<ImageBitmap?> = mutableStateOf(null)
 
-    // 添加volatile确保线程安全
     @Volatile
     private var isReleased = false
 
@@ -101,27 +100,17 @@ class VlcjFrameController(
     )
 
     override fun load(url: String): PlayerController {
-
         controller.load(url)
 
         speed(controller.history.value?.speed?.toFloat() ?: 1f)
         controller.stop()
-//        if(controller.player?.status()?.isPlaying == true){
-//        }
         controller.play()
         seekTo(max(controller.history.value?.position ?: 0L, history.value?.opening ?: 0L))
         return controller
     }
 
     override fun vlcjFrameInit() {
-        log.info("播放器初始化")
-//        // 创建lifecycleManager并设置给controller
-//        val lifecycleManager = PlayerLifecycleManager(controller, scope)
-//        controller.setLifecycleManager(lifecycleManager)
-//        //初始化播放器
-//        controller.init()
-//        controller.player?.videoSurface()?.set(callbackSurFace)
-//        isReleased = false
+        log.info("播放器初始化 - AWT/Swing嵌入模式")
 
         // 添加窗口绑定检查
         if (!SwingUtilities.isEventDispatchThread()) {
@@ -260,43 +249,5 @@ class VlcjFrameController(
     fun showTips(tips: String) {
         controller.showTips(tips)
     }
-
-//    // 同步清理方法
-//    // 在VlcjFrameController类中添加cleanup方法
-//    fun cleanup() {
-//        if (isReleased) return
-//
-//        try {
-//            log.debug("VlcjFrameController开始执行cleanup")
-//
-//            // 取消历史收集协程
-//            historyCollectJob?.cancel()
-//
-//            // 调用内部的VlcjController进行清理
-//            controller.cleanup()
-//
-//            log.debug("VlcjFrameController cleanup完成")
-//        } catch (e: Exception) {
-//            log.error("VlcjFrameController cleanup失败", e)
-//        }
-//    }
-
-
-//    // 添加异步初始化
-//    override suspend fun initAsync() {
-//        withContext(Dispatchers.IO) {
-//            controller.initAsync()  // 调用VlcjController的异步方法
-//            controller.player?.videoSurface()?.set(callbackSurFace)
-//        }
-//    }
-//
-//    // 添加异步清理
-//    override suspend fun cleanupAsync() {
-//        withContext(Dispatchers.IO) {
-//            historyCollectJob?.cancel()
-//            controller.cleanupAsync()// 调用VlcjController的异步方法
-//        }
-//    }
-
 
 }

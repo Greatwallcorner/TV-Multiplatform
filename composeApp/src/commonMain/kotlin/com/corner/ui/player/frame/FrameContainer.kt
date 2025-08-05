@@ -66,32 +66,6 @@ fun FrameContainer(
             } else {
                 controller.volumeDown()
             }
-        }
-        .onKeyEvent { k ->
-            when (k.key) {
-                Key.DirectionRight -> {
-                    if (k.type == KeyEventType.KeyDown) {
-                        controller.fastForward()
-                    } else if (k.type == KeyEventType.KeyUp) {
-                        controller.stopForward()
-                    }
-                    if (k.isTypedEvent) {
-                        controller.forward()
-                    }
-                }
-
-                Key.DirectionLeft -> {
-                    if (k.isTypedEvent) {
-                        controller.backward()
-                    }
-                }
-
-                Key.Spacebar -> if (k.type == KeyEventType.KeyDown) controller.togglePlayStatus()
-                Key.DirectionUp -> if (k.type == KeyEventType.KeyDown) controller.volumeUp()
-                Key.DirectionDown -> if (k.type == KeyEventType.KeyDown) controller.volumeDown()
-                Key.Escape -> if (k.type == KeyEventType.KeyDown && GlobalAppState.videoFullScreen.value) controller.toggleFullscreen()
-            }
-            true
         }, contentAlignment = Alignment.Center
     ) {
         val frameSizeCalculator = remember { FrameContainerSizeCalculator() }

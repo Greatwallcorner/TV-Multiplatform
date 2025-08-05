@@ -65,9 +65,6 @@ class PlayerLifecycleManager(
 
     // 状态可转换检查函数
     fun canTransitionTo(target: PlayerLifecycleState): Boolean {
-        // 相同状态转换允许（幂等操作）
-        if (lifecycleState.value == target) return true
-
         return isValidTransition(lifecycleState.value, target)
     }
 
