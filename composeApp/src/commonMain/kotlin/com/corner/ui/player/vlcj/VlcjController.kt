@@ -133,7 +133,6 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             log.info("播放器初始化完成")
             playerReady = true
 
-            // 添加解码器检测
             CoroutineScope(Dispatchers.IO).launch {
                 delay(1000) // 等待解码器初始化
                 val mediaInfo = getCurrentMediaInfo()

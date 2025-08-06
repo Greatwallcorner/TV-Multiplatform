@@ -318,8 +318,11 @@ class DetailViewModel : BaseViewModel() {
                         log.error("quickSearch 协程执行异常 msg:{}", throwable .message)
                     }
 
-                    // 更新进度显示
-                    postQuickSearchProgress(completedCount, totalSites)
+                    // 更新进度显示，包含当前完成的站点名称
+                    val currentSiteName = if (completedCount <= quickSearchSites.size) {
+                        quickSearchSites.getOrNull(completedCount - 1)?.name ?: "未知"
+                    } else "完成"
+                    postQuickSearchProgress(completedCount, totalSites, currentSiteName)
 
                     // 更新状态流，将搜索结果添加到快速搜索结果列表中
                     _state.update {
@@ -330,7 +333,7 @@ class DetailViewModel : BaseViewModel() {
                             quickSearchResult = list,
                         )
                     }
-                    if (it == null) {
+                    if (throwable  == null) {
                         // 若协程正常完成，记录完成日志并输出结果列表大小
                         log.debug("一个job执行完毕 {}/{} result size:{}", completedCount, totalSites, _state.value.quickSearchResult.size)
                     }
@@ -371,9 +374,14 @@ class DetailViewModel : BaseViewModel() {
         }
     }
 
-    // 快搜专用消息
-    fun postQuickSearchProgress(current: Int, total: Int) {
-        SnackBar.postMsg("搜索进度: $current/$total", priority = 1, type = SnackBar.MessageType.INFO)
+    // 快搜专用消息 - 更新为包含站源信息
+    fun postQuickSearchProgress(current: Int, total: Int, currentSite: String = "") {
+        val message = if (currentSite.isNotEmpty()) {
+            "搜索进度: $current/$total - $currentSite"
+        } else {
+            "搜索进度: $current/$total"
+        }
+        SnackBar.postMsg(message, priority = 1, type = SnackBar.MessageType.INFO, key = "quick_search_progress")
     }
 
     /**
@@ -518,16 +526,20 @@ class DetailViewModel : BaseViewModel() {
         }
         // 在开始播放新视频前，强制停止当前正在播放的视频
         scope.launch {
-            lifecycleManager.stop()
-                .onSuccess {
-                    log.debug("setDetail - 停止播放成功")
-                    lifecycleManager.ended()
-                        .onSuccess {
-                            log.debug("setDetail - 开始准备播放")
-                            // 启动新视频的播放流程
-                            startPlay()
+            if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Paused)) {
+                lifecycleManager.stop()
+                    .onSuccess {
+                        log.debug("setDetail - 停止播放成功")
+                        if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Ended)) {
+                            lifecycleManager.ended()
+                                .onSuccess {
+                                    log.debug("setDetail - 开始准备播放")
+                                    // 启动新视频的播放流程
+                                    startPlay()
+                                }
                         }
-                }
+                    }
+            }
         }
     }
 
@@ -662,7 +674,9 @@ class DetailViewModel : BaseViewModel() {
         // 步骤5: 启动播放器
         // 在协程中启动播放器状态转换
         scope.launch {
-            lifecycleManager.start()
+            if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Playing)) {
+                lifecycleManager.start()
+            }
         }
 
         // 步骤6: 更新播放状态
@@ -1202,7 +1216,9 @@ class DetailViewModel : BaseViewModel() {
         scope.launch {
             log.debug("切换线路，结束播放")
             // 先结束当前播放，避免线路切换时的音视频冲突
-            lifecycleManager.ended()
+            if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Ended)) {
+                lifecycleManager.ended()
+            }
 
             try {
                 // 步骤1: 更新所有线路的激活状态
@@ -1234,13 +1250,12 @@ class DetailViewModel : BaseViewModel() {
 
                 // 步骤4: 重置播放器状态
                 // 将播放器状态重置为准备就绪
-                lifecycleManager.ready()
-                    .onSuccess {
-                        log.debug("转换为ready成功")
-                    }
-                    .onFailure { e ->
-                        log.error("转换为ready失败", e)
-                    }
+                if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Ready)) {
+                    lifecycleManager.ready()
+                        .onFailure { e ->
+                            log.error("转换为ready失败", e)
+                        }
+                }
 
                 // 步骤5: 根据历史记录自动播放
                 val history = controller.history.value

@@ -102,6 +102,16 @@ class SearchViewModel: BaseViewModel() {
                     _state.value.currentVodList.value = (SiteViewModel.search.value.find { it.activated.value }
                         ?.list ?: listOf()).toMutableList()
                     if (e == null) log.debug("一个job执行完毕 List size:{}", _state.value.currentVodList.value.size)
+
+                    // 更新搜索进度
+                    val completedCount = _state.value.searchCompleteSites.size
+                    val totalCount = _state.value.searchableSites.filter { it.searchable == 1 }.size
+                    SnackBar.postMsg(
+                        "搜索进度: $completedCount/$totalCount - ${site.name}",
+                        key = "search_progress",
+                        type = SnackBar.MessageType.INFO
+                    )
+
                 }
                 jobList.add(job)
             }

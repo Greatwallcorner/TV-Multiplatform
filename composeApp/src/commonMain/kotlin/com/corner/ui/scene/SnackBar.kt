@@ -41,7 +41,8 @@ object SnackBar {
         val content: String,
         val priority: Int = 0,
         val type: MessageType = MessageType.INFO,
-        val timestamp: Long = System.currentTimeMillis()
+        val timestamp: Long = System.currentTimeMillis(),
+        val key: String? = null
     )
 
     enum class MessageType {
@@ -85,23 +86,44 @@ object SnackBar {
         return recentMessages.size >= BURST_THRESHOLD
     }
 
-    fun postMsg(msg: String, priority: Int = 0, type: MessageType = MessageType.INFO) {
-        val newMessage = Message(msg, priority, type)
+    fun postMsg(msg: String, priority: Int = 0, type: MessageType = MessageType.INFO, key: String? = null) {
+        val newMessage = Message(msg, priority, type, key = key)
 
-        // 智能合并突发消息
-        if (shouldMergeMessages()) {
-            val merged = Message("已处理 ${msgQueue.size + 1} 条消息", priority, MessageType.INFO)
-            msgQueue.clear()
-            msgQueue.add(merged)
-        } else {
-            // 按优先级排序插入，高优先级在前
-            val tempList = msgQueue.toMutableList()
+        // 如果提供了key，则移除相同key的旧消息
+        if (key != null) {
+            // 立即替换正在显示的相同key消息
+            msgList.forEachIndexed { index, stateFlow ->
+                val currentMsg = stateFlow.value
+                if (currentMsg?.key == key) {
+                    // 直接替换正在显示的消息
+                    stateFlow.value = newMessage
+                    return // 消息已更新，无需入队
+                }
+            }
+
+            // 如果没有正在显示的相同key消息，则处理队列
+            val tempList = msgQueue.filter { it.key != key }.toMutableList()
             tempList.add(newMessage)
             tempList.sortByDescending { it.priority }
 
             msgQueue.clear()
             tempList.forEach { msgQueue.add(it) }
+        } else {
+            // 原有的消息处理逻辑
+            if (shouldMergeMessages()) {
+                val merged = Message("已处理 ${msgQueue.size + 1} 条消息", priority, MessageType.INFO)
+                msgQueue.clear()
+                msgQueue.add(merged)
+            } else {
+                val tempList = msgQueue.toMutableList()
+                tempList.add(newMessage)
+                tempList.sortByDescending { it.priority }
+
+                msgQueue.clear()
+                tempList.forEach { msgQueue.add(it) }
+            }
         }
+
 
         // 限制队列长度
         if (msgQueue.size > MAX_QUEUE_SIZE) {
@@ -137,7 +159,7 @@ object SnackBar {
                 animationSpec = tween(durationMillis = 400)
             ),
             exit = slideOutVertically(
-                targetOffsetY = {  fullHeight -> fullHeight * 2 },
+                targetOffsetY = { fullHeight -> fullHeight * 2 },
                 animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing) // 延长渐隐时间
             ) + fadeOut(
                 animationSpec = tween(durationMillis = 400) // 更平滑的渐隐

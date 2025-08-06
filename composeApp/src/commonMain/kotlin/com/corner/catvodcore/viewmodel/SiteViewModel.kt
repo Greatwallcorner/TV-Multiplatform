@@ -639,9 +639,6 @@ object SiteViewModel {
 
 
     private fun post(site: Site, result: Result, quick: Boolean) {
-        if (site.name.isNotEmpty()) {
-            SnackBar.postMsg("开始在${site.name}搜索", type = SnackBar.MessageType.INFO)
-        }
         if (result.list.isEmpty()) {
             return
         }
