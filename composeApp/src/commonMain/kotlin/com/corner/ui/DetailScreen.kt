@@ -72,6 +72,11 @@ import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("DetailScreen")
 
+var userTriggered by mutableStateOf(false)
+fun onUserSelectEpisode() {
+    userTriggered = true
+}
+
 @Composable
 fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
     val model by vm.state.collectAsState()  // 自动响应状态更新
@@ -985,6 +990,7 @@ fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
                         episode = episode,
                         onSelect = {
                             vm.chooseEp(it) { uriHandler.openUri(it) }
+                            onUserSelectEpisode()
                             DialogState.resetBrowserChoice()
                         },
                         isLoading = episode.activated && vm.videoLoading.value,

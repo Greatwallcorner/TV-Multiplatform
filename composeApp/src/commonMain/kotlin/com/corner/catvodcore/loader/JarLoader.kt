@@ -183,6 +183,10 @@ object JarLoader {
             val md5 = Utils.md5(recent ?: "")
             val proxy = methods[md5]
 
+            if (proxy == null) {
+                log.error("未找到代理方法，md5: $md5")
+                return null
+            }
             // 过滤或验证参数值
             val safeParams = params.mapValues { entry ->
                 // 检查是否是有效的 base64 字符串

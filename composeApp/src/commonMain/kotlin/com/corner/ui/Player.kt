@@ -132,10 +132,14 @@ fun Player(
     }
 
     val showCursor = remember { mutableStateOf(true) }
+
     DisposableEffect(mrl) {
         scope.launch {
             if (StringUtils.isNotBlank(mrl)) {
-                controller.load(mrl)
+                if (!userTriggered) {
+                    controller.load(mrl)
+                }
+                userTriggered = false
             }
         }
         onDispose {

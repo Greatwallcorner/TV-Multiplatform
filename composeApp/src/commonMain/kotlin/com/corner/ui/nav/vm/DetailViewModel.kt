@@ -194,7 +194,9 @@ class DetailViewModel : BaseViewModel() {
                         // 更新状态流中的详情信息
                         _state.update { it.copy(detail = detail, isLoading = false) }
 
-                        lifecycleManager.loading()
+                        if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Loading)) {
+                            lifecycleManager.loading()
+                        }
 
                         // 开始播放视频
                         startPlay()
@@ -526,28 +528,54 @@ class DetailViewModel : BaseViewModel() {
         }
         // 在开始播放新视频前，强制停止当前正在播放的视频
         scope.launch {
-            if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Paused)) {
-                lifecycleManager.stop()
-                    .onSuccess {
-                        log.debug("setDetail - 停止播放成功")
-                        if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Ended)) {
+            val currentState = lifecycleManager.lifecycleState.value
+
+            when {
+                // 如果正在播放，先暂停再停止
+                currentState == PlayerLifecycleState.Playing -> {
+                    lifecycleManager.stop()
+                        .onSuccess {
                             lifecycleManager.ended()
-                                .onSuccess {
-                                    log.debug("setDetail - 开始准备播放")
-                                    // 启动新视频的播放流程
-                                    startPlay()
-                                }
+                                .onSuccess { transitionToLoading() }
                         }
-                    }
+                        .onFailure { transitionToLoading() }
+                }
+                // 如果已暂停，直接停止
+                currentState == PlayerLifecycleState.Paused -> {
+                    lifecycleManager.ended()
+                        .onSuccess { transitionToLoading() }
+                        .onFailure { transitionToLoading() }
+                }
+                // 如果已结束，直接转换到loading
+                currentState == PlayerLifecycleState.Ended -> {
+                    transitionToLoading()
+                }
+                // 其他状态，尝试停止后转换到loading
+                else -> {
+                    lifecycleManager.ended()
+                        .onSuccess { transitionToLoading() }
+                        .onFailure { transitionToLoading() }
+                }
             }
         }
     }
 
+    /**
+     * 转换到加载状态并启动播放。
+     * 若当前状态允许转换到加载状态，会先转换到加载状态，然后启动播放。
+     */
+    private suspend fun transitionToLoading() {
+        if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Loading)) {
+            lifecycleManager.loading()
+        }
+        startPlay()
+    }
 
     /**
      * 根据播放结果处理播放逻辑。
      * 若播放结果为空或无效，提示用户并尝试切换到下一个可用线路；
-     * 若播放结果有效，更新当前播放的 URL 和播放结果。
+     * 若播放结果有效，更新当前播放的 URL 和播放结果并自动播放视频。
+     * 注意，不会根据历史记录设置播放速度和位置。
      *
      * @param result 播放结果对象，可能为 null。
      */
@@ -567,17 +595,6 @@ class DetailViewModel : BaseViewModel() {
                 // 显示加载状态
                 _state.update { it.copy(isLoading = true, isBuffering = true) }
 
-                if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Ended)) {
-                    //使用生命周期管理器停止播放
-                    lifecycleManager.ended()
-                        .onSuccess {
-                            log.debug("停止播放成功")
-                        }
-                        .onFailure { e ->
-                            log.error("停止播放失败", e)
-                        }
-                }
-
                 // 更新播放状态
                 _state.update {
                     it.copy(
@@ -587,26 +604,48 @@ class DetailViewModel : BaseViewModel() {
                         isBuffering = false
                     )
                 }
-                if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Ready)) {
-                    //转换播放器状态为ready
-                    lifecycleManager.ready()
-                        .onSuccess {
-                            log.debug("转换为ready成功")
-                        }
-                        .onFailure { e ->
-                            log.error("转换为ready失败", e)
-                        }
-                }
 
-                // 启动播放
-                lifecycleManager.start()
+                lifecycleManager.ended()
                     .onSuccess {
-                        log.debug("启动播放成功")
+                        log.debug("停止播放成功")
+                        lifecycleManager.ready()
+                            .onSuccess {
+                                log.debug("转换为ready成功")
+                                lifecycleManager.start()
+                                    .onSuccess {
+                                        log.debug("启动播放成功")
+                                        controller.loadAsync(result.url.v(), 10000)
+                                        delay(1000)
+                                        controller.play()
+                                    }
+                                    .onFailure { e ->
+                                        log.error("启动播放失败", e)
+                                    }
+                            }
+                            .onFailure { e ->
+                                log.error("转换为ready失败", e)
+                            }
                     }
                     .onFailure { e ->
-                        log.error("启动播放失败", e)
+                        log.error("停止播放失败,尝试直接播放", e)
+                        lifecycleManager.ready()
+                            .onSuccess {
+                                log.debug("转换为ready成功")
+                                lifecycleManager.start()
+                                    .onSuccess {
+                                        log.debug("启动播放成功")
+                                        controller.loadAsync(result.url.v(), 10000)
+                                        delay(1000)
+                                        controller.play()
+                                    }
+                                    .onFailure { e ->
+                                        log.error("启动播放失败", e)
+                                    }
+                            }
+                            .onFailure { e ->
+                                log.error("转换为ready失败,终止播放", e)
+                            }
                     }
-                controller.loadAsync(result.url.v(), 10000)
             } catch (e: TimeoutCancellationException) {
                 log.error("播放器初始化超时", e)
                 SnackBar.postMsg("播放器初始化超时，请重试", type = SnackBar.MessageType.ERROR)
@@ -729,7 +768,11 @@ class DetailViewModel : BaseViewModel() {
     fun startPlay() {
 
         scope.launch {
-            lifecycleManager.ready()
+            if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Ready)) {
+                lifecycleManager.ready()
+            }else{
+                log.error("startPlay - 播放器状态不是Ready，无法开始播放")
+            }
         }
 
         // 检查视频详情信息是否为空，若为空则不进行播放操作
