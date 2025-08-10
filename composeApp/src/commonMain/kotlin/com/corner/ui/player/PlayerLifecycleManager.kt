@@ -187,8 +187,11 @@ class PlayerLifecycleManager(
         return withContext(lifecycleDispatcher) {
             try {
                 controller.playerReady.let { player ->
-                    if (player) {
+                    if (player.value) {
+                        log.debug("播放器已就绪")
                         return@withContext Result.success(Unit)
+                    }else{
+                        log.info("播放器未就绪，等待就绪中...")
                     }
                 }
                 return@withContext Result.failure(IllegalStateException("Player not initialized"))

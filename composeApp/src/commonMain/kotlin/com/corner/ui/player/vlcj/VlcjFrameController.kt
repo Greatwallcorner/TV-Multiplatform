@@ -169,11 +169,17 @@ class VlcjFrameController(
 
     override fun load(url: String): PlayerController {
         scope.launch {
-            controller.loadAsync(url, 1000) // suspend 函数，自动挂起直到完成
-            speed(controller.history.value?.speed?.toFloat() ?: 1f)
+//            showProgress()
+            log.info("load - 开始加载视频...")
+            controller.loadAsync(url, 1000)
             controller.stop()
+            log.info("load - 视频加载完成，开始初始化播放器")
             controller.play()
+            delay(1000)
+            speed(controller.history.value?.speed?.toFloat() ?: 1f)
             seekTo(max(controller.history.value?.position ?: 0L, history.value?.opening ?: 0L))
+//            delay(1000)
+//            hideProgress()
         }
         return controller
     }

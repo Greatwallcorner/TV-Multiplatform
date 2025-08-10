@@ -15,7 +15,9 @@ interface PlayerController {
 
     var history:MutableStateFlow<History?>
 
-    var playerReady:Boolean
+    var playerReady: StateFlow<Boolean>
+
+    var endingHandled: Boolean
 
     var playerLoading:Boolean
 

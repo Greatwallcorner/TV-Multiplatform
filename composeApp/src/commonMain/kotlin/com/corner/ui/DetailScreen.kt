@@ -713,9 +713,7 @@ private fun quickSearchResult(
                     QuickSearchItem(it) {
                         SiteViewModel.viewModelScope.launch {
                             log.debug("开始加载新内容...")
-                            showProgress()
                             component.loadDetail(it)
-                            hideProgress()
                             log.debug("加载新内容完毕...")
                         }
                     }
