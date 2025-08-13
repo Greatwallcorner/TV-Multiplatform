@@ -8,8 +8,11 @@ import com.corner.util.M3U8FilterConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.apache.commons.lang3.StringUtils
+import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import kotlin.io.path.exists
+
+private val log = LoggerFactory.getLogger("Setting")
 
 @Serializable
 data class Setting(val id: String, val label: String, var value: String = "")
@@ -83,18 +86,12 @@ class PlayerStateCache:Cache{
 @Serializable
 data class SettingFile(val list: MutableList<Setting>, val cache: MutableMap<String, Cache>)
 
-enum class EditType {
-    INPUT,
-    CHOOSE
-}
-
 enum class SettingType(val id: String) {
     PLAYER("player"),
     VOD("vod"),
     LOG("log"),
     SEARCHHISTORY("searchHistory"),
     PROXY("proxy"),
-    // 新增主题设置类型
     THEME("theme"),
     AD_FILTER("adFilter"),
     M3U8_FILTER_CONFIG("m3u8FilterConfig");
@@ -213,7 +210,7 @@ object SettingStore {
             try {
                 Json.decodeFromString(configJson)
             } catch (e: Exception) {
-                println("反序列化 M3U8FilterConfig 失败，使用默认配置: ${e.message}")
+                log.error("反序列化 M3U8FilterConfig 失败，使用默认配置: ${e.message}")
                 M3U8FilterConfig()
             }
         }

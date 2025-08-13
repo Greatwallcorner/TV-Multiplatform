@@ -84,6 +84,8 @@ kotlin {
 
                 // log
                 implementation("ch.qos.logback:logback-classic:$logbackVer")
+                implementation("org.apache.logging.log4j:log4j-api:2.20.0")
+                implementation("org.fusesource.jansi:jansi:2.4.0")
                 // image-loader
                 api(libs.image.loader)
                 // optional - Moko Resources Decoder
@@ -98,7 +100,7 @@ kotlin {
                 implementation(libs.jupnp.bom.compile)
                 implementation(libs.jupnp.support)
                 implementation(libs.jupnp.osgi)
-                implementation("org.apache.logging.log4j:log4j-api:2.20.0")
+
 
                 //web-player
                 implementation("org.java-websocket:Java-WebSocket:1.6.0")
@@ -142,7 +144,7 @@ compose.desktop {
             configurationFiles.from(project.file("src/desktopMain/rules.pro"))
         }
 
-//        jvmArgs("-Dfile.encoding=UTF-8")
+        jvmArgs("-Dfile.encoding=UTF-8")
         jvmArgs("-Dsun.net.http.allowRestrictedHeaders=true")
 
         nativeDistributions {

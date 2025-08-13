@@ -70,7 +70,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 
-val log = LoggerFactory.getLogger("DetailScreen")
+private val log = LoggerFactory.getLogger("DetailScreen")
+
+var userTriggered by mutableStateOf(false)
+fun onUserSelectEpisode() {
+    userTriggered = true
+}
 
 @Composable
 fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
@@ -82,19 +87,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
     val isFullScreen = GlobalAppState.videoFullScreen.collectAsState()
     val videoHeight = derivedStateOf { if (isFullScreen.value) 1f else 0.6f }
     val videoWidth = derivedStateOf { if (isFullScreen.value) 1f else 0.7f }
-
-    DisposableEffect(Unit) {
-        //进入界面时加载数据
-        scope.launch {
-            vm.load()
-        }
-        onDispose {
-            //重置播放器状态
-            vm.clear()
-            //关闭websocket服务
-            BrowserUtils.cleanup()
-        }
-    }
 
     //监听isLoading, 显示加载动画
     LaunchedEffect(model.isLoading) {
@@ -132,6 +124,21 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
     LaunchedEffect(BrowserUtils.webSocketConnectionState) {
         BrowserUtils.webSocketConnectionState.collect { isConnected ->
             showWebSocketDisconnected = !isConnected
+        }
+    }
+
+    DisposableEffect(Unit) {
+        //进入界面时加载数据
+        scope.launch {
+            vm.load()
+        }
+        onDispose {
+            //重置播放器状态
+            vm.clear()
+            if (localShowPngDialog) {
+                //关闭websocket服务
+                BrowserUtils.cleanup()
+            }
         }
     }
 
@@ -200,7 +207,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
 
                                         vm.clear(false)
                                         vm.quickSearch()
-                                        SnackBar.postMsg("重新加载")
+                                        SnackBar.postMsg("重新加载", type = SnackBar.MessageType.INFO)
                                     }
                                 },
                                 enabled = !model.isLoading,
@@ -323,7 +330,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                         )
                         NoPlayerContent(message = "正在 Web 播放器中播放", subtitle = "请使用 Web 播放器")
                     } else if (!DialogState.userChoseOpenInBrowser) {
-                        if (!isSpecialVideoLink){
+                        if (!isSpecialVideoLink) {
                             Player(
                                 mrl.value,
                                 controller.value,
@@ -334,7 +341,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                 vm,
                                 focusRequester = focus
                             )
-                        }else{
+                        } else {
                             NoPlayerContent(message = "需要使用 Web 播放器播放", subtitle = "请使用 Web 播放器")
                         }
                     } else {
@@ -401,7 +408,10 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                     title = "当前源不可用",
                                     subtitle = "或加载缓慢，请刷新重试",
                                     onRefresh = { scope.launch { vm.load() } },
-                                    modifier = Modifier.fillMaxWidth().fillMaxHeight().background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(10.dp)),
+                                    modifier = Modifier.fillMaxWidth().fillMaxHeight().background(
+                                        MaterialTheme.colorScheme.surface,
+                                        shape = RoundedCornerShape(10.dp)
+                                    ),
                                     buttonAlignment = ButtonAlignment.LEFT
                                 )
                             } else {
@@ -703,9 +713,7 @@ private fun quickSearchResult(
                     QuickSearchItem(it) {
                         SiteViewModel.viewModelScope.launch {
                             log.debug("开始加载新内容...")
-                            showProgress()
                             component.loadDetail(it)
-                            hideProgress()
                             log.debug("加载新内容完毕...")
                         }
                     }
@@ -754,31 +762,86 @@ private fun VodInfo(detail: Vod?) {
                 }
         }
 
-        // 2. 导演信息
-        LabeledText(
-            label = "导演",
-            content = detail?.vodDirector,
-            modifier = Modifier.padding(top = 12.dp)
-        )
+        // 2. 导演信息 - 只在有数据时显示
+        detail?.vodDirector?.takeIf { it.isNotBlank() }?.let { director ->
+            LabeledText(
+                label = "导演",
+                content = director,
+                modifier = Modifier.padding(top = 12.dp)
+            )
+        }
 
-        // 3. 演员信息
-        LabeledText(
-            label = "演员",
-            content = detail?.vodActor,
-            modifier = Modifier.padding(top = 8.dp),
-            maxLines = 2
-        )
+        // 3. 演员信息 - 只在有数据时显示
+        detail?.vodActor?.takeIf { it.isNotBlank() }?.let { actor ->
+            LabeledText(
+                label = "演员",
+                content = actor,
+                modifier = Modifier.padding(top = 8.dp),
+                maxLines = 2
+            )
+        }
 
-        // 4. 简介
-        LabeledText(
-            label = "简介",
-            content = detail?.vodContent?.trim(),
-            modifier = Modifier.padding(top = 8.dp),
-            maxLines = 3,
-            textStyle = typography.bodyMedium.copy(lineHeight = 22.sp)
-        )
+        // 4. 简介 - 支持展开/收起
+        detail?.vodContent?.takeIf { it.isNotBlank() }?.let { content ->
+            ExpandableDescription(
+                label = "简介",
+                content = content.trim(),
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
     }
 }
+
+// 新增可展开描述组件
+@Composable
+private fun ExpandableDescription(
+    label: String,
+    content: String,
+    modifier: Modifier = Modifier,
+    collapsedMaxLines: Int = 3
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+    var showButton by remember { mutableStateOf(false) }
+
+    Column(modifier) {
+        Text(
+            text = "$label：",
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            ),
+            modifier = Modifier.padding(bottom = 2.dp)
+        )
+
+        Box {
+            Text(
+                text = content,
+                style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = if (isExpanded) Int.MAX_VALUE else collapsedMaxLines,
+                overflow = TextOverflow.Ellipsis,
+                onTextLayout = { textLayoutResult ->
+                    if (textLayoutResult.hasVisualOverflow) {
+                        showButton = true
+                    }
+                }
+            )
+        }
+
+        if (showButton) {
+            TextButton(
+                onClick = { isExpanded = !isExpanded },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text(
+                    text = if (isExpanded) "收起" else "展开",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 private fun InfoChip(text: String) {
@@ -925,6 +988,7 @@ fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
                         episode = episode,
                         onSelect = {
                             vm.chooseEp(it) { uriHandler.openUri(it) }
+                            onUserSelectEpisode()
                             DialogState.resetBrowserChoice()
                         },
                         isLoading = episode.activated && vm.videoLoading.value,

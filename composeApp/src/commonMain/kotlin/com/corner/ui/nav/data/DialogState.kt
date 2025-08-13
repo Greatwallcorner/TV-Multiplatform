@@ -3,10 +3,10 @@ package com.corner.ui.nav.data
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.corner.ui.video.log
+import org.slf4j.LoggerFactory
 
 object DialogState {
-
+    private val log = LoggerFactory.getLogger("DialogState")
     // 新增标志位，记录用户是否选择在浏览器打开
     var userChoseOpenInBrowser by mutableStateOf(false)
     var showPngDialog = false
@@ -14,7 +14,7 @@ object DialogState {
 
     var currentM3U8Url = ""
         set(value) {
-            log?.debug("DialogState.currentM3U8Url --> {}", value)
+            log.debug("DialogState.currentM3U8Url --> {}", value)
             field = value
         }
 //        private set
@@ -39,7 +39,7 @@ object DialogState {
 
     // 切换视频时重置标志位
     fun resetBrowserChoice() {
-        println("resetBrowserChoice 方法被调用，userChoseOpenInBrowser 将被重置为 false")
+        log.debug("resetBrowserChoice,userChoseOpenInBrowser -> {}", userChoseOpenInBrowser)
         userChoseOpenInBrowser = false
     }
 }

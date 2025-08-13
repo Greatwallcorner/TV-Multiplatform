@@ -6,12 +6,12 @@ import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Paths
 import com.corner.catvodcore.util.Urls
 import com.corner.catvodcore.util.Utils
+import com.corner.util.thisLogger
 import com.github.catvod.crawler.Spider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.lang.reflect.Method
 import java.net.URLClassLoader
@@ -19,7 +19,7 @@ import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 
 object JarLoader {
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log = thisLogger()
     private val loaders: ConcurrentHashMap<String, URLClassLoader> by lazy { ConcurrentHashMap() }
 
     //proxy method
@@ -28,14 +28,11 @@ object JarLoader {
 
     var recent: String? = null
 
-    /**
-     * CLEAR了个什么？？？？？
-     * */
     fun clear() {
         spiders.values.forEach { spider ->
             CoroutineScope(Dispatchers.IO).launch {
                 spider.destroy()
-                spiders.clear()//???
+                spiders.clear()
             }
         }
         loaders.clear()
@@ -43,10 +40,7 @@ object JarLoader {
         recent = null
     }
 
-    // 类级别变量
-    private var loadJarStackDepth = 0
     private const val MAX_RETRY_COUNT = 30
-    private const val STACK_OVERFLOW_THRESHOLD = 50 // 根据实际JVM栈深度调整
 
     /**
      * 改为迭代方式，不要使用递归，会出现问题
@@ -119,12 +113,6 @@ object JarLoader {
         }
     }
 
-
-    private fun resetLoadJarState() {
-        loadJarStackDepth = 0
-        log.error("重置loadJar状态，防止堆栈溢出")
-    }
-
     /**
      * 如果在配置文件种使用的相对路径， 下载的时候使用的全路径 如果的判断md5是否一致的时候使用相对路径 就会造成重复下载
      */
@@ -195,6 +183,10 @@ object JarLoader {
             val md5 = Utils.md5(recent ?: "")
             val proxy = methods[md5]
 
+            if (proxy == null) {
+                log.error("未找到代理方法，md5: $md5")
+                return null
+            }
             // 过滤或验证参数值
             val safeParams = params.mapValues { entry ->
                 // 检查是否是有效的 base64 字符串

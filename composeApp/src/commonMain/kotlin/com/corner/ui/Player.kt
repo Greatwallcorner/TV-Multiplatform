@@ -62,7 +62,7 @@ import java.util.*
 import kotlin.concurrent.timerTask
 import kotlin.math.abs
 
-const val VIDEO_URL = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+//const val VIDEO_URL = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
 
 private val player_log = LoggerFactory.getLogger("Player")
 
@@ -132,10 +132,14 @@ fun Player(
     }
 
     val showCursor = remember { mutableStateOf(true) }
+
     DisposableEffect(mrl) {
         scope.launch {
             if (StringUtils.isNotBlank(mrl)) {
-                controller.load(mrl)
+                if (!userTriggered) {
+                    controller.load(mrl)
+                }
+                userTriggered = false
             }
         }
         onDispose {

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.text.isTypedEvent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.CircularProgressIndicator
@@ -22,7 +21,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.text.TextStyle
@@ -30,7 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.ui.player.PlayState
 import com.corner.ui.player.vlcj.VlcjFrameController
 import com.corner.ui.scene.emptyShow
@@ -66,32 +63,6 @@ fun FrameContainer(
             } else {
                 controller.volumeDown()
             }
-        }
-        .onKeyEvent { k ->
-            when (k.key) {
-                Key.DirectionRight -> {
-                    if (k.type == KeyEventType.KeyDown) {
-                        controller.fastForward()
-                    } else if (k.type == KeyEventType.KeyUp) {
-                        controller.stopForward()
-                    }
-                    if (k.isTypedEvent) {
-                        controller.forward()
-                    }
-                }
-
-                Key.DirectionLeft -> {
-                    if (k.isTypedEvent) {
-                        controller.backward()
-                    }
-                }
-
-                Key.Spacebar -> if (k.type == KeyEventType.KeyDown) controller.togglePlayStatus()
-                Key.DirectionUp -> if (k.type == KeyEventType.KeyDown) controller.volumeUp()
-                Key.DirectionDown -> if (k.type == KeyEventType.KeyDown) controller.volumeDown()
-                Key.Escape -> if (k.type == KeyEventType.KeyDown && GlobalAppState.videoFullScreen.value) controller.toggleFullscreen()
-            }
-            true
         }, contentAlignment = Alignment.Center
     ) {
         val frameSizeCalculator = remember { FrameContainerSizeCalculator() }

@@ -7,7 +7,6 @@ import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.ui.nav.BaseViewModel
 import com.corner.ui.nav.data.SearchScreenState
-import com.corner.ui.scene.SnackBar
 import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -84,7 +83,7 @@ class SearchViewModel: BaseViewModel() {
             searchableSites = searchableSites.subList(0, _state.value.onceSearchSiteNum.coerceAtMost(searchableSites.size))
             log.info("站源：{}", searchableSites.map { it.name })
             if(searchableSites.map { it.name }.isEmpty()){
-                SnackBar.postMsg("所有站点已搜索完毕，未找到新内容")
+                SnackBar.postMsg("所有站点已搜索完毕，未找到新内容", type = SnackBar.MessageType.WARNING)
             }
             searchableSites.forEach { site ->
                 val job = searchScope.launch {
@@ -103,6 +102,16 @@ class SearchViewModel: BaseViewModel() {
                     _state.value.currentVodList.value = (SiteViewModel.search.value.find { it.activated.value }
                         ?.list ?: listOf()).toMutableList()
                     if (e == null) log.debug("一个job执行完毕 List size:{}", _state.value.currentVodList.value.size)
+
+                    // 更新搜索进度
+                    val completedCount = _state.value.searchCompleteSites.size
+                    val totalCount = _state.value.searchableSites.filter { it.searchable == 1 }.size
+                    SnackBar.postMsg(
+                        "搜索进度: $completedCount/$totalCount - ${site.name}",
+                        key = "search_progress",
+                        type = SnackBar.MessageType.INFO
+                    )
+
                 }
                 jobList.add(job)
             }

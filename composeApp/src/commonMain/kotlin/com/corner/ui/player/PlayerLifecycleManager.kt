@@ -63,6 +63,11 @@ class PlayerLifecycleManager(
         }
     }
 
+    // 状态可转换检查函数
+    fun canTransitionTo(target: PlayerLifecycleState): Boolean {
+        return isValidTransition(lifecycleState.value, target)
+    }
+
     /**
      * 异步初始化
      */
@@ -83,12 +88,13 @@ class PlayerLifecycleManager(
     /**
      * 同步初始化
      */
-    suspend fun initialize_sync(): Result<Unit> = transitionTo(PlayerLifecycleState.Initializing_Sync)
+    suspend fun initializeSync(): Result<Unit> = transitionTo(PlayerLifecycleState.Initializing_Sync)
 
     private suspend fun initializeSyncInternal(): Result<Unit> {
         return withContext(lifecycleDispatcher) {
             try {
                 controller.vlcjFrameInit()
+                _lifecycleState.value = PlayerLifecycleState.Initialized
                 Result.success(Unit)
             } catch (e: Exception) {
                 log.error("同步初始化失败", e)
@@ -181,8 +187,11 @@ class PlayerLifecycleManager(
         return withContext(lifecycleDispatcher) {
             try {
                 controller.playerReady.let { player ->
-                    if (player) {
+                    if (player.value) {
+                        log.debug("播放器已就绪")
                         return@withContext Result.success(Unit)
+                    }else{
+                        log.info("播放器未就绪，等待就绪中...")
                     }
                 }
                 return@withContext Result.failure(IllegalStateException("Player not initialized"))
@@ -296,7 +305,8 @@ class PlayerLifecycleManager(
                 PlayerLifecycleState.Error,
                 PlayerLifecycleState.Cleaning,
                 PlayerLifecycleState.Loading,
-                PlayerLifecycleState.Paused
+                PlayerLifecycleState.Paused,
+                PlayerLifecycleState.Initialized
             )
 
             PlayerLifecycleState.Released -> to == PlayerLifecycleState.Idle

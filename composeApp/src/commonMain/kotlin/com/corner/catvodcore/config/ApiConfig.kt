@@ -12,7 +12,6 @@ import com.corner.catvodcore.util.Urls
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.database.Db
 import com.corner.database.entity.Config
-import com.corner.ui.scene.SnackBar
 import com.corner.util.createCoroutineScope
 import com.corner.util.isEmpty
 import com.github.catvod.crawler.Spider
@@ -60,7 +59,7 @@ object ApiConfig{
                 ?: throw RuntimeException("配置读取异常")
 
             if (StringUtils.isBlank(data)) {
-                SnackBar.postMsg("配置数据为空,请检查配置文件")
+                SnackBar.postMsg("配置数据为空,请检查配置文件", type = SnackBar.MessageType.WARNING)
                 setHome(null)
                 throw NoStackTraceException("配置数据为空") // 自定义不打印堆栈的异常
             }
@@ -188,7 +187,7 @@ object ApiConfig{
                 return Files.readString(file.toPath())
             }
         } catch (e: Exception) {
-            SnackBar.postMsg("获取配置失败: "+e.message)
+            SnackBar.postMsg("获取配置失败: "+e.message, type = SnackBar.MessageType.ERROR)
             log.error("获取配置失败", e)
             return ""
         }

@@ -1,7 +1,7 @@
 ![LumenTV-icon](readme_images/LumenTV-icon-svg.svg) 
 # LumenTV Compose
-本项目基于 [TV-Multiplatform](https://github.com/Greatwallcorner/TV-Multiplatform)，[jetbrain/KMP](https://github.com/JetBrains/compose-multiplatform-desktop-template#readme)，[fonmi/TV](https://github.com/FongMi/TV)。名称中的 `multiplatform` 指的是 `compose-multiplatform` 所提供的多平台能力，但是本项目现阶段只使用桌面版本。使用方式和 `fonmi/TV` 类似，使用动态加载 `jar` 的方式获取需要展示的数据。需要结合为本项目定制的 `spider` 使用。
-
+本项目基于 [TV-Multiplatform](https://github.com/Greatwallcorner/TV-Multiplatform)，[jetbrain/KMP](https://github.com/JetBrains/compose-multiplatform-desktop-template#readme)，[fonmi/TV](https://github.com/FongMi/TV)。名称中的 `Compose` 指的是 `compose-multiplatform` 所提供的多平台能力，但是本项目现阶段只使用桌面版本。使用方式和 `fonmi/TV` 类似，使用动态加载 `jar` 的方式获取需要展示的数据。需要结合为本项目定制的 `spider` 使用。
+- 本项目使用的爬虫：[CatVodSpider](https://github.com/clevebitr/CatVodSpider)
 ## 核心功能
 
 ### 爬虫支持

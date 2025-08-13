@@ -1,7 +1,5 @@
-package upnp
+package com.corner.dlna
 
-import com.corner.dlna.TVConnectionManagerService
-import com.corner.dlna.TvMAudioRenderingControlService
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jupnp.binding.annotations.AnnotationLocalServiceBinder
@@ -11,15 +9,17 @@ import org.jupnp.model.types.UDADeviceType
 import org.jupnp.model.types.UDN
 import org.jupnp.support.renderingcontrol.AbstractAudioRenderingControl
 import lumentv_compose.composeapp.generated.resources.Res
+import upnp.TvAvTransportService
+import java.util.UUID
 
 
 class TVMDevice
     : LocalDevice(
     DeviceIdentity(
-        UDN("d9fff39939cf4dde9c762ccd82629745")
+        UDN(UUID.randomUUID().toString())
     ),
     UDADeviceType("tvm"),
-    DeviceDetails("TV Multiplatform"),
+    DeviceDetails("LumenTV-Compose"),
     createIcons(),
     createService(),
 ) {
@@ -63,7 +63,7 @@ fun createIcons(): Array<Icon> {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun createService(): Array<LocalService<out Any>?>{
+fun createService(): Array<LocalService<*>>{
     val service = AnnotationLocalServiceBinder().read(TVConnectionManagerService::class.java) as LocalService<TVConnectionManagerService>
     service.manager = object : DefaultServiceManager<TVConnectionManagerService>(service, null){
         override fun getLockTimeoutMillis(): Int {

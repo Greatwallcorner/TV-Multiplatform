@@ -1,14 +1,14 @@
 package com.corner.dlna
 
+import com.corner.util.thisLogger
 import org.jupnp.model.types.UnsignedIntegerFourBytes
 import org.jupnp.model.types.UnsignedIntegerTwoBytes
 import org.jupnp.support.model.Channel
 import org.jupnp.support.renderingcontrol.AbstractAudioRenderingControl
-import org.slf4j.LoggerFactory
 
 
 class TvMAudioRenderingControlService:AbstractAudioRenderingControl() {
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log = thisLogger()
 
     override fun getCurrentInstanceIds(): Array<UnsignedIntegerFourBytes> {
         log.debug("getCurrentInstanceIds not yet implemented")

@@ -1,6 +1,5 @@
 package com.corner.catvodcore.util
 
-import com.corner.ui.scene.SnackBar
 import com.corner.util.OperatingSystem
 import com.corner.util.UserDataDirProvider
 import org.slf4j.LoggerFactory
@@ -57,7 +56,7 @@ object Paths {
         val file = File(jar.replace("file:/", "").replace("file:\\", ""))
         return if(file.exists()) file else {
             log.info("jar文件不存在 $jar")
-            SnackBar.postMsg("本地Jar文件不存在")
+            SnackBar.postMsg("本地Jar文件不存在", type = SnackBar.MessageType.WARNING)
             File(jar)
         }
     }

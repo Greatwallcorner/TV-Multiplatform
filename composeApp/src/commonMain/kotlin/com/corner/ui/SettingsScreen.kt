@@ -86,6 +86,9 @@ import androidx.compose.runtime.collectAsState
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.util.M3U8FilterConfig
 import lumentv_compose.composeapp.generated.resources.LumenTV_icon_svg
+import org.slf4j.LoggerFactory
+
+private val log = LoggerFactory.getLogger("SettingsScreen")
 
 @Composable
 fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onClickBack: () -> Unit) {
@@ -106,7 +109,7 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
     }
 
     DisposableEffect(model.value.settingList) {
-        println("settingList 修改")
+        log.info("settingList 修改")
         onDispose { }
     }
 
@@ -376,7 +379,7 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                                                             vm.sync()
                                                         }
                                                     } catch (e: Exception) {
-                                                        println("粘贴失败: ${e.message}")
+                                                        log.error("粘贴失败: ${e.message}")
                                                     }
                                                 }
                                             ) {
@@ -450,7 +453,7 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                                 onClick = {
                                     SettingStore.setValue(SettingType.LOG, level)
                                     vm.sync()
-                                    SnackBar.postMsg("重启生效")
+                                    SnackBar.postMsg("重启生效", type = SnackBar.MessageType.INFO)
                                 },
                                 label = { Text(level) },
                                 modifier = Modifier.weight(1f),
@@ -500,9 +503,9 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                                             "${type.id}#${playerSetting.value[1]}"
                                         )
                                         when (type.id) {
-                                            PlayerType.Innie.id -> SnackBar.postMsg("使用内置播放器")
-                                            PlayerType.Outie.id -> SnackBar.postMsg("使用外部播放器 请配置播放器路径")
-                                            PlayerType.Web.id -> SnackBar.postMsg("使用浏览器播放器")
+                                            PlayerType.Innie.id -> SnackBar.postMsg("使用内置播放器", type = SnackBar.MessageType.INFO)
+                                            PlayerType.Outie.id -> SnackBar.postMsg("使用外部播放器 请配置播放器路径", type = SnackBar.MessageType.INFO)
+                                            PlayerType.Web.id -> SnackBar.postMsg("使用浏览器播放器", type = SnackBar.MessageType.INFO)
                                         }
                                         vm.sync()
                                     },
@@ -598,7 +601,7 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                     onClick = {
                         SettingStore.reset()
                         vm.sync()
-                        SnackBar.postMsg("重置设置 重启生效")
+                        SnackBar.postMsg("重置设置 重启生效", type = SnackBar.MessageType.INFO)
                     },
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -796,7 +799,7 @@ fun setConfig(textFieldValue: String?) {
     showProgress()
     SiteViewModel.viewModelScope.launch {
         if (textFieldValue == null || textFieldValue == "") {
-            SnackBar.postMsg("不可为空")
+            SnackBar.postMsg("不可为空", type = SnackBar.MessageType.ERROR)
             return@launch
         }
         SettingStore.setValue(SettingType.VOD, textFieldValue)
@@ -828,7 +831,6 @@ fun AboutDialog(
 ) {
     var visible by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
-
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -879,7 +881,7 @@ fun AboutDialog(
                         )
 
                         Text(
-                            "1.0.4",
+                            text = "1.0.5",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )

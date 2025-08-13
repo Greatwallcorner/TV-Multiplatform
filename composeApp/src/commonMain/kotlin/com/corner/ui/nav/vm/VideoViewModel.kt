@@ -26,7 +26,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.cancellation.CancellationException
-import com.corner.ui.scene.SnackBar
 
 class VideoViewModel : BaseViewModel() {
     private val _state = MutableStateFlow(VideoScreenState())
@@ -107,7 +106,7 @@ class VideoViewModel : BaseViewModel() {
                     if (list.isEmpty()) {
                         if (classList.isEmpty()) {
                             log.debug("没有可用的分类")
-                            SnackBar.postMsg("没有可用的分类,请尝试切换站源或重新加载")
+                            SnackBar.postMsg("没有可用的分类,请尝试切换站源或重新加载", type = SnackBar.MessageType.WARNING)
                             isLoading.value = false
                             return@launch
                         }
@@ -117,7 +116,7 @@ class VideoViewModel : BaseViewModel() {
 
                         if (!result.isSuccess || result.list.isEmpty()) {
                             log.debug("加载分类内容失败")
-                            SnackBar.postMsg("加载分类内容失败,请尝试切换站源或重新加载")
+                            SnackBar.postMsg("加载分类内容失败,请尝试切换站源或重新加载", type = SnackBar.MessageType.WARNING)
                             isLoading.value = false
                             return@launch
                         }

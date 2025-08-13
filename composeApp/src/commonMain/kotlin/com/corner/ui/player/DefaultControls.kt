@@ -229,11 +229,11 @@ fun DefaultControls(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (playerState.state == PlayState.PLAY) {
-                            IconButton(controller::pause) {
+                            IconButton(controller::togglePlayStatus) {
                                 Icon(Icons.Rounded.Pause, "pause media", tint = MaterialTheme.colorScheme.primary)
                             }
                         } else {
-                            IconButton(controller::play) {
+                            IconButton(controller::togglePlayStatus) {
                                 Icon(Icons.Rounded.PlayArrow, "play media", tint = MaterialTheme.colorScheme.primary)
                             }
                         }

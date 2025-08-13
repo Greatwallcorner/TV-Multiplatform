@@ -2,7 +2,6 @@ package com.corner.server.plugins
 
 import cn.hutool.core.io.file.FileNameUtil
 import com.corner.server.logic.proxy
-import com.corner.ui.scene.SnackBar
 import com.corner.util.toSingleValueMap
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -18,14 +17,16 @@ import okhttp3.Request
 import java.io.File
 import java.net.URLDecoder
 
+private val log = LoggerFactory.getLogger("Routing")
+
 fun Application.configureRouting() {
-    val log = LoggerFactory.getLogger("Routing")
+
     routing {
-        staticResources("/static", "assets"){
+        staticResources("/static", "assets") {
             contentType {
                 val suffix = FileNameUtil.getSuffix(it.path)
-                when(suffix){
-                   "js" -> ContentType.Text.JavaScript
+                when (suffix) {
+                    "js" -> ContentType.Text.JavaScript
                     "jsx" -> ContentType.Application.JavaScript
                     "html" -> ContentType.Text.Html
                     "txt" -> ContentType.Text.Plain
@@ -88,6 +89,7 @@ fun Application.configureRouting() {
                             response.body.byteStream().use { it.transferTo(this) }
                         }
                     }
+
                     objects[0] == HttpStatusCode.Found.value -> {
                         val redirectUrl = objects[2] as? String ?: run {
                             errorResp(call)
@@ -95,6 +97,7 @@ fun Application.configureRouting() {
                         }
                         call.respondRedirect(Url(redirectUrl), false)
                     }
+
                     else -> {
                         (objects.getOrNull(3) as? Map<*, *>)?.forEach { (t, u) ->
                             if (t is String && u is String) call.response.headers.append(t, u)
@@ -102,7 +105,9 @@ fun Application.configureRouting() {
                         (objects[2] as? InputStream)?.use { inputStream ->
                             call.respondOutputStream(
                                 contentType = ContentType.parse(objects[1].toString()),
-                                status = HttpStatusCode.fromValue(objects[0] as? Int ?: HttpStatusCode.InternalServerError.value)
+                                status = HttpStatusCode.fromValue(
+                                    objects[0] as? Int ?: HttpStatusCode.InternalServerError.value
+                                )
                             ) {
                                 inputStream.transferTo(this)
                             }

@@ -15,7 +15,6 @@ import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
 import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
-import com.corner.ui.scene.SnackBar
 import com.corner.util.copyAdd
 import com.corner.util.createCoroutineScope
 import com.github.catvod.crawler.Spider
@@ -66,12 +65,12 @@ object SiteViewModel {
                 3 -> {
                     val spider = ApiConfig.getSpider(site)
                     val homeContent = spider.homeContent(true)
-                    log.debug("home: $homeContent")
+//                    log.debug("home: $homeContent")
                     ApiConfig.setRecent(site)
                     val rst: Result = Jsons.decodeFromString<Result>(homeContent)
                     if (rst.list.size > 0) result.value = rst
                     val homeVideoContent = spider.homeVideoContent()
-                    log.debug("homeContent: $homeVideoContent")
+//                    log.debug("homeContent: $homeVideoContent")
                     rst.list.addAll(Jsons.decodeFromString<Result>(homeVideoContent).list)
                     result.value = rst.also { this.result.value = it }
                 }
@@ -640,11 +639,7 @@ object SiteViewModel {
 
 
     private fun post(site: Site, result: Result, quick: Boolean) {
-        if (site.name.isNotEmpty()) {
-            SnackBar.postMsg("开始在${site.name}搜索")
-        }
         if (result.list.isEmpty()) {
-            SnackBar.postMsg("${site.name}搜索结果为空,可能是站源问题或尝试换个关键词")
             return
         }
         for (vod in result.list) vod.site = site

@@ -3,12 +3,10 @@ package com.corner.init
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
-import ch.qos.logback.classic.layout.TTLLLayout
 import ch.qos.logback.classic.spi.Configurator
 import ch.qos.logback.classic.spi.Configurator.ExecutionStatus
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.ConsoleAppender
-import ch.qos.logback.core.encoder.LayoutWrappingEncoder
 import ch.qos.logback.core.rolling.RollingFileAppender
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy
@@ -24,7 +22,7 @@ private val log = LoggerFactory.getLogger("Console")
 class TVLogConfigurator():ContextAwareBase(),Configurator {
     override fun configure(context: LoggerContext?): ExecutionStatus {
         addInfo("Setting up TV logback configuration.")
-        println("log config")
+        println("Log Config:")
         val ca = consoleAppender(context)
         val fa = fileAppender(context)
         val rootLogger = context?.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
@@ -48,7 +46,6 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
         }
         return myStream
     }
-
 
     private fun fileAppender(context: LoggerContext?): RollingFileAppender<ILoggingEvent> {
         val rf = RollingFileAppender<ILoggingEvent>()
@@ -82,19 +79,20 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
     }
 
     private fun consoleAppender(context: LoggerContext?): ConsoleAppender<ILoggingEvent> {
-        val ca = ConsoleAppender<ILoggingEvent>()
-        ca.context = context
-        ca.name = "console"
-        val encoder = LayoutWrappingEncoder<ILoggingEvent>()
-        encoder.context = context
-        // same as
-        // PatternLayout layout = new PatternLayout();
-        // layout.setPattern("%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} -
-        // %msg%n");
-        val layout = TTLLLayout()
-        layout.context = context
-        layout.start()
-        encoder.layout = layout
+        val ca = ConsoleAppender<ILoggingEvent>().apply {
+            this.context = context
+            name = "console"
+            target = "System.out"
+            isWithJansi = false
+        }
+
+        val encoder = PatternLayoutEncoder().apply {
+            this.context = context
+            charset = Charsets.UTF_8
+            pattern = "%d{HH:mm:ss.SSS} %highlight(%-5level) [*%-15.15thread] %cyan(*%-15.15logger{0}) -> %msg%n"
+            start()
+        }
+
         ca.encoder = encoder
         ca.start()
         return ca

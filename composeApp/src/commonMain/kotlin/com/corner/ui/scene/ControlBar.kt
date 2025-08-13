@@ -27,7 +27,7 @@ import androidx.compose.ui.window.WindowPlacement
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import org.slf4j.LoggerFactory
 
-val log = LoggerFactory.getLogger("ControlBar")
+private val log = LoggerFactory.getLogger("ControlBar")
 
 @Composable
 fun ControlBar(

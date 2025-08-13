@@ -1,6 +1,5 @@
 package com.corner.ui.video
 
-import AppTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,11 +42,11 @@ fun HorizontalItem(modifier: Modifier, vod:Vod, onClick:(Vod)->Unit){
     }
 }
 
-@androidx.compose.desktop.ui.tooling.preview.Preview
-@Composable
-fun previewHorizonTaoItem(){
-    AppTheme {
-        val v = Vod(vodName = "testedahdkasjfdkladjflkadfdsf")
-        HorizontalItem(Modifier.height(80.dp), v){}
-    }
-}
+//@androidx.compose.desktop.ui.tooling.preview.Preview
+//@Composable
+//fun previewHorizonTaoItem(){
+//    AppTheme {
+//        val v = Vod(vodName = "testedahdkasjfdkladjflkadfdsf")
+//        HorizontalItem(Modifier.height(80.dp), v){}
+//    }
+//}

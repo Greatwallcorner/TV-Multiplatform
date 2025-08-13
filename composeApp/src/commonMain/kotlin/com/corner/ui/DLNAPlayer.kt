@@ -1,6 +1,5 @@
 package com.corner.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
@@ -11,12 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import com.corner.bean.SettingStore
@@ -32,12 +26,21 @@ import com.corner.ui.scene.ControlBar
 import com.corner.ui.scene.ToolTipText
 import com.corner.ui.scene.emptyShow
 import com.corner.util.play.Play
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import org.slf4j.LoggerFactory
 
+private val log = LoggerFactory.getLogger("DLNAPlayer")
 
+@OptIn(FlowPreview::class)
 @Composable
 fun WindowScope.DLNAPlayer(vm:DetailViewModel, onClickBack:() -> Unit) {
     val model = vm.state.collectAsState()
+
     val scope = rememberCoroutineScope()
 
     val detail by rememberUpdatedState(model.value.detail)
@@ -45,9 +48,14 @@ fun WindowScope.DLNAPlayer(vm:DetailViewModel, onClickBack:() -> Unit) {
     val controller = rememberUpdatedState(vm.controller)
 
     val isFullScreen = GlobalAppState.videoFullScreen.collectAsState()
-//
-//    val videoHeight = derivedStateOf { if (isFullScreen.value) 1f else 0.6f }
-//    val videoWidth = derivedStateOf { if (isFullScreen.value) 1f else 0.7f }
+
+    val mrl = derivedStateOf { model.value.currentPlayUrl }
+
+    val focus = remember { FocusRequester() }
+
+    val isUrlReady = remember { mutableStateOf(false) }
+
+    val setUrlMutex = remember { Mutex() }
 
     LaunchedEffect(model.value.isLoading) {
         if (model.value.isLoading) {
@@ -57,23 +65,42 @@ fun WindowScope.DLNAPlayer(vm:DetailViewModel, onClickBack:() -> Unit) {
         }
     }
 
-    val focus = remember { FocusRequester() }
-
     LaunchedEffect(isFullScreen.value) {
-        focus.requestFocus()
+        if (isFullScreen.value) {
+            delay(100) // 确保组件已渲染
+            focus.requestFocus()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val initialUrl = GlobalAppState.DLNAUrl.value
+        if (!initialUrl.isNullOrEmpty()) {
+            isUrlReady.value = true
+//            vm.setPlayUrl(initialUrl)
+        }
     }
 
     DisposableEffect(Unit) {
-        scope.launch{
-            GlobalAppState.DLNAUrl.collect{
-                vm.setPlayUrl(it!!)
-            }
+        val job = scope.launch {
+            GlobalAppState.DLNAUrl
+                .debounce(1000)
+                .collect { newUrl ->
+                    if (newUrl.isNotEmpty()) {
+                        setUrlMutex.withLock {
+                            isUrlReady.value = true
+                            vm.setPlayUrl(newUrl)
+                        }
+                    }
+                }
         }
-        vm.controller.init()
+
         onDispose {
+            log.debug("DLNA - 调用DetailViewMode销毁播放器")
+            job.cancel()
             vm.clear()
         }
     }
+
     Column {
         if (!isFullScreen.value) {
             WindowDraggableArea {
@@ -101,14 +128,14 @@ fun WindowScope.DLNAPlayer(vm:DetailViewModel, onClickBack:() -> Unit) {
             }
         }
 
-        val mrl = derivedStateOf { model.value.currentPlayUrl }
         Row(
             modifier = Modifier.fillMaxHeight(), horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             val internalPlayer = derivedStateOf {
                 SettingStore.getSettingItem(SettingType.PLAYER).getPlayerSetting().first() == PlayerType.Innie.id
             }
-            if (internalPlayer.value) {
+            log.debug("internalPlayer:${internalPlayer.value}")
+            if (internalPlayer.value && isUrlReady.value) {
                 SideEffect {
                     focus.requestFocus()
                 }

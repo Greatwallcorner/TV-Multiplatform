@@ -268,7 +268,7 @@ object VideoEventServer : WebSocketServer(InetSocketAddress("localhost", 8888)) 
                 BrowserUtils.scope.launch {
                     _webPlaybackFinishedFlow.emit(Unit)
                 }
-                println("当前视频播放完成，尝试切换下一集...")
+                log.info("当前视频播放完成，尝试切换下一集...")
             }
         }
     }

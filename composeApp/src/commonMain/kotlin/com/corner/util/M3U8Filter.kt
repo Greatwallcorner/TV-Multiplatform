@@ -1,8 +1,11 @@
 import com.corner.util.M3U8FilterConfig
+import org.slf4j.LoggerFactory
 
 // 基于 ltxlong 的 JavaScript 项目 M3U8-Filter-Ad-Script (MIT License) 重构为 Kotlin
 // 原始代码版权信息: Copyright (c) 2024 ltxlong
 // 原始许可证: https://opensource.org/licenses/MIT
+
+private val log = LoggerFactory.getLogger("M3U8Filter")
 
 class M3U8Filter(
     config: M3U8FilterConfig = M3U8FilterConfig() // 添加配置参数
@@ -18,13 +21,18 @@ class M3U8Filter(
     private var tsNameLenExtend = config.tsNameLenExtend // 使用配置值
     private var theExtinfBenchmarkN = config.theExtinfBenchmarkN // 使用配置值
     private var violentFilterModeFlag = config.violentFilterModeFlag // 使用配置值
+    private var filteredAdCount = 0
+
+    fun getFilteredAdCount(): Int = filteredAdCount
+
     fun filterLines(lines: List<String>): List<String> {
         val result = mutableListOf<String>()
+        filteredAdCount = 0
         if (violentFilterModeFlag) {
-            println("----------------------------暴力拆解模式--------------------------")
+            log.info("启用暴力拆解模式")
             tsType = 2 // ts命名模式
         } else {
-            println("----------------------------自动判断模式--------------------------")
+            log.info("自动判断模式")
 
             var theNormalIntTsN = 0
             var theDiffIntTsN = 0
@@ -61,7 +69,7 @@ class M3U8Filter(
                             tsType = 1 // ts命名模式
                         } else if (theExtinfJudgeRowN == 2 && (tsType == 1 || theTsNameLen == tsNameLen)) {
                             tsType = 1 // ts命名模式
-                            println("----------------------------识别ts模式1---------------------------")
+                            log.info("识别ts模式1")
                             break
                         } else {
                             theDiffIntTsN++
@@ -83,11 +91,11 @@ class M3U8Filter(
                                     if (tsNameIndex == prevTsNameIndex + 1) {
                                         tsType = 0 // ts命名模式
                                         prevTsNameIndex = firstTsNameIndex - 1
-                                        println("----------------------------识别ts模式0---------------------------")
+                                        log.info("识别ts模式0")
                                         break
                                     } else {
                                         tsType = 2 // ts命名模式
-                                        println("----------------------------识别ts模式2---------------------------")
+                                        log.info("识别ts模式2")
                                         break
                                     }
                                 }
@@ -101,11 +109,11 @@ class M3U8Filter(
                                 if (tsNameIndex == prevTsNameIndex + 1) {
                                     tsType = 0 // ts命名模式
                                     prevTsNameIndex = firstTsNameIndex - 1
-                                    println("----------------------------识别ts模式0---------------------------")
+                                    log.info("识别ts模式0")
                                     break
                                 } else {
                                     tsType = 2 // ts命名模式
-                                    println("----------------------------识别ts模式2---------------------------")
+                                    log.info("识别ts模式2")
                                     break
                                 }
                             }
@@ -118,7 +126,7 @@ class M3U8Filter(
                 if (i == lines.size - 1) {
                     // 后缀不是ts，而是jpeg等等，或者以上规则判断不了的，或者没有广告切片的：直接暴力拆解过滤
                     tsType = 2 // ts命名模式
-                    println("----------------------------进入暴力拆解模式---------------------------")
+                    log.info("进入暴力拆解模式")
                 }
             }
         }
@@ -143,16 +151,14 @@ class M3U8Filter(
                             if (theTsNameLen - tsNameLen > tsNameLenExtend) {
                                 // 广告过滤
                                 if (i + 3 < lines.size && lines[i + 3].startsWith("#EXT-X-DISCONTINUITY")) {
+                                    filteredAdCount++
                                     // 打印即将过滤的行
-                                    println("过滤规则: #EXT-X-DISCONTINUITY-ts文件名长度-")
-                                    println("过滤的行:\n$line\n${lines[i + 1]}\n${lines[i + 2]}\n${lines[i + 3]}")
-                                    println("------------------------------------------------------------------")
+                                    log.info("过滤规则: #EXT-X-DISCONTINUITY-ts文件名长度-, 过滤内容: $line | ${lines[i+1]} | ${lines[i+2]}")
                                     i += 4
                                 } else {
+                                    filteredAdCount++
                                     // 打印即将过滤的行
-                                    println("过滤规则: #EXT-X-DISCONTINUITY-ts文件名长度")
-                                    println("过滤的行:\n$line\n${lines[i + 1]}\n${lines[i + 2]}")
-                                    println("------------------------------------------------------------------")
+                                    log.info("过滤规则: #EXT-X-DISCONTINUITY-ts文件名长度, 过滤内容: $line | ${lines[i+1]} | ${lines[i+2]}")
                                     i += 3
                                 }
                                 continue
@@ -166,16 +172,14 @@ class M3U8Filter(
                             if (theTsNameIndex != prevTsNameIndex + 1) {
                                 // 广告过滤
                                 if (i + 3 < lines.size && lines[i + 3].startsWith("#EXT-X-DISCONTINUITY")) {
+                                    filteredAdCount++
                                     // 打印即将过滤的行
-                                    println("过滤规则: #EXT-X-DISCONTINUITY-ts序列号-")
-                                    println("过滤的行:\n$line\n${lines[i + 1]}\n${lines[i + 2]}\n${lines[i + 3]}")
-                                    println("------------------------------------------------------------------")
+                                    log.info("过滤规则: #EXT-X-DISCONTINUITY-ts序列号-, 过滤内容: $line | ${lines[i+1]} | ${lines[i+2]} | ${lines[i+3]}")
                                     i += 4
                                 } else {
+                                    filteredAdCount++
                                     // 打印即将过滤的行
-                                    println("过滤规则: #EXT-X-DISCONTINUITY-ts序列号")
-                                    println("过滤的行:\n$line\n${lines[i + 1]}\n${lines[i + 2]}")
-                                    println("------------------------------------------------------------------")
+                                    log.info("过滤规则: #EXT-X-DISCONTINUITY-ts序列号, 过滤内容: $line | ${lines[i+1]} | ${lines[i+2]} | ${lines[i+3]}")
                                     i += 3
                                 }
                                 continue
@@ -192,16 +196,14 @@ class M3U8Filter(
                         if (theTsNameLen - tsNameLen > tsNameLenExtend) {
                             // 广告过滤
                             if (i + 2 < lines.size && lines[i + 2].startsWith("#EXT-X-DISCONTINUITY")) {
+                                filteredAdCount++
                                 // 打印即将过滤的行
-                                println("过滤规则: #EXTINF-ts文件名长度-")
-                                println("过滤的行:\n$line\n${lines[i + 1]}\n${lines[i + 2]}")
-                                println("------------------------------------------------------------------")
+                                log.info("过滤规则: #EXTINF-ts文件名长度-, 过滤内容: $line | ${lines[i+1]} | ${lines[i+2]}")
                                 i += 3
                             } else {
+                                filteredAdCount++
                                 // 打印即将过滤的行
-                                println("过滤规则: #EXTINF-ts文件名长度")
-                                println("过滤的行:\n$line\n${lines[i + 1]}")
-                                println("------------------------------------------------------------------")
+                                log.info("过滤规则: #EXTINF-ts文件名长度, 过滤内容: $line | ${lines[i+1]}")
                                 i += 2
                             }
                             continue
@@ -217,16 +219,14 @@ class M3U8Filter(
                         } else {
                             // 广告过滤
                             if (i + 2 < lines.size && lines[i + 2].startsWith("#EXT-X-DISCONTINUITY")) {
+                                filteredAdCount++
                                 // 打印即将过滤的行
-                                println("过滤规则: #EXTINF-ts序列号-")
-                                println("过滤的行:\n$line\n${lines[i + 1]}\n${lines[i + 2]}")
-                                println("------------------------------------------------------------------")
+                                log.info("过滤规则: #EXTINF-ts序列号-, 过滤内容: $line | ${lines[i+1]} | ${lines[i+2]}")
                                 i += 3
                             } else {
+                                filteredAdCount++
                                 // 打印即将过滤的行
-                                println("过滤规则: #EXTINF-ts序列号")
-                                println("过滤的行:\n$line\n${lines[i + 1]}")
-                                println("------------------------------------------------------------------")
+                                log.info("过滤规则: #EXTINF-ts序列号, 过滤内容: $line | ${lines[i+1]}")
                                 i += 2
                             }
                             continue
@@ -263,16 +263,14 @@ class M3U8Filter(
 
                             // 进一步检测第 i+3 行是否也是 #EXT-X-DISCONTINUITY
                             if (i + 3 < lines.size && lines[i + 3].startsWith("#EXT-X-DISCONTINUITY") && theExtXDiscontinuityConditionFlag) {
+                                filteredAdCount++
                                 // 打印即将过滤的行
-                                println("过滤规则: #EXT-X-DISCONTINUITY-广告-#EXT-X-DISCONTINUITY过滤")
-                                println("过滤的行:\n$line\n${lines[i + 1]}\n${lines[i + 2]}\n${lines[i + 3]}")
-                                println("------------------------------------------------------------------")
+                                log.info("过滤规则: #EXT-X-DISCONTINUITY-广告-#EXT-X-DISCONTINUITY过滤, 过滤内容: $line | ${lines[i+1]} | ${lines[i+2]} | ${lines[i+3]}")
                                 i += 4 // 跳过当前行和接下来的三行
                             } else {
+                                filteredAdCount++
                                 // 打印即将过滤的行
-                                println("过滤规则: #EXT-X-DISCONTINUITY-单个标识过滤")
-                                println("过滤的行:\n$line")
-                                println("------------------------------------------------------------------")
+                                log.info("过滤规则: #EXT-X-DISCONTINUITY-单个标识过滤, 过滤内容: $line")
                                 i++
                             }
                             continue
@@ -288,10 +286,9 @@ class M3U8Filter(
                         i++
                         continue
                     } else {
+                        filteredAdCount++
                         // 打印即将过滤的行
-                        println("过滤规则: #EXT-X-DISCONTINUITY-单个标识过滤")
-                        println("过滤的行:\n$line")
-                        println("------------------------------------------------------------------")
+                        log.info("过滤规则: #EXT-X-DISCONTINUITY-单个标识过滤, 过滤内容: $line")
                         i++
                         continue
                     }
@@ -312,17 +309,13 @@ class M3U8Filter(
         return match?.groupValues?.get(1)?.toIntOrNull()
     }
 
-    fun isM3u8File(url: String): Boolean {
-        return url.contains(".m3u8")
-    }
-
     fun safelyProcessM3u8(url: String, content: String): String {
         return try {
             val lines = content.split("\n")
             val newLines = filterLines(lines)
             newLines.joinToString("\n")
         } catch (e: Exception) {
-            println("处理 m3u8 文件时出错: $url, ${e.message}")
+            log.error("处理 m3u8 文件时出错: $url, ${e.message}")
             content
         }
     }
