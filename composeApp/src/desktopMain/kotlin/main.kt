@@ -34,17 +34,6 @@ import java.awt.Dimension
 private val log = LoggerFactory.getLogger("main")
 
 fun main() {
-
-    log.info(
-        """
-            __                                  _______    __
-           / /   __  ______ ___  ___  ____     /_  __/ |  / /
-          / /   / / / / __ `__ \/ _ \/ __ \     / /  | | / / 
-         / /___/ /_/ / / / / / /  __/ / / /    / /   | |/ /  
-        /_____/\__,_/_/ /_/ /_/\___/_/ /_/    /_/    |___/                                       
-        """
-    )
-
     launchErrorCatcher()
     printSystemInfo()
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -122,6 +111,14 @@ fun main() {
 
 fun printSystemInfo() {
     val s = StringBuilder("\n")
+    val logo = """
+            __                                  _______    __
+           / /   __  ______ ___  ___  ____     /_  __/ |  / /
+          / /   / / / / __ `__ \/ _ \/ __ \     / /  | | / / 
+         / /___/ /_/ / / / / / /  __/ / / /    / /   | |/ /  
+        /_____/\__,_/_/ /_/ /_/\___/_/ /_/    /_/    |___/  
+    """.trimIndent()
+
     getSystemPropAndAppend("java.version", s)
     getSystemPropAndAppend("java.home", s)
     getSystemPropAndAppend("os.name", s)
@@ -129,7 +126,11 @@ fun printSystemInfo() {
     getSystemPropAndAppend("os.version", s)
     getSystemPropAndAppend("user.dir", s)
     getSystemPropAndAppend("user.home", s)
-    log.info("系统信息：{}", s.toString())
+
+    val yellow_bolo = "\u001b[33;1m"  // 33=黄色, 1=加粗
+    val reset = "\u001b[0m"            // 重置颜色
+
+    log.info("{}\n{}\n系统信息：{}{}", yellow_bolo, logo, s.toString(), reset)
 }
 
 private fun getSystemPropAndAppend(key: String, s: StringBuilder) {
@@ -144,19 +145,5 @@ private fun launchErrorCatcher() {
         SnackBar.postMsg("未知异常， 请查看日志", type = SnackBar.MessageType.ERROR)
         log.error("未知异常", e)
         Init.stop()
-//        Dialog(Frame(), e.message ?: "Error").apply {
-//            log.error("启动异常", e)
-//            layout = FlowLayout()
-//            val label = Label(e.message)
-//            val text = TextArea(e.stackTraceToString())
-//            add(label)
-//            add(text)
-//            val button = Button("OK").apply {
-//                addActionListener { dispose() }
-//            }
-//            add(button)
-//            setSize(300, 300)
-//            isVisible = true
-//        }
     }
 }

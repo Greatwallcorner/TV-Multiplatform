@@ -315,7 +315,7 @@ class M3U8Filter(
             val newLines = filterLines(lines)
             newLines.joinToString("\n")
         } catch (e: Exception) {
-            println("处理 m3u8 文件时出错: $url, ${e.message}")
+            log.error("处理 m3u8 文件时出错: $url, ${e.message}")
             content
         }
     }

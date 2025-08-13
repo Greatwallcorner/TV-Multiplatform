@@ -218,6 +218,8 @@ class DetailViewModel : BaseViewModel() {
             // 若站点 key 为空，记录错误日志并尝试加载下一个视频，然后结束当前函数
             if (siteKey == null) {
                 log.error("视频站点 key 为空，无法加载详情")
+                SnackBar.postMsg("视频站点key为空,将自动切换下一个站源剧集...", type = SnackBar.MessageType.INFO)
+                _state.update { it.copy(isLoading = false) }
                 nextSite(vod)
                 return
             }
@@ -265,9 +267,13 @@ class DetailViewModel : BaseViewModel() {
 
     /**
      * 执行快速搜索操作，从可切换的站点中搜索视频信息。
+     *
      * 该方法会并发地从多个站点进行搜索，限制同时执行的搜索任务数量，
+     *
      * 并在搜索完成后更新快速搜索结果。若搜索到有效结果，会加载首个结果的详情；
+     *
      * 若未搜索到结果，则提示用户暂无线路数据。
+     *
      */
     fun quickSearch() {
         // 更新状态流，标记当前正在进行快速搜索
@@ -364,9 +370,9 @@ class DetailViewModel : BaseViewModel() {
             // 若快速搜索结果为空
             if (_state.value.quickSearchResult.isEmpty()) {
                 // 更新状态流，将详情信息设置为全局选中的视频信息
-                _state.update { it.copy(detail = GlobalAppState.chooseVod.value, isLoading = false) }
+                _state.update { it.copy(detail = GlobalAppState.chooseVod.value) }
                 // 提示用户暂无线路数据
-                SnackBar.postMsg("暂无线路数据", type = SnackBar.MessageType.INFO)
+                SnackBar.postMsg("暂无线路数据", type = SnackBar.MessageType.WARNING)
                 hideProgress()
             }
         }.invokeOnCompletion {
@@ -639,7 +645,6 @@ class DetailViewModel : BaseViewModel() {
                                         log.info("play - 播放器加载完成，开始转换状态")
                                         if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Playing)) {
                                             lifecycleManager.start()
-                                                .onSuccess { log.info("play - 视频状态转换 start 成功") }
                                                 .onFailure {
                                                     log.error("play - 视频状态转换 start 失败", it)
                                                     SnackBar.postMsg("视频状态转换 start 失败: ${it.message}", type = SnackBar.MessageType.ERROR)
@@ -660,7 +665,7 @@ class DetailViewModel : BaseViewModel() {
                                         log.info("play - 直接设置链接成功，开始转换状态")
                                         if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Playing)) {
                                             lifecycleManager.start()
-                                                .onSuccess { log.info("play - 直接设置链接成功，视频状态转换 start 成功") }
+                                                .onSuccess { log.info("play - 直接设置链接成功") }
                                                 .onFailure {
                                                     log.error("play - 视频状态转换 start 失败", it)
                                                     SnackBar.postMsg("视频状态转换 start 失败: ${it.message}", type = SnackBar.MessageType.ERROR)
@@ -759,13 +764,13 @@ class DetailViewModel : BaseViewModel() {
                 //等待播放器准备完成
                 controller.playerReady
                     .filter { it }          // 只关心变为 true 的那一次
-                    .take(1)                // 取一次就结束
+                    .take(1)        // 取一次就结束
                     .collect { _ ->
                         log.info("playEP - 播放器加载完成，开始转换状态")
                         if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Playing)) {
-                            lifecycleManager.start().onSuccess { log.info("playEP - 视频状态转换 start 成功") }
+                            lifecycleManager.start().onSuccess { log.info("playEP - 视频状态转换 Playing 成功") }
                                 .onFailure {
-                                    log.error("playEP - 视频状态转换 start 失败", it)
+                                    log.error("playEP - 视频状态转换 Playing 失败", it)
                                     SnackBar.postMsg("视频状态转换 start 失败: ${it.message}", type = SnackBar.MessageType.ERROR)
                                 }
                         }
@@ -1143,8 +1148,8 @@ class DetailViewModel : BaseViewModel() {
         // 记录开始尝试切换到下一个播放线路的日志
         log.info("nextFlag")
         scope.launch {
-            if (lifecycleManager.lifecycleState.value != PlayerLifecycleState.Ended) {
-                if (lifecycleManager.lifecycleState.value == PlayerLifecycleState.Playing) {
+            if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Ended)) {
+                if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Paused)) {
                     lifecycleManager.stop()
                 }
                 lifecycleManager.ended()

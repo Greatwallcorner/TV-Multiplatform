@@ -38,7 +38,7 @@ class SettingViewModel: BaseViewModel() {
                     )
                 }
             } catch (e: Exception) {
-                println("删除失败: ${e.message}")
+                log.error("删除失败: ${e.message}")
             }
         }
     }

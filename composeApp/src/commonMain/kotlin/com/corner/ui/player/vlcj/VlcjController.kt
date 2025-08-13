@@ -77,11 +77,10 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     // 添加清理状态标志
     private var isCleaned = false
 
-    public var isLoadSeccessfy = MutableStateFlow(false)
+    var isLoadSeccessfy = MutableStateFlow(false)
 
     private val vlcjArgs = mutableListOf<String>(
-        "-v",
-        "--stats",
+        "-q",                                   // 最低级别日志
         "--no-video-on-top",                    // 禁用窗口置顶
         "--avcodec-hw=any",                     // 系统自动选择解码器
         "--network-caching=500",                // 设置网络缓存为单位ms

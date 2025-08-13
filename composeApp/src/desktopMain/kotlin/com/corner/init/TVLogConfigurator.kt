@@ -22,7 +22,7 @@ private val log = LoggerFactory.getLogger("Console")
 class TVLogConfigurator():ContextAwareBase(),Configurator {
     override fun configure(context: LoggerContext?): ExecutionStatus {
         addInfo("Setting up TV logback configuration.")
-        println("log config")
+        println("Log Config:")
         val ca = consoleAppender(context)
         val fa = fileAppender(context)
         val rootLogger = context?.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
@@ -46,7 +46,6 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
         }
         return myStream
     }
-
 
     private fun fileAppender(context: LoggerContext?): RollingFileAppender<ILoggingEvent> {
         val rf = RollingFileAppender<ILoggingEvent>()
@@ -90,7 +89,7 @@ class TVLogConfigurator():ContextAwareBase(),Configurator {
         val encoder = PatternLayoutEncoder().apply {
             this.context = context
             charset = Charsets.UTF_8
-            pattern = "%d{HH:mm:ss.SSS} %highlight(%-5level) [%thread] %cyan(%logger) - %msg%n"
+            pattern = "%d{HH:mm:ss.SSS} %highlight(%-5level) [*%-15.15thread] %cyan(*%-15.15logger{0}) -> %msg%n"
             start()
         }
 
