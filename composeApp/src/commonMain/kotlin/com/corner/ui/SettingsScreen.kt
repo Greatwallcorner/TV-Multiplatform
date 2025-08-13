@@ -831,7 +831,6 @@ fun AboutDialog(
 ) {
     var visible by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
-
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -882,7 +881,7 @@ fun AboutDialog(
                         )
 
                         Text(
-                            "1.0.4",
+                            text = "1.0.5",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
