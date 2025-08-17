@@ -36,11 +36,9 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     var player: EmbeddedMediaPlayer? = null
 
     private var lifecycleManager: PlayerLifecycleManager? = null
-
     fun setLifecycleManager(manager: PlayerLifecycleManager) {
         this.lifecycleManager = manager
     }
-
     private var _playerReady = MutableStateFlow(false)
     override var playerReady: StateFlow<Boolean> = _playerReady
     override var playerLoading = false

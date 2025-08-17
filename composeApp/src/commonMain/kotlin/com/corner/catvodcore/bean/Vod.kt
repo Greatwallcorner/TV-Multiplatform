@@ -2,11 +2,15 @@ package com.corner.catvod.enum.bean
 
 import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.Flag
+import com.corner.catvodcore.util.Utils
 import com.corner.database.entity.History
 import com.corner.util.Constants
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import org.slf4j.LoggerFactory
+
+private val log = LoggerFactory.getLogger("Vod")
 
 @Serializable
 data class Vod(
@@ -102,11 +106,25 @@ data class Vod(
             return null
         }
         currentFlag = flag
-        val episode = currentFlag.find(history.vodRemarks, true)
+        // 1. 先尝试通过名称匹配
+        var episode = currentFlag.find(history.vodRemarks, true)
+        // 2. 如果名称匹配失败，尝试通过编号匹配
+        if (episode == null) {
+            log.warn("通过名称匹配新线路应播放的剧集失败，正在尝试使用编号匹配...")
+            val episodeNumber = Utils.getDigit(history.vodRemarks)
+            if (episodeNumber != -1) {
+                log.info("通过编号匹配新线路应播放的剧集成功")
+                episode = currentFlag.episodes.find { it.number == episodeNumber }
+            }
+        }
+        // 3. 如果都失败，回退到第一集
+        if (episode == null && currentFlag.episodes.isNotEmpty()) {
+            log.error("通过名称匹配新线路应播放的剧集失败,正在尝试从第一集播放")
+            episode = currentFlag.episodes[0]
+        }
         if (episode != null) {
             episode.activated = true
             val indexOf = currentFlag.episodes.indexOf(episode)
-            // 32 15 16
             currentTabIndex = (indexOf.plus(1)) / Constants.EpSize
             subEpisode = currentFlag.episodes.getPage(currentTabIndex)
         }

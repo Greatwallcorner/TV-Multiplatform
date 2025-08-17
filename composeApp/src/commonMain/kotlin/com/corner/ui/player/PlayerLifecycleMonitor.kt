@@ -18,7 +18,7 @@ class PlayerLifecycleMonitor(
     init {
         scope.launch {
             lifecycleManager.lifecycleState.collectLatest { state ->
-                log.debug("播放器状态变更: $state")
+                log.debug("播放器状态: {}", state)
                 // 可以在这里添加性能监控、埋点等
             }
         }
@@ -40,7 +40,7 @@ class PlayerLifecycleMonitor(
             PlayerLifecycleState.Cleaning -> "正在清理资源"
             PlayerLifecycleState.Released -> "播放器已释放"
             PlayerLifecycleState.Error -> "播放器发生错误"
-            PlayerLifecycleState.Initializing_Sync -> "同步初始化中"
+            PlayerLifecycleState.Initializing_Sync -> "异步初始化中"
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.corner.ui.player.vlcj
 
+import SnackBar
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.ImageBitmap
@@ -169,7 +170,6 @@ class VlcjFrameController(
 
     override fun load(url: String): PlayerController {
         scope.launch {
-//            showProgress()
             log.info("load - 开始加载视频...")
             controller.loadAsync(url, 1000)
             controller.stop()
@@ -178,35 +178,21 @@ class VlcjFrameController(
             delay(1000)
             speed(controller.history.value?.speed?.toFloat() ?: 1f)
             seekTo(max(controller.history.value?.position ?: 0L, history.value?.opening ?: 0L))
-//            delay(1000)
-//            hideProgress()
         }
         return controller
     }
 
     override fun vlcjFrameInit() {
         log.info("播放器初始化")
-
-        // 添加窗口绑定检查
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater { doInit() }
-        } else {
-            doInit()
-        }
-    }
-
-    private fun doInit() {
         try {
             val lifecycleManager = PlayerLifecycleManager(controller, scope)
             controller.setLifecycleManager(lifecycleManager)
             controller.init()
-
             controller.player?.videoSurface()?.set(callbackSurFace)
-
             isReleased = false
         } catch (e: Exception) {
             log.error("视频表面初始化失败", e)
-            // 回退到独立窗口模式
+            SnackBar.postMsg("视频表面初始化失败,请尝试重启软件或去GITHUB反馈！", type = SnackBar.MessageType.ERROR)
         }
     }
 

@@ -17,7 +17,6 @@ object DialogState {
             log.debug("DialogState.currentM3U8Url --> {}", value)
             field = value
         }
-//        private set
 
     // 新增标志位，表明当前播放的视频链接是特殊链接
     var isSpecialVideoLink by mutableStateOf(false)
