@@ -114,7 +114,6 @@ class PlayerLifecycleManager(
             try {
                 _isCleaning.value = true
                 controller.cleanupAsync()
-                log.debug("LifecycleManager - 清理完成")
                 Result.success(Unit)
             } finally {
                 _isCleaning.value = false

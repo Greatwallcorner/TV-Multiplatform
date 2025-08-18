@@ -97,9 +97,9 @@ fun PngFoundDialog(
                         Button(
                             onClick = {
                                 // 从 viewModel 的状态中获取当前选中的剧集 URL
-                                val currentSelectedEpUrl = vm.currentSelectedEpUrl.value
+                                val currentSelectedEpNumber = vm.currentSelectedEpNumber
                                 // 从状态数据里找到对应的剧集
-                                val currentEpisode = vm.state.value.detail.subEpisode.find { it.url == currentSelectedEpUrl }
+                                val currentEpisode = vm.state.value.detail.subEpisode.find { it.number == currentSelectedEpNumber }
                                 val episodeName = vm.state.value.detail.vodName ?: ""
                                 val episodeNumber = currentEpisode?.number ?: 0
                                 // 记录用户选择在浏览器打开

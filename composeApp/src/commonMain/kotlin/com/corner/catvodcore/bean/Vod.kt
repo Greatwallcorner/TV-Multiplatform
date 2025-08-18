@@ -99,35 +99,62 @@ data class Vod(
         return VodTag.Folder.called == vodTag
     }
 
-    fun findAndSetEpByName(history: History): Episode? {
-        if (history.vodRemarks.isNullOrBlank()) return null
+    fun findAndSetEpByName(history: History, currentEpNumber: Int = 1): Episode? {
+        if (history.vodRemarks.isNullOrBlank()) {
+            log.debug("vodRemarks 为空，直接返回 null")
+            return null
+        }
+
         val flag = vodFlags.find { it.flag == history.vodFlag }
         if (flag == null) {
+            log.debug("未找到 flag=${history.vodFlag} 的线路")
             return null
         }
         currentFlag = flag
-        // 1. 先尝试通过名称匹配
-        var episode = currentFlag.find(history.vodRemarks, true)
-        // 2. 如果名称匹配失败，尝试通过编号匹配
-        if (episode == null) {
-            log.warn("通过名称匹配新线路应播放的剧集失败，正在尝试使用编号匹配...")
-            val episodeNumber = Utils.getDigit(history.vodRemarks)
-            if (episodeNumber != -1) {
-                log.info("通过编号匹配新线路应播放的剧集成功")
-                episode = currentFlag.episodes.find { it.number == episodeNumber }
+        log.debug("切换到线路 flag=${flag.flag}，共 ${flag.episodes.size} 集")
+
+        // 1. 按编号匹配
+        val episodeByNumber = flag.episodes.find { it.number == currentEpNumber }
+        log.debug("按编号匹配：currentEpNumber=$currentEpNumber，结果=${episodeByNumber?.name ?: "未找到"}")
+        if (episodeByNumber != null) {
+            return selectEpisode(episodeByNumber)
+        }
+
+        // 2. 按名称匹配
+        val episodeByName = flag.find(history.vodRemarks, true)
+        log.debug("按名称匹配：vodRemarks=${history.vodRemarks}，结果=${episodeByName?.name ?: "未找到"}")
+        if (episodeByName != null) {
+            return selectEpisode(episodeByName)
+        }
+
+        // 3. 按提取编号匹配
+        val extractedNumber = Utils.getDigit(history.vodRemarks)
+        log.debug("提取编号：vodRemarks=${history.vodRemarks} -> extractedNumber=$extractedNumber")
+        if (extractedNumber != -1) {
+            val episodeByExtracted = flag.episodes.find { it.number == extractedNumber }
+            log.debug("按提取编号匹配：extractedNumber=$extractedNumber，结果=${episodeByExtracted?.name ?: "未找到"}")
+            if (episodeByExtracted != null) {
+                return selectEpisode(episodeByExtracted)
             }
         }
-        // 3. 如果都失败，回退到第一集
-        if (episode == null && currentFlag.episodes.isNotEmpty()) {
-            log.error("通过名称匹配新线路应播放的剧集失败,正在尝试从第一集播放")
-            episode = currentFlag.episodes[0]
-        }
-        if (episode != null) {
-            episode.activated = true
-            val indexOf = currentFlag.episodes.indexOf(episode)
-            currentTabIndex = (indexOf.plus(1)) / Constants.EpSize
-            subEpisode = currentFlag.episodes.getPage(currentTabIndex)
-        }
+
+        // 4. 回退第一集
+        val fallback = flag.episodes.firstOrNull()
+        log.debug("回退到第一集：${fallback?.name ?: "无剧集"}")
+        // 只有真正回退且不是因为用户本就选第一集才弹提示
+        SnackBar.postMsg(
+            "新线路剧集名称和编号匹配失败！将从第一集开始播放",
+            type = SnackBar.MessageType.ERROR
+        )
+        return if (fallback != null) selectEpisode(fallback) else null
+    }
+
+    private fun selectEpisode(episode: Episode): Episode {
+        episode.activated = true
+        val indexOf = currentFlag.episodes.indexOf(episode)
+        currentTabIndex = indexOf / Constants.EpSize
+        subEpisode = currentFlag.episodes.getPage(currentTabIndex)
+        log.debug("最终选中剧集：name=${episode.name}, number=${episode.number}, tabIndex=$currentTabIndex")
         return episode
     }
 
@@ -197,7 +224,7 @@ data class Vod(
         result = 31 * result + (ratio?.hashCode() ?: 0)
         vodFlags.forEach { result += 31 * result + it.hashCode() }
         result = 31 * result + (site?.hashCode() ?: 0)
-        result = 31 * result + (currentFlag.hashCode() )
+        result = 31 * result + (currentFlag.hashCode())
         result = 31 * result + (subEpisode.hashCode())
         result = 31 * result + currentTabIndex
         return result

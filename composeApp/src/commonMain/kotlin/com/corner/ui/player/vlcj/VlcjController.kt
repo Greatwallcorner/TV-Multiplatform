@@ -195,11 +195,16 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             playerPlayering = false
             _state.update { it.copy(state = PlayState.PAUSE) }
             scope.launch {
+                delay(500)
+                log.debug("finished 运行协程任务")
                 try {
-                    if (checkEnd(mediaPlayer)) {
-                        return@launch
+                    if (!vm.isLastEpisode) {
+                        log.info("切换下一集")
+                        vm.nextEP() // 非最后一集才切换
+                    }else{
+                        log.info("已经是最后一集了")
+                        SnackBar.postMsg("已经是最后一集了", type = SnackBar.MessageType.INFO)
                     }
-                    vm.nextEP()
                 } catch (e: Exception) {
                     log.error("finished error", e)
                 }
@@ -374,24 +379,19 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         if (isCleaned) return@withContext
         isCleaned = true
         try {
-            log.debug("开始异步清理播放器资源")
-
+            log.debug("开始异步停止播放")
             player?.let { p ->
                 try {
-                    // 快速停止，不等待缓冲完成
                     p.controls()?.stop()
                 } catch (e: Exception) {
                     log.warn("停止播放时出错", e)
                 }
             }
-
-            // 异步清理，不等待
-            scope.cancel("播放器清理")
+            scope.cancel("异步停止播放")
             defferredEffects.clear()
-
-            log.debug("异步清理完成")
+            log.debug("异步停止播放完成")
         } catch (e: Exception) {
-            log.warn("清理超时: ${e.message}")
+            log.warn("异步停止播放超时: ${e.message}")
         }
     }
 

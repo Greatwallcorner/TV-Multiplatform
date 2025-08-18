@@ -113,9 +113,11 @@ object BrowserUtils {
             val nextEpisodeUrl = detailViewModel.getNextEpisodeUrl()
             nextEpisodeUrl?.let {
                 // 从 viewModel 的状态中获取当前选中的剧集 URL
-                val currentSelectedEpUrl = detailViewModel.currentSelectedEpUrl.value
+                val currentSelectedEpNumber = detailViewModel.currentSelectedEpNumber
                 // 从状态数据里找到对应的剧集
-                val currentEpisode = detailViewModel.state.value.detail.subEpisode.find { it.url == currentSelectedEpUrl }
+                val currentEpisode = detailViewModel.state.value.detail.subEpisode.find { it ->
+                    it.number == currentSelectedEpNumber
+                }
                 val episodeName =detailViewModel.state.value.detail.vodName ?: ""
                 val episodeNumber = currentEpisode?.number
                 openBrowserWithHtml(it, episodeName, episodeNumber)

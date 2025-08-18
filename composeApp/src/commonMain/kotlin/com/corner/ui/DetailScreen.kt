@@ -585,8 +585,7 @@ private fun Flags(
 ) {
     val state by vm.state.collectAsState()
     val detail by remember { derivedStateOf { state.detail } }
-    val selectedFlagId by remember { derivedStateOf { detail.currentFlag?.flag } }
-
+    val currentFlag by vm.currentFlagName.collectAsState()
     Column(
         modifier = Modifier
             .padding(vertical = 12.dp)
@@ -617,11 +616,10 @@ private fun Flags(
                         contentPadding = PaddingValues(vertical = 8.dp, horizontal = 4.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(
-                            items = detail.vodFlags,
-                            key = { it.flag!! }
-                        ) { flag ->
-                            val isSelected = flag.flag == selectedFlagId
+                        itemsIndexed(
+                            items = detail.vodFlags
+                        ) { index, flag ->
+                            val isSelected = flag.flag == currentFlag
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
                                 color = if (isSelected)
@@ -984,15 +982,17 @@ fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
             ) {
                 items(epList, key = { it.url + it.number }) { episode ->
                     EpisodeItem(
-                        isSelected = episode.url == vm.currentSelectedEpUrl.value,
+                        isSelected = episode.number == vm.currentSelectedEpNumber,
                         episode = episode,
                         onSelect = {
-                            vm.chooseEp(it) { uriHandler.openUri(it) }
+                            vm.chooseEp(it) { it ->
+                                uriHandler.openUri(it)
+                            }
                             onUserSelectEpisode()
                             DialogState.resetBrowserChoice()
                         },
                         isLoading = episode.activated && vm.videoLoading.value,
-                        modifier = Modifier.fillMaxWidth() // 关键：确保条目填满宽度
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
@@ -1040,7 +1040,7 @@ fun EpisodeItem(
         RatioBtn(
             text = episode.name,
             onClick = { onSelect(episode) },
-            selected = isSelected || episode.activated,
+            selected = isSelected,
             loading = isLoading,
             tag = {
                 if (Utils.isDownloadLink(episode.url)) {
