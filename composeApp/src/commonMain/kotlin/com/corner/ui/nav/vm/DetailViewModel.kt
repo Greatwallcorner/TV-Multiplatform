@@ -55,25 +55,17 @@ class DetailViewModel : BaseViewModel() {
     private val searchScope = CoroutineScope(Dispatchers.Default + supervisor)
 
     private val lock = Any()
-
     @Volatile
     private var launched = false
-
     private var currentSiteKey = MutableStateFlow("")
-
     private val jobList = mutableListOf<Job>()
-
     private var fromSearchLoadJob: Job = Job()
-
     val controller: VlcjFrameController = VlcjFrameController(
         this
     ).apply { VlcJInit.setController(this) }
-
-    // 生命周期管理器
-    val lifecycleManager: PlayerLifecycleManager = PlayerLifecycleManager(controller, scope)
+    val lifecycleManager: PlayerLifecycleManager = PlayerLifecycleManager(controller, scope)    // 生命周期管理器
     private val monitor = PlayerLifecycleMonitor(lifecycleManager, scope)
-    //用于记录当前选中的剧集编号
-    var currentSelectedEpNumber by mutableStateOf(1) // 默认第1集
+    var currentSelectedEpNumber by mutableStateOf(1) //     //用于记录当前选中的剧集编号，默认第1集
     // 计算当前集数（等同于currentSelectedEpNumber）
     val currentEpisodeIndex: Int
         get() = currentSelectedEpNumber
@@ -384,9 +376,7 @@ class DetailViewModel : BaseViewModel() {
                 jobList.add(job)
             }
             // 等待所有搜索任务完成
-            jobList.forEach {
-                it.join()
-            }
+            jobList.joinAll()
             // 统一关闭加载指示器
             _state.update { it.copy(isLoading = false) }
             // 若快速搜索结果为空
@@ -477,7 +467,7 @@ class DetailViewModel : BaseViewModel() {
                 // 延迟2秒后显示进度条
                 progressJob = launch {
                     delay(2000L)
-                    SnackBar.postMsg("由于网络原因导致播放器清理异常缓慢...", type = SnackBar.MessageType.WARNING)
+                    SnackBar.postMsg("播放器等资源清理异常缓慢，请耐心等待...", type = SnackBar.MessageType.WARNING)
                     showProgress()
                 }
 

@@ -105,7 +105,7 @@ class PlayerLifecycleManager(
 
 
     /**
-     * 异步清理
+     * 异步停止播放,用于清理资源,设置资源已释放标志位为true
      */
     suspend fun cleanup(): Result<Unit> = transitionTo(PlayerLifecycleState.Cleaning)
 
@@ -113,7 +113,7 @@ class PlayerLifecycleManager(
         return withContext(lifecycleDispatcher) {
             try {
                 _isCleaning.value = true
-                controller.cleanupAsync()
+                controller.stopAsync()
                 Result.success(Unit)
             } finally {
                 _isCleaning.value = false

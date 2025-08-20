@@ -30,7 +30,7 @@ interface PlayerController {
 
     // 添加异步方法
     suspend fun initAsync()
-    suspend fun cleanupAsync()
+    suspend fun stopAsync()
     // 添加带超时的加载方法
     suspend fun loadAsync(url: String, timeoutMillis: Long = 10000): PlayerController
     fun play()
