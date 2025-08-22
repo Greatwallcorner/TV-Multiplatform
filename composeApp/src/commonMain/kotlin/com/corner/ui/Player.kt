@@ -113,12 +113,12 @@ fun Player(
                         val robot = Robot()
                         // 获取当前鼠标位置而不是使用固定值
                         val currentMousePos = MouseInfo.getPointerInfo().location
-                        val v = if (time % 2 == 0) 1 else -1
+                        val v = if (time % 2 == 0) 10 else -10
 
                         // 只在x方向微动，y方向保持不变
                         robot.mouseMove(currentMousePos.x + v, currentMousePos.y)
+//                        player_log.debug("robot moveMouse: ${currentMousePos.x + v}, ${currentMousePos.y}")
                         time++
-                        //player_log.debug("robot moveMouse: ${currentMousePos.x + v}, ${currentMousePos.y}")
                     }, 0, 6000L)
                 }
             }

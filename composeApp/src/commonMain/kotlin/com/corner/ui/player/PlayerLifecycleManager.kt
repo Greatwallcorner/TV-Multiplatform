@@ -105,7 +105,7 @@ class PlayerLifecycleManager(
 
 
     /**
-     * 异步清理
+     * 异步停止播放,用于清理资源,设置资源已释放标志位为true
      */
     suspend fun cleanup(): Result<Unit> = transitionTo(PlayerLifecycleState.Cleaning)
 
@@ -113,8 +113,7 @@ class PlayerLifecycleManager(
         return withContext(lifecycleDispatcher) {
             try {
                 _isCleaning.value = true
-                controller.cleanupAsync()
-                log.debug("LifecycleManager - 清理完成")
+                controller.stopAsync()
                 Result.success(Unit)
             } finally {
                 _isCleaning.value = false
@@ -191,7 +190,7 @@ class PlayerLifecycleManager(
                         log.debug("播放器已就绪")
                         return@withContext Result.success(Unit)
                     }else{
-                        log.info("播放器未就绪，等待就绪中...")
+                        log.info("播放器未就绪，等待就绪中...,当前状态:${_lifecycleState.value},当前值：${player.value}")
                     }
                 }
                 return@withContext Result.failure(IllegalStateException("Player not initialized"))

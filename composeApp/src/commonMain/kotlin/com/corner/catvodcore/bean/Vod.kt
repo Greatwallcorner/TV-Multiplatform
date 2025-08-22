@@ -2,11 +2,15 @@ package com.corner.catvod.enum.bean
 
 import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.Flag
+import com.corner.catvodcore.util.Utils
 import com.corner.database.entity.History
 import com.corner.util.Constants
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import org.slf4j.LoggerFactory
+
+private val log = LoggerFactory.getLogger("Vod")
 
 @Serializable
 data class Vod(
@@ -95,21 +99,62 @@ data class Vod(
         return VodTag.Folder.called == vodTag
     }
 
-    fun findAndSetEpByName(history: History): Episode? {
-        if (history.vodRemarks.isNullOrBlank()) return null
+    fun findAndSetEpByName(history: History, currentEpNumber: Int = 1): Episode? {
+        if (history.vodRemarks.isNullOrBlank()) {
+            log.debug("vodRemarks 为空，直接返回 null")
+            return null
+        }
+
         val flag = vodFlags.find { it.flag == history.vodFlag }
         if (flag == null) {
+            log.debug("未找到 flag=${history.vodFlag} 的线路")
             return null
         }
         currentFlag = flag
-        val episode = currentFlag.find(history.vodRemarks, true)
-        if (episode != null) {
-            episode.activated = true
-            val indexOf = currentFlag.episodes.indexOf(episode)
-            // 32 15 16
-            currentTabIndex = (indexOf.plus(1)) / Constants.EpSize
-            subEpisode = currentFlag.episodes.getPage(currentTabIndex)
+        log.debug("切换到线路 flag=${flag.flag}，共 ${flag.episodes.size} 集")
+
+        // 1. 按编号匹配
+        val episodeByNumber = flag.episodes.find { it.number == currentEpNumber }
+        log.debug("按编号匹配：currentEpNumber=$currentEpNumber，结果=${episodeByNumber?.name ?: "未找到"}")
+        if (episodeByNumber != null) {
+            return selectEpisode(episodeByNumber)
         }
+
+        // 2. 按名称匹配
+        val episodeByName = flag.find(history.vodRemarks, true)
+        log.debug("按名称匹配：vodRemarks=${history.vodRemarks}，结果=${episodeByName?.name ?: "未找到"}")
+        if (episodeByName != null) {
+            return selectEpisode(episodeByName)
+        }
+
+        // 3. 按提取编号匹配
+        val extractedNumber = Utils.getDigit(history.vodRemarks)
+        log.debug("提取编号：vodRemarks=${history.vodRemarks} -> extractedNumber=$extractedNumber")
+        if (extractedNumber != -1) {
+            val episodeByExtracted = flag.episodes.find { it.number == extractedNumber }
+            log.debug("按提取编号匹配：extractedNumber=$extractedNumber，结果=${episodeByExtracted?.name ?: "未找到"}")
+            if (episodeByExtracted != null) {
+                return selectEpisode(episodeByExtracted)
+            }
+        }
+
+        // 4. 回退第一集
+        val fallback = flag.episodes.firstOrNull()
+        log.debug("回退到第一集：${fallback?.name ?: "无剧集"}")
+        // 只有真正回退且不是因为用户本就选第一集才弹提示
+        SnackBar.postMsg(
+            "新线路剧集名称和编号匹配失败！将从第一集开始播放",
+            type = SnackBar.MessageType.ERROR
+        )
+        return if (fallback != null) selectEpisode(fallback) else null
+    }
+
+    private fun selectEpisode(episode: Episode): Episode {
+        episode.activated = true
+        val indexOf = currentFlag.episodes.indexOf(episode)
+        currentTabIndex = indexOf / Constants.EpSize
+        subEpisode = currentFlag.episodes.getPage(currentTabIndex)
+        log.debug("最终选中剧集：name=${episode.name}, number=${episode.number}, tabIndex=$currentTabIndex")
         return episode
     }
 
@@ -179,7 +224,7 @@ data class Vod(
         result = 31 * result + (ratio?.hashCode() ?: 0)
         vodFlags.forEach { result += 31 * result + it.hashCode() }
         result = 31 * result + (site?.hashCode() ?: 0)
-        result = 31 * result + (currentFlag.hashCode() )
+        result = 31 * result + (currentFlag.hashCode())
         result = 31 * result + (subEpisode.hashCode())
         result = 31 * result + currentTabIndex
         return result
