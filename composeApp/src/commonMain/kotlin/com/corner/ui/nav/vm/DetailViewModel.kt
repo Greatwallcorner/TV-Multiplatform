@@ -1212,10 +1212,14 @@ class DetailViewModel : BaseViewModel() {
 
         scope.launch {
             if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Ended)) {
-                if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Paused)) {
-                    lifecycleManager.stop()
-                }
                 lifecycleManager.ended()
+            }else if (lifecycleManager.canTransitionTo(PlayerLifecycleState.Paused)){
+                lifecycleManager.stop().onSuccess { lifecycleManager.ended() }.onFailure {
+                    log.error("停止播放失败：", it)
+                }
+            }else{
+                log.error("状态异常，当前状态：{}",lifecycleManager.lifecycleState)
+                return@launch
             }
         }
         // 复制当前视频详情信息，避免直接修改原始状态
