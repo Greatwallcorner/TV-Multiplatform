@@ -63,10 +63,6 @@ fun Application.configureRouting() {
          * 播放器必须支持range请求 否则会返回完整资源 导致拨动进度条加载缓慢
          */
 
-        /**
-         * clevebitr: 使用use来管理资源，看看能否修复潜在的内存泄露、资源管理问题
-         * */
-
         get("/proxy") {
             val parameters = call.request.queryParameters
             val paramMap = parameters.toSingleValueMap().toMutableMap()
@@ -84,7 +80,6 @@ fun Application.configureRouting() {
                                 call.response.headers.append(name, value)
                             }
                         }
-//                        log.debug("proxy resp code:{} headers:{}", response.code, response.headers)
                         call.respondOutputStream(status = HttpStatusCode.fromValue(response.code)) {
                             response.body.byteStream().use { it.transferTo(this) }
                         }

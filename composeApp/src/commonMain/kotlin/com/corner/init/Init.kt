@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import androidx.compose.runtime.State
 
 private val isInitialized = AtomicBoolean(false)
-
 private val log = LoggerFactory.getLogger("Init")
 class Init {
     companion object {
@@ -55,23 +54,18 @@ class Init {
         }
 
         fun stop() {
-            // 1. 先停止业务逻辑
             GlobalAppState.cancelAllOperations("Application shutdown")
-
-            // 2. 按依赖顺序释放资源
             try {
-                KtorD.stop() // 先停止网络服务
+                KtorD.stop() // 停止网络服务
                 instance?.close() // 关闭应用级资源
-                VlcJInit.release() // 最后释放VLC,避免出现Invalid memory access问题
+                VlcJInit.release() // 释放VLC
             } catch (e: Throwable) {
                 log.error("Cleanup error", e)
             }
         }
 
-
         private fun initKoin() {
             instance = startKoin {
-//                logger()
                 modules(appModule)
             }
         }
@@ -83,9 +77,9 @@ class Init {
                 return
             }
 
-            // 新增：初始化广告过滤配置
+            // 初始化广告过滤配置
             val filterConfig = SettingStore.getM3U8FilterConfig()
-            log.debug("加载广告过滤配置: $filterConfig")
+            log.debug("加载广告过滤配置: {}", filterConfig)
 
             val siteConfig = runBlocking {
                 withContext(Dispatchers.IO) {

@@ -253,7 +253,7 @@ class DetailViewModel : BaseViewModel() {
                 // 从详情列表中取出第一个元素
                 val first = dt.list[0]
                 // 记录加载详情完成的日志
-                log.info("加载详情完成 $first")
+                log.info("加载详情完成 ${first.toString().take(50)}...")
                 // 为详情对象设置站点信息
                 first.site = vod.site
                 // 若详情对象为空，尝试加载下一个视频

@@ -21,12 +21,11 @@ import java.util.concurrent.ConcurrentHashMap
 object JarLoader {
     private val log = thisLogger()
     private val loaders: ConcurrentHashMap<String, URLClassLoader> by lazy { ConcurrentHashMap() }
-
     //proxy method
     private val methods: ConcurrentHashMap<String, Method> by lazy { ConcurrentHashMap() }
     private val spiders: ConcurrentHashMap<String, Spider> by lazy { ConcurrentHashMap() }
-
     var recent: String? = null
+    private const val MAX_RETRY_COUNT = 30
 
     fun clear() {
         spiders.values.forEach { spider ->
@@ -39,8 +38,6 @@ object JarLoader {
         methods.clear()
         recent = null
     }
-
-    private const val MAX_RETRY_COUNT = 30
 
     /**
      * 改为迭代方式，不要使用递归，会出现问题
@@ -58,7 +55,8 @@ object JarLoader {
                 val texts = currentSpider.split(Constant.md5Split)
                 val md5 = if (texts.size <= 1) "" else texts[1].trim()
                 val jar = texts[0]
-
+                log.debug("md5 is {}", md5)
+                log.debug("texts is {}", texts)
                 when {
                     md5.isNotEmpty() && Utils.equals(parseJarUrl(jar), md5) -> {
                         load(key, Paths.jar(parseJarUrl(jar)))
