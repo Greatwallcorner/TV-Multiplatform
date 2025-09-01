@@ -60,7 +60,7 @@ import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
 import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
 import com.corner.ui.nav.data.DetailScreenState
 import com.corner.ui.nav.data.DialogState
-import com.corner.ui.nav.data.DialogState.isSpecialVideoLink
+import com.corner.ui.nav.data.DialogState.openDialogState
 import com.corner.ui.nav.vm.DetailViewModel
 import com.corner.ui.scene.*
 import com.corner.ui.video.QuickSearchItem
@@ -252,9 +252,8 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                 }
             }
             val mrl = derivedStateOf { model.currentPlayUrl }
-//            log.debug("WebSocket 连接状态：{}",BrowserUtils.webSocketConnectionState.value)
             // 添加顶栏通知
-            if (isSpecialVideoLink && showWebSocketDisconnected) {
+            if (openDialogState && showWebSocketDisconnected) {
                 Column(modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
                     // 顶栏通知
                     Box(
@@ -287,7 +286,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                             }
                         }
                     }
-                    if (isSpecialVideoLink && showWebSocketDisconnected) {
+                    if (openDialogState && showWebSocketDisconnected) {
                         TopEmptyShow(
                             title = "当前播放器无法播放",
                             subtitle = "请使用 Web 播放器；点击选集按钮重新进入浏览器播放，或点击刷新重试",
@@ -330,7 +329,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                         )
                         NoPlayerContent(message = "正在 Web 播放器中播放", subtitle = "请使用 Web 播放器")
                     } else if (!DialogState.userChoseOpenInBrowser) {
-                        if (!isSpecialVideoLink) {
+                        if (!openDialogState) {
                             Player(
                                 mrl.value,
                                 controller.value,

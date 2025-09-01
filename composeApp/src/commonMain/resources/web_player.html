@@ -5,20 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>%VIDEO_TITLE% - LumenWebPlayer</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #2196F3;
-            --secondary-color: #4CAF50;
-            --background-color: #1a1a1a;
+            --primary-color: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #10b981;
+            --secondary-light: #34d399;
+            --secondary-dark: #059669;
+            --background-color: #121212;
+            --header-bg-color: #1e1e1e;
+            --card-bg-color: #2d2d2d;
             --text-color: #ffffff;
+            --text-secondary: #9ca3af;
             --border-radius: 8px;
-            --input-bg-color: #333333;
-            --input-border-color: #444444;
-            --header-bg-color: #2d2d2d;
+            --border-radius-sm: 4px;
+            --input-bg-color: #374151;
+            --input-border-color: #4b5563;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --transition: all 0.25s ease;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             background-color: var(--background-color);
@@ -26,6 +41,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            line-height: 1.5;
         }
 
         .header {
@@ -33,12 +49,14 @@
             flex-direction: column;
             background-color: var(--header-bg-color);
             padding: 0;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
         }
 
         .top-bar {
             display: flex;
             align-items: center;
-            padding: 1rem;
+            padding: 0.8rem 1.5rem;
             gap: 1rem;
             position: relative;
         }
@@ -46,69 +64,89 @@
         #video-title {
             flex: 1;
             text-align: left;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             padding-right: 1rem;
+            color: var(--text-color);
         }
 
         .button-group {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.75rem;
         }
 
         #input-section {
-            display: none;
-            padding: 0 1rem 1rem 1rem;
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 1.5rem;
             background-color: var(--header-bg-color);
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
 
         #input-section.show {
+            max-height: 120px;
+            padding: 0 1.5rem 1rem;
+        }
+
+        .input-container {
             display: flex;
-            flex-direction: row; /* 改为行布局 */
-            gap: 0.5rem; /* 缩小间距 */
+            flex-direction: row;
+            gap: 0.75rem;
             align-items: center;
+            margin-top: 0.5rem;
         }
 
         #url-input {
-            flex: 1; /* 自动填充剩余空间 */
-            min-width: 200px; /* 最小宽度 */
-            max-width: 600px; /* 最大宽度 */
-            padding: 0.6rem 0.8rem; /* 调整内边距 */
-            border: 2px solid var(--input-border-color);
+            flex: 1;
+            min-width: 200px;
+            max-width: 600px;
+            padding: 0.7rem 1rem;
+            border: 1px solid var(--input-border-color);
             border-radius: var(--border-radius);
-            font-size: 0.95rem; /* 稍小的字体 */
+            font-size: 0.9rem;
             background-color: var(--input-bg-color);
             color: var(--text-color);
-            transition: border-color 0.3s ease;
+            transition: var(--transition);
         }
 
         #url-input:focus {
             border-color: var(--primary-color);
             outline: none;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
         }
 
         button {
-            padding: 0.6rem 1rem; /* 调整按钮内边距 */
+            padding: 0.7rem 1.2rem;
             background-color: var(--secondary-color);
             color: var(--text-color);
             border: none;
             border-radius: var(--border-radius);
             cursor: pointer;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
             white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         button:hover {
-            background-color: #45a049;
+            background-color: var(--secondary-light);
             transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
         }
 
         button:active {
             transform: translateY(0);
+            box-shadow: none;
+        }
+
+        button i {
+            font-size: 0.95rem;
         }
 
         #toggle-input-btn {
@@ -116,7 +154,11 @@
         }
 
         #toggle-input-btn:hover {
-            background-color: #1e88e5;
+            background-color: var(--primary-light);
+        }
+
+        #toggle-input-btn.active {
+            background-color: var(--primary-dark);
         }
 
         #video-container {
@@ -133,7 +175,8 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            max-height: calc(100vh - 100px);
+            max-height: calc(100vh - 90px);
+            transition: opacity 0.3s ease;
         }
 
         .loading {
@@ -142,20 +185,40 @@
             left: 50%;
             transform: translate(-50%, -50%);
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            z-index: 5;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
             .top-bar {
                 flex-direction: column;
                 align-items: stretch;
-                gap: 0.5rem;
+                gap: 0.75rem;
+                padding: 0.8rem;
             }
 
             #video-title {
                 text-align: center;
                 padding-right: 0;
-                margin-bottom: 0.5rem;
+                margin-bottom: 0.25rem;
+                font-size: 1rem;
             }
 
             .button-group {
@@ -165,16 +228,23 @@
 
             button {
                 flex: 1;
-                padding: 0.6rem;
+                padding: 0.7rem;
+                justify-content: center;
+                font-size: 0.85rem;
             }
 
-            #input-section.show {
-                flex-direction: column; /* 移动端恢复为列布局 */
+            .input-container {
+                flex-direction: column;
             }
 
             #url-input {
-                width: 100%; /* 移动端全宽 */
+                width: 100%;
                 max-width: 100%;
+                font-size: 0.85rem;
+            }
+
+            video {
+                max-height: calc(100vh - 130px);
             }
         }
     </style>
@@ -184,17 +254,28 @@
     <div class="top-bar">
         <div id="video-title">%VIDEO_TITLE%</div>
         <div class="button-group">
-            <button id="toggle-input-btn" onclick="toggleInputSection()">显示输入框</button>
-            <button id="refresh-btn" onclick="loadVideo()">重新加载</button>
+            <button id="toggle-input-btn" onclick="toggleInputSection()">
+                <i class="fas fa-link"></i> 显示输入框
+            </button>
+            <button id="refresh-btn" onclick="loadVideo()">
+                <i class="fas fa-sync-alt"></i> 重新加载
+            </button>
         </div>
     </div>
     <div id="input-section">
-        <input type="text" id="url-input" placeholder="输入M3U8地址 (例如: https://example.com/stream.m3u8)" value="%M3U8_URL%">
-        <button onclick="loadVideo()">播放</button>
+        <div class="input-container">
+            <input type="text" id="url-input" placeholder="输入M3U8地址 (例如: https://example.com/stream.m3u8)" value="%M3U8_URL%">
+            <button onclick="loadVideo()">
+                <i class="fas fa-play"></i> 播放
+            </button>
+        </div>
     </div>
 </div>
 <div id="video-container">
-    <div class="loading" id="loading">正在加载视频...</div>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <span>正在加载视频...</span>
+    </div>
     <video id="video" controls autoplay></video>
 </div>
 <script>
@@ -205,12 +286,13 @@
 
         if (inputSection.classList.contains('show')) {
             inputSection.classList.remove('show');
-            toggleBtn.textContent = '显示输入框';
-            toggleBtn.style.backgroundColor = 'var(--primary-color)';
+            toggleBtn.innerHTML = '<i class="fas fa-link"></i> 显示输入框';
+            toggleBtn.classList.remove('active');
         } else {
             inputSection.classList.add('show');
-            toggleBtn.textContent = '隐藏输入框';
-            toggleBtn.style.backgroundColor = '#1565C0';
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i> 隐藏输入框';
+            toggleBtn.classList.add('active');
+            document.getElementById('url-input').focus();
         }
     }
 
@@ -219,20 +301,26 @@
         const m3u8Url = document.getElementById('url-input').value;
         const video = document.getElementById('video');
         const loading = document.getElementById('loading');
+        const spinner = loading.querySelector('.spinner');
+        const loadingText = loading.querySelector('span');
 
         if (!m3u8Url) {
             alert('请输入M3U8地址');
             return;
         }
 
-        loading.style.display = 'block';
+        // 更新加载状态
+        spinner.style.display = 'block';
+        loadingText.textContent = '正在加载视频...';
+        loading.style.display = 'flex';
         video.style.display = 'none';
+        video.style.opacity = 0;
 
         // 清除之前的视频源
         video.src = '';
 
+        // WebSocket连接（如果需要）
         const socket = new WebSocket("ws://localhost:8888");
-
         socket.onopen = () => {
             console.log("已连接到应用");
         };
@@ -247,6 +335,7 @@
             socket.send("PLAYBACK_FINISHED");
         });
 
+        // HLS播放逻辑
         if (Hls.isSupported()) {
             const hls = new Hls({
                 maxBufferLength: 30,
@@ -259,8 +348,13 @@
             hls.attachMedia(video);
 
             hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                spinner.style.display = 'none';
                 loading.style.display = 'none';
                 video.style.display = 'block';
+                // 淡入效果
+                setTimeout(() => {
+                    video.style.opacity = 1;
+                }, 50);
                 video.play().catch(e => {
                     console.log('自动播放被阻止:', e);
                     video.controls = true;
@@ -268,24 +362,52 @@
             });
 
             hls.on(Hls.Events.ERROR, function(event, data) {
-                if (data.fatal) {
-                    loading.textContent = '加载失败: ' + (data.details || '未知错误');
-                    console.error('HLS Error:', data);
+                spinner.style.display = 'none';
+                loadingText.textContent = '加载失败: ' + (data.details || '未知错误');
+                console.error('HLS Error:', data);
+
+                // 非致命错误尝试恢复
+                if (!data.fatal) {
+                    return;
+                }
+
+                switch(data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                        hls.startLoad();
+                        break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                        hls.recoverMediaError();
+                        break;
+                    default:
+                        // 无法恢复的错误，需要用户干预
+                        break;
                 }
             });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
             // 原生支持HLS的浏览器（如Safari）
             video.src = m3u8Url;
             video.addEventListener('loadedmetadata', function() {
+                spinner.style.display = 'none';
                 loading.style.display = 'none';
                 video.style.display = 'block';
+                // 淡入效果
+                setTimeout(() => {
+                    video.style.opacity = 1;
+                }, 50);
                 video.play().catch(e => {
                     console.log('自动播放被阻止:', e);
                     video.controls = true;
                 });
             });
+
+            video.addEventListener('error', function() {
+                spinner.style.display = 'none';
+                loadingText.textContent = '加载失败: 无法播放视频';
+                console.error('Video Error:', video.error);
+            });
         } else {
-            loading.textContent = '您的浏览器不支持播放此视频格式';
+            spinner.style.display = 'none';
+            loadingText.textContent = '您的浏览器不支持播放此视频格式';
         }
     }
 
@@ -294,6 +416,10 @@
         const m3u8Url = document.getElementById('url-input').value;
         if (m3u8Url) {
             loadVideo();
+        } else {
+            // 如果没有初始URL，隐藏加载状态并显示输入框
+            document.getElementById('loading').style.display = 'none';
+            toggleInputSection();
         }
     };
 </script>

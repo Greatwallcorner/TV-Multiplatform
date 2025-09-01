@@ -73,7 +73,7 @@ object GlobalAppState {
 
         coroutineScope.launch {
             try {
-                log.info("开始执行清理操作...")
+                log.info("------------------开始执行清理操作------------------------")
 
                 // 1. 取消所有操作
                 cancelAllOperations("取消所有操作...")
@@ -94,7 +94,7 @@ object GlobalAppState {
                 // 5. 重置状态
                 resetAllStates()
 
-                log.info("清理操作执行成功！")
+                log.info("------------------清理操作执行成功！------------------------")
             } catch (e: Exception) {
                 log.error("清理失败", e)
             } finally {

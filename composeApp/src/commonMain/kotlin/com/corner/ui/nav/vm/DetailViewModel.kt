@@ -22,7 +22,6 @@ import com.corner.database.entity.History
 import com.corner.server.KtorD
 import com.corner.ui.nav.BaseViewModel
 import com.corner.ui.nav.data.DetailScreenState
-import com.corner.ui.nav.data.DialogState.isSpecialVideoLink
 import com.corner.ui.player.PlayState
 import com.corner.ui.player.PlayerLifecycleManager
 import com.corner.ui.player.PlayerLifecycleMonitor
@@ -457,7 +456,7 @@ class DetailViewModel : BaseViewModel() {
      * @param releaseController 是否释放播放器控制器资源，默认为 true。
      */
     fun clear(releaseController: Boolean = true, onComplete: () -> Unit = {}) {
-        log.debug("开始清理详情页资源")
+        log.debug("----------开始清理详情页资源----------")
 
         // 创建一个延迟2秒显示进度条的任务
         var progressJob: Job? = null
@@ -501,14 +500,14 @@ class DetailViewModel : BaseViewModel() {
                 SiteViewModel.clearQuickSearch()
                 launched = false
 
-                log.debug("detail clear - 清理完成")
+                log.debug("----------清理详情页资源完成----------")
 
                 // 回调到主线程
                 withContext(Dispatchers.Swing) {
                     onComplete()
                 }
             } catch (e: Exception) {
-                log.error("清理过程中出错", e)
+                log.error("----------清理过程中出错----------", e)
             } finally {
                 // 取消进度条显示任务
                 progressJob?.cancel()
@@ -637,6 +636,12 @@ class DetailViewModel : BaseViewModel() {
             // 结束当前函数执行
             return
         }
+
+        if (SiteViewModel.state.value.isSpecialVideoLink) {
+            log.debug("特殊链接，放弃播放")
+            return
+        }
+
         // 使用协程处理异步操作
         scope.launch {
             try {
@@ -744,7 +749,6 @@ class DetailViewModel : BaseViewModel() {
      * @param ep 要播放的剧集对象，包含剧集的名称和 URL 等信息。
      */
     private fun playEp(detail: Vod, ep: Episode) {
-        // 显示加载状态
         _state.update { it.copy(isLoading = true, isBuffering = false) }
         //检查是否可以切换ready状态，若可以就设置ready状态
         scope.launch {
@@ -754,22 +758,19 @@ class DetailViewModel : BaseViewModel() {
         }
         // 记录当前选中的剧集 集数，用于后续状态跟踪
         currentSelectedEpNumber = ep.number
-        // 步骤1: 检查剧集 URL 是否为下载链接
         // 如果是下载链接（如 .mp4, .mkv 等文件），直接返回不播放
         if (Utils.isDownloadLink(ep.url)) {
             log.info("播放链接为下载链接,驳回播放请求")
             SnackBar.postMsg("播放链接为下载链接,无法播放", type = SnackBar.MessageType.WARNING)
             return
         }
-        // 步骤2: 获取播放内容
         // 通过 SiteViewModel 获取实际的播放地址
         val result = SiteViewModel.playerContent(
             detail.site?.key ?: "",           // 站点标识
             detail.currentFlag.flag ?: "",    // 当前线路标识
             ep.url                            // 剧集原始URL
         )
-        // 步骤3: 检查是否为特殊链接
-        val isSpecialLink = isSpecialVideoLink
+        val isSpecialLink = SiteViewModel.state.value.isSpecialVideoLink
         log.debug("特殊链接: $isSpecialLink")
         // 如果是特殊链接（如直播、特殊格式），不通过VLCJ播放器播放
         if (isSpecialLink) {
@@ -782,7 +783,6 @@ class DetailViewModel : BaseViewModel() {
             updateHistoryWithNewEpisode(ep)
             return
         }
-        // 步骤4: 验证播放结果
         // 检查播放结果是否为空或无效
         if (result == null || result.playResultIsEmpty()) {
             log.warn("播放结果为空,无法播放")
@@ -792,19 +792,14 @@ class DetailViewModel : BaseViewModel() {
             nextFlag()
             return
         }
-        // 步骤5: 更新播放状态
         // 更新当前播放URL和缓冲状态
         _state.update { it.copy(currentUrl = result.url, isBuffering = true) }
-        // 步骤6: 更新历史记录
         // 将当前剧集URL保存到历史记录中
         controller.doWithHistory { it.copy(episodeUrl = ep.url) }
-        // 步骤7: 判断播放器类型
         // 检查是否使用内置播放器
         val internalPlayer = SettingStore.getSettingItem(SettingType.PLAYER).getPlayerSetting(detail.site?.playerType)
             .first() == PlayerType.Innie.id
-        // 步骤8: 根据播放器类型更新状态
         if (internalPlayer) {
-            // 使用内置播放器：更新播放URL和当前剧集信息
             _state.update {
                 it.copy(
                     currentPlayUrl = result.url.v(),    // 实际播放地址
@@ -834,10 +829,8 @@ class DetailViewModel : BaseViewModel() {
                     }
             }
         }
-        // 步骤9: 更新剧集激活状态
         // 将当前剧集标记为激活状态，更新UI显示
         updateEpisodeActivation(ep)
-        // 步骤10: 外部播放器提示
         // 如果使用外部播放器，提示用户上次观看的剧集
         if (!internalPlayer) {
             SnackBar.postMsg("上次看到" + ": ${ep.name}", type = SnackBar.MessageType.INFO)

@@ -190,7 +190,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             _state.update { it.copy(state = PlayState.PAUSE) }
             scope.launch {
                 delay(500)
-                log.debug("finished 运行协程任务")
+                log.debug("finished:运行协程任务")
                 try {
                     if (!vm.isLastEpisode) {
                         log.info("切换下一集")

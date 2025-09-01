@@ -19,6 +19,6 @@ data class DetailScreenState(
     val currentUrl: Url? = null,
     val playResult: Result? = null,
     val loadingMessage: String = "",
-    var isCleaning: Boolean = false,  // 新增：清理状态
-    val isBuffering: Boolean = false,
+    var isCleaning: Boolean = false,
+    var isBuffering: Boolean = false
 )
