@@ -7,6 +7,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -56,6 +57,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import lumentv_compose.composeapp.generated.resources.Res
 import lumentv_compose.composeapp.generated.resources.speed
+import org.slf4j.LoggerFactory
 import kotlin.math.roundToLong
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
@@ -66,7 +68,6 @@ fun DefaultControls(
     vod: Vod,
     onClickChooseEp: () -> Unit
 ) {
-
     val playerState by controller.state.collectAsState()
     val interactionSource = remember { MutableInteractionSource() }
     val isShowPreviewTime = interactionSource.collectIsHoveredAsState()
@@ -88,10 +89,9 @@ fun DefaultControls(
         "" to "原始比例",
         "16:9" to "16:9",
         "4:3" to "4:3",
-        "1:1" to "1:1",
         "16:10" to "16:10",
         "21:9" to "21:9",
-        "2.35:1" to "2.35:1"
+        "18:9" to "18:9"
     )
 
     PlayerControlsTheme {
@@ -238,39 +238,35 @@ fun DefaultControls(
                             }
                         }
                     }
-                    // 减少权重，让控件更灵活分配空间
                     Row(
                         modifier = Modifier.width(IntrinsicSize.Min),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End
                     ) {
-                        if (playerState.isMuted || playerState.volume == 0f) IconButton(controller::toggleSound) {
-                            Icon(
-                                Icons.AutoMirrored.Rounded.VolumeOff,
-                                "volume off",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        else {
-                            if (playerState.volume < .5f) IconButton(controller::toggleSound) {
+                        if (playerState.isMuted || playerState.volume == -1.0f || playerState.volume == 0f) {
+                            IconButton(controller::toggleSound) {
                                 Icon(
-                                    Icons.AutoMirrored.Rounded.VolumeDown,
-                                    "volume low",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            } else IconButton(controller::toggleSound) {
-                                Icon(
-                                    Icons.AutoMirrored.Rounded.VolumeUp,
-                                    "volume high",
+                                    Icons.AutoMirrored.Rounded.VolumeOff,
+                                    "volume off",
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
+                        } else {
+                            val icon = if (playerState.volume < .5f)
+                                Icons.AutoMirrored.Rounded.VolumeDown
+                            else
+                                Icons.AutoMirrored.Rounded.VolumeUp
+                            IconButton(controller::toggleSound) {
+                                Icon(icon, "volume", tint = MaterialTheme.colorScheme.primary)
+                            }
                         }
-                        // 缩小滑块宽度
+                        // 音量滑块
                         Slider(
                             value = playerState.volume,
                             onValueChange = controller::setVolume,
-                            modifier = Modifier.width(80.dp),
+                            modifier = Modifier
+                                .width(90.dp)
+                                .height(15.dp),
                             valueRange = 0f..1.5f,
                             colors = SliderDefaults.colors(
                                 thumbColor = MaterialTheme.colorScheme.secondary,
@@ -279,7 +275,7 @@ fun DefaultControls(
                             )
                         )
                         Spacer(Modifier.size(5.dp))
-                        // 缩小倍速控件宽度
+                        // 倍速控件
                         Speed(
                             initialValue = playerState.speed,
                             Modifier.width(70.dp)
@@ -386,18 +382,9 @@ fun SliderPreviewPopup(isShow: Boolean, offsetX: () -> Int, text: String) {
     }
 }
 
-@Preview
-@Composable
-fun previewControlBar() {
-    AppTheme {
-//        DefaultControls(Modifier, VlcjFrameController(), null)
-    }
-}
-
 /**
  * See [this Stack Overflow post](https://stackoverflow.com/a/67765652).
  */
-// ... 已有代码 ...
 
 @Composable
 fun Speed(
@@ -407,9 +394,8 @@ fun Speed(
 ) {
     var expanded by remember { mutableStateOf(false) }
     var customInput by remember { mutableStateOf("") }
-    // 使用 mutableStateOf 管理当前倍速
     var currentSpeed by remember { mutableStateOf(initialValue) }
-    val speedOptions = listOf(1.0f, 1.5f, 2.0f, 3.0f, 5.0f)
+    val speedOptions = listOf(0.5f, 1.0f, 1.5f, 2.0f, 3.0f, 5.0f)
     val displayValue = remember(currentSpeed) {
         if (currentSpeed in speedOptions) currentSpeed.toString() + "x"
         else "%.1fx".format(currentSpeed)
@@ -420,20 +406,29 @@ fun Speed(
         // 设置内容在水平和垂直方向上居中
         contentAlignment = Alignment.Center
     ) {
-        // 倍速图标
-        IconButton(
-            onClick = { expanded = true },
-            modifier = Modifier.size(24.dp),
-            content = {
-                Icon(
-                    painter = painterResource(Res.drawable.speed),
-                    contentDescription = "Speed",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        )
+        // 倍速选择器
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(4.dp))
+                .clickable { expanded = true }
+                .padding(horizontal = 4.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.speed),
+                contentDescription = "Speed",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = displayValue,
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 12.sp
+            )
+        }
 
-        // 下拉菜单 - 完全匹配主题
+        // 下拉菜单
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
@@ -461,7 +456,7 @@ fun Speed(
 
             Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
-            // 自定义输入区，移除 DropdownMenuItem 包裹
+            // 自定义输入区
             Column(
                 modifier = Modifier
                     .padding(8.dp)
@@ -508,16 +503,4 @@ fun Speed(
             }
         }
     }
-}
-
-
-// ... 已有代码 ...
-
-
-
-
-@androidx.compose.desktop.ui.tooling.preview.Preview
-@Composable
-fun previewSpeed() {
-    Speed(1f, Modifier.width(85.dp).height(45.dp), onChange = {})
 }

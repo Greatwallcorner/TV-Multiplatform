@@ -330,6 +330,9 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             player = factory.mediaPlayers()?.newEmbeddedMediaPlayer()?.apply {
                 events().addMediaPlayerEventListener(stateListener)
                 video().setScale(0.0f)
+                // 把 VLC 当前静音状态同步到 PlayerState
+                val muted = audio()?.isMute ?: false
+                _state.update { it.copy(isMuted = muted) }
             }
         } catch (e: Exception) {
             // 处理异常
@@ -360,6 +363,8 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             player = factory.mediaPlayers()?.newEmbeddedMediaPlayer()?.apply {
                 events().addMediaPlayerEventListener(stateListener)
                 video().setScale(0.0f)
+                val muted = audio()?.isMute ?: false
+                _state.update { it.copy(isMuted = muted) }
             }
             log.debug("vlcj异步初始化成功")
         } catch (e: Exception) {
@@ -560,7 +565,9 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     }
 
     override fun toggleSound() = catch {
+        val newMuted = !(player?.audio()?.isMute ?: false)
         player?.audio()?.mute()
+        _state.update { it.copy(isMuted = newMuted) }
     }
 
     override fun toggleFullscreen() = catch {
