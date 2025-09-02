@@ -23,7 +23,6 @@ class BitmapPool(private var maxPoolSize: Int = 3) {
                 val bitmap = iterator.next()
                 if (bitmap.width == width && bitmap.height == height) {
                     iterator.remove()
-//                    log.debug("Reusing bitmap from pool: size=${width}x${height}")
                     return bitmap
                 }
             }
@@ -31,7 +30,6 @@ class BitmapPool(private var maxPoolSize: Int = 3) {
 
         synchronized(this) {
             createdCount++
-//            log.debug("Creating new bitmap #$createdCount (Pool size: ${pool.size})")
             return Bitmap().apply {
                 allocPixels(ImageInfo.makeN32(width, height, ColorAlphaType.PREMUL))
             }
@@ -46,7 +44,6 @@ class BitmapPool(private var maxPoolSize: Int = 3) {
         } else {
             bitmap.close()
         }
-//        log.debug("Released bitmap (Pool size: ${pool.size})")
     }
 
     fun clear() {

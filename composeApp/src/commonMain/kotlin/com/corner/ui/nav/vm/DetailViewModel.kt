@@ -64,16 +64,22 @@ class DetailViewModel : BaseViewModel() {
     ).apply { VlcJInit.setController(this) }
     val lifecycleManager: PlayerLifecycleManager = PlayerLifecycleManager(controller, scope)    // 生命周期管理器
     private val monitor = PlayerLifecycleMonitor(lifecycleManager, scope)
-    var currentSelectedEpNumber by mutableStateOf(1) //     //用于记录当前选中的剧集编号，默认第1集
-    // 计算当前集数（等同于currentSelectedEpNumber）
+    var currentSelectedEpNumber by mutableStateOf(1) //用于记录当前选中的剧集编号，默认第1集
     val currentEpisodeIndex: Int
         get() = currentSelectedEpNumber
-    // 计算总集数（当前线路的总集数）
-    val totalEpisodes: Int
-        get() = _state.value.detail.currentFlag.episodes.size
     // 判断是否是最后一集
     val isLastEpisode: Boolean
-        get() = currentSelectedEpNumber >= totalEpisodes
+        get() {
+            val detail = _state.value.detail
+            val totalEpisodes = detail.currentFlag.episodes.size
+            // 直接在完整列表中查找激活的剧集
+            val currentEp = detail.currentFlag.episodes.find { it.activated }
+            if (currentEp != null) {
+                val currentIndex = detail.currentFlag.episodes.indexOf(currentEp)
+                return currentIndex >= totalEpisodes - 1
+            }
+            return false
+        }
     // 当前线路名称
     private val _currentFlagName = MutableStateFlow("")
     val currentFlagName: StateFlow<String> = _currentFlagName
@@ -555,11 +561,9 @@ class DetailViewModel : BaseViewModel() {
         }
         // 在开始播放新视频前，强制停止当前正在播放的视频
         scope.launch {
-            val currentState = lifecycleManager.lifecycleState.value
-
             when (
                 // 如果正在播放，先暂停再停止
-                currentState
+                val currentState = lifecycleManager.lifecycleState.value
             ) {
                 PlayerLifecycleState.Playing -> {
                     log.debug("setDetail - 正在播放视频，需要停止播放")
@@ -865,7 +869,7 @@ class DetailViewModel : BaseViewModel() {
             }
             // 将 shouldPlay 标志置为 false，表示不需要重新播放
             _state.value.shouldPlay = false
-            log.info("startPlay - 准备开始播放视频，正在获取信息...")
+            log.info("----====[startPlay-准备开始播放视频，正在获取信息...]====-----")
             // 获取当前视频详情信息
             val detail = _state.value.detail
             // 再次检查视频详情信息是否为空，若为空则返回
@@ -959,7 +963,7 @@ class DetailViewModel : BaseViewModel() {
             if (nextIndex >= currentDetail.subEpisode.size) {
                 nextTabIndex++
 
-                // 计算总分组数 (假设每组 Constants.EpSize 个剧集)
+                // 计算总分组数
                 val totalEpisodes = currentDetail.currentFlag.episodes.size
                 val totalPages = (totalEpisodes + Constants.EpSize - 1) / Constants.EpSize
 
@@ -1150,11 +1154,14 @@ class DetailViewModel : BaseViewModel() {
         var nextIndex: Int
         var currentIndex: Int
         val currentEp = detail.subEpisode.find { it.activated }
+        val totalEpisodes = detail.currentFlag.episodes.size
+
         log.debug("当前激活的剧集: {}", currentEp)
         controller.doWithHistory { it.copy(position = 0) }
         if (currentEp != null) {
             currentIndex = detail.subEpisode.indexOf(currentEp)
             nextIndex = currentIndex + 1
+            currentSelectedEpNumber = currentEp.number
         }else{
             log.debug("当前没有激活的剧集")
             SnackBar.postMsg("当前没有激活的剧集", type = SnackBar.MessageType.WARNING)
@@ -1162,29 +1169,37 @@ class DetailViewModel : BaseViewModel() {
         }
         // 若当前剧集索引达到或超过每个分组的剧集数量上限
         if (currentIndex >= Constants.EpSize - 1) {
-            // 记录当前分组播放完毕，准备切换到下一个分组的日志
             log.info("当前分组播放完毕 下一个分组")
-            // 将下一集索引重置为 0
-            nextIndex = 0
+            // 检查是否还有下一个分组
+            val nextTabIndex = detail.currentTabIndex + 1
+            val totalPages = (totalEpisodes + Constants.EpSize - 1) / Constants.EpSize
+            if (nextTabIndex >= totalPages) {
+                SnackBar.postMsg("没有更多了",type = SnackBar.MessageType.INFO)
+                return
+            }
             // 更新状态流中的视频详情信息，切换到下一个分组的子剧集列表
             _state.update {
                 it.copy(
-                    detail = detail.copy(subEpisode = detail.currentFlag.episodes.getPage(++detail.currentTabIndex)),
+                    detail = detail.copy(subEpisode = detail.currentFlag.episodes.getPage(nextTabIndex),currentTabIndex = nextTabIndex),
                     isLoading = false,
                     isBuffering = false
                 )
             }
+            // 更新 currentSelectedEpNumber 为新分组的第一集
+            val newFirstEp = detail.currentFlag.episodes[nextTabIndex * Constants.EpSize]
+            currentSelectedEpNumber = newFirstEp.number
+            playEp(detail, newFirstEp)
+            return
         }
-        // 获取当前视频标识下的总剧集数量
-        val size = detail.currentFlag.episodes.size
         // 若总剧集数量小于等于下一集的索引，说明没有更多剧集了
-        if (size <= nextIndex) {
+        if (totalEpisodes <= nextIndex) {
             // 提示用户没有更多剧集了
             SnackBar.postMsg("没有更多了", type = SnackBar.MessageType.INFO)
             // 结束当前方法
             return
         }
-        // 获取下一集的剧集对象，并调用 playEp 方法播放该剧集
+        val nextEp = detail.subEpisode[nextIndex]
+        currentSelectedEpNumber = nextEp.number
         playEp(detail, detail.subEpisode[nextIndex])
     }
 

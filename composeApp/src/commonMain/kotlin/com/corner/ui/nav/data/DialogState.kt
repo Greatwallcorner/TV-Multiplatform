@@ -14,7 +14,9 @@ object DialogState {
 
     var currentM3U8Url = ""
         set(value) {
-            log.debug("DialogState.currentM3U8Url --> {}", value)
+            if (value.isNotEmpty()) {
+                log.debug("DialogState.currentM3U8Url --> {}", value)
+            }
             field = value
         }
 

@@ -1,6 +1,5 @@
 package com.corner.ui.player
 
-import AppTheme
 import PlayerControlsTheme
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -54,10 +53,8 @@ import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.ui.player.vlcj.VlcjFrameController
 import com.corner.util.formatTimestamp
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import lumentv_compose.composeapp.generated.resources.Res
 import lumentv_compose.composeapp.generated.resources.speed
-import org.slf4j.LoggerFactory
 import kotlin.math.roundToLong
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
@@ -81,10 +78,8 @@ fun DefaultControls(
         }
     }
     val animatedTimestamp by animateFloatAsState(playerState.timestamp.toFloat())
-    // 收集全屏状态
     val isFullScreen = GlobalAppState.videoFullScreen.collectAsState()
     var showAspectRatioDropdown by remember { mutableStateOf(false) }
-    // 视频比例选项
     val aspectRatios = listOf(
         "" to "原始比例",
         "16:9" to "16:9",
@@ -122,9 +117,8 @@ fun DefaultControls(
                                     val position = event.changes.first().position
                                     mousePosition.value = IntOffset(position.x.toInt(), position.y.toInt())
                                     val relativeX = (position.x - sliderStart).coerceIn(0f, sliderWidth)
-                                    val percent = relativeX / sliderWidth
-                                    // 偏差 2-3秒
-                                    hoveredValue = percent * playerState.duration
+                                    val progress = relativeX / sliderWidth
+                                    hoveredValue = progress * playerState.duration.toFloat()
                                 }
                             }
                         },
@@ -140,7 +134,6 @@ fun DefaultControls(
                         )
                     },
                 )
-                // 使用 FlowRow 替代 Row，当空间不足时自动换行
                 FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -283,7 +276,7 @@ fun DefaultControls(
                                 .height(30.dp)
                         ) {
                             controller.speed(
-                                it ?: 1F
+                                it
                             )
                         }
                         IconButton({ controller.toggleFullscreen() }) {
@@ -385,7 +378,6 @@ fun SliderPreviewPopup(isShow: Boolean, offsetX: () -> Int, text: String) {
 /**
  * See [this Stack Overflow post](https://stackoverflow.com/a/67765652).
  */
-
 @Composable
 fun Speed(
     initialValue: Float,

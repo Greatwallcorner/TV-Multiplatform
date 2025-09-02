@@ -455,7 +455,7 @@ fun Dialog(
             Surface(
                 modifier = modifier.shadow(2.dp, shape = RoundedCornerShape(10.dp)).align(Alignment.Center)
                     .clickable(enabled = false, onClick = {}),
-                shape = RoundedCornerShape(15.dp),
+                shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(2.dp, Color.Gray)
             ) {
                 content()

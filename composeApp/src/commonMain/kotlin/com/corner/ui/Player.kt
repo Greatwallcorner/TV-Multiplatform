@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.corner.bean.PlayerStateCache
 import com.corner.bean.SettingStore
+import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.ui.nav.vm.DetailViewModel
 import com.corner.ui.player.DefaultControls
@@ -157,10 +158,7 @@ fun Player(
 
             // 左箭头 - 回退5秒
             keyEvent.key == Key.DirectionLeft && keyEvent.type == KeyEventType.KeyDown -> {
-                val currentTime = controller.state.value.timestamp
-                val newTime = (currentTime - 5000).coerceAtLeast(0)
-                controller.seekTo(newTime)
-                controller.showTips("快退5秒")
+                controller.backward("5s")
                 true
             }
 
@@ -320,7 +318,7 @@ fun Player(
             }
         }
         MediaInfoDialog(
-            Modifier.fillMaxWidth(0.5f).fillMaxHeight(0.4f),
+            Modifier.fillMaxWidth(0.6f).fillMaxHeight(0.5f),
             controller.state.value,
             showMediaInfoDialog.value
         ) {
@@ -334,42 +332,53 @@ fun MediaInfoDialog(modifier: Modifier, playerState: PlayerState, show: Boolean,
     val mediaInfo = rememberUpdatedState(playerState.mediaInfo)
     Dialog(modifier, showDialog = show, onClose = onClose) {
         val scrollbar = rememberLazyListState(0)
+        val formattedTime = Utils.formatMilliseconds(mediaInfo.value?.duration ?: 0)
+        val bitRate = if(mediaInfo.value?.bitRate == 0){
+            "未知"
+        }else{
+            mediaInfo.value?.bitRate
+        }
         Box {
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(30.dp),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.padding(30.dp),
-                state = scrollbar,
-                horizontalAlignment = Alignment.CenterHorizontally
+                state = scrollbar
             ) {
                 item {
-                    SelectionContainer {
-                        Text(text = AnnotatedString(mediaInfo.value?.url ?: ""))
+                    Text(
+                        text = "视频详情",
+                        style = MaterialTheme.typography.headlineSmall, // 可根据需要调整标题样式
+                        modifier = Modifier.padding(bottom = 10.dp)
+                    )
+
+                    Text("分辨率：${mediaInfo.value?.width ?: ""} * ${mediaInfo.value?.height ?: ""}")
+                    Text("视频编码格式：${ mediaInfo.value?.videoCodec ?: ""}")
+                    Text("编解码器说明：${mediaInfo.value?.codecDescription ?: ""}")
+                    Text("比特率：${bitRate}")
+                    Text("时长：${formattedTime}")
+                    Row(verticalAlignment = Alignment.Top) {
+                        Text("链接：")
+                        SelectionContainer {
+                            Text(
+                                text = AnnotatedString(mediaInfo.value?.url ?: ""),
+                                modifier = Modifier.padding(start = 10.dp)
+                            )
+                        }
                     }
-                    Spacer(Modifier.size(40.dp))
-                    Text("${mediaInfo.value?.width ?: ""} * ${mediaInfo.value?.height ?: ""}")
                 }
             }
             VerticalScrollbar(
                 rememberScrollbarAdapter(scrollbar),
                 modifier = Modifier.align(Alignment.CenterEnd).padding(vertical = 5.dp, horizontal = 8.dp),
                 style = defaultScrollbarStyle().copy(
-                    unhoverColor = Color.Gray.copy(0.45F),
-                    hoverColor = Color.DarkGray
+                    unhoverColor = Color.Gray.copy(0.3F),
+                    hoverColor = Color.DarkGray.copy(0.7F)
                 )
             )
         }
     }
 }
-
-//@Preview
-//@Composable
-//fun previewMediaInfoDialog(){
-//    AppTheme {
-//        MediaInfoDialog(Modifier.fillMaxSize(), MediaInfo(800, 1200, "http://xxxxxx.com/dddd"), true){
-//
-//        }
-//    }
-//}
 
 private fun createEmptyCursor(): Cursor {
     return Toolkit.getDefaultToolkit().createCustomCursor(

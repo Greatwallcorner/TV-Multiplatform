@@ -17,9 +17,13 @@ data class PlayerState(
 )
 
 data class MediaInfo(
-    val height:Int,
-    val width:Int,
-    val url:String
+    val height: Int,
+    val width: Int,
+    val url: String,
+    val videoCodec: String,
+    val bitRate: Int,
+    val duration: Long,
+    val codecDescription: String
 )
 
 enum class PlayState {

@@ -45,15 +45,11 @@ class VlcjFrameController(
     private var byteArray: ByteArray? = null
     private var info: ImageInfo? = null
     val imageBitmapState: MutableState<ImageBitmap?> = mutableStateOf(null)
-
     @Volatile
     private var isReleased = false
-
-    // 添加公开的getter方法
     fun isReleased(): Boolean = isReleased
 
     private var historyCollectJob: Job? = null
-
     private val _size = MutableStateFlow(0 to 0)
     override val size = _size.asStateFlow()
 
@@ -245,8 +241,7 @@ class VlcjFrameController(
             isReleased = true
 
             try {
-                log.debug("开始释放播放器资源")
-
+                log.debug("=====开始释放播放器资源=====")
                 // 确保在Swing线程中执行释放操作
                 if (!SwingUtilities.isEventDispatchThread()) {
                     SwingUtilities.invokeAndWait {
@@ -255,8 +250,7 @@ class VlcjFrameController(
                 } else {
                     doRelease()
                 }
-
-                log.debug("资源释放成功")
+                log.debug("=====资源释放成功=====")
             } catch (e: Throwable) {
                 log.error("释放播放器资源时出错：", e)
             }

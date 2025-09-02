@@ -71,6 +71,12 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
 
     var isLoadSeccessfy = MutableStateFlow(false)
 
+    // 视频播放状态
+    private var playerStartTime: Long = 0
+    private var playerRealStartTime: Long = 0 // 记录实际开始播放的时间
+    private var playerEndTime: Long = 0
+    private val DECODE_FAILURE_THRESHOLD = 5000L // 5秒阈值
+
     private val vlcjArgs = mutableListOf(
         "-q",                                   // 最低级别日志
         "--no-video-on-top",                    // 禁用窗口置顶
@@ -90,7 +96,6 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
                 info.append(" | 视频编码说明: ${track.codecDescription()}")
                 info.append(" | 分辨率: ${track.width()}x${track.height()}")
             }
-
             info.toString()
         } ?: "播放器未初始化"
     }
@@ -124,6 +129,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
             log.info("播放器初始化完成,开始播放")
             _playerReady.value = true
+            playerStartTime = System.currentTimeMillis()
 
             CoroutineScope(Dispatchers.IO).launch {
                 delay(1000) // 等待解码器初始化
@@ -143,7 +149,11 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
                         mediaInfo = MediaInfo(
                             url = mediaPlayer.media()?.info()?.mrl() ?: "",
                             height = trackInfo.height(),
-                            width = trackInfo.width()
+                            width = trackInfo.width(),
+                            videoCodec = trackInfo.codecName(),
+                            bitRate = trackInfo.bitRate(),
+                            duration = mediaPlayer.status().length(),
+                            codecDescription = trackInfo.codecDescription()
                         )
                     )
                 }
@@ -171,6 +181,10 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         override fun playing(mediaPlayer: MediaPlayer) {
             playerLoading = false
             playerPlayering = true
+            if (playerRealStartTime == 0L) {
+                playerRealStartTime = System.currentTimeMillis()
+                log.info("播放真正开始，设置实际开始时间: $playerRealStartTime")
+            }
             _state.update { it.copy(state = PlayState.PLAY) }
         }
 
@@ -187,6 +201,27 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         override fun finished(mediaPlayer: MediaPlayer) {
             log.info("finished")
             playerPlayering = false
+            playerEndTime = System.currentTimeMillis()
+
+            // 使用实际开始播放时间计算播放时长
+            val playDuration = if (playerRealStartTime > 0) {
+                playerEndTime - playerRealStartTime
+            } else {
+                playerEndTime - playerStartTime
+            }
+
+            log.info("播放时长: ${playDuration}ms")
+
+            // 重置实际开始时间
+            playerRealStartTime = 0
+
+            // 如果播放时长小于阈值，认为是解码失败，切换线路
+            if (playDuration < DECODE_FAILURE_THRESHOLD) {
+                log.warn("播放时长过短 (${playDuration}ms < ${DECODE_FAILURE_THRESHOLD}ms)，可能是解码失败，切换线路")
+                vm.nextFlag()
+                return
+            }
+
             _state.update { it.copy(state = PlayState.PAUSE) }
             scope.launch {
                 delay(500)
