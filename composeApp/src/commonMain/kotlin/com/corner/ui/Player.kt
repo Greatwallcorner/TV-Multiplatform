@@ -78,7 +78,7 @@ fun Player(
 ) {
     val scope = rememberCoroutineScope()
     val showControllerBar = remember(mrl) { mutableStateOf(true) }
-    val controlBarDuration = 5000L
+    val controlBarDuration = 3000L
     val hideJob = remember { mutableStateOf<Job?>(null) }
     val cursorJob = remember { mutableStateOf<Job?>(null) }
     var keepScreenOnJob: Timer? = remember { null }

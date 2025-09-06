@@ -215,7 +215,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                     .size(48.dp)
                                     .clip(CircleShape)
                             ) {
-                                // 更流畅的动画配置
                                 val rotation by animateFloatAsState(
                                     targetValue = if (model.isLoading) 360f else 0f,
                                     animationSpec = if (model.isLoading) {
@@ -228,8 +227,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                     },
                                     label = "refresh_rotation"
                                 )
-
-                                // 颜色过渡动画
                                 val iconTint by animateColorAsState(
                                     targetValue = if (!model.isLoading)
                                         MaterialTheme.colorScheme.onSecondaryContainer
@@ -238,7 +235,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                     animationSpec = tween(300),
                                     label = "icon_tint"
                                 )
-
                                 Icon(
                                     imageVector = Icons.Default.Autorenew,
                                     contentDescription = "刷新数据",
@@ -248,14 +244,14 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                     tint = iconTint
                                 )
                             }
-                        })
+                        }
+                    )
                 }
             }
+            //顶栏通知
             val mrl = derivedStateOf { model.currentPlayUrl }
-            // 添加顶栏通知
             if (openDialogState && showWebSocketDisconnected) {
                 Column(modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
-                    // 顶栏通知
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -372,8 +368,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
             }
             AnimatedVisibility(!isFullScreen.value) {
                 val searchResultList = derivedStateOf { model.quickSearchResult.toList() }
-
-                // 外层容器
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
@@ -504,7 +498,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                     }
                                     // 线路选择
                                     Flags(scope, vm)
-
                                     // 底部留白
                                     Spacer(modifier = Modifier.weight(1f))
                                 }
@@ -514,7 +507,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                 }
             }
         }
-
         //全屏选集弹窗
         if (isFullScreen.value && vm.state.value.showEpChooserDialog) {
             Dialog(
@@ -564,18 +556,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
         }
     }
 }
-
-/*
-@Composable
-private fun QualitySelector(vm: DetailViewModel) {
-    val urls = rememberUpdatedState(vm.state.value.currentUrl)
-    val showUrl =  derivedStateOf { (urls.value?.values?.size ?: 0) > 1 }
-
-    if (showUrl.value) {
-
-    }
-}
-*/
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun Flags(
@@ -789,7 +769,7 @@ private fun VodInfo(detail: Vod?) {
     }
 }
 
-// 新增可展开描述组件
+// 可展开描述组件
 @Composable
 private fun ExpandableDescription(
     label: String,
@@ -1014,7 +994,7 @@ fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EpisodeItem(
-    isSelected: Boolean, // 由父组件计算选中状态
+    isSelected: Boolean,
     episode: Episode,
     onSelect: (Episode) -> Unit,
     isLoading: Boolean,
@@ -1053,12 +1033,3 @@ fun EpisodeItem(
         )
     }
 }
-/*
-@androidx.compose.desktop.ui.tooling.preview.Preview
-@Composable
-fun previewEmptyShow() {
-    AppTheme {
-        emptyShow(onRefresh = { println("ddd") })
-    }
-}
- */
