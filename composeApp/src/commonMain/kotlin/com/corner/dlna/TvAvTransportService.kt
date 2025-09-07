@@ -1,4 +1,4 @@
-package upnp
+package com.corner.dlna
 
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.util.thisLogger
@@ -25,7 +25,6 @@ class TvAvTransportService : AbstractAVTransportService() {
             GlobalAppState.DLNAUrl.emit(currentURI)
             SnackBar.postMsg("投屏：$currentURI", type = SnackBar.MessageType.INFO)
         }
-//        Play.start(currentURI, "test")
         log.info("setAvTransportURI instance id: $instanceId currentURI: $currentURI currentURIMetaData: $currentURIMetaData")
     }
 

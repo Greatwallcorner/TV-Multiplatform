@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
@@ -186,10 +187,9 @@ fun WindowScope.VideoScene(
                 val isLoading by vm.isLoading
                 //加载配置文件时，调用了showProgress，通过监听showProgress的值来决定显示加载图标
                 val showProgress by GlobalAppState.showProgress.collectAsState()
-
                 if (!isInitialized){
                     emptyShow(
-                        onRefresh = { initConfig() },  // 点击重新初始化
+                        onRefresh = { initConfig() },
                         title = "初始化失败",
                         subtitle = "请检查配置文件地址或重新加载配置",
                         isLoading = showProgress
@@ -232,7 +232,6 @@ fun WindowScope.VideoScene(
                     state.animateScrollToItem(0)
                 }
             }
-
             FiltersDialog(Modifier.align(Alignment.BottomCenter), showFiltersDialog, vm) {
                 showFiltersDialog = false
             }
@@ -242,65 +241,57 @@ fun WindowScope.VideoScene(
             AnimatedVisibility(show.value) {
                 Box(Modifier.fillMaxSize()) {
                     Surface(
-                        modifier = Modifier.wrapContentHeight()
+                        modifier = Modifier
+                            .wrapContentHeight()
                             .wrapContentWidth()
                             .align(Alignment.BottomStart)
-                            .shadow(8.dp, shape = RoundedCornerShape(10.dp))
-                            .padding(1.dp),
-                        shape = RoundedCornerShape(10.dp)
+                            .padding(start = 16.dp, bottom = 16.dp) // 添加左边距16px和底边距16px
+                            .shadow(8.dp, shape = RoundedCornerShape(10.dp)),
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
                     ) {
-                        LazyRow {
-                            items(model.value.dirPaths) {
-                                HoverableText(text = it) {
-                                    SiteViewModel.viewModelScope.launch {
-                                        vm.clickFolder(
-                                            Vod(
-                                                vodId = model.value.dirPaths.subList(
-                                                    0,
-                                                    model.value.dirPaths.indexOf(it) + 1
-                                                ).joinToString("/")
+                        LazyRow(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp), // 减少内边距使组件更紧凑
+                            horizontalArrangement = Arrangement.spacedBy(2.dp) // 减少间距使组件更紧凑
+                        ) {
+                            itemsIndexed(model.value.dirPaths) { index, path ->
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    HoverableText(
+                                        text = path,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    ) {
+                                        SiteViewModel.viewModelScope.launch {
+                                            vm.clickFolder(
+                                                Vod(
+                                                    vodId = model.value.dirPaths.subList(
+                                                        0,
+                                                        index + 1
+                                                    ).joinToString("/")
+                                                )
+                                            )
+                                        }
+                                    }
+                                    if (index < model.value.dirPaths.size - 1) {
+                                        Text(
+                                            text = "/",
+                                            modifier = Modifier.padding(horizontal = 2.dp),
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                             )
                                         )
                                     }
                                 }
-                                Text(text = "/")
                             }
                         }
                     }
                 }
             }
-
-//            DirPath(vm = vm)
         }
     }
 }
-
-//@OptIn(ExperimentalAnimationApi::class)
-//@Composable
-//fun DirPath(showDialog: Boolean = false, vm: VideoViewModel){
-//    val state = vm.model.subscribeAsState()
-//    val show = derivedStateOf {
-//        state.value.dirPaths.size > 1
-//    }
-//    AnimatedVisibility(show.value){
-//        Box(modifier = Modifier.height(80.dp)
-//            .fillMaxHeight(0.3f)
-//            .align(Alignment.BottomStart)
-//            .shadow(8.dp, shape = RoundedCornerShape(10.dp)),
-//            shape = RoundedCornerShape(10.dp)
-//        ) {
-//            LazyRow {
-//                items(state.value.dirPaths){
-//                    HoverableText(text = it){
-//                        SiteViewModel.viewModelScope.launch {
-//                            vm.clickFolder(Vod(vodId = state.value.dirPaths.subList(0, state.value.dirPaths.indexOf(it)).joinToString("/")))
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

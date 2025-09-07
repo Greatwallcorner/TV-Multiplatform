@@ -64,8 +64,6 @@ fun WindowScope.RootContent(
         }
 
     }
-//    System.setProperty("native.encoding", "UTF-8")
-//    val isDebug = derivedStateOf { System.getProperty("org.gradle.project.buildType") == "debug" }
 
     val scope = rememberCoroutineScope()
     scope.launch{
@@ -125,7 +123,6 @@ fun WindowScope.RootContent(
 
                 composable(TVScreen.DLNAPlayerScreen.name) {
                     val viewModel = viewModel { DetailViewModel() }
-//                    viewModel.setPlayUrl(GlobalAppState.DLNAUrl.value ?: "")
                     DLNAPlayer(viewModel){
                         navController.popBackStack()
                     }
@@ -136,7 +133,4 @@ fun WindowScope.RootContent(
             LoadingIndicator(showProgress = showProgress.value,withOverlay = true)
         }
     }
-//        if(isDebug.value){
-//            FpsMonitor(Modifier)
-//        }
 }

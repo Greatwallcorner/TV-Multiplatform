@@ -7,25 +7,25 @@ import org.slf4j.LoggerFactory
 
 object DialogState {
     private val log = LoggerFactory.getLogger("DialogState")
-    // 新增标志位，记录用户是否选择在浏览器打开
+    // 记录用户是否选择在浏览器打开
     var userChoseOpenInBrowser by mutableStateOf(false)
     var showPngDialog = false
         private set
 
     var currentM3U8Url = ""
         set(value) {
-            log.debug("DialogState.currentM3U8Url --> {}", value)
+            if (value.isNotEmpty()) {
+                log.debug("DialogState.currentM3U8Url --> {}", value)
+            }
             field = value
         }
 
-    // 新增标志位，表明当前播放的视频链接是特殊链接
-    var isSpecialVideoLink by mutableStateOf(false)
+    // 表明当前播放的视频链接是否是特殊链接，用于判断是否需要弹出弹窗
+    var openDialogState by mutableStateOf(false)
 
-    // 切换特殊链接状态的方法
-    fun toggleSpecialVideoLink(isSpecial: Boolean) {
-        isSpecialVideoLink = isSpecial
+    fun changeDialogState(isSpecial: Boolean) {
+        openDialogState = isSpecial
     }
-
     fun showPngDialog(url: String) {
         showPngDialog = true
         currentM3U8Url = url

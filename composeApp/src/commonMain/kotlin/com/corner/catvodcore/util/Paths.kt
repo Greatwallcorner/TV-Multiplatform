@@ -9,7 +9,7 @@ import java.nio.file.Path
 object Paths {
 //    private val runPath = System.getProperty("user.dir")
     private val classPath = System.getProperty("java.class.path")
-    private val ApplicationName = "TV-Multiplatform"
+    private val ApplicationName = "Lumen-TV"
     private val log = LoggerFactory.getLogger("Paths")
 
     private val userDataDir = getUserDataDir()

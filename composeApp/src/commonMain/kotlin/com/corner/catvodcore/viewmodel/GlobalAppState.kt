@@ -18,16 +18,12 @@ import org.slf4j.LoggerFactory
 
 object GlobalAppState {
     private val log = LoggerFactory.getLogger(GlobalAppState::class.java)
-
-    // 从 SettingStore 加载初始主题状态
     val isDarkTheme = MutableStateFlow(try {
         SettingStore.getSettingItem(SettingType.THEME) == "dark"
     } catch (e: Exception) {
-        // 打印错误日志，方便排查问题
         e.printStackTrace()
         false
     })
-    // State Flows (保持不变)
     var showProgress = MutableStateFlow(false)
     val hotList = MutableStateFlow(listOf<HotData>())
     val chooseVod = mutableStateOf<Vod>(Vod())
@@ -38,23 +34,16 @@ object GlobalAppState {
     val closeApp = MutableStateFlow(false)
     val videoFullScreen = MutableStateFlow(false)
     val DLNAUrl = MutableStateFlow("")
-
-    // 协程管理改进点1：改用普通Job
     private val mainJob = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + mainJob)
-
-    // 服务管理改进点2：添加同步控制
     private val upnpServiceLock = Any()
     private var _upnpService: UpnpService? = null
     var upnpService: UpnpService?
         get() = synchronized(upnpServiceLock) { _upnpService }
         set(value) = synchronized(upnpServiceLock) { _upnpService = value }
 
-    // 保持不变
     var windowState: WindowState? = null
     var detailFrom = DetailFromPage.HOME
-
-    /* ========== 新增关键方法 ========== */
 
     fun cancelAllOperations(reason: String = "Normal shutdown") {
         if (!mainJob.isCancelled) {
@@ -62,9 +51,6 @@ object GlobalAppState {
             mainJob.cancel(reason)
         }
     }
-
-    /* ========== 清理流程改进 ========== */
-
     fun cleanupBeforeExit(onComplete: () -> Unit = {}) {
         if (mainJob.isCancelled) {
             onComplete()
@@ -73,44 +59,28 @@ object GlobalAppState {
 
         coroutineScope.launch {
             try {
-                log.info("开始执行清理操作...")
-
+                log.info("------------------开始执行清理操作------------------------")
                 // 1. 取消所有操作
                 cancelAllOperations("取消所有操作...")
-
                 // 2. 安全关闭UPnP
                 upnpService?.let {
                     it.shutdown()
                     upnpService = null
                     log.info("UPnP服务已关闭")
                 }
-
                 // 3. 清理JarLoader
                 JarLoader.clear()
-
                 // 4. 关闭websocket服务
                 BrowserUtils.cleanup()
-
                 // 5. 重置状态
                 resetAllStates()
-
-                log.info("清理操作执行成功！")
+                log.info("------------------清理操作执行成功！------------------------")
             } catch (e: Exception) {
-                log.error("清理失败", e)
+                log.error("清理失败:", e)
             } finally {
                 onComplete()
             }
         }
-    }
-
-    /* ========== 原有方法保持不变 ========== */
-
-    fun initWindowState(state: WindowState) {
-        windowState = state
-    }
-
-    fun clearHome() {
-        home.value = Site.get("", "")
     }
 
     fun toggleVideoFullScreen(): Boolean {
@@ -147,8 +117,6 @@ object GlobalAppState {
         }
     }
 }
-
-// 保持不变
 enum class DetailFromPage {
     SEARCH, DLNA, HOME
 }

@@ -53,7 +53,6 @@ fun FrameContainer(
             interactionSource = interactionSource,
             indication = null
         ) {
-            // onClick
             onClick()
         }
         .onPointerEvent(PointerEventType.Scroll) { e ->
@@ -66,7 +65,7 @@ fun FrameContainer(
         }, contentAlignment = Alignment.Center
     ) {
         val frameSizeCalculator = remember { FrameContainerSizeCalculator() }
-        // 添加状态同步
+
         LaunchedEffect(playerState.value.aspectRatio) {
             frameSizeCalculator.aspectRatio = playerState.value.aspectRatio
         }
@@ -131,7 +130,6 @@ fun FrameContainer(
                         )
                     }
                 }
-//                }
             }
         }
     }

@@ -24,20 +24,14 @@ class VlcJInit {
             if (notify) SnackBar.postMsg("VLC加载${if (discover) "成功" else "失败"}", type = SnackBar.MessageType.INFO)
         }
 
-        /**
-         * Vlc释放时要避免出现Invalid memory access问题
-         * */
-
         fun release() {
             if (isReleased) {
-                log.debug("VLC已全局释放，跳过")
+                log.debug("VLC已全局释放，跳过当前操作")
                 return
             }
-
             synchronized(this) {
                 if (isReleased) return
                 isReleased = true
-
                 try {
                     controller?.let { ctrl ->
                         if (ctrl.hasPlayer()) {
