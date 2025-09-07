@@ -90,7 +90,7 @@ fun DefaultControls(
     )
 
     PlayerControlsTheme {
-        Box(modifier.background(Color.Black.copy(alpha = 0.7f))) {
+        Box(modifier.fillMaxHeight().background(Color.Black.copy(alpha = 0.8f))) {
             SliderPreviewPopup(isShowPreviewTime.value, { mousePosition.value.x }, previewTimeText)
             Column(
                 modifier.padding(horizontal = 8.dp),

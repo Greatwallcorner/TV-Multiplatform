@@ -76,9 +76,7 @@ private val DarkColors = darkColorScheme(
 fun AppTheme(
   content: @Composable() () -> Unit
 ) {
-  // 收集 GlobalAppState.isDarkTheme 的状态，使用 val 声明变量
   val isDarkThemeState = GlobalAppState.isDarkTheme.collectAsState()
-  // 通过 value 属性获取 State 对象的值
   val isDarkTheme = isDarkThemeState.value
   val colors = if (!isDarkTheme) {
     LightColors
@@ -91,12 +89,10 @@ fun AppTheme(
     content = content
   )
 }
-
-// 播放器专用颜色扩展
 val PlayerLightColors = lightColorScheme(
-    primary = Color(0xFF4285F4),  // Google蓝
+    primary = Color(0xFF35BCF6),
     onPrimary = Color.White,
-    secondary = Color(0xFF34A853), // Google绿
+    secondary = Color(0xFF63C151),
     onSecondary = Color.White,
     surface = Color(0xFFF1F3F4),   // 浅灰白
     onSurface = Color(0xFF202124), // 深灰

@@ -35,21 +35,14 @@ fun Application.configureRouting() {
                 }
             }
         }
-
-//        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
-
         get("/") {
-            // 创建 File 对象
             val htmlFile = File("src/commonMain/resources/LumenTV Proxy Placeholder Webpage.html")
-            // 检查文件是否存在
             if (htmlFile.exists()) {
                 call.respondFile(htmlFile)
             } else {
-                // 文件不存在时返回错误信息
                 call.respondText("文件未找到", status = HttpStatusCode.NotFound)
             }
         }
-
         get("/postMsg") {
             val msg = call.request.queryParameters["msg"]
             if (msg?.isBlank() == true) {
@@ -58,17 +51,13 @@ fun Application.configureRouting() {
             }
             SnackBar.postMsg(msg!!)
         }
-
         /**
          * 播放器必须支持range请求 否则会返回完整资源 导致拨动进度条加载缓慢
          */
-
         get("/proxy") {
             val parameters = call.request.queryParameters
             val paramMap = parameters.toSingleValueMap().toMutableMap()
             paramMap.putAll(call.request.headers.toSingleValueMap())
-//            log.info("proxy param:{}", paramMap)
-            // 0 statusCode 1 content_type 2 body
             try {
                 val objects: Array<Any> = proxy(paramMap) ?: arrayOf()
                 if (objects.isEmpty()) {
@@ -110,20 +99,15 @@ fun Application.configureRouting() {
                     }
                 }
             } catch (e: IOException) {
-                // 静默处理预期内的IO异常
             } catch (e: Exception) {
                 log.error("proxy处理失败", e)
             }
         }
-
-        //添加缓存文件本地代理
         get("/proxy/m3u8") {
             val encodedUrl = call.request.queryParameters["url"] ?: run {
                 errorResp(call, "URL参数缺失")
                 return@get
             }
-
-            // 1. 解码并验证URL安全性
             val decodedUrl = try {
                 URLDecoder.decode(encodedUrl, "UTF-8").also { url ->
                     if (url.contains("proxy/m3u8") || !url.startsWith("https://")) {
@@ -135,8 +119,6 @@ fun Application.configureRouting() {
                 errorResp(call, "URL解码失败")
                 return@get
             }
-
-            // 2. 发起请求（代理不重复过滤）
             val client = OkHttpClient.Builder().build()
             try {
                 val content = client.newCall(Request.Builder().url(decodedUrl).build())
@@ -147,8 +129,6 @@ fun Application.configureRouting() {
                         }
                         response.body?.string() ?: ""
                     }
-
-                // 3. 返回原始内容（拦截器已预先处理过）
                 call.respondText(content, ContentType.Application.OctetStream)
             } catch (e: Exception) {
                 log.error("代理请求失败: URL=$decodedUrl", e)

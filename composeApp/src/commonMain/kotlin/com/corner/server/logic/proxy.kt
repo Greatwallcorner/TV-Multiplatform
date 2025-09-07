@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory
 
 fun proxy(params: Map<String, String>): Array<Any>? {
     when (params["do"]) {
-        "js" -> { /* js处理逻辑 */ }
-        "py" -> { /* py处理逻辑 */ }
+        "js" -> { /* js */ }
+        "py" -> { /* py */ }
         else -> return JarLoader.proxyInvoke(params)
     }
     return null
