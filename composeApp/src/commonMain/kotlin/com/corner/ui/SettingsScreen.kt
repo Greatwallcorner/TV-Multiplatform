@@ -32,8 +32,10 @@ import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,6 +89,7 @@ import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.util.M3U8FilterConfig
 import lumentv_compose.composeapp.generated.resources.LumenTV_icon_svg
 import org.slf4j.LoggerFactory
+import kotlin.math.roundToInt
 
 private val log = LoggerFactory.getLogger("SettingsScreen")
 
@@ -213,42 +216,118 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
 
                     // 仅在广告过滤开启时显示配置项
                     if (adFilterChecked) {
-                        var tsNameLenExtend by remember { mutableStateOf(config.value.tsNameLenExtend.toFloat()) }
-                        var theExtinfBenchmarkN by remember { mutableStateOf(config.value.theExtinfBenchmarkN.toFloat()) }
+                        var tsNameLenExtend: Int by remember { mutableStateOf(config.value.tsNameLenExtend) }
+                        var theExtinfBenchmarkN: Int by remember { mutableStateOf(config.value.theExtinfBenchmarkN) }
                         var violentFilterModeFlag by remember { mutableStateOf(config.value.violentFilterModeFlag) }
+
+                        // 同步配置变化到本地状态
+                        LaunchedEffect(config.value.tsNameLenExtend) {
+                            tsNameLenExtend = config.value.tsNameLenExtend
+                        }
+                        LaunchedEffect(config.value.theExtinfBenchmarkN) {
+                            theExtinfBenchmarkN = config.value.theExtinfBenchmarkN
+                        }
+                        LaunchedEffect(config.value.violentFilterModeFlag) {
+                            violentFilterModeFlag = config.value.violentFilterModeFlag
+                        }
 
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 16.dp)
                         ) {
-                            Text("TS 前缀长度容错值")
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("TS 前缀长度容错值")
+                                Text(
+                                    text = "${tsNameLenExtend.toInt()} (默认: 1)",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                             Slider(
-                                value = tsNameLenExtend,
-                                onValueChange = {
-                                    tsNameLenExtend = it
-                                    config.value.tsNameLenExtend = it.toInt()
+                                value = tsNameLenExtend.toFloat(),
+                                onValueChange = { newValue ->
+                                    // 使用四舍五入获得更准确的整数值
+                                    val newInt = newValue.roundToInt()
+                                    // 确保值在有效范围内（0到5）
+                                    val clampedValue = newInt.coerceIn(0, 5)
+                                    tsNameLenExtend = clampedValue
+                                    config.value = config.value.copy(tsNameLenExtend = clampedValue)
                                     SettingStore.setM3U8FilterConfig(config.value)
                                     showRestartDialog = true
                                 },
-                                valueRange = 1f..5f,
-                                steps = 4
+                                valueRange = 0f..5f,
+                                steps = 4 // 修正为5步，产生0-5共6个离散值
                             )
-
-                            Text("EXTINF 基准值")
+                            Text(
+                                text = "用于匹配TS文件名的前缀长度容错。当TS文件名与预期模式不完全匹配时，允许的前缀长度偏差值。设为0表示严格匹配，增大可提高容错能力。",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                            // 添加分割线
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("EXTINF 基准值")
+                                Text(
+                                    text = "${theExtinfBenchmarkN.toInt()} (默认: 5)",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                             Slider(
-                                value = theExtinfBenchmarkN,
-                                onValueChange = {
-                                    theExtinfBenchmarkN = it
-                                    config.value.theExtinfBenchmarkN = it.toInt()
+                                value = theExtinfBenchmarkN.toFloat(),
+                                onValueChange = { newValue ->
+                                    // 使用四舍五入获得更准确的整数值
+                                    val newInt = newValue.roundToInt()
+                                    // 确保值在有效范围内
+                                    val clampedValue = newInt.coerceIn(1, 10)
+                                    theExtinfBenchmarkN = newInt
+                                    config.value = config.value.copy(theExtinfBenchmarkN = clampedValue)
                                     SettingStore.setM3U8FilterConfig(config.value)
                                     showRestartDialog = true
                                 },
                                 valueRange = 1f..10f,
-                                steps = 9
+                                steps = 8 // 产生 10 个整数档位：1 到 10
                             )
-
-                            Text("启用暴力拆解模式")
+                            Text(
+                                text = "相同描述行阈值：用于判断是否进入广告段。若连续相同的 #EXTINF 行数超过此值，将触发广告过滤逻辑。默认值通常为 3~5。若正常内容被误判为广告，可调大；若广告漏过，可调小。",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                            // 添加分割线
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("暴力拆解模式")
+                                Text(
+                                    text = if (violentFilterModeFlag) "开启" else "关闭",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                             Switch(
                                 checked = violentFilterModeFlag,
                                 onCheckedChange = {
@@ -256,7 +335,17 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                                     config.value.violentFilterModeFlag = it
                                     SettingStore.setM3U8FilterConfig(config.value)
                                     showRestartDialog = true
-                                }
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                                )
+                            )
+                            Text(
+                                text = "暴力过滤模式：开启后将直接移除所有 #EXT-X-DISCONTINUITY 行（常用于广告插入点）。适用于复杂广告场景，但可能导致正常内容丢失（如节目切换）。仅在普通模式无法过滤广告时启用。",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 4.dp)
                             )
                         }
                     }
@@ -592,6 +681,41 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
+                }
+            }
+
+            // 爬虫搜索词设置项
+            item {
+                SettingCard(
+                    title = "爬虫搜索词设置",
+                    icon = Icons.Default.Search
+                ) {
+                    val crawlerSearchTerms = remember {
+                        mutableStateOf(
+                            model.value.settingList.getSetting(SettingType.CRAWLER_SEARCH_TERMS)?.value ?: ""
+                        )
+                    }
+
+                    OutlinedTextField(
+                        value = crawlerSearchTerms.value,
+                        onValueChange = { newValue ->
+                            crawlerSearchTerms.value = newValue
+                            SettingStore.setValue(SettingType.CRAWLER_SEARCH_TERMS, newValue)
+                            vm.sync()
+                        },
+                        label = { Text("搜索模式搜索词") },
+                        placeholder = { Text("请输入搜索词") },
+                        maxLines = 3,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    Text(
+                        text = "用于爬虫可用性功能的搜索模式搜索词，默认为“阿甘正传”",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
                 }
             }
 

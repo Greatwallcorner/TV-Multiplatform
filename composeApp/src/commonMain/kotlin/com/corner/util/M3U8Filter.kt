@@ -61,7 +61,7 @@ class M3U8Filter(
                         tsNameLen = theTsNameLen
                     }
 
-                    lastTsNameLen = theTsNameLen
+                    lastTsNameLen = theTsNameLen // 更新 lastTsNameLen
 
                     val tsNameIndex = extractNumberBeforeTs(line)
                     if (tsNameIndex == null) {
@@ -85,35 +85,40 @@ class M3U8Filter(
                             prevTsNameIndex = firstTsNameIndex - 1
                         }
 
-                        if (theTsNameLen != tsNameLen) {
-                            if (theTsNameLen == lastTsNameLen + 1 && tsNameIndex == prevTsNameIndex + 1) {
-                                if (theDiffIntTsN > 0) {
-                                    if (tsNameIndex == prevTsNameIndex + 1) {
-                                        tsType = 0 // ts命名模式
-                                        prevTsNameIndex = firstTsNameIndex - 1
-                                        log.info("识别ts模式0")
-                                        break
-                                    } else {
-                                        tsType = 2 // ts命名模式
-                                        log.info("识别ts模式2")
-                                        break
-                                    }
-                                }
-                                theNormalIntTsN++
-                                prevTsNameIndex = tsNameIndex
-                            } else {
-                                theDiffIntTsN++
-                            }
-                        } else {
+                        if (theTsNameLen != tsNameLen) { // 当前长度与第一个长度不同
+                            // lastTsNameLen 已经是 theTsNameLen
+                            // 原来的逻辑：if (theTsNameLen == lastTsNameLen + 1 && tsNameIndex == prevTsNameIndex + 1)
+                            // 这个条件永远为 false，因为它变成了 theTsNameLen == theTsNameLen + 1
+                            // 移除这个错误的条件，直接处理长度不同的情况
                             if (theDiffIntTsN > 0) {
+                                // 如果之前已经出现过长度不同的情况 (theDiffIntTsN > 0)
+                                if (tsNameIndex == prevTsNameIndex + 1) {
+                                    // 序列号连续，可能是模式0的一种特殊情况（虽然长度变了）
+                                    tsType = 0 // ts命名模式
+                                    prevTsNameIndex = firstTsNameIndex - 1
+                                    log.info("识别ts模式0 (长度变化但序号连续)")
+                                    break
+                                } else {
+                                    // 序列号不连续，进入模式2
+                                    tsType = 2 // ts命名模式
+                                    log.info("识别ts模式2 (长度变化且序号不连续)")
+                                    break
+                                }
+                            }
+                            // 如果 theDiffIntTsN == 0，说明这是第一次遇到长度不同的ts
+                            // 可能是广告或者另一种命名模式的开始，暂时认为是差异
+                            theDiffIntTsN++
+                        } else { // 当前长度与第一个长度相同
+                            if (theDiffIntTsN > 0) {
+                                // 之前有长度不同的ts，现在又相同了
                                 if (tsNameIndex == prevTsNameIndex + 1) {
                                     tsType = 0 // ts命名模式
                                     prevTsNameIndex = firstTsNameIndex - 1
-                                    log.info("识别ts模式0")
+                                    log.info("识别ts模式0 (长度恢复且序号连续)")
                                     break
                                 } else {
                                     tsType = 2 // ts命名模式
-                                    log.info("识别ts模式2")
+                                    log.info("识别ts模式2 (长度恢复但序号不连续)")
                                     break
                                 }
                             }
