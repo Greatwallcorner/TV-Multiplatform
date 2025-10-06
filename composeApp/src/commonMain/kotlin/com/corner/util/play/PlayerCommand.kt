@@ -42,17 +42,17 @@ interface PlayerCommand{
         return header
     }
 }
-
-object Default: PlayerCommand {
-    override fun title(title: String): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun start(time: String): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun subtitle(s: String): String {
-        TODO("Not yet implemented")
-    }
-}
+//
+//object Default: PlayerCommand {
+//    override fun title(title: String): String {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override fun start(time: String): String {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override fun subtitle(s: String): String {
+//        TODO("Not yet implemented")
+//    }
+//}

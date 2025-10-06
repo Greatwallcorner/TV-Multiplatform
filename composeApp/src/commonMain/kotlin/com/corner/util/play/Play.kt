@@ -45,6 +45,7 @@ class Play {
 fun getProcessBuilder(result: Result?, title: String?): ProcessBuilder? {
     if (result == null) return null
     val playerPath = SettingStore.getPlayerSetting()[1] as String
+
     if(SystemUtils.IS_OS_MAC){
         return if(checkPlayer(playerPath)){
          ProcessBuilder("open", "-a", playerPath, result.url.v()).redirectOutput(Paths.playerLog())
@@ -52,26 +53,24 @@ fun getProcessBuilder(result: Result?, title: String?): ProcessBuilder? {
             ProcessBuilder("open", result.url.v()).redirectOutput(Paths.playerLog())
         }
     }
-//    i
+
     val compare = File(playerPath).name.lowercase(Locale.getDefault())
-    if(compare.contains("potplayer")){
+    if(compare.contains("potplayer") && checkPlayer(playerPath)){
         return PotPlayer.getProcessBuilder(result,title ?: "TV", playerPath)
-    }else if(compare.contains("vlc")){
+    }else if(compare.contains("vlc") && checkPlayer(playerPath)){
         return VLC.getProcessBuilder(result, title ?: "TV", playerPath)
     }
-    else if(compare.contains("mpc-be")){
+    else if(compare.contains("mpc-be") && checkPlayer(playerPath)){
         return MPC.getProcessBuilder(result, title ?: "TV", playerPath)
     }
-    return Default.getProcessBuilder(result, title ?: "TV", playerPath)
+//    return Default.getProcessBuilder(result, title ?: "TV", playerPath)
+    return null
 }
 
 fun getProcessBuilder(url:String, title: String?): ProcessBuilder? {
     if (StringUtils.isBlank(url)) return null
     val playerPath = SettingStore.getPlayerSetting()[1] as String
-    if(StringUtils.isBlank(playerPath)) {
-        SnackBar.postMsg("未配置外部播放器路径", type = SnackBar.MessageType.WARNING)
-        return null
-    }
+
     if(SystemUtils.IS_OS_MAC){
         return if(checkPlayer(playerPath)){
             ProcessBuilder("open", "-a", playerPath, url)
@@ -79,19 +78,22 @@ fun getProcessBuilder(url:String, title: String?): ProcessBuilder? {
             ProcessBuilder("open", url)
         }
     }
-//    i
+
     val compare = File(playerPath).name.lowercase(Locale.getDefault())
-    if(compare.contains("potplayer")){
+    if(compare.contains("potplayer") && checkPlayer(playerPath)){
         return PotPlayer.getProcessBuilder(url,title ?: "TV", playerPath)
-    }else if(compare.contains("vlc")){
+    }else if(compare.contains("vlc") && checkPlayer(playerPath)){
         return VLC.getProcessBuilder(url, title ?: "TV", playerPath)
     }
-    else if(compare.contains("mpc-be")){
+    else if(compare.contains("mpc-be") && checkPlayer(playerPath)){
         return MPC.getProcessBuilder(url, title ?: "TV", playerPath)
     }
-    return Default.getProcessBuilder(url, title ?: "TV", playerPath)
+//    return Default.getProcessBuilder(url, title ?: "TV", playerPath)
+    return null
 }
 
+
+//default player [mpc-hc]
 fun getDefaultPlayerPath():String {
     val resourcesDir = File(System.getProperty("compose.application.resources.dir"))
     // 已经解压
@@ -141,15 +143,18 @@ fun findAndExtract(dirName:String, exePattern:String): String? {
     return exeList.first()
  }
 
+//check player file is exist and can execute
 private fun checkPlayer(playerPath:String):Boolean{
-//    if(StringUtils.isBlank(playerPath)){
-//        SnackBar.postMsg("请配置播放器路径")
-//        return false
-//    }
+    if(StringUtils.isBlank(playerPath)){
+        SnackBar.postMsg("请配置播放器路径",type = SnackBar.MessageType.WARNING)
+        log.warn("播放器路径为空")
+        return false
+    }
     val file = File(playerPath)
-//    if(!file.exists() || !file.canExecute()){
-//        SnackBar.postMsg("播放器文件不存在：$playerPath, 或不可执行")
-//        return false
-//    }
+    if(!file.exists() || !file.canExecute()){
+        SnackBar.postMsg("播放器文件不存在：$playerPath, 或不可执行",type = SnackBar.MessageType.ERROR)
+        log.error("播放器文件不存在：$playerPath, 或不可执行")
+        return false
+    }
     return StringUtils.isNotBlank(playerPath) && (file.exists() || file.canExecute())
 }

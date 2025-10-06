@@ -86,20 +86,6 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         "--preparse-timeout=500",               // 与预解析超时单位ms
     )
 
-    // 添加方法获取当前媒体信息
-    fun getCurrentMediaInfo(): String {
-        return player?.let { mediaPlayer ->
-            val info = StringBuilder()
-            // 获取视频轨道信息
-            mediaPlayer.media()?.info()?.videoTracks()?.forEach { track ->
-                info.append("视频编码格式: ${track.codecName()}")
-                info.append(" | 视频编码说明: ${track.codecDescription()}")
-                info.append(" | 分辨率: ${track.width()}x${track.height()}")
-            }
-            info.toString()
-        } ?: "播放器未初始化"
-    }
-
     override fun resetOpeningEnding() {
         _state.update { it.copy(opening = -1L, ending = -1L) }
         history.update { it?.copy(opening = -1L, ending = -1L) }
@@ -131,12 +117,6 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
             _playerReady.value = true
             playerStartTime = System.currentTimeMillis()
 
-            CoroutineScope(Dispatchers.IO).launch {
-                delay(1000) // 等待解码器初始化
-                val mediaInfo = getCurrentMediaInfo()
-                log.info("当前媒体信息: $mediaInfo")
-            }
-
             _state.update { it.copy(duration = mediaPlayer.status().length(), state = PlayState.PLAY) }
             play()
         }
@@ -157,6 +137,8 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
                         )
                     )
                 }
+                val mediaInfo = _state.value.mediaInfo
+                log.info("当前媒体信息: $mediaInfo")
             }
         }
 
@@ -230,7 +212,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
                     if (!vm.isLastEpisode) {
                         log.info("切换下一集")
                         vm.nextEP() // 非最后一集才切换
-                    }else{
+                    } else {
                         log.info("已经是最后一集了")
                         SnackBar.postMsg("已经是最后一集了", type = SnackBar.MessageType.INFO)
                     }
@@ -377,7 +359,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         }
     }
 
-    // 添加异步初始化方法
+    // 异步初始化方法
     override suspend fun initAsync() = withContext(Dispatchers.IO) {
         try {
             isCleaned = false
@@ -444,7 +426,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         return this
     }
 
-    // 添加带超时的异步加载方法
+    // 带超时的异步加载方法
     override suspend fun loadAsync(url: String, timeoutMillis: Long): PlayerController = withContext(Dispatchers.IO) {
         // 确保清理完成
         if (isCleaned) {
@@ -498,7 +480,7 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
                 if (StringUtils.isNotBlank(mrl)) {
                     scope.launch {
                         log.debug("play() -- mrl为空，重新加载")
-                        loadAsync(mrl!!,1000)
+                        loadAsync(mrl!!, 1000)
                     }
                     vm.syncHistory()
                 } else {
@@ -552,13 +534,13 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     override fun setVolume(value: Float) = catch {
         val now = System.currentTimeMillis()
 
-        // 1. 音量防抖：只有当音量变化超过阈值时才设置
+        // 音量防抖：只有当音量变化超过阈值时才设置
         if (abs(value - lastVolume) > VOLUME_THRESHOLD) {
             lastVolume = value
             player?.audio()?.setVolume((value * 100).toInt().coerceIn(0..150))
             _state.update { it.copy(volume = value) }
 
-            // 2. 日志防抖：限制日志输出频率
+            // 日志防抖：限制日志输出频率
             if (now - lastVolumeLogTime > LOG_DEBOUNCE_MS) {
                 showTips("音量：${player?.audio()?.volume()}")
                 lastVolumeLogTime = now

@@ -101,7 +101,7 @@ object SettingStore {
     private val defaultList = listOf(
         Setting("vod", "点播", ""),
         Setting("log", "日志级别", Level.DEBUG.levelStr),
-        Setting("player", "播放器", "false#"),
+        Setting("player", "播放器", "innie#"),
         Setting("proxy", "代理", "false#"),
         Setting("theme", "主题", "light"),
         Setting("adFilter", "广告过滤", "true"),
@@ -131,7 +131,7 @@ object SettingStore {
 
     fun reset(){
         settingFile = SettingFile(mutableListOf(), mutableMapOf())
-        initSetting()
+        settingFile.list.addAll(defaultList)
         write()
     }
 
@@ -205,17 +205,17 @@ object SettingStore {
 
     fun getM3U8FilterConfig(): M3U8FilterConfig {
         val configJson = getSettingItem(SettingType.M3U8_FILTER_CONFIG)
-        log.debug("获取 M3U8FilterConfig，原始JSON: \n{}", configJson)
+//        log.debug("获取 M3U8FilterConfig，原始JSON: \n{}", configJson)
         return if (configJson.isBlank()) {
             log.debug("M3U8FilterConfig JSON为空，返回默认配置")
             M3U8FilterConfig()
         } else {
             try {
                 val config = Jsons.decodeFromString<M3U8FilterConfig>(configJson)
-                log.debug("成功反序列化 M3U8FilterConfig: {}", config)
+//                log.debug("成功反序列化 M3U8FilterConfig: {}", config)
                 config
             } catch (e: Exception) {
-                log.error("反序列化 M3U8FilterConfig 失败，使用默认配置: ${e.message}")
+//                log.error("反序列化 M3U8FilterConfig 失败，使用默认配置: ${e.message}")
                 M3U8FilterConfig()
             }
         }
@@ -224,7 +224,6 @@ object SettingStore {
     fun setM3U8FilterConfig(config: M3U8FilterConfig) {
         log.debug("保存 M3U8FilterConfig: {}", config)
         val configJson = Jsons.encodeToString(config)
-        log.debug("序列化后的JSON: {}", configJson)
         setValue(SettingType.M3U8_FILTER_CONFIG, configJson)
     }
 
