@@ -70,7 +70,6 @@ object SiteViewModel {
                 3 -> {
                     val spider = ApiConfig.getSpider(site)
                     val homeContent = spider.homeContent(true)
-//                    log.debug("home: $homeContent")
                     ApiConfig.setRecent(site)
                     val rst: Result = Jsons.decodeFromString<Result>(homeContent)
                     if (rst.list.size > 0) result.value = rst
@@ -84,19 +83,18 @@ object SiteViewModel {
                     val params: MutableMap<String, String> = mutableMapOf()
                     params["filter"] = "true"
                     val homeContent = call(site, params, false)
-                    log.debug("home: $homeContent")
+//                    log.debug("home: $homeContent")
                     result.value = Jsons.decodeFromString<Result>(homeContent).also { this.result.value = it }
                 }
 
                 else -> {
-                    //  use 确保 Response 正确关闭
                     val homeContent: String =
                         Http.newCall(site.api, site.header.toHeaders()).execute().use { response ->
                             if (!response.isSuccessful) throw IOException("Unexpected code $response")
                             val body = response.body
                             body.string()
                         }
-                    log.debug("home: $homeContent")
+//                    log.debug("home: $homeContent")
                     fetchPic(site, Jsons.decodeFromString<Result>(homeContent)).also { result.value = it }
                 }
             }
@@ -205,7 +203,7 @@ object SiteViewModel {
     /**
      * 处理「类型4（参数请求类型）」站点的差异化逻辑
      */
-    private fun handleType4Site(site: Site, flag: String, id: String): Result? {
+    private fun handleType4Site(site: Site, flag: String, id: String): Result {
         // 类型4特有：构建请求参数
         val params = mutableMapOf(
             "play" to id,
@@ -284,7 +282,7 @@ object SiteViewModel {
         if (!url.v().endsWith(".m3u8", ignoreCase = true)) {
             return url
         }
-
+        SnackBar.postMsg("正在处理播放文件，请稍候...", type = SnackBar.MessageType.INFO)
         try {
             showProgress()
             // 定义请求 M3U8 文件时需要携带的请求头
@@ -294,7 +292,7 @@ object SiteViewModel {
                 "Accept-Language" to "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
                 "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
                 "DNT" to "1",
-                "Origin" to "https://hhjx.hhplayer.com",
+                "Origin" to "https://hhjx.hhplayer.com  ",
                 "Priority" to "u=1, i",
                 "Sec-Ch-Ua" to "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Microsoft Edge\";v=\"138\"",
                 "Sec-Ch-Ua-Mobile" to "?0",
@@ -308,6 +306,7 @@ object SiteViewModel {
                 "X-Requested-With" to "XMLHttpRequest"
             )
             val interceptor = M3U8AdFilterInterceptor.Interceptor()
+
             // 创建OkHttpClient并添加拦截器
             val client = OkHttpClient.Builder()
                 .addInterceptor(interceptor)
@@ -380,7 +379,6 @@ object SiteViewModel {
         } finally {
             hideProgress()
         }
-
     }
 
     /**
@@ -396,7 +394,7 @@ object SiteViewModel {
                 val keyUrl = when {
                     uri.startsWith("http") -> uri
                     uri.startsWith("/") -> {
-                        // 修复点：正确提取协议和域名部分
+                        // 正确提取协议和域名部分
                         val baseUri = java.net.URI(baseUrl)
                         "${baseUri.scheme}://${baseUri.host}$uri"
                     }

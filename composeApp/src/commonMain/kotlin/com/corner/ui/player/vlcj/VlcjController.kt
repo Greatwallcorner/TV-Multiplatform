@@ -119,6 +119,8 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
 
             _state.update { it.copy(duration = mediaPlayer.status().length(), state = PlayState.PLAY) }
             play()
+            val mediaInfo = _state.value.mediaInfo
+            log.info("当前媒体信息: $mediaInfo")
         }
 
         override fun videoOutput(mediaPlayer: MediaPlayer?, newCount: Int) {
@@ -137,8 +139,6 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
                         )
                     )
                 }
-                val mediaInfo = _state.value.mediaInfo
-                log.info("当前媒体信息: $mediaInfo")
             }
         }
 
