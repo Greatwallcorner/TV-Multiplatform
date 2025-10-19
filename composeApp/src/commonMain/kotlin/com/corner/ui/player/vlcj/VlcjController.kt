@@ -2,7 +2,7 @@ package com.corner.ui.player.vlcj
 
 import com.corner.bean.PlayerStateCache
 import com.corner.bean.SettingStore
-import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Vod
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.database.entity.History
 import com.corner.ui.nav.vm.DetailViewModel

@@ -6,11 +6,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -21,7 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.corner.bean.SettingStore
-import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Vod
 import com.corner.catvodcore.enum.Menu
 import com.corner.catvodcore.viewmodel.DetailFromPage
 import com.corner.catvodcore.viewmodel.GlobalAppState
@@ -43,7 +45,7 @@ fun WindowScope.RootContent(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
-    val toDetail = fun(it: Vod, from:DetailFromPage) {
+    val toDetail = fun(it: Vod, from: DetailFromPage) {
         GlobalAppState.chooseVod.value = it
         GlobalAppState.detailFrom = from
         navController.navigate(TVScreen.DetailScreen.name)
@@ -55,20 +57,14 @@ fun WindowScope.RootContent(
             Modifier.fillMaxSize().border(border = BorderStroke(0.dp, Color.Transparent))
         } else {
             Modifier.fillMaxSize().border(BorderStroke(1.dp, Color.FirefoxGray)).shadow(15.dp)
-//            if(SysVerUtil.isWin10()){
-//                Modifier.fillMaxSize().border(BorderStroke(1.dp, Color.FirefoxGray)).shadow(15.dp)
-//            }else{
-//                Modifier.fillMaxSize().border(BorderStroke(1.dp, Color.FirefoxGray), shape = RoundedCornerShape(10.dp))
-//                    .clip(RoundedCornerShape(10.dp)).shadow(elevation = 8.dp, ambientColor = Color.DarkGray, spotColor = Color.DarkGray)
-//            }
         }
 
     }
 
     val scope = rememberCoroutineScope()
-    scope.launch{
-        GlobalAppState.DLNAUrl.collect{
-            if(it.isNullOrBlank()) return@collect
+    scope.launch {
+        GlobalAppState.DLNAUrl.collect {
+            if (it.isNullOrBlank()) return@collect
             navController.navigate(TVScreen.DLNAPlayerScreen.name)
         }
     }
@@ -123,14 +119,14 @@ fun WindowScope.RootContent(
 
                 composable(TVScreen.DLNAPlayerScreen.name) {
                     val viewModel = viewModel { DetailViewModel() }
-                    DLNAPlayer(viewModel){
+                    DLNAPlayer(viewModel) {
                         navController.popBackStack()
                     }
                 }
             }
             SnackBar.SnackBarList()
             val showProgress = GlobalAppState.showProgress.collectAsState()
-            LoadingIndicator(showProgress = showProgress.value,withOverlay = true)
+            LoadingIndicator(showProgress = showProgress.value, withOverlay = true)
         }
     }
 }

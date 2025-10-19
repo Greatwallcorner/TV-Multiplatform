@@ -7,7 +7,7 @@ import cn.hutool.core.collection.CollectionUtil
 import cn.hutool.core.util.CharUtil
 import com.corner.bean.Setting
 import com.corner.bean.SettingType
-import com.corner.catvod.enum.bean.Site
+import com.corner.catvodcore.bean.Site
 import io.ktor.util.*
 import kotlinx.coroutines.Job
 import org.apache.commons.lang3.StringUtils

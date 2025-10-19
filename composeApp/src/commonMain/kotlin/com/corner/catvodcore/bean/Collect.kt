@@ -2,8 +2,6 @@ package com.corner.catvodcore.bean
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import com.corner.catvod.enum.bean.Site
-import com.corner.catvod.enum.bean.Vod
 
 data class Collect(
     var activated: MutableState<Boolean> = mutableStateOf(false),
@@ -13,7 +11,7 @@ data class Collect(
 ){
     companion object {
         fun all(): Collect {
-            val item: Collect = Collect(site = Site.get("all", "全部"),list = mutableListOf())
+            val item = Collect(site = Site.get("all", "全部"),list = mutableListOf())
             item.activated.value = true
             return item
         }

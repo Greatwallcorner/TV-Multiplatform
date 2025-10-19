@@ -15,7 +15,6 @@ import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.lang.reflect.Method
 import java.net.URLClassLoader
-import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 
 object JarLoader {
@@ -40,7 +39,9 @@ object JarLoader {
     }
 
     /**
-     * 改为迭代方式，不要使用递归，会出现问题
+     * 加载jar包
+     * @param key
+     * @param spider  jar路径
      * */
 
     fun loadJar(key: String, spider: String) {
@@ -93,12 +94,12 @@ object JarLoader {
             } catch (e: Exception) {
                 log.error(
                     """
-                加载失败！
-                原始路径: $currentSpider
-                解析后路径: ${currentProcessedUrl ?: "N/A"}
-                重试次数: $currentRetryCount/$MAX_RETRY_COUNT
-                错误类型: ${e.javaClass.simpleName}
-            """.trimIndent(), e
+                        加载失败！
+                        原始路径: $currentSpider
+                        解析后路径: ${currentProcessedUrl ?: "N/A"}
+                        重试次数: $currentRetryCount/$MAX_RETRY_COUNT
+                        错误类型: ${e.javaClass.simpleName}
+                    """.trimIndent(), e
                 )
 
                 if (currentRetryCount < MAX_RETRY_COUNT) {
@@ -112,7 +113,7 @@ object JarLoader {
     }
 
     /**
-     * 如果在配置文件种使用的相对路径， 下载的时候使用的全路径 如果的判断md5是否一致的时候使用相对路径 就会造成重复下载
+     * 如果在配置文件种使用的相对路径， 下载的时候使用的全路径 如果判断的md5是否一致的时候使用相对路径 就会造成重复下载
      */
     private fun parseJarUrl(jar: String): String {
         if (jar.startsWith("file") || jar.startsWith("http")) return jar
@@ -120,7 +121,7 @@ object JarLoader {
     }
 
     private fun load(key: String, jar: File) {
-        log.debug("load jar {}", jar)
+        log.debug("load jar {},jaKey {}", jar,key)
         loaders[key] = URLClassLoader(arrayOf(jar.toURI().toURL()), this.javaClass.classLoader)
         putProxy(key)
         invokeInit(key)
@@ -132,7 +133,7 @@ object JarLoader {
             val method = clazz!!.getMethod("proxy", Map::class.java)
             methods[key] = method
         } catch (e: Exception) {
-//            e.printStackTrace()
+            e.printStackTrace()
         }
     }
 
@@ -142,7 +143,7 @@ object JarLoader {
             val method = clazz?.getMethod("init")
             method?.invoke(clazz)
         } catch (e: Exception) {
-//            e.printStackTrace()
+            e.printStackTrace()
         }
     }
 
@@ -155,7 +156,7 @@ object JarLoader {
             val loader = loaders[jaKey] ?: throw IllegalStateException("Loader is null for JAR: $jar")
             val classPath = "${Constant.catVodSpider}.${api.replace("csp_", "")}"
             val spider: Spider =
-                loader!!.loadClass(classPath).getDeclaredConstructor()
+                loader.loadClass(classPath).getDeclaredConstructor()
                     .newInstance() as Spider
             spider.init(ext)
             spiders[spKey] = spider
@@ -171,7 +172,7 @@ object JarLoader {
         log.debug("download jar file {} to:{}", jar, jarPath)
 
         return Http.Get(jar).execute().use { response ->
-            val body = response.body ?: throw java.io.IOException("Empty response body")
+            val body = response.body
             Paths.write(jarPath, body.bytes())
         }
     }
@@ -185,33 +186,23 @@ object JarLoader {
                 log.error("未找到代理方法，md5: $md5")
                 return null
             }
-            // 过滤或验证参数值
-            val safeParams = params.mapValues { entry ->
-                // 检查是否是有效的 base64 字符串
-                if (isValidBase64(entry.value)) {
-                    entry.value
-                } else {
-                    entry.value // 保持原值，不尝试解码
-                }
+
+            val safeParams = params.toMap() // 保持原值，避免不必要的 Base64 检查
+
+            val result = proxy.invoke(null, safeParams)
+            return if (result != null && result::class.java.isArray) {
+                (result as Array<*>).map { it as Any }.toTypedArray()
+            } else {
+                null
             }
 
-            proxy?.invoke(null, safeParams) as Array<Any>
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
     }
 
-    private fun isValidBase64(str: String): Boolean {
-        return try {
-            Base64.getDecoder().decode(str)
-            true
-        } catch (e: IllegalArgumentException) {
-            false
-        }
-    }
-
-    fun SetRecent(jar: String?) {
+    fun setRecentJar(jar: String?) {
         recent = jar
     }
 }

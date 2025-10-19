@@ -32,9 +32,6 @@ data class Flag (
             if(!episodes.contains(episode)) episodes.add(episode)
         }
         episodes.sortBy { it.number }
-//        episodes.sortWith(Comparator<Episode> { o1, o2 ->
-//            o1.name.compareTo(o2.name)
-//        })
     }
 
     fun find(remarks: String, strict: Boolean): Episode? {

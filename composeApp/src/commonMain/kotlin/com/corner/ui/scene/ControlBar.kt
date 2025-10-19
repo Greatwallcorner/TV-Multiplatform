@@ -31,8 +31,8 @@ private val log = LoggerFactory.getLogger("ControlBar")
 
 @Composable
 fun ControlBar(
-    title: @Composable () -> Unit = {},
-    modifier: Modifier = Modifier.height(64.dp), // 更紧凑的高度
+    title: (@Composable () -> Unit)? = null,
+    modifier: Modifier = Modifier.height(64.dp),
     leading: @Composable (() -> Unit)? = null,
     center: @Composable() (() -> Unit?)? = null,
     actions: @Composable RowScope.() -> Unit = {}
@@ -54,8 +54,10 @@ fun ControlBar(
                     horizontalArrangement = Arrangement.Start
                 ) {
                     leading?.invoke()
-                    Spacer(modifier = Modifier.width(8.dp).thenIf(leading != null))
-                    title()
+                    if (leading != null && title != null) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    title?.invoke()
                 }
             }
 
@@ -90,6 +92,7 @@ fun ControlBar(
         )
     }
 }
+
 
 @Composable
 private fun RowScope.WindowControlButtons() {
@@ -128,11 +131,8 @@ private fun RowScope.WindowControlButtons() {
         contentColor = MaterialTheme.colorScheme.error,
         iconTint = Color.White,
         onClick = { // 在关闭应用时
-            GlobalAppState.cleanupBeforeExit {
-                // 确保清理完成后再退出
-                log.info("清理完成，即将退出")
-                GlobalAppState.closeApp.value = true
-            }
+            log.info("Close App")
+            GlobalAppState.closeApp.value = true
         }
     )
 }

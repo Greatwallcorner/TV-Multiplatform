@@ -63,7 +63,20 @@ class PlayerLifecycleManager(
         }
     }
 
-    // 状态可转换检查函数
+    /**
+     * 安全地执行状态转换
+     * @param targetState 目标状态
+     * @param action 状态转换动作
+     * @return 转换是否成功执行
+     */
+    public suspend fun transitionTo(targetState: PlayerLifecycleState, action: suspend () -> Result<Unit>): Result<Unit> {
+        return if (canTransitionTo(targetState)) {
+            action()
+        } else {
+            Result.failure(IllegalStateException("Cannot transition to $targetState from current state ${lifecycleState.value}"))
+        }
+    }
+
     fun canTransitionTo(target: PlayerLifecycleState): Boolean {
         return isValidTransition(lifecycleState.value, target)
     }

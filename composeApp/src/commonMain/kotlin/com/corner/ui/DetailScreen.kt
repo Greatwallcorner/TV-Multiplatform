@@ -51,8 +51,8 @@ import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.bean.enums.PlayerType
 import com.corner.bean.getPlayerSetting
-import com.corner.catvod.enum.bean.Vod
-import com.corner.catvod.enum.bean.Vod.Companion.isEmpty
+import com.corner.catvodcore.bean.Vod
+import com.corner.catvodcore.bean.Vod.Companion.isEmpty
 import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.util.Utils
 import com.corner.catvodcore.viewmodel.GlobalAppState

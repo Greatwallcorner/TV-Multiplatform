@@ -86,8 +86,10 @@ import java.awt.datatransfer.DataFlavor
 import java.io.File
 import java.net.URI
 import androidx.compose.runtime.collectAsState
+import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.util.M3U8FilterConfig
+import com.github.catvod.bean.Doh
 import lumentv_compose.composeapp.generated.resources.LumenTV_icon_svg
 import org.slf4j.LoggerFactory
 import kotlin.math.roundToInt
@@ -519,7 +521,27 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                             }
                         }
                         Text(
-                            text = "需要配置点播源才能获取到视频内容",
+                            text = "需要配置点播源才能获取到视频内容\n" +
+                                    " \n" +
+                                    "格式：\n" +
+                                    "file://C:\\\\json\\\\config.json \n" +
+                                    "或\n" +
+                                    "http://example.com/config.json \n" +
+                                    "或\n" +
+                                    "{\n" +
+                                    "  \"spider\": \"jar路径;md5;校验值\",\n" +
+                                    "  \"sites\": [\n" +
+                                    "    {\n" +
+                                    "      \"key\": \"唯一标识\",\n" +
+                                    "      \"name\": \"显示名称\",\n" +
+                                    "      \"type\": 3,\n" +
+                                    "      \"api\": \"接口类名\",\n" +
+                                    "      \"searchable\": 0,\n" +
+                                    "      \"changeable\": 0,\n" +
+                                    "      \"ext\": {}\n" +
+                                    "    }\n" +
+                                    "  ]\n" +
+                                    "}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 4.dp)
@@ -813,6 +835,80 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                     )
                 }
             }
+            item {
+                SettingCard(
+                    title = "DNS over HTTPS 设置",
+                    icon = Icons.Default.Security
+                ) {
+                    val dohEnabled = remember {
+                        mutableStateOf(SettingStore.getSettingItem(SettingType.DOH_ENABLED).toBoolean())
+                    }
+                    val dohServer = remember {
+                        mutableStateOf(SettingStore.getSettingItem(SettingType.DOH_SERVER))
+                    }
+                    val dohServers = Doh.defaultDoh().filter { it.name != "System" } // 过滤掉System选项
+
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        // DoH 启用开关
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = if (dohEnabled.value) "DoH：开启" else "DoH：关闭",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Switch(
+                                checked = dohEnabled.value,
+                                onCheckedChange = { enabled ->
+                                    dohEnabled.value = enabled
+                                    SettingStore.setValue(SettingType.DOH_ENABLED, enabled.toString())
+                                    // 应用DoH设置
+                                    applyDohSetting(enabled, dohServer.value)
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                                )
+                            )
+                        }
+
+                        // DoH 服务器选择（仅在启用时显示）
+                        if (dohEnabled.value) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
+                                Text(
+                                    text = "DoH 服务器",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                // 服务器选择按钮
+                                dohServers.forEach { server ->
+                                    RadioButtonRow(
+                                        text = server.name,
+                                        selected = dohServer.value == server.name,
+                                        onClick = {
+                                            dohServer.value = server.name
+                                            SettingStore.setValue(SettingType.DOH_SERVER, server.name)
+                                            // 应用DoH设置
+                                            applyDohSetting(true, server.name)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        Text(
+                            text = "DNS over HTTPS (DoH) 可以提高DNS查询的安全性和隐私性。开启后，DNS查询将通过HTTPS加密传输。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
+                    }
+                }
+            }
 
             // 重置按钮
             item {
@@ -842,7 +938,8 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                                 onClick = {
                                     SettingStore.reset()
                                     vm.sync()
-                                    GlobalAppState.isDarkTheme.value = SettingStore.getSettingItem(SettingType.THEME) == "dark"
+                                    GlobalAppState.isDarkTheme.value =
+                                        SettingStore.getSettingItem(SettingType.THEME) == "dark"
                                     SnackBar.postMsg("重置设置,重启生效", type = SnackBar.MessageType.INFO)
                                     showConfirmDialog = false
                                 }
@@ -887,6 +984,35 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
     if (showRestartDialog) {
         SnackBar.postMsg("重启生效", type = SnackBar.MessageType.INFO)
         showRestartDialog = false
+    }
+}
+
+// 单选按钮行组件
+@Composable
+fun RadioButtonRow(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.primary
+            )
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(start = 8.dp)
+        )
     }
 }
 
@@ -1294,6 +1420,25 @@ fun openBrowser(url: String) {
     if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
         Desktop.getDesktop().browse(URI(url))
     }
+}
+
+fun applyDohSetting(enabled: Boolean, serverName: String) {
+    if (enabled) {
+        val doh = Doh.defaultDoh().find { it.name == serverName }
+        doh?.let {
+            Http.setDoh(it) // Apply the DoH setting to Http
+            SnackBar.postMsg("已启用DoH: $serverName", type = SnackBar.MessageType.INFO)
+        }
+    } else {
+        // 禁用DoH，重置为系统默认DNS
+        resetDohSetting()
+        SnackBar.postMsg("已禁用DoH", type = SnackBar.MessageType.INFO)
+    }
+}
+
+fun resetDohSetting() {
+    // 通过反射或添加方法来重置DoH设置
+    Http.resetDoh()
 }
 
 //@Composable

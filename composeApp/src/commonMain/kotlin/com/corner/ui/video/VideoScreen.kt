@@ -43,8 +43,8 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.Brush
-import com.corner.catvod.enum.bean.Site
-import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Site
+import com.corner.catvodcore.bean.Vod
 import com.corner.catvodcore.bean.Type
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.enum.ConfigType
@@ -696,13 +696,13 @@ fun ClassRow(
                     .zIndex(1f) // 确保在上方但不阻挡交互
                     .background(
                         Brush.horizontalGradient(
-                            0f to MaterialTheme.colorScheme.surface,
+                            0f to MaterialTheme.colorScheme.background,
                             1f to Color.Transparent
                         )
                     )
             )
 
-            // 右侧渐隐效果 - 使用zIndex和限制高度
+            // 右侧渐隐效果
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
@@ -712,7 +712,7 @@ fun ClassRow(
                     .background(
                         Brush.horizontalGradient(
                             0f to Color.Transparent,
-                            1f to MaterialTheme.colorScheme.surface
+                            1f to MaterialTheme.colorScheme.background
                         )
                     )
             )
@@ -746,8 +746,8 @@ fun ChooseHomeDialog(
     val enableAdvancedMode by SpiderTestUtil.enableAdvancedMode.collectAsState()
     AnimatedVisibility(
         visible = showDialog && !isClosing,
-        enter = EnterTransition.None, // 完全禁用进入动画
-        exit = ExitTransition.None    // 完全禁用退出动画
+        enter = EnterTransition.None, // 禁用进入动画
+        exit = ExitTransition.None    // 禁用退出动画
     ) {
         Dialog(
             onDismissRequest = onClose,

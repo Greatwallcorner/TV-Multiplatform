@@ -1,4 +1,4 @@
-package com.corner.catvod.enum.bean
+package com.corner.catvodcore.bean
 
 import kotlinx.serialization.Serializable
 
@@ -8,7 +8,6 @@ data class Parse(
     var type: Int,
     var url: String,
     var ext: Ext? = null
-
 )
 
 @Serializable

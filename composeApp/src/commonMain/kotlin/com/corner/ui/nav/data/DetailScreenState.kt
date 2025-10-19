@@ -1,6 +1,6 @@
 package com.corner.ui.nav.data
 
-import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Vod
 import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.Url

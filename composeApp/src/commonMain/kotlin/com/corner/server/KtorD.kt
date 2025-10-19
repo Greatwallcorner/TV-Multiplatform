@@ -22,7 +22,7 @@ object KtorD {
      * https://ktor.io/docs/configuration-file.html#predefined-properties
      */
     suspend fun init() {
-        log.info("KtorD init start")
+        log.info("KtorD Init")
         ports = 9978
         do {
             try {
@@ -51,13 +51,9 @@ object KtorD {
     }
 
     fun stop() {
+        log.info("KtorD stop")
         server?.stop()
     }
-
-    fun getWebPlayerPath(url: String): String {
-        return "http://localhost:$ports/static?url=${Base64.encode(url)}"
-    }
-
 }
 
 private fun Application.module() {

@@ -1,8 +1,8 @@
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import com.corner.catvod.enum.bean.Site
-import com.corner.catvod.enum.bean.Vod
-import com.corner.catvod.enum.bean.Vod.Companion.setVodFlags
+import com.corner.catvodcore.bean.Site
+import com.corner.catvodcore.bean.Vod
+import com.corner.catvodcore.bean.Vod.Companion.setVodFlags
 import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.Url
@@ -277,12 +277,14 @@ object SiteViewModel {
      * @param url 包含 M3U8 文件地址的 Url 对象
      * @return 处理后的本地代理 Url 对象，若处理失败则返回原始 Url 对象
      */
-    private fun processM3U8(url: Url): Url {
+    private fun processM3U8(url: Url,postMsg: Boolean = true): Url {
         // 如果不是 .m3u8 文件，直接返回原始 Url 对象
         if (!url.v().endsWith(".m3u8", ignoreCase = true)) {
             return url
         }
-        SnackBar.postMsg("正在处理播放文件，请稍候...", type = SnackBar.MessageType.INFO)
+        if (postMsg){
+            SnackBar.postMsg("正在处理播放文件，请稍候...", type = SnackBar.MessageType.INFO)
+        }
         try {
             showProgress()
             // 定义请求 M3U8 文件时需要携带的请求头
@@ -367,7 +369,7 @@ object SiteViewModel {
                 val nestedUrl = match.value.let {
                     if (it.startsWith("http")) it else "${url.v().substringBeforeLast("/")}/$it"
                 }
-                processM3U8(Url().add(nestedUrl)).v() // 递归处理
+                processM3U8(Url().add(nestedUrl), false).v() // 递归处理
             }
 
             // 缓存内容并返回代理URL

@@ -2,6 +2,7 @@ package com.corner.util
 
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
+import com.corner.catvodcore.bean.Site
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
@@ -68,7 +69,7 @@ object SpiderTestUtil {
 
     private suspend fun testSpiderSimpleMode(
         siteKey: String,
-        site: com.corner.catvod.enum.bean.Site,
+        site: Site,
         onStatusChange: (String, SpiderStatus) -> Unit,
         job: Job
     ) {
@@ -118,7 +119,7 @@ object SpiderTestUtil {
 
     private suspend fun testSpiderAdvancedMode(
         siteKey: String,
-        site: com.corner.catvod.enum.bean.Site,
+        site: Site,
         onStatusChange: (String, SpiderStatus) -> Unit,
         job: Job
     ) {
@@ -192,7 +193,7 @@ object SpiderTestUtil {
 
     private suspend fun testSpiderHttpConnectivity(
         siteKey: String,
-        site: com.corner.catvod.enum.bean.Site,
+        site: Site,
         onStatusChange: (String, SpiderStatus) -> Unit,
         job: Job
     ) {
@@ -287,7 +288,7 @@ object SpiderTestUtil {
         onStatusChange(siteKey, status)
     }
 
-    private fun getTestUrl(site: com.corner.catvod.enum.bean.Site): String {
+    private fun getTestUrl(site: Site): String {
         if (site.api.isNotEmpty() && site.api.startsWith("http")) {
             return site.api
         }

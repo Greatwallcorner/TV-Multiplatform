@@ -73,7 +73,7 @@ class PlayerStateCache:Cache{
     }
 
     fun add(key:String, value: String){
-        map.put(key,value)
+        map[key] = value
     }
 
     fun get(key: String):String?{
@@ -94,7 +94,10 @@ enum class SettingType(val id: String) {
     THEME("theme"),
     AD_FILTER("adFilter"),
     M3U8_FILTER_CONFIG("m3u8FilterConfig"),
-    CRAWLER_SEARCH_TERMS("crawlerSearchTerms");
+    CRAWLER_SEARCH_TERMS("crawlerSearchTerms"),
+    DOH_ENABLED("dohEnabled"),
+    DOH_SERVER("dohServer");
+
 }
 
 object SettingStore {
@@ -106,7 +109,9 @@ object SettingStore {
         Setting("theme", "主题", "light"),
         Setting("adFilter", "广告过滤", "true"),
         Setting("m3u8FilterConfig", "M3U8 过滤配置", ""),
-        Setting("crawlerSearchTerms", "爬虫搜索词", "")
+        Setting("crawlerSearchTerms", "爬虫搜索词", ""),
+        Setting("dohEnabled", "DoH启用", "false"),
+        Setting("dohServer", "DoH服务器", "Tencent")
     )
 
     private var settingFile = SettingFile(mutableListOf<Setting>(), mutableMapOf())
@@ -158,8 +163,9 @@ object SettingStore {
     }
 
     private fun initSetting() {
+        // 初始化设置文件
         val file = Paths.setting()
-        if (file.exists() && settingFile.list.size == 0) {
+        if (file.exists() && settingFile.list.isEmpty()) {
             settingFile = Jsons.decodeFromString<SettingFile>(Files.readString(file))
             if (settingFile.list.size != defaultList.size) {
                 defaultList.forEach { setting ->
@@ -169,10 +175,13 @@ object SettingStore {
                 }
             }
         }
-        if (settingFile.list.size == 0) {
+        // 初始化缓存
+        if (settingFile.list.isEmpty()) {
             settingFile.list.addAll(defaultList)
             Files.write(file, Jsons.encodeToString(settingFile).toByteArray())
         }
+        // 初始化 M3U8FilterConfig
+        initM3U8FilterConfig()
     }
 
     fun getHistoryList(): Set<String> {
@@ -207,7 +216,6 @@ object SettingStore {
         val configJson = getSettingItem(SettingType.M3U8_FILTER_CONFIG)
 //        log.debug("获取 M3U8FilterConfig，原始JSON: \n{}", configJson)
         return if (configJson.isBlank()) {
-            log.debug("M3U8FilterConfig JSON为空，返回默认配置")
             M3U8FilterConfig()
         } else {
             try {
@@ -219,6 +227,11 @@ object SettingStore {
                 M3U8FilterConfig()
             }
         }
+    }
+
+    fun initM3U8FilterConfig(){
+        val filterConfig = getM3U8FilterConfig()
+        log.debug("加载广告过滤配置: {}", filterConfig)
     }
 
     fun setM3U8FilterConfig(config: M3U8FilterConfig) {

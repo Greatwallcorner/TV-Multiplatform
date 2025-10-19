@@ -1,13 +1,12 @@
-package com.corner.catvod.enum.bean
+package com.corner.catvodcore.bean
 
-import com.corner.catvodcore.bean.Episode
-import com.corner.catvodcore.bean.Flag
 import com.corner.catvodcore.util.Utils
 import com.corner.database.entity.History
 import com.corner.util.Constants
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("Vod")
@@ -50,7 +49,7 @@ data class Vod(
         }
 
         fun Vod.isEmpty(): Boolean {
-            return org.apache.commons.lang3.StringUtils.isBlank(vodId) || vodFlags.isEmpty()
+            return StringUtils.isBlank(vodId) || vodFlags.isEmpty()
         }
 
         fun Vod.setCurrentFlag(idx: Int) {
@@ -166,7 +165,6 @@ data class Vod(
         vodFlags.forEach {
             it.activated = flag.flag == it.flag
         }
-//        flag.episodes.indexOf()
         return flag
     }
 

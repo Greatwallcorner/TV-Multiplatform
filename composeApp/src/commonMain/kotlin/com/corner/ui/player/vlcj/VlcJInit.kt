@@ -33,6 +33,7 @@ class VlcJInit {
                 if (isReleased) return
                 isReleased = true
                 try {
+                    log.info("Stop Vlcj Player")
                     controller?.let { ctrl ->
                         if (ctrl.hasPlayer()) {
                             ctrl.release()

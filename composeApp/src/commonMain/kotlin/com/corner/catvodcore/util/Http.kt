@@ -28,6 +28,7 @@ class Http {
             // 设置 OkHttpClient 的日志级别为 FINE
             Logger.getLogger(OkHttpClient::class.java.name).level = Level.FINE
         }
+
         private var doh: DnsOverHttps? = null
         private var client: OkHttpClient? = null
         private var selector: ProxySelect? = null
@@ -79,8 +80,9 @@ class Http {
 
             return trustManager
         }
+
         private val builder: OkHttpClient.Builder
-            get(){
+            get() {
                 val dispatcher = Dispatcher()
                 return OkHttpClient().newBuilder().connectTimeout(10, TimeUnit.SECONDS)
                     .proxy(KtorClient.getProxy())
@@ -95,10 +97,18 @@ class Http {
 
 
         fun dns(): Dns {
-            return if (doh == null) Dns.SYSTEM else doh!!
+            return if (doh == null) {
+                println("[DNS Setting]Using SYSTEM DNS")
+                Dns.SYSTEM
+            } else {
+                println("[DNS Setting]Using DoH DNS: ${doh!!.url}")
+                doh!!
+            }
         }
 
+
         fun setDoh(doh: Doh) {
+            println("[DNS Setting]Setting DoH: ${doh.name}, URL: ${doh.url}")
             val dnsClient =
                 OkHttpClient().newBuilder().cache(Cache(Paths.doh(), 8000))
                     .callTimeout(Duration.of(5, ChronoUnit.SECONDS))
@@ -107,6 +117,15 @@ class Http {
                 DnsOverHttps.Builder().client(dnsClient).bootstrapDnsHosts(doh.hosts).url(doh.url.toHttpUrl()).build()
             client?.dispatcher?.executorService?.shutdownNow()
             client = builder.build()
+            println("[DNS Setting]DoH configured successfully")
+        }
+
+        fun resetDoh() {
+            println("[DNS Setting]Resetting DoH to system DNS")
+            Companion.doh = null
+            client?.dispatcher?.executorService?.shutdownNow()
+            client = builder.build()
+            println("[DNS Setting]DoH reset to system DNS successfully")
         }
 
         fun setProxy(proxy: String) {
@@ -158,7 +177,7 @@ class Http {
                 .apply { checkBaseAuth(httpUrl, this) }
                 .build()
 
-            // 2. 最小化修改：仅在需要自定义超时时创建新Client
+            // 仅在需要自定义超时时创建新Client
             return if (connectTimeout != 15L || readTimeout != 15L) {
                 client().newBuilder()
                     .connectTimeout(connectTimeout, TimeUnit.SECONDS)
@@ -187,7 +206,7 @@ class Http {
             }
         }
 
-        private fun buildUrl(url: String, params:Map<String, String>): HttpUrl {
+        private fun buildUrl(url: String, params: Map<String, String>): HttpUrl {
             val builder: HttpUrl.Builder = Objects.requireNonNull(url.toHttpUrlOrNull())!!.newBuilder()
             for ((key, value) in params.entries)
                 builder.addQueryParameter(key, value)
@@ -197,6 +216,7 @@ class Http {
         fun newCall(url: String, headers: Headers, params: Map<String, String>): Call {
             return client().newCall(Request.Builder().url(buildUrl(url, params)).headers(headers).build())
         }
+
         fun newCall(url: String, headers: Headers, body: RequestBody): Call {
             return client().newCall(Request.Builder().url(url.toHttpUrl()).headers(headers).post(body).build())
         }

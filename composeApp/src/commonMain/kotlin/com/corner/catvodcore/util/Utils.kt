@@ -1,10 +1,12 @@
 package com.corner.catvodcore.util
 
+import cn.hutool.core.util.SystemPropsUtil
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.database.Db
 import com.corner.util.Constants
 import com.google.common.net.HttpHeaders
 import org.apache.commons.lang3.StringUtils
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileInputStream
 import java.math.BigInteger
@@ -12,13 +14,15 @@ import java.net.URI
 import java.security.MessageDigest
 import java.util.*
 
+private var log = LoggerFactory.getLogger("Utils")
+
 object Utils {
 
     // 可下载
     private val prefix = listOf("magnet")
 
-    fun isDownloadLink(str:String):Boolean{
-        prefix.forEach { if(str.startsWith(it)) return true }
+    fun isDownloadLink(str: String): Boolean {
+        prefix.forEach { if (str.startsWith(it)) return true }
         return false
     }
 
@@ -34,14 +38,14 @@ object Utils {
         }
     }
 
-    fun md5(str:String):String{
+    fun md5(str: String): String {
         try {
-            if(StringUtils.isBlank(str)) return ""
+            if (StringUtils.isBlank(str)) return ""
             val digest = MessageDigest.getInstance("MD5")
             val bytes = digest.digest(str.toByteArray())
             val bigInteger = BigInteger(1, bytes)
             val stringBuilder = StringBuilder(bigInteger.toString(16))
-            while(stringBuilder.length < 32) stringBuilder.insert(0, "0")
+            while (stringBuilder.length < 32) stringBuilder.insert(0, "0")
             return stringBuilder.toString().lowercase()
         } catch (e: Exception) {
             return ""
@@ -50,6 +54,7 @@ object Utils {
     }
 
     var webHttpHeaderMap: HashMap<String, String> = HashMap()
+
     /**
      * @param referer
      * @param cookie 多个cookie name=value;name2=value2
@@ -63,22 +68,22 @@ object Utils {
 
     fun webHeaders(referer: String): HashMap<String, String> {
         if (webHttpHeaderMap.isEmpty()) {
-                if (webHttpHeaderMap.isEmpty()) {
-                    webHttpHeaderMap = HashMap<String, String>()
-                    //                    webHttpHeaderMap.put(HttpHeaders.CONTENT_TYPE, ContentType.Application.INSTANCE.getJson().getContentType());
+            if (webHttpHeaderMap.isEmpty()) {
+                webHttpHeaderMap = HashMap<String, String>()
+                //                    webHttpHeaderMap.put(HttpHeaders.CONTENT_TYPE, ContentType.Application.INSTANCE.getJson().getContentType());
 //                    webHttpHeaderMap.put(HttpHeaders.ACCEPT_LANGUAGE, "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2");
-                    webHttpHeaderMap.put(
-                        org.apache.http.HttpHeaders.CONNECTION,
-                        "keep-alive"
-                    )
-                    webHttpHeaderMap.put(
-                        org.apache.http.HttpHeaders.USER_AGENT,
-                        Constants.ChromeUserAgent
-                    )
-                    webHttpHeaderMap.put(org.apache.http.HttpHeaders.ACCEPT, "*/*")
-                }
+                webHttpHeaderMap.put(
+                    org.apache.http.HttpHeaders.CONNECTION,
+                    "keep-alive"
+                )
+                webHttpHeaderMap.put(
+                    org.apache.http.HttpHeaders.USER_AGENT,
+                    Constants.ChromeUserAgent
+                )
+                webHttpHeaderMap.put(org.apache.http.HttpHeaders.ACCEPT, "*/*")
+            }
         }
-        if(StringUtils.isNotBlank(referer)) {
+        if (StringUtils.isNotBlank(referer)) {
             val uri = URI.create(referer)
             val u = uri.scheme + "://" + uri.host
             webHttpHeaderMap[org.apache.http.HttpHeaders.REFERER] = u
@@ -128,7 +133,7 @@ object Utils {
         }
     }
 
-    fun getHistoryKey(key:String, id:String): String {
+    fun getHistoryKey(key: String, id: String): String {
         return key + Db.SYMBOL + id + Db.SYMBOL + ApiConfig.api.cfg?.id!!
     }
 
@@ -140,14 +145,41 @@ object Utils {
 
         return if (days > 0) {
             "%d天 %02d:%02d:%02d".format(days, hours, minutes, seconds)
-        }else if(hours > 0){
+        } else if (hours > 0) {
             "%02d:%02d:%02d".format(hours, minutes, seconds)
-        }else{
+        } else {
             "%02d:%02d".format(minutes, seconds)
         }
     }
 
+    fun printSystemInfo() {
+        val s = StringBuilder("\n")
+        val logo = """
+            __                                  _______    __
+           / /   __  ______ ___  ___  ____     /_  __/ |  / /
+          / /   / / / / __ `__ \/ _ \/ __ \     / /  | | / / 
+         / /___/ /_/ / / / / / /  __/ / / /    / /   | |/ /  
+        /_____/\__,_/_/ /_/ /_/\___/_/ /_/    /_/    |___/  
+    """.trimIndent()
 
-//    fun parse
+        getSystemPropAndAppend("java.version", s)
+        getSystemPropAndAppend("java.home", s)
+        getSystemPropAndAppend("os.name", s)
+        getSystemPropAndAppend("os.arch", s)
+        getSystemPropAndAppend("os.version", s)
+        getSystemPropAndAppend("user.dir", s)
+        getSystemPropAndAppend("user.home", s)
 
+        val yellowBolo = "\u001b[33;1m"     // 33=黄色, 1=加粗
+        val reset = "\u001b[0m"             // 重置颜色
+
+        log.info("{}\n{}\n系统信息：{}{}", yellowBolo, logo, s.toString(), reset)
+    }
+
+    private fun getSystemPropAndAppend(key: String, s: StringBuilder) {
+        val v = SystemPropsUtil.get(key)
+        if (v.isNotBlank()) {
+            s.append(key).append(":").append(v).append("\n")
+        }
+    }
 }
