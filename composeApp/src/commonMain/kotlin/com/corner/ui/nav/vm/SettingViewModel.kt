@@ -17,13 +17,13 @@ class SettingViewModel: BaseViewModel() {
     val state: StateFlow<SettingScreenState> = _state
 
     fun sync() {
-        _state.update { it.copy(settingList = SettingStore.getSettingList(), version = _state.value.version + 1,) }
+        _state.update { it.copy(settingList = SettingStore.getSettingList(), version = _state.value.version + 1) }
     }
 
     fun getConfigAll() {
         scope.launch {
             val flow = Db.Config.getAll().firstOrNull() ?: emptyList()
-            _state.update { it.copy(dbConfigList = flow.toMutableList(),) }
+            _state.update { it.copy(dbConfigList = flow.toMutableList()) }
         }
     }
     fun deleteHistoryById(config: Config) {

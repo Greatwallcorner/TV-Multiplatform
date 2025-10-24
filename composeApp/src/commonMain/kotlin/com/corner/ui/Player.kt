@@ -137,6 +137,7 @@ fun Player(
     DisposableEffect(mrl) {
         scope.launch {
             if (StringUtils.isNotBlank(mrl)) {
+                player_log.debug("userTriggered : {},自动加载 mrl: {}", userTriggered,!userTriggered)
                 if (!userTriggered) {
                     controller.load(mrl)
                 }

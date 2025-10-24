@@ -9,25 +9,18 @@ import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
 
 interface PlayerController {
     val state: StateFlow<PlayerState>
-
     var showTip: MutableStateFlow<Boolean>
     var tip: MutableStateFlow<String>
-
     var history:MutableStateFlow<History?>
-
-    var playerReady: StateFlow<Boolean>
-
     var endingHandled: Boolean
-
     var playerLoading:Boolean
-
-    var playerPlayering:Boolean
+    var playerPlaying:Boolean
+    fun isPlayerInstanceReady():Boolean
     fun load(url: String): PlayerController
     fun onMediaPlayerReady(mediaPlayer: EmbeddedMediaPlayer)
     fun doWithMediaPlayer(block: (MediaPlayer) -> Unit)
-    suspend fun initAsync()
     suspend fun stopAsync()
-    suspend fun loadAsync(url: String, timeoutMillis: Long = 10000): PlayerController
+    suspend fun loadURL(url: String, timeoutMillis: Long = 10000): PlayerController
     fun play()
     fun setAspectRatio(aspectRatio: String)
     fun getAspectRatio(): String

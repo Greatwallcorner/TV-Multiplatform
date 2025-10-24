@@ -321,7 +321,10 @@ object SiteViewModel {
                 .build()
 
             val content = client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) throw IOException("下载失败: ${response.code}")
+                if (!response.isSuccessful) {
+                    log.error("下载 M3U8 文件失败，状态码: ${response.code}")
+                    return url
+                }
                 response.body.string()
             }
 

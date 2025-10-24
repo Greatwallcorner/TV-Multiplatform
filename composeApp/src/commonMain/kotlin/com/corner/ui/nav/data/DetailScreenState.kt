@@ -20,5 +20,6 @@ data class DetailScreenState(
     val playResult: Result? = null,
     val loadingMessage: String = "",
     var isCleaning: Boolean = false,
-    var isBuffering: Boolean = false
+    var isBuffering: Boolean = false,
+    var isDLNA: Boolean = false
 )

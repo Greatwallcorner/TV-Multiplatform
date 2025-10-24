@@ -6,13 +6,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -119,9 +117,7 @@ fun WindowScope.RootContent(
 
                 composable(TVScreen.DLNAPlayerScreen.name) {
                     val viewModel = viewModel { DetailViewModel() }
-                    DLNAPlayer(viewModel) {
-                        navController.popBackStack()
-                    }
+                    DLNAPlayer(viewModel) { navController.popBackStack() }
                 }
             }
             SnackBar.SnackBarList()

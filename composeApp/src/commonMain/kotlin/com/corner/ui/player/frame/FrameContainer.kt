@@ -43,6 +43,9 @@ fun FrameContainer(
     val playerState = controller.state.collectAsState()
     val bitmap by remember { controller.imageBitmapState }
     val interactionSource = remember { MutableInteractionSource() }
+    val isControllerReady by derivedStateOf { // 播放器就绪
+        controller.hasPlayer() && !controller.isReleased()
+    }
     Box(
         modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant)
         .combinedClickable(
@@ -122,12 +125,21 @@ fun FrameContainer(
 
                 else -> {
                     if (bitmap == null) {
-                        emptyShow(
-                            modifier = Modifier.align(Alignment.Center),
-                            title = "未加载到视频",
-                            subtitle = "请检查网络连接",
-                            showRefresh = false
-                        )
+                        if (!isControllerReady) {
+                            // 播放器未就绪时显示加载提示
+                            ProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center),
+                                text = "播放器正在加载"
+                            )
+                        } else {
+                            // 播放器就绪但无内容时显示空状态
+                            emptyShow(
+                                modifier = Modifier.align(Alignment.Center),
+                                title = "未加载到视频",
+                                subtitle = "请检查网络连接",
+                                showRefresh = false
+                            )
+                        }
                     }
                 }
             }
@@ -137,7 +149,10 @@ fun FrameContainer(
 
 @Composable
 fun ProgressIndicator(modifier: Modifier, text: String = "加载中...", progression: Float = -1f) {
-    Column(modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         if (progression != -1f) {
             CircularProgressIndicator(
                 progress = { progression / 100 },
@@ -157,6 +172,7 @@ fun ProgressIndicator(modifier: Modifier, text: String = "加载中...", progres
         )
     }
 }
+
 
 class FrameContainerSizeCalculator {
     var srcWidth = 0

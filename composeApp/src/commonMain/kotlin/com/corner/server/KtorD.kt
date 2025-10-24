@@ -1,6 +1,5 @@
 package com.corner.server
 
-import cn.hutool.core.codec.Base64
 import com.corner.server.plugins.configureRouting
 import io.ktor.http.*
 import io.ktor.server.application.*

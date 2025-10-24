@@ -8,8 +8,6 @@ import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.catvodcore.bean.Site
 import com.corner.catvodcore.bean.Vod
-import com.corner.catvodcore.loader.JarLoader
-import com.corner.util.BrowserUtils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -65,8 +63,6 @@ object GlobalAppState {
     fun hideProgress() {
         showProgress.update { false }
     }
-
-    fun isShowProgress(): Boolean = showProgress.value
 
     fun resetAllStates() {
         showProgress = MutableStateFlow(false)

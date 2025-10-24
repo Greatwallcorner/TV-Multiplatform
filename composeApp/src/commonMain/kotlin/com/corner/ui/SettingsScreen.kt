@@ -244,7 +244,7 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                             ) {
                                 Text("TS 前缀长度容错值")
                                 Text(
-                                    text = "${tsNameLenExtend.toInt()} (默认: 1)",
+                                    text = "$tsNameLenExtend (默认: 1)",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -979,7 +979,6 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
             contentPadding = PaddingValues(16.dp)  // 可调整内边距
         )
     }
-
     // 显示重启提示弹窗
     if (showRestartDialog) {
         SnackBar.postMsg("重启生效", type = SnackBar.MessageType.INFO)
@@ -1075,7 +1074,7 @@ private val logLevel = listOf("INFO", "DEBUG")
 enum class SideButtonType {
     LEFT, MID, RIGHT
 }
-
+@Suppress("unused")
 @Composable
 fun SideButton(
     choosen: Boolean,

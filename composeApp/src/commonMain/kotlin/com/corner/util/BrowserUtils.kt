@@ -115,8 +115,8 @@ object BrowserUtils {
                 // 从 viewModel 的状态中获取当前选中的剧集 URL
                 val currentSelectedEpNumber = detailViewModel.currentSelectedEpNumber
                 // 从状态数据里找到对应的剧集
-                val currentEpisode = detailViewModel.state.value.detail.subEpisode.find { it ->
-                    it.number == currentSelectedEpNumber
+                val currentEpisode = detailViewModel.state.value.detail.subEpisode.find { ep ->
+                    ep.number == currentSelectedEpNumber
                 }
                 val episodeName =detailViewModel.state.value.detail.vodName ?: ""
                 val episodeNumber = currentEpisode?.number

@@ -72,14 +72,6 @@ fun WindowScope.DLNAPlayer(vm:DetailViewModel, onClickBack:() -> Unit) {
         }
     }
 
-    LaunchedEffect(Unit) {
-        val initialUrl = GlobalAppState.DLNAUrl.value
-        if (!initialUrl.isNullOrEmpty()) {
-            isUrlReady.value = true
-//            vm.setPlayUrl(initialUrl)
-        }
-    }
-
     DisposableEffect(Unit) {
         val job = scope.launch {
             GlobalAppState.DLNAUrl

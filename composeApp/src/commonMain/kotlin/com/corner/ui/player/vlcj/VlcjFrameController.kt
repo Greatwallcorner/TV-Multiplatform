@@ -45,6 +45,7 @@ class VlcjFrameController(
     private var byteArray: ByteArray? = null
     private var info: ImageInfo? = null
     val imageBitmapState: MutableState<ImageBitmap?> = mutableStateOf(null)
+
     @Volatile
     private var isReleased = false
     fun isReleased(): Boolean = isReleased
@@ -167,12 +168,13 @@ class VlcjFrameController(
     override fun load(url: String): PlayerController {
         scope.launch {
             log.info("load - 开始加载视频...")
-            controller.loadAsync(url, 1000)
+            controller.loadURL(url, 1000)
             controller.stop()
             log.info("load - 视频加载完成，开始初始化播放器")
-            controller.play()
-            delay(1000)
+            controller.play()//url变化时播放视频
+            delay(500)
             speed(controller.history.value?.speed?.toFloat() ?: 1f)
+            log.debug("load - 播放历史位置: ${controller.history.value?.position}")
             seekTo(max(controller.history.value?.position ?: 0L, history.value?.opening ?: 0L))
         }
         return controller
@@ -181,7 +183,7 @@ class VlcjFrameController(
     override fun vlcjFrameInit() {
         log.info("播放器初始化")
         try {
-            val lifecycleManager = PlayerLifecycleManager(controller, scope)
+            val lifecycleManager = PlayerLifecycleManager(controller)
             controller.setLifecycleManager(lifecycleManager)
             controller.init()
             controller.player?.videoSurface()?.set(callbackSurFace)
@@ -201,6 +203,7 @@ class VlcjFrameController(
     }
 
     fun setControllerHistory(history: History) {
+        log.debug("VlcjFrameController - 设置历史记录{}", history)
         controller.scope.launch {
             controller.history.emit(history)
         }
@@ -302,10 +305,4 @@ class VlcjFrameController(
     fun hasPlayer(): Boolean {
         return controller.player != null
     }
-
-    //代理showTips方法
-    fun showTips(tips: String) {
-        controller.showTips(tips)
-    }
-
 }

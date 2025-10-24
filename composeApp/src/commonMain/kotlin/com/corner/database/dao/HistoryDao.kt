@@ -138,7 +138,7 @@ interface HistoryDao {
 //
 //}
 
-
+@Suppress("unused")
 fun History.getSiteKey():String{
     return key.split(Db.SYMBOL)[0]
 }

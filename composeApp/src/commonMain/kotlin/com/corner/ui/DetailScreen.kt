@@ -66,7 +66,6 @@ import com.corner.ui.scene.*
 import com.corner.ui.video.QuickSearchItem
 import com.corner.util.BrowserUtils
 import com.corner.util.Constants
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 
@@ -497,7 +496,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                         }
                                     }
                                     // 线路选择
-                                    Flags(scope, vm)
+                                    Flags(vm)
                                     // 底部留白
                                     Spacer(modifier = Modifier.weight(1f))
                                 }
@@ -556,10 +555,10 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
         }
     }
 }
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun Flags(
-    scope: CoroutineScope,
     vm: DetailViewModel,
 ) {
     val state by vm.state.collectAsState()
@@ -597,7 +596,7 @@ private fun Flags(
                     ) {
                         itemsIndexed(
                             items = detail.vodFlags
-                        ) { index, flag ->
+                        ) { _, flag ->
                             val isSelected = flag.flag == currentFlag
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
@@ -707,7 +706,6 @@ private fun quickSearchResult(
 
 @Composable
 private fun VodInfo(detail: Vod?) {
-    val typography = MaterialTheme.typography
     MaterialTheme.colorScheme
 
     Column(
@@ -964,14 +962,13 @@ fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
                         isSelected = episode.number == vm.currentSelectedEpNumber,
                         episode = episode,
                         onSelect = {
-                            vm.chooseEp(it) { it ->
-                                uriHandler.openUri(it)
+                            vm.chooseEp(it) { url ->
+                                uriHandler.openUri(url)
                             }
                             onUserSelectEpisode()
                             DialogState.resetBrowserChoice()
                         },
-                        isLoading = episode.activated && vm.videoLoading.value,
-                        modifier = Modifier.fillMaxWidth()
+                        isLoading = episode.activated && vm.videoLoading.value
                     )
                 }
             }
@@ -997,8 +994,7 @@ fun EpisodeItem(
     isSelected: Boolean,
     episode: Episode,
     onSelect: (Episode) -> Unit,
-    isLoading: Boolean,
-    modifier: Modifier = Modifier
+    isLoading: Boolean
 ) {
     TooltipArea(
         tooltip = {
