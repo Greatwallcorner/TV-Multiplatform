@@ -14,6 +14,7 @@ import com.corner.catvodcore.util.Urls
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.database.Db
 import com.corner.database.entity.Config
+import com.corner.ui.scene.SnackBar
 import com.corner.util.createCoroutineScope
 import com.corner.util.isEmpty
 import com.github.catvod.crawler.Spider

@@ -17,6 +17,7 @@ import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.init.Init
 import com.corner.init.generateImageLoader
 import com.corner.ui.Util
+import com.corner.ui.scene.SnackBar
 import com.seiko.imageloader.LocalImageLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

@@ -187,7 +187,6 @@ class FrameContainerSizeCalculator {
     val dstSize: IntSize get() = IntSize(dstWidth.roundToInt(), dstHeight.roundToInt())
 
     fun calculate(imageSize: IntSize, containerSize: Size) {
-        // 修复：过滤无效尺寸（避免宽高为0导致NaN）
         srcWidth = if (imageSize.width > 0) imageSize.width else 1280
         srcHeight = if (imageSize.height > 0) imageSize.height else 720
 

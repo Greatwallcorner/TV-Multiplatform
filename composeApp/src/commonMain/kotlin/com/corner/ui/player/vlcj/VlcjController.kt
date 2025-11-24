@@ -11,6 +11,7 @@ import com.corner.ui.player.PlayState
 import com.corner.ui.player.PlayerController
 import com.corner.ui.player.PlayerLifecycleManager
 import com.corner.ui.player.PlayerState
+import com.corner.ui.scene.SnackBar
 import com.corner.util.catch
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,18 +49,18 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     private var originSpeed = 1.0F
     private var currentSpeed = 1.0F
     var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    override var endingHandled = false      // 视频结束处理，避免重复操作
-    private var cleanupJob: Job? = null     // 添加清理任务跟踪变量
-    private var isCleaned = false    // 添加清理状态标志
+    override var endingHandled = false          // 视频结束处理，避免重复操作
+    private var cleanupJob: Job? = null         // 添加清理任务跟踪变量
+    private var isCleaned = false               // 添加清理状态标志
 
     // 视频播放状态
     private var playerStartTime: Long = 0
-    private var playerRealStartTime: Long = 0 // 记录实际开始播放的时间
+    private var playerRealStartTime: Long = 0   // 记录实际开始播放的时间
     private var playerEndTime: Long = 0
-    private val decodeFailureTureShold = 5000L // 5秒阈值
+    private val decodeFailureTureShold = 5000L  // 5秒阈值
 
     companion object {
-        private var pluginCacheChecked = false              // 插件缓存检查
+        private var pluginCacheChecked = false  // 插件缓存检查
     }
 
     private val vlcjArgs = mutableListOf(
@@ -71,11 +72,11 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
         "--preparse-timeout=500",               // 与预解析超时单位ms
     )
 
-    override fun isPlayerInstanceReady(): Boolean {
-        return player != null // 检查 player 实例是否已创建
+    override fun isPlayerInstanceReady(): Boolean {// 检查 player 实例是否已创建
+        return player != null
     }
 
-    override fun resetOpeningEnding() {
+    override fun resetOpeningEnding() {//重置开尾和开头
         _state.update { it.copy(opening = -1L, ending = -1L) }
         history.update { it?.copy(opening = -1L, ending = -1L) }
     }
@@ -241,7 +242,6 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
 
                     // 每 25 秒同步一次进度，但要确保播放器已真正开始播放且时间大于0
                     if (newTime > 0 && (newTime / 1000 % 25) == 0L) {
-                        log.debug("保存进度: $newTime")
                         history.emit(hist.copy(position = newTime))
                     }
                 }

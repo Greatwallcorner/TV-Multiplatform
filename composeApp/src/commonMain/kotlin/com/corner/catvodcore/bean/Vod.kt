@@ -2,6 +2,7 @@ package com.corner.catvodcore.bean
 
 import com.corner.catvodcore.util.Utils
 import com.corner.database.entity.History
+import com.corner.ui.scene.SnackBar
 import com.corner.util.Constants
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -149,6 +150,9 @@ data class Vod(
     }
 
     private fun selectEpisode(episode: Episode): Episode {
+        // 先清除所有剧集的激活状态
+        currentFlag.episodes.forEach { it.activated = false }
+
         episode.activated = true
         val indexOf = currentFlag.episodes.indexOf(episode)
         currentTabIndex = indexOf / Constants.EpSize

@@ -1,7 +1,7 @@
 package com.corner.ui.nav.vm
 
 import SiteViewModel
-import SnackBar
+import com.corner.ui.scene.SnackBar
 import androidx.compose.runtime.*
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
@@ -755,9 +755,6 @@ class DetailViewModel : BaseViewModel() {
     private suspend fun playInitPlayer(result: Result) {
         _state.update { it.copy(isLoading = false, isBuffering = false) }
         log.debug("playInitPlayer - 设置播放链接")
-
-        onUserSelectEpisode()
-
         // 检查当前状态，避免重复加载
         if (lifecycleManager.lifecycleState.value != Ready) {
             log.warn("playInitPlayer - 播放器状态不正确: {}", lifecycleManager.lifecycleState.value)
@@ -821,7 +818,7 @@ class DetailViewModel : BaseViewModel() {
      */
     private fun playEp(detail: Vod, ep: Episode) {
         _state.update { it.copy(isBuffering = true) } //开始缓冲流程
-
+        onUserSelectEpisode()// 用户选择剧集，不自动加载url，以防竟态
         val result = SiteViewModel.playerContent(
             detail.site?.key ?: "",
             detail.currentFlag.flag ?: "",
@@ -970,10 +967,10 @@ class DetailViewModel : BaseViewModel() {
                 if (findEp != null) {
                     log.debug("[StartPlay]handlePlaybackHistory - 找到历史记录:{}", findEp.name)
                 }
-                controllerHistory?.let { history ->
-                    log.debug("[StartPlay]controllerHistory - 找到历史记录:{}", history)
-                    controller.setControllerHistory(history)
-                }
+//                controllerHistory?.let { history ->
+//                    log.debug("[StartPlay]controllerHistory - 找到历史记录:{}", history)
+//                    controller.setControllerHistory(history)
+//                }
                 detail.subEpisode.apply {   // 处理视频的子剧集列表
                     val ep = findEp ?: first()
                     log.debug("[StartPlay]startPlay - 开始播放视频:{}", ep.name)
@@ -1168,13 +1165,21 @@ class DetailViewModel : BaseViewModel() {
         currentSelectedEpNumber = activeEp.number
         // 更新状态流中的状态
         _state.update { state ->
+            // 先清除所有剧集的激活状态
+            state.detail.currentFlag.episodes.forEach { episode ->
+                episode.activated = false
+            }
+
+            // 激活指定的剧集
+            activeEp.activated = true
+
             // 根据 newSubEpisodes 是否为 null 来决定使用哪个剧集列表更新激活状态
             val updatedSubEpisodes = newSubEpisodes?.map { ep ->
-                // 若 newSubEpisodes 不为 null，遍历该列表，将与 activeEp 相同的剧集标记为激活状态
-                ep.copy(activated = ep == activeEp)
+                // 若 newSubEpisodes 不为 null，遍历该列表，将与 activeEp 相同URL的剧集标记为激活状态
+                ep.copy(activated = ep.url == activeEp.url)
             }?.toMutableList() ?: state.detail.subEpisode.map { ep ->
-                // 若 newSubEpisodes 为 null，遍历当前视频详情中的子剧集列表，将与 activeEp 相同的剧集标记为激活状态
-                ep.copy(activated = ep == activeEp)
+                // 若 newSubEpisodes 为 null，遍历当前视频详情中的子剧集列表，将与 activeEp 相同URL的剧集标记为激活状态
+                ep.copy(activated = ep.url == activeEp.url)
             }.toMutableList()
 
             // 返回更新后的状态
@@ -1284,13 +1289,17 @@ class DetailViewModel : BaseViewModel() {
             SnackBar.postMsg("当前没有激活的剧集", type = SnackBar.MessageType.WARNING)
             return
         }
+        // 若总剧集数量小于等于下一集的索引，说明没有更多剧集了
+        if (totalEpisodes <= nextIndex) {
+            SnackBar.postMsg("没有更多剧集", type = SnackBar.MessageType.INFO)
+            return
+        }
         if (currentIndex >= Constants.EpSize - 1) {// 若当前剧集索引达到或超过每个分组的剧集数量上限
             log.info("当前分组播放完毕 下一个分组")
             // 检查是否还有下一个分组
             val nextTabIndex = detail.currentTabIndex + 1
             val totalPages = (totalEpisodes + Constants.EpSize - 1) / Constants.EpSize
             if (nextTabIndex >= totalPages) {
-                SnackBar.postMsg("没有更多了", type = SnackBar.MessageType.INFO)
                 return
             }
             // 更新状态流中的视频详情信息，切换到下一个分组的子剧集列表
@@ -1308,11 +1317,6 @@ class DetailViewModel : BaseViewModel() {
             val newFirstEp = detail.currentFlag.episodes[nextTabIndex * Constants.EpSize]
             currentSelectedEpNumber = newFirstEp.number
             playEp(detail, newFirstEp)// 切换分组后播放下一集,调用playEp
-            return
-        }
-        // 若总剧集数量小于等于下一集的索引，说明没有更多剧集了
-        if (totalEpisodes <= nextIndex) {
-            SnackBar.postMsg("没有更多了", type = SnackBar.MessageType.INFO)
             return
         }
         val nextEp = detail.subEpisode[nextIndex]
@@ -1492,9 +1496,7 @@ class DetailViewModel : BaseViewModel() {
     fun chooseFlag(detail: Vod, it: Flag) {
         // 在协程作用域中启动异步任务处理线路切换
         scope.launch {
-            log.debug("切换线路，结束播放")
             val oldNumber = currentSelectedEpNumber                 //同步旧的剧集数据，用于更新按钮选中状态
-            log.debug("chooseFlag -- 切换线路，旧的剧集编号: $oldNumber")
             val newEpisodes = it.episodes                           //获取新的剧集列表
             val newEp = newEpisodes.find { it.number == oldNumber } ?: newEpisodes.firstOrNull() //获取新的剧集对象
             currentSelectedEpNumber = newEp?.number ?: 1 //设置新的剧集编号
@@ -1502,6 +1504,7 @@ class DetailViewModel : BaseViewModel() {
             _currentFlagName.value = it.flag.toString()  //更新线路标识
 
             _state.update { it.copy(isLoading = true, isBuffering = false) }
+
             lifecycleManager.transitionTo(Ended) {
                 lifecycleManager.ended().onFailure { e -> log.error("转换为ended失败", e) }
                     .onSuccess { log.debug("转换为ended成功") }
@@ -1591,19 +1594,32 @@ class DetailViewModel : BaseViewModel() {
      * @param v 可选的播放 URL 字符串，用于更新状态流中的当前播放 URL。若为 null，则使用空字符串。
      */
     fun chooseLevel(i: Url?, v: String?) {
-        scope.launch {
-            _state.update { it.copy(isLoading = true, isBuffering = false) }
-            log.debug("切换清晰度，结束播放,当前播放器状态: {}", lifecycleManager.lifecycleState.value)
+    scope.launch {
+        _state.update { it.copy(isLoading = true, isBuffering = false) }
+        log.debug("切换清晰度，结束播放,当前播放器状态: {}", lifecycleManager.lifecycleState.value)
+
+        try {
+            // 确保在状态转换前清理旧资源
+            controller.cleanupBeforeQualityChange()
+
             lifecycleManager.transitionTo(Ended) { lifecycleManager.ended() }
             lifecycleManager.transitionTo(Ready) { lifecycleManager.ready() }
+
             _state.update {
                 it.copy(
                     currentPlayUrl = v ?: "",
                     currentUrl = i,
                 )
             }
-        }.invokeOnCompletion { _state.update { it.copy(isLoading = false, isBuffering = false) } }
+        } catch (e: Exception) {
+            log.error("切换清晰度时发生错误", e)
+            SnackBar.postMsg("切换清晰度失败: ${e.message}", type = SnackBar.MessageType.ERROR)
+        }
+    }.invokeOnCompletion {
+        _state.update { it.copy(isLoading = false, isBuffering = false) }
     }
+}
+
 
 
     /**
@@ -1619,26 +1635,47 @@ class DetailViewModel : BaseViewModel() {
         }
     }
 
-
     /**
-     * 批量选择剧集，根据传入的索引切换到对应的剧集分组。
+     * 根据传入的索引切换到对应的剧集分组。
      *
      * 该方法会根据传入的索引计算出新的标签索引，
      *
      * 并获取该标签索引对应的剧集列表，最后更新状态流中的视频详情信息。
      *
-     * @param i 用于计算新标签索引的整数，通过该值除以 `Constants.EpSize` 得到新的标签索引。
+     * @param i 用于计算新标签索引的整数，通过该值除以 [Constants.EpSize] 得到新的标签索引。
      */
     fun chooseEpBatch(i: Int) {
         // 获取当前状态中的视频详情信息
         val detail = state.value.detail
+        // 记录当前全局激活的剧集URL，用于后续恢复激活状态
+        val currentGlobalActiveEpisodeUrl = _state.value.currentEp?.url
+        log.debug("批量选择剧集，当前全局激活剧集url: {}", currentGlobalActiveEpisodeUrl)
+
         // 计算新的标签索引，通过传入的索引除以每个分组的剧集数量得到
-        detail.currentTabIndex = i / Constants.EpSize
-        // 复制视频详情信息，并更新子剧集列表为新标签索引对应的剧集列表
+        val newTabIndex = i / Constants.EpSize
+
+        // 获取新标签索引对应的剧集列表
+        val newSubEpisodes = detail.currentFlag.episodes.getPage(newTabIndex).toMutableList()
+
+        // 恢复之前激活的剧集状态
+        if (currentGlobalActiveEpisodeUrl != null) {
+            var foundActiveEpisode = false
+            newSubEpisodes.forEach { episode ->
+                if (episode.url == currentGlobalActiveEpisodeUrl) {
+                    episode.activated = true
+                    foundActiveEpisode = true
+                } else {
+                    episode.activated = false
+                }
+            }
+        } else if (newSubEpisodes.isNotEmpty()) {
+            // 如果之前没有激活的剧集，则默认激活新分组的第一个剧集
+            newSubEpisodes[0].activated = true
+        }
+
         val dt = detail.copy(
-            subEpisode = detail.currentFlag.episodes.getPage(
-                detail.currentTabIndex
-            ).toMutableList()
+            currentTabIndex = newTabIndex,
+            subEpisode = newSubEpisodes
         )
         // 更新状态流中的视频详情信息
         _state.update { it.copy(detail = dt, isLoading = false, isBuffering = false) }
@@ -1646,7 +1683,6 @@ class DetailViewModel : BaseViewModel() {
 
 
     val videoLoading = mutableStateOf(false)    //ui状态：视频加载中
-
 
     /**
      * 选择指定剧集进行播放操作，根据剧集链接类型和播放器设置执行不同播放逻辑。
@@ -1662,43 +1698,54 @@ class DetailViewModel : BaseViewModel() {
         currentSelectedEpNumber = it.number // 记录当前选中剧集的编号
         val detail = _state.value.detail    // 获取当前状态中的视频详情信息
 
-        scope.launch { // 在协程作用域中启动一个协程处理剧集选择逻辑
-            val isDownloadLink = Utils.isDownloadLink(it.url)  // 检查当前选中剧集的 URL 是否为下载链接
-            for (i in detail.currentFlag.episodes) {                // 遍历当前播放线路下的所有剧集
-                i.activated = (i.name == it.name)                   // 标记当前剧集是否为选中的剧集
+        scope.launch {
+            val isDownloadLink = Utils.isDownloadLink(it.url)
+            val currentDetail = _state.value.detail // 获取当前 detail
+
+            // 更新 currentFlag.episodes 的 activated 状态
+            val updatedCurrentFlagEpisodes = currentDetail.currentFlag.episodes.map { episode ->
+                episode.copy(activated = (episode.url == it.url))
+            }.toMutableList()
+
+            // 更新 subEpisode 的 activated 状态
+            val updatedSubEpisodes = currentDetail.subEpisode.map { episode ->
+                episode.copy(activated = (episode.url == it.url)) // 同样使用 copy
+            }.toMutableList()
+
+            // 创建更新后的 detail
+            val updatedDetail = currentDetail.copy(
+                currentFlag = currentDetail.currentFlag.copy(
+                    episodes = updatedCurrentFlagEpisodes
+                ),
+                subEpisode = updatedSubEpisodes
+            )
+
+            for (i in updatedDetail.currentFlag.episodes) { // 遍历更新后的列表
+                log.debug("剧集: {}, 选中: {}", i.name, i.activated)
                 if (i.activated) {
-                    _state.update { model ->                        // 更新状态流中的状态
+                    _state.update { model ->
+                        val newModel = model.copy(currentEp = i, detail = updatedDetail) // 更新 currentEp 和 detail
+
                         if (!isDownloadLink) {
-                            // 若当前选中的剧集与状态中的当前剧集不同，重置播放位置为 0
                             if (model.currentEp?.name != it.name) {
                                 controller.doWithHistory { it.copy(position = 0L) }
                             }
-                            // 更新控制器的历史记录，记录当前剧集的 URL 和备注信息
                             controller.doWithHistory {
                                 it.copy(episodeUrl = i.url, vodRemarks = i.name)
                             }
                         }
-                        // 更新状态流中的当前剧集信息
-                        model.copy(currentEp = i)
+                        newModel
                     }
+                    break // 找到并处理了激活的剧集后退出循环
                 }
             }
             if (isDownloadLink) {                            // 若当前选中剧集的 URL 是下载链接
                 openUri(it.url)                              // 调用 openUri 函数处理下载链接
                 return@launch                                // 结束当前协程
             } else {
-                // 复制视频详情信息，更新子剧集列表为当前标签页对应的剧集列表
-                val dt = detail.copy(
-                    subEpisode = detail.currentFlag.episodes.getPage(
-                        detail.currentTabIndex
-                    ).toMutableList().toList().toMutableList(),
-                )
-                _state.update { it.copy(detail = dt) }
-
-                log.debug("chooseEp -- 当前状态: {}", lifecycleManager.lifecycleState.value)
-                playEp(dt, it)//手动选择剧集后播放
+                val correctDetailForPlay = _state.value.detail // 获取包含正确 activated 状态的最新 detail
+                playEp(correctDetailForPlay, it) // 使用最新的 detail 来播放
             }
-
         }.invokeOnCompletion { videoLoading.value = false }
     }
 
@@ -1717,8 +1764,7 @@ class DetailViewModel : BaseViewModel() {
             // 加锁确保状态转换原子性
             playerStateLock.withLock {
                 log.debug("DLNA - 开始播放")
-                // 检查当前状态
-                when (lifecycleManager.lifecycleState.value) {
+                when (lifecycleManager.lifecycleState.value) {// 检查当前状态
                     Idle -> {
                         log.debug("播放器未初始化，开始初始化...")
                         lifecycleManager.initializeSync().onSuccess {

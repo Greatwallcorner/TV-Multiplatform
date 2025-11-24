@@ -1,6 +1,7 @@
 package com.corner
 
 import AppTheme
+import com.corner.ui.scene.SnackBar.SnackBarList
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -120,7 +121,7 @@ fun WindowScope.RootContent(
                     DLNAPlayer(viewModel) { navController.popBackStack() }
                 }
             }
-            SnackBar.SnackBarList()
+            SnackBarList()
             val showProgress = GlobalAppState.showProgress.collectAsState()
             LoadingIndicator(showProgress = showProgress.value, withOverlay = true)
         }

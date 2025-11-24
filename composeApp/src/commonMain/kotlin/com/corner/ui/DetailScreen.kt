@@ -957,9 +957,9 @@ fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(end = 8.dp)
             ) {
-                items(epList, key = { it.url + it.number }) { episode ->
+                items(epList, key = { it.url }) { episode -> // 使用 url 作为唯一 key
                     EpisodeItem(
-                        isSelected = episode.number == vm.currentSelectedEpNumber,
+                        isSelected = episode.activated, // 直接使用 activated 状态
                         episode = episode,
                         onSelect = {
                             vm.chooseEp(it) { url ->
@@ -987,6 +987,7 @@ fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
         }
     }
 }
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

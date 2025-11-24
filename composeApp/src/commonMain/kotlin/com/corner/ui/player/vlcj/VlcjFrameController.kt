@@ -1,6 +1,6 @@
 package com.corner.ui.player.vlcj
 
-import SnackBar
+import com.corner.ui.scene.SnackBar
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.ImageBitmap
@@ -117,26 +117,40 @@ class VlcjFrameController(
                 displayWidth: Int,
                 displayHeight: Int
             ) {
+                // 增加状态检查
+                if (isReleased) return
+
                 val width = bufferFormat.width
                 val height = bufferFormat.height
                 val byteBuffer = nativeBuffers[0]
 
-                byteBuffer.get(byteArray)
-                byteBuffer.rewind()
+                // 增加缓冲区有效性检查
+                if (byteBuffer.limit() <= 0) return
 
-                // 从池中获取 Bitmap（复用或新建）
-                val bmp = bitmapPool.acquire(width, height)
-                bmp.installPixels(byteArray)
+                try {
+                    byteBuffer.get(byteArray)
+                    byteBuffer.rewind()
 
-                currentBitmap?.let {
-                    pendingRelease.add(it)
+                    // 从池中获取 Bitmap（复用或新建）
+                    val bmp = bitmapPool.acquire(width, height)
+                    bmp.installPixels(byteArray)
+
+                    currentBitmap?.let {
+                        pendingRelease.add(it)
+                    }
+
+                    releasePendingBitmaps()
+
+                    currentBitmap = bmp
+                    imageBitmapState.value = bmp.asComposeImageBitmap()
+                } catch (e: Exception) {
+                    log.error("渲染帧时发生错误", e)
+                    // 确保在出错时清理资源
+                    currentBitmap?.let {
+                        if (!it.isClosed) it.close()
+                        currentBitmap = null
+                    }
                 }
-
-                releasePendingBitmaps()
-
-                currentBitmap = bmp
-                imageBitmapState.value = bmp.asComposeImageBitmap()
-
             }
 
             override fun unlock(mediaPlayer: MediaPlayer?) {
@@ -193,6 +207,32 @@ class VlcjFrameController(
             SnackBar.postMsg("视频表面初始化失败,请尝试重启软件或去GITHUB反馈！", type = SnackBar.MessageType.ERROR)
         }
     }
+
+    /**
+     * 在切换视频质量前清理资源，防止内存访问冲突
+     */
+    fun cleanupBeforeQualityChange() {
+        synchronized(this) {
+            // 清理待释放的 bitmap
+            releasePendingBitmaps()
+
+            // 临时禁用渲染回调，防止在切换过程中访问旧资源
+            val player = controller.player
+            player?.videoSurface()?.set(null)
+
+            // 清理当前 bitmap
+            currentBitmap?.let { bitmap ->
+                if (!bitmap.isClosed) {
+                    bitmap.close()
+                }
+                currentBitmap = null
+            }
+
+            // 清空图像状态
+            imageBitmapState.value = null
+        }
+    }
+
 
     fun isPlaying(): Boolean {
         return !isReleased && controller.player?.status()?.isPlayable == true && controller.player?.status()?.isPlaying == true
