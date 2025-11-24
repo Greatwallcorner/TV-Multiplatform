@@ -28,7 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowScope
-import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Vod
 import com.corner.catvodcore.viewmodel.GlobalAppState.hideProgress
 import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
 import com.corner.database.dao.buildVod

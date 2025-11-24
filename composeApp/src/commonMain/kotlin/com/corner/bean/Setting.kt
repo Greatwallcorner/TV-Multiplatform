@@ -6,7 +6,6 @@ import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Paths
 import com.corner.util.M3U8FilterConfig
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
@@ -74,7 +73,7 @@ class PlayerStateCache:Cache{
     }
 
     fun add(key:String, value: String){
-        map.put(key,value)
+        map[key] = value
     }
 
     fun get(key: String):String?{
@@ -94,18 +93,25 @@ enum class SettingType(val id: String) {
     PROXY("proxy"),
     THEME("theme"),
     AD_FILTER("adFilter"),
-    M3U8_FILTER_CONFIG("m3u8FilterConfig");
+    M3U8_FILTER_CONFIG("m3u8FilterConfig"),
+    CRAWLER_SEARCH_TERMS("crawlerSearchTerms"),
+    DOH_ENABLED("dohEnabled"),
+    DOH_SERVER("dohServer");
+
 }
 
 object SettingStore {
     private val defaultList = listOf(
         Setting("vod", "点播", ""),
         Setting("log", "日志级别", Level.DEBUG.levelStr),
-        Setting("player", "播放器", "false#"),
+        Setting("player", "播放器", "innie#"),
         Setting("proxy", "代理", "false#"),
         Setting("theme", "主题", "light"),
         Setting("adFilter", "广告过滤", "true"),
-        Setting("m3u8FilterConfig", "M3U8 过滤配置", "")
+        Setting("m3u8FilterConfig", "M3U8 过滤配置", ""),
+        Setting("crawlerSearchTerms", "爬虫搜索词", ""),
+        Setting("dohEnabled", "DoH启用", "false"),
+        Setting("dohServer", "DoH服务器", "Tencent")
     )
 
     private var settingFile = SettingFile(mutableListOf<Setting>(), mutableMapOf())
@@ -130,7 +136,7 @@ object SettingStore {
 
     fun reset(){
         settingFile = SettingFile(mutableListOf(), mutableMapOf())
-        initSetting()
+        settingFile.list.addAll(defaultList)
         write()
     }
 
@@ -157,8 +163,9 @@ object SettingStore {
     }
 
     private fun initSetting() {
+        // 初始化设置文件
         val file = Paths.setting()
-        if (file.exists() && settingFile.list.size == 0) {
+        if (file.exists() && settingFile.list.isEmpty()) {
             settingFile = Jsons.decodeFromString<SettingFile>(Files.readString(file))
             if (settingFile.list.size != defaultList.size) {
                 defaultList.forEach { setting ->
@@ -168,10 +175,13 @@ object SettingStore {
                 }
             }
         }
-        if (settingFile.list.size == 0) {
+        // 初始化缓存
+        if (settingFile.list.isEmpty()) {
             settingFile.list.addAll(defaultList)
             Files.write(file, Jsons.encodeToString(settingFile).toByteArray())
         }
+        // 初始化 M3U8FilterConfig
+        initM3U8FilterConfig()
     }
 
     fun getHistoryList(): Set<String> {
@@ -204,20 +214,29 @@ object SettingStore {
 
     fun getM3U8FilterConfig(): M3U8FilterConfig {
         val configJson = getSettingItem(SettingType.M3U8_FILTER_CONFIG)
-        return if (configJson.isNullOrBlank()) {
+//        log.debug("获取 M3U8FilterConfig，原始JSON: \n{}", configJson)
+        return if (configJson.isBlank()) {
             M3U8FilterConfig()
         } else {
             try {
-                Json.decodeFromString(configJson)
+                val config = Jsons.decodeFromString<M3U8FilterConfig>(configJson)
+//                log.debug("成功反序列化 M3U8FilterConfig: {}", config)
+                config
             } catch (e: Exception) {
-                log.error("反序列化 M3U8FilterConfig 失败，使用默认配置: ${e.message}")
+//                log.error("反序列化 M3U8FilterConfig 失败，使用默认配置: ${e.message}")
                 M3U8FilterConfig()
             }
         }
     }
 
+    fun initM3U8FilterConfig(){
+        val filterConfig = getM3U8FilterConfig()
+        log.debug("加载广告过滤配置: {}", filterConfig)
+    }
+
     fun setM3U8FilterConfig(config: M3U8FilterConfig) {
-        val configJson = Json.encodeToString(config)
+        log.debug("保存 M3U8FilterConfig: {}", config)
+        val configJson = Jsons.encodeToString(config)
         setValue(SettingType.M3U8_FILTER_CONFIG, configJson)
     }
 
@@ -252,14 +271,12 @@ fun String.parseAsSettingEnable():SettingEnable{
     }
 }
 
-
-
 fun String.getPlayerSetting(sitePlayerType: String? = ""): List<String>{
     val internalPlayer = this.split("#")
-        // first is site, second app setting
-        val type = if (StringUtils.isNotBlank(
-                sitePlayerType
-            )
-        ) PlayerType.getById(sitePlayerType ?: "").id else internalPlayer.first()
-        return listOf(type, internalPlayer[1])
+    // first is site, second app setting
+    val type = if (StringUtils.isNotBlank(
+            sitePlayerType
+        )
+    ) PlayerType.getById(sitePlayerType ?: "").id else internalPlayer.first()
+    return listOf(type, internalPlayer[1])
 }

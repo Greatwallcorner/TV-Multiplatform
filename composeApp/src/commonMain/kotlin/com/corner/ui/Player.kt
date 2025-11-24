@@ -137,6 +137,7 @@ fun Player(
     DisposableEffect(mrl) {
         scope.launch {
             if (StringUtils.isNotBlank(mrl)) {
+                player_log.debug("userTriggered : {},自动加载 mrl: {}", userTriggered,!userTriggered)
                 if (!userTriggered) {
                     controller.load(mrl)
                 }
@@ -147,7 +148,6 @@ fun Player(
         }
     }
 
-    // 键盘事件处理
     val onKeyEvent: (KeyEvent) -> Boolean = { keyEvent ->
         when {
             // 空格键 - 暂停/播放
@@ -280,8 +280,6 @@ fun Player(
         AnimatedVisibility(
             showControllerBar.value,
             modifier = Modifier.align(Alignment.BottomEnd).offset(y = (-1).dp),
-//            enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
-//            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
             enter = fadeIn(),
             exit = fadeOut()
         ) {
@@ -348,7 +346,7 @@ fun MediaInfoDialog(modifier: Modifier, playerState: PlayerState, show: Boolean,
                 item {
                     Text(
                         text = "视频详情",
-                        style = MaterialTheme.typography.headlineSmall, // 可根据需要调整标题样式
+                        style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(bottom = 10.dp)
                     )
 

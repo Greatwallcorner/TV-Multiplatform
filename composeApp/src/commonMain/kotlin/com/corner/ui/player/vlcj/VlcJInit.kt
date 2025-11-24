@@ -2,6 +2,7 @@ package com.corner.ui.player.vlcj
 
 import com.corner.bean.SettingStore
 import com.corner.ui.getPlayerSetting
+import com.corner.ui.scene.SnackBar
 import com.corner.util.thisLogger
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 
@@ -33,6 +34,7 @@ class VlcJInit {
                 if (isReleased) return
                 isReleased = true
                 try {
+                    log.info("Stop Vlcj Player")
                     controller?.let { ctrl ->
                         if (ctrl.hasPlayer()) {
                             ctrl.release()

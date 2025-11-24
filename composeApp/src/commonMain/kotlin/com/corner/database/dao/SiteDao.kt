@@ -24,7 +24,7 @@ interface SiteDao{
     @Insert
     suspend fun save(sites: List<Site>)
 
-    suspend fun update(cfg:Config, api: Api): MutableSet<com.corner.catvod.enum.bean.Site> {
+    suspend fun update(cfg:Config, api: Api): MutableSet<com.corner.catvodcore.bean.Site> {
         val sites = api.sites
         val siteList = findByConfigId(cfg.id).firstOrNull()
         if(siteList.isNullOrEmpty() && api.sites.isNotEmpty()){

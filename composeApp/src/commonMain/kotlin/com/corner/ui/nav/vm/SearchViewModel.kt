@@ -7,6 +7,7 @@ import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.ui.nav.BaseViewModel
 import com.corner.ui.nav.data.SearchScreenState
+import com.corner.ui.scene.SnackBar
 import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow

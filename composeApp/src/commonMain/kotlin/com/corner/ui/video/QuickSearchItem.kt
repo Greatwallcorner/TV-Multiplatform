@@ -17,7 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Vod
 import com.corner.ui.scene.ToolTipText
 
 @Composable

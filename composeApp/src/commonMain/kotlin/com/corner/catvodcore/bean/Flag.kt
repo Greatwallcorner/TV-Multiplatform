@@ -32,15 +32,12 @@ data class Flag (
             if(!episodes.contains(episode)) episodes.add(episode)
         }
         episodes.sortBy { it.number }
-//        episodes.sortWith(Comparator<Episode> { o1, o2 ->
-//            o1.name.compareTo(o2.name)
-//        })
     }
 
     fun find(remarks: String, strict: Boolean): Episode? {
         val number: Int = Utils.getDigit(remarks)
-        if (episodes.size == 0) return null
-        if (episodes.size == 1) return episodes.get(0)
+        if (episodes.isEmpty()) return null
+        if (episodes.size == 1) return episodes[0]
         for (item in episodes) if (item.rule1(remarks)) return item
         for (item in episodes) if (item.rule2(number)) return item
         if (number == -1) for (item in episodes) if (item.rule3(remarks)) return item

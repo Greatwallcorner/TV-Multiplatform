@@ -2,6 +2,7 @@ package com.corner.server.plugins
 
 import cn.hutool.core.io.file.FileNameUtil
 import com.corner.server.logic.proxy
+import com.corner.ui.scene.SnackBar
 import com.corner.util.toSingleValueMap
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -69,7 +70,16 @@ fun Application.configureRouting() {
                                 call.response.headers.append(name, value)
                             }
                         }
-                        call.respondOutputStream(status = HttpStatusCode.fromValue(response.code)) {
+                        // 设置 m3u8 的 Content-Type
+                        val contentType = if (response.header("Content-Type")?.contains("m3u8") == true) {
+                            ContentType.parse("application/vnd.apple.mpegurl")
+                        } else {
+                            response.header("Content-Type")?.let { ContentType.parse(it) }
+                        }
+                        call.respondOutputStream(
+                            status = HttpStatusCode.fromValue(response.code),
+                            contentType = contentType
+                        ) {
                             response.body.byteStream().use { it.transferTo(this) }
                         }
                     }
@@ -87,8 +97,13 @@ fun Application.configureRouting() {
                             if (t is String && u is String) call.response.headers.append(t, u)
                         }
                         (objects[2] as? InputStream)?.use { inputStream ->
+                            val contentType = if (objects[1].toString().contains("m3u8")) {
+                                ContentType.parse("application/vnd.apple.mpegurl")
+                            } else {
+                                ContentType.parse(objects[1].toString())
+                            }
                             call.respondOutputStream(
-                                contentType = ContentType.parse(objects[1].toString()),
+                                contentType = contentType,
                                 status = HttpStatusCode.fromValue(
                                     objects[0] as? Int ?: HttpStatusCode.InternalServerError.value
                                 )
@@ -103,6 +118,7 @@ fun Application.configureRouting() {
                 log.error("proxy处理失败", e)
             }
         }
+
         get("/proxy/m3u8") {
             val encodedUrl = call.request.queryParameters["url"] ?: run {
                 errorResp(call, "URL参数缺失")

@@ -1,6 +1,6 @@
 package com.corner.ui.player.vlcj
 
-import SnackBar
+import com.corner.ui.scene.SnackBar
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.ImageBitmap
@@ -45,6 +45,7 @@ class VlcjFrameController(
     private var byteArray: ByteArray? = null
     private var info: ImageInfo? = null
     val imageBitmapState: MutableState<ImageBitmap?> = mutableStateOf(null)
+
     @Volatile
     private var isReleased = false
     fun isReleased(): Boolean = isReleased
@@ -116,26 +117,40 @@ class VlcjFrameController(
                 displayWidth: Int,
                 displayHeight: Int
             ) {
+                // 增加状态检查
+                if (isReleased) return
+
                 val width = bufferFormat.width
                 val height = bufferFormat.height
                 val byteBuffer = nativeBuffers[0]
 
-                byteBuffer.get(byteArray)
-                byteBuffer.rewind()
+                // 增加缓冲区有效性检查
+                if (byteBuffer.limit() <= 0) return
 
-                // 从池中获取 Bitmap（复用或新建）
-                val bmp = bitmapPool.acquire(width, height)
-                bmp.installPixels(byteArray)
+                try {
+                    byteBuffer.get(byteArray)
+                    byteBuffer.rewind()
 
-                currentBitmap?.let {
-                    pendingRelease.add(it)
+                    // 从池中获取 Bitmap（复用或新建）
+                    val bmp = bitmapPool.acquire(width, height)
+                    bmp.installPixels(byteArray)
+
+                    currentBitmap?.let {
+                        pendingRelease.add(it)
+                    }
+
+                    releasePendingBitmaps()
+
+                    currentBitmap = bmp
+                    imageBitmapState.value = bmp.asComposeImageBitmap()
+                } catch (e: Exception) {
+                    log.error("渲染帧时发生错误", e)
+                    // 确保在出错时清理资源
+                    currentBitmap?.let {
+                        if (!it.isClosed) it.close()
+                        currentBitmap = null
+                    }
                 }
-
-                releasePendingBitmaps()
-
-                currentBitmap = bmp
-                imageBitmapState.value = bmp.asComposeImageBitmap()
-
             }
 
             override fun unlock(mediaPlayer: MediaPlayer?) {
@@ -167,12 +182,13 @@ class VlcjFrameController(
     override fun load(url: String): PlayerController {
         scope.launch {
             log.info("load - 开始加载视频...")
-            controller.loadAsync(url, 1000)
+            controller.loadURL(url, 1000)
             controller.stop()
             log.info("load - 视频加载完成，开始初始化播放器")
-            controller.play()
-            delay(1000)
+            controller.play()//url变化时播放视频
+            delay(500)
             speed(controller.history.value?.speed?.toFloat() ?: 1f)
+            log.debug("load - 播放历史位置: ${controller.history.value?.position}")
             seekTo(max(controller.history.value?.position ?: 0L, history.value?.opening ?: 0L))
         }
         return controller
@@ -181,7 +197,7 @@ class VlcjFrameController(
     override fun vlcjFrameInit() {
         log.info("播放器初始化")
         try {
-            val lifecycleManager = PlayerLifecycleManager(controller, scope)
+            val lifecycleManager = PlayerLifecycleManager(controller)
             controller.setLifecycleManager(lifecycleManager)
             controller.init()
             controller.player?.videoSurface()?.set(callbackSurFace)
@@ -192,6 +208,32 @@ class VlcjFrameController(
         }
     }
 
+    /**
+     * 在切换视频质量前清理资源，防止内存访问冲突
+     */
+    fun cleanupBeforeQualityChange() {
+        synchronized(this) {
+            // 清理待释放的 bitmap
+            releasePendingBitmaps()
+
+            // 临时禁用渲染回调，防止在切换过程中访问旧资源
+            val player = controller.player
+            player?.videoSurface()?.set(null)
+
+            // 清理当前 bitmap
+            currentBitmap?.let { bitmap ->
+                if (!bitmap.isClosed) {
+                    bitmap.close()
+                }
+                currentBitmap = null
+            }
+
+            // 清空图像状态
+            imageBitmapState.value = null
+        }
+    }
+
+
     fun isPlaying(): Boolean {
         return !isReleased && controller.player?.status()?.isPlayable == true && controller.player?.status()?.isPlaying == true
     }
@@ -201,6 +243,7 @@ class VlcjFrameController(
     }
 
     fun setControllerHistory(history: History) {
+        log.debug("VlcjFrameController - 设置历史记录{}", history)
         controller.scope.launch {
             controller.history.emit(history)
         }
@@ -302,10 +345,4 @@ class VlcjFrameController(
     fun hasPlayer(): Boolean {
         return controller.player != null
     }
-
-    //代理showTips方法
-    fun showTips(tips: String) {
-        controller.showTips(tips)
-    }
-
 }

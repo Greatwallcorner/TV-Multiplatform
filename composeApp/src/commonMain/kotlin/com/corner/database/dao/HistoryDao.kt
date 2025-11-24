@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Vod
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.database.Db
 import com.corner.database.entity.History
@@ -138,7 +138,7 @@ interface HistoryDao {
 //
 //}
 
-
+@Suppress("unused")
 fun History.getSiteKey():String{
     return key.split(Db.SYMBOL)[0]
 }

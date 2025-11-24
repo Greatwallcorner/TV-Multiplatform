@@ -1,9 +1,6 @@
 package com.corner.catvodcore.bean
 
 import com.corner.catvod.enum.bean.Live
-import com.corner.catvod.enum.bean.Parse
-import com.corner.catvod.enum.bean.Rule
-import com.corner.catvod.enum.bean.Site
 import com.corner.database.entity.Config
 import com.github.catvod.bean.Doh
 import kotlinx.serialization.Serializable
@@ -31,10 +28,6 @@ data class Api(
     @Transient
     var ref: Int = 0,
 ) {
-//    @Transient
-//    var home: MutableState<Site?>? = mutableStateOf(null)
-
     @Transient
     var live: Config? = null
-
 }

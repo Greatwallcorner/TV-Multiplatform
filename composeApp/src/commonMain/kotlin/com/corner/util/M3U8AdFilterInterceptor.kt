@@ -2,6 +2,7 @@ package com.corner.util
 
 import M3U8Filter
 import com.corner.bean.SettingStore
+import com.corner.ui.scene.SnackBar
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.slf4j.LoggerFactory
 import java.net.URI

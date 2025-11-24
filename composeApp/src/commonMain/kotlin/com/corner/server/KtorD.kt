@@ -1,6 +1,5 @@
 package com.corner.server
 
-import cn.hutool.core.codec.Base64
 import com.corner.server.plugins.configureRouting
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -22,7 +21,7 @@ object KtorD {
      * https://ktor.io/docs/configuration-file.html#predefined-properties
      */
     suspend fun init() {
-        log.info("KtorD init start")
+        log.info("KtorD Init")
         ports = 9978
         do {
             try {
@@ -51,13 +50,9 @@ object KtorD {
     }
 
     fun stop() {
+        log.info("KtorD stop")
         server?.stop()
     }
-
-    fun getWebPlayerPath(url: String): String {
-        return "http://localhost:$ports/static?url=${Base64.encode(url)}"
-    }
-
 }
 
 private fun Application.module() {

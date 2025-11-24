@@ -2,8 +2,8 @@ package com.corner.ui.nav.vm
 
 import SiteViewModel
 import androidx.compose.runtime.mutableStateOf
-import com.corner.catvod.enum.bean.Site
-import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Site
+import com.corner.catvodcore.bean.Vod
 import com.corner.catvodcore.bean.Filter
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.Type
@@ -16,6 +16,7 @@ import com.corner.catvodcore.viewmodel.GlobalAppState.showProgress
 import com.corner.database.Db
 import com.corner.ui.nav.BaseViewModel
 import com.corner.ui.nav.data.VideoScreenState
+import com.corner.ui.scene.SnackBar
 import com.corner.util.isEmpty
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

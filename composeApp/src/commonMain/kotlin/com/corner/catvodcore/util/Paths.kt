@@ -1,5 +1,6 @@
 package com.corner.catvodcore.util
 
+import com.corner.ui.scene.SnackBar
 import com.corner.util.OperatingSystem
 import com.corner.util.UserDataDirProvider
 import org.slf4j.LoggerFactory

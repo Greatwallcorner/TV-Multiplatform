@@ -20,12 +20,3 @@ enum class PlayerType(
         }
     }
 }
-
-//fun PlayerType.getById(id: String):PlayerType{
-//    return when(id.lowercase()){
-//        PlayerType.Innie.id -> PlayerType.Innie
-//        PlayerType.Outie.id -> PlayerType.Outie
-//        PlayerType.Web.id -> PlayerType.Web
-//        else -> PlayerType.Outie
-//    }
-//}

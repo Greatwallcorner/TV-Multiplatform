@@ -84,7 +84,7 @@ kotlin {
 
                 // log
                 implementation("ch.qos.logback:logback-classic:$logbackVer")
-                implementation("org.apache.logging.log4j:log4j-api:2.20.0")
+                //implementation("org.apache.logging.log4j:log4j-api:2.20.0")
                 implementation("org.fusesource.jansi:jansi:2.4.0")
                 // image-loader
                 api(libs.image.loader)

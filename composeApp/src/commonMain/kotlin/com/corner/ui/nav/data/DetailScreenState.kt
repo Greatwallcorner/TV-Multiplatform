@@ -1,6 +1,6 @@
 package com.corner.ui.nav.data
 
-import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Vod
 import com.corner.catvodcore.bean.Episode
 import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.bean.Url
@@ -20,5 +20,6 @@ data class DetailScreenState(
     val playResult: Result? = null,
     val loadingMessage: String = "",
     var isCleaning: Boolean = false,
-    var isBuffering: Boolean = false
+    var isBuffering: Boolean = false,
+    var isDLNA: Boolean = false
 )

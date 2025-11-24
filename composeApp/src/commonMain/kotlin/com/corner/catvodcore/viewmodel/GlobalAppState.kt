@@ -6,10 +6,8 @@ import androidx.compose.ui.window.WindowState
 import com.corner.bean.HotData
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
-import com.corner.catvod.enum.bean.Site
-import com.corner.catvod.enum.bean.Vod
-import com.corner.catvodcore.loader.JarLoader
-import com.corner.util.BrowserUtils
+import com.corner.catvodcore.bean.Site
+import com.corner.catvodcore.bean.Vod
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -51,37 +49,6 @@ object GlobalAppState {
             mainJob.cancel(reason)
         }
     }
-    fun cleanupBeforeExit(onComplete: () -> Unit = {}) {
-        if (mainJob.isCancelled) {
-            onComplete()
-            return
-        }
-
-        coroutineScope.launch {
-            try {
-                log.info("------------------开始执行清理操作------------------------")
-                // 1. 取消所有操作
-                cancelAllOperations("取消所有操作...")
-                // 2. 安全关闭UPnP
-                upnpService?.let {
-                    it.shutdown()
-                    upnpService = null
-                    log.info("UPnP服务已关闭")
-                }
-                // 3. 清理JarLoader
-                JarLoader.clear()
-                // 4. 关闭websocket服务
-                BrowserUtils.cleanup()
-                // 5. 重置状态
-                resetAllStates()
-                log.info("------------------清理操作执行成功！------------------------")
-            } catch (e: Exception) {
-                log.error("清理失败:", e)
-            } finally {
-                onComplete()
-            }
-        }
-    }
 
     fun toggleVideoFullScreen(): Boolean {
         toggleWindowFullScreen()
@@ -97,9 +64,7 @@ object GlobalAppState {
         showProgress.update { false }
     }
 
-    fun isShowProgress(): Boolean = showProgress.value
-
-    private fun resetAllStates() {
+    fun resetAllStates() {
         showProgress = MutableStateFlow(false)
         hotList.value = emptyList()
         home.value = Site.get("", "")

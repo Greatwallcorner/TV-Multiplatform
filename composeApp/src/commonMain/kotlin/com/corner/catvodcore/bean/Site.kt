@@ -1,4 +1,4 @@
-package com.corner.catvod.enum.bean
+package com.corner.catvodcore.bean
 
 import com.corner.catvodcore.util.ToStringSerializer
 import kotlinx.serialization.Serializable

@@ -1,6 +1,6 @@
 package com.corner.ui.nav.data
 
-import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Vod
 import com.corner.catvodcore.bean.Filter
 import com.corner.catvodcore.bean.Type
 import java.util.concurrent.atomic.AtomicInteger

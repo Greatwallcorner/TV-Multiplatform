@@ -1,8 +1,10 @@
 package com.corner.catvodcore.config
 
 import SiteViewModel
-import com.corner.catvod.enum.bean.Rule
-import com.corner.catvod.enum.bean.Site
+import com.corner.bean.SettingStore
+import com.corner.bean.SettingType
+import com.corner.catvodcore.bean.Rule
+import com.corner.catvodcore.bean.Site
 import com.corner.catvodcore.bean.Api
 import com.corner.catvodcore.enum.ConfigType
 import com.corner.catvodcore.loader.JarLoader
@@ -12,6 +14,7 @@ import com.corner.catvodcore.util.Urls
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.database.Db
 import com.corner.database.entity.Config
+import com.corner.ui.scene.SnackBar
 import com.corner.util.createCoroutineScope
 import com.corner.util.isEmpty
 import com.github.catvod.crawler.Spider
@@ -24,6 +27,7 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Paths
 import com.corner.util.NoStackTraceException
+import com.github.catvod.bean.Doh
 
 private val log = LoggerFactory.getLogger("apiConfig")
 
@@ -53,7 +57,7 @@ object ApiConfig{
         onError: (Throwable) -> Unit
     ): Api {
         return try {
-            log.info("parseConfig start cfg:{} isJson:{}", cfg, isJson)
+            log.info("解析配置开始, cfg:{} isJson:{}", cfg, isJson)
 
             val data = getData(if (isJson) cfg.json ?: "" else cfg.url!!, isJson)
                 ?: throw RuntimeException("配置读取异常")
@@ -61,7 +65,7 @@ object ApiConfig{
             if (StringUtils.isBlank(data)) {
                 SnackBar.postMsg("配置数据为空,请检查配置文件", type = SnackBar.MessageType.WARNING)
                 setHome(null)
-                throw NoStackTraceException("配置数据为空") // 自定义不打印堆栈的异常
+                throw NoStackTraceException("配置数据为空")
             }
 
             val apiConfig = Jsons.decodeFromString<Api>(data)
@@ -70,6 +74,8 @@ object ApiConfig{
                 ap.copy(url = cfg.url, data = data, cfg = cfg, ref = ap.ref + 1)
             }
 
+            //加载jar
+            //注意：由于内部自动处理了key所以这里不需要传入key
             JarLoader.loadJar("", apiConfig.spider)
 
             if (cfg.home?.isNotBlank() == true) {
@@ -82,13 +88,13 @@ object ApiConfig{
                 api.sites = Db.Site.update(cfg, api)
             }
 
-            log.info("parseConfig end")
-            onSuccess()  // 成功回调
+            log.info("解析配置结束")
+            onSuccess()
             apiConfig
         } catch (e: Exception) {
-            log.error("parseConfig error", e)
-            onError(e)  // 失败回调
-            throw e  // 保持原有异常抛出行为
+            log.error("解析配置失败", e)
+            onError(e)
+            throw e
         }
     }
 
@@ -124,7 +130,7 @@ object ApiConfig{
         val csp: Boolean = site.api.startsWith("csp_")
         /*if (js) jsLoader.setRecent(site.getKey())
         else if (py) pyLoader.setRecent(site.getKey())
-        else*/ if (csp) JarLoader.SetRecent(
+        else*/ if (csp) JarLoader.setRecentJar(
             site.jar
         )
     }
@@ -160,6 +166,16 @@ object ApiConfig{
 
     fun initProxy() {
         Http.setProxyHosts(getRuleByName("proxy")?.hosts)
+    }
+
+    // Init Doh
+    fun initDoh() {
+        val dohEnabled = SettingStore.getSettingItem(SettingType.DOH_ENABLED).toBoolean()
+        if (dohEnabled) {
+            val serverName = SettingStore.getSettingItem(SettingType.DOH_SERVER)
+            val doh = Doh.defaultDoh().find { it.name == serverName }
+            doh?.let { Http.setDoh(it) }
+        }
     }
 
     fun getRuleByName(name: String): Rule? {
@@ -198,6 +214,7 @@ object ApiConfig{
 
 fun Api.init() {
     ApiConfig.initProxy()
+    ApiConfig.initDoh()
     initSite()
 }
 

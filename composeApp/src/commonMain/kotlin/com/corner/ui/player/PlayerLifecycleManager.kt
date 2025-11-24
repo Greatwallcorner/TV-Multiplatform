@@ -10,19 +10,14 @@ import org.slf4j.LoggerFactory
  * 负责协调播放器状态转换和资源管理
  */
 class PlayerLifecycleManager(
-    private val controller: PlayerController,
-    private val scope: CoroutineScope
+    private val controller: PlayerController
 ) {
     private val log = LoggerFactory.getLogger("PlayerLifecycleManager")
 
     private val _lifecycleState = MutableStateFlow(PlayerLifecycleState.Idle)
     val lifecycleState: StateFlow<PlayerLifecycleState> = _lifecycleState
 
-    // 将lifecycleDispatcher从Dispatchers.Swing改为Dispatchers.IO
     private val lifecycleDispatcher = Dispatchers.IO
-
-    private val _isCleaning = MutableStateFlow(false)
-    val isCleaning: StateFlow<Boolean> = _isCleaning
 
     /**
      * 状态转换
@@ -44,7 +39,6 @@ class PlayerLifecycleManager(
 
                 // 执行状态对应的操作
                 when (newState) {
-                    PlayerLifecycleState.Initializing -> initializeInternal()
                     PlayerLifecycleState.Cleaning -> cleanupInternal()
                     PlayerLifecycleState.Released -> releaseInternal()
                     PlayerLifecycleState.Paused -> stopInternal()
@@ -63,26 +57,22 @@ class PlayerLifecycleManager(
         }
     }
 
-    // 状态可转换检查函数
-    fun canTransitionTo(target: PlayerLifecycleState): Boolean {
-        return isValidTransition(lifecycleState.value, target)
+    /**
+     * 安全地执行状态转换
+     * @param targetState 目标状态
+     * @param action 状态转换动作
+     * @return 转换是否成功执行
+     */
+    suspend fun transitionTo(targetState: PlayerLifecycleState, action: suspend () -> Result<Unit>): Result<Unit> {
+        return if (canTransitionTo(targetState)) {
+            action()
+        } else {
+            Result.failure(IllegalStateException("Cannot transition to $targetState from current state ${lifecycleState.value}"))
+        }
     }
 
-    /**
-     * 异步初始化
-     */
-    suspend fun initialize(): Result<Unit> = transitionTo(PlayerLifecycleState.Initializing)
-
-    private suspend fun initializeInternal(): Result<Unit> {
-        return withContext(lifecycleDispatcher) {
-            try {
-                controller.initAsync()
-                Result.success(Unit)
-            } catch (e: Exception) {
-                log.error("初始化失败", e)
-                Result.failure(e)
-            }
-        }
+    fun canTransitionTo(target: PlayerLifecycleState): Boolean {
+        return isValidTransition(lifecycleState.value, target)
     }
 
     /**
@@ -105,18 +95,18 @@ class PlayerLifecycleManager(
 
 
     /**
-     * 异步停止播放,用于清理资源,设置资源已释放标志位为true
+     * 异步停止播放,用于清理资源
      */
     suspend fun cleanup(): Result<Unit> = transitionTo(PlayerLifecycleState.Cleaning)
 
     private suspend fun cleanupInternal(): Result<Unit> {
         return withContext(lifecycleDispatcher) {
             try {
-                _isCleaning.value = true
                 controller.stopAsync()
                 Result.success(Unit)
-            } finally {
-                _isCleaning.value = false
+            } catch (e: Exception) {
+                log.error("停止播放失败:", e)
+                Result.failure(e)
             }
         }
     }
@@ -185,17 +175,15 @@ class PlayerLifecycleManager(
     private suspend fun readyInternal(): Result<Unit> {
         return withContext(lifecycleDispatcher) {
             try {
-                controller.playerReady.let { player ->
-                    if (player.value) {
-                        log.debug("播放器已就绪")
-                        return@withContext Result.success(Unit)
-                    }else{
-                        log.info("播放器未就绪，等待就绪中...,当前状态:${_lifecycleState.value},当前值：${player.value}")
-                    }
+                // 检查播放器实例是否存在
+                if (controller.isPlayerInstanceReady()) {
+                    Result.success(Unit)
+                } else {
+                    log.error("播放器实例不存在")
+                    Result.failure(IllegalStateException("Player not initialized"))
                 }
-                return@withContext Result.failure(IllegalStateException("Player not initialized"))
             } catch (e: Exception) {
-                log.error("就绪失败", e)
+                log.error("就绪检查失败", e)
                 Result.failure(e)
             }
         }
@@ -223,7 +211,7 @@ class PlayerLifecycleManager(
     private suspend fun playingInternal(): Result<Unit> {
         return withContext(lifecycleDispatcher) {
             try {
-                controller.playerPlayering.let { player ->
+                controller.playerPlaying.let { player ->
                     if (player) {
                         return@withContext Result.success(Unit)
                     }
@@ -263,6 +251,7 @@ class PlayerLifecycleManager(
             PlayerLifecycleState.Loading -> to in listOf(
                 PlayerLifecycleState.Ready,
                 PlayerLifecycleState.Error,
+                PlayerLifecycleState.Ended,
                 PlayerLifecycleState.Cleaning
             )
 

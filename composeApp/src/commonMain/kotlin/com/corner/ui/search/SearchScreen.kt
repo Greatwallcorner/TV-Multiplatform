@@ -31,7 +31,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowScope
-import com.corner.catvod.enum.bean.Vod
+import com.corner.catvodcore.bean.Vod
 import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.ui.nav.vm.SearchViewModel
@@ -53,34 +53,46 @@ private val gridConfig = object {
 }
 
 @Composable
-fun WindowScope.SearchScene(vm: SearchViewModel, onClickItem: (Vod) -> Unit, onClickBack: () -> Unit) {
-    var selectPage by remember { mutableStateOf(SearchScreen.Search) }
+fun WindowScope.SearchScene(
+    vm: SearchViewModel,
+    onClickItem: (Vod) -> Unit,
+    onClickBack: () -> Unit
+) {
+    var currentPage by remember { mutableStateOf(SearchScreen.Search) }
 
-    when (selectPage) {
-        SearchScreen.Search -> SearchPage(vm, onClickBack = {
-            onClickBack()
-        }, onSearch = { s ->
-            vm.onSearch(s)
-            selectPage = SearchScreen.SearchResult
-        })
-
-        SearchScreen.SearchResult -> SearchResult(
-            vm, onClickBack = { onClickBack() },
-        ) {
-            onClickItem(it)
+    // 处理返回逻辑
+    val handleBack = {
+        when (currentPage) {
+            SearchScreen.SearchResult -> {
+                // 从搜索结果页回到搜索页
+                currentPage = SearchScreen.Search
+            }
+            SearchScreen.Search -> {
+                // 从搜索页返回时，先清空搜索状态
+                vm.clear()
+                // 然后返回主页
+                onClickBack()
+            }
         }
     }
-}
 
-/*
-@Composable
-@Preview
-fun previewSearchPage(){
-    AppTheme(useDarkTheme = true) {
-        SearchPage {}
+    when (currentPage) {
+        SearchScreen.Search -> SearchPage(
+            vm,
+            onClickBack = handleBack,
+            onSearch = { s ->
+                vm.onSearch(s)
+                currentPage = SearchScreen.SearchResult
+            }
+        )
+
+        SearchScreen.SearchResult -> SearchResult(
+            vm,
+            onClickBack = handleBack,
+            onClickItem = onClickItem
+        )
     }
 }
-*/
 
 @Composable
 private fun WindowScope.SearchResult(
@@ -91,7 +103,6 @@ private fun WindowScope.SearchResult(
     val model = vm.state.collectAsState()
     val searchText = remember { derivedStateOf { model.value.keyword } }
     val result = remember { SiteViewModel.search }
-//    var currentCollect by remember { mutableStateOf<Collect?>(SiteViewModel.search.value[0]) }
     val currentVodList by rememberUpdatedState(model.value.currentVodList)
 
     //焦点控制
@@ -115,7 +126,10 @@ private fun WindowScope.SearchResult(
         }
     }
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Column(
+            Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
             WindowDraggableArea {
                 //TopBar
                 ControlBar(
@@ -154,7 +168,6 @@ private fun WindowScope.SearchResult(
                     }
                 )
             }
-//        Content
             Row {
                 Box(
                     Modifier.widthIn(min = 120.dp, max = 200.dp)
@@ -173,14 +186,13 @@ private fun WindowScope.SearchResult(
                         LazyColumn(
                             modifier = Modifier
                                 .defaultMinSize(30.dp)
-                                .padding(horizontal = 8.dp,vertical = 4.dp),
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             items(items = result.value.toList()) { item: Collect ->
                                 RatioBtn(
                                     text = item.site?.name ?: "",
                                     onClick = {
-//                                    currentCollect = item
                                         vm.onClickCollection(item)
                                         result.value.forEach { i ->
                                             i.activated.value = (i.site?.key == item.site?.key)
