@@ -24,10 +24,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import lumentv_compose.composeapp.generated.resources.LumenTV_icon_png
 import org.jetbrains.compose.resources.painterResource
 import org.slf4j.LoggerFactory
 import lumentv_compose.composeapp.generated.resources.Res
-import lumentv_compose.composeapp.generated.resources.LumenTV_icon_png
 import java.awt.Dimension
 
 private val log = LoggerFactory.getLogger("main")
@@ -52,7 +52,6 @@ fun main() {
         }
     })
 
-    //System.setProperty("java.net.useSystemProxies", "true");
     application {
         val windowState = rememberWindowState(
             size = Util.getPreferWindowSize(600, 500), position = WindowPosition.Aligned(Alignment.Center)
