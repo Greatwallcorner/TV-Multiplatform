@@ -80,6 +80,9 @@ class DetailViewModel : BaseViewModel() {
 
     var controllerHistory: History? = null
 
+    val vmPlayerType = SettingStore.getSettingItem(SettingType.PLAYER.id)
+        .getPlayerSetting(_state.value.detail.site?.playerType)
+
     /**
      * 更新历史记录信息。
      * 仅当详情页状态中的站点 key 不为空时，才会在协程中更新历史记录，
@@ -219,7 +222,9 @@ class DetailViewModel : BaseViewModel() {
      * 加载不同的数据，最后隐藏加载进度。
      */
     suspend fun load() {
-        lifecycleManager.initializeSync()
+        if (vmPlayerType.first() == PlayerType.Innie.id) {
+            lifecycleManager.initializeSync()
+        }
         val chooseVod = loadChooseVod()
 
         try {
@@ -238,9 +243,13 @@ class DetailViewModel : BaseViewModel() {
                         quickSearch()
                     } else {
                         loadVodDetail(dt)
-                        lifecycleManager.transitionTo(Loading) { lifecycleManager.loading() }
-                            .onFailure { log.warn("load fun -- 切换状态失败,可能会影响后续状态管理") }
-                            .onSuccess { log.info("load fun -- Start Play") }
+
+                        if (vmPlayerType.first() == PlayerType.Innie.id) {
+                            lifecycleManager.transitionTo(Loading) { lifecycleManager.loading() }
+                                .onFailure { log.warn("load fun -- 切换状态失败,可能会影响后续状态管理") }
+                                .onSuccess { log.info("load fun -- Start Play") }
+                        }
+
                         startPlay()//load加载完成后启动播放流程
                     }
                 }
@@ -593,7 +602,6 @@ class DetailViewModel : BaseViewModel() {
     //------------------------------quick Search END----------------------------//
     //////////////////////////////////////////////////////////////////////////////
 
-
     /**
      * 清理详情页相关资源和状态。
      * 可选择是否释放播放器控制器资源，默认会释放。
@@ -615,7 +623,9 @@ class DetailViewModel : BaseViewModel() {
                     showProgress()
                 }
 
-                if (releaseController) {
+                log.debug("<清理资源>当前播放器类型: ${vmPlayerType.first()}")
+
+                if (releaseController && vmPlayerType.first() == PlayerType.Innie.id) {
                     // 使用串行清理，避免并发问题
                     // 特殊状态转换，将关闭视频放在了特殊清理方法中，且直接状态转换playing->cleanup
                     lifecycleManager.cleanup()
@@ -640,6 +650,8 @@ class DetailViewModel : BaseViewModel() {
                 _state.update { it.copy() } // 重置状态
                 SiteViewModel.clearQuickSearch()
                 launched = false
+
+                supervisor.cancelChildren() // 取消所有子任务
 
                 log.debug("----------清理详情页资源完成----------")
 
@@ -867,7 +879,7 @@ class DetailViewModel : BaseViewModel() {
 
             PlayerType.Outie.id -> {
                 scope.launch {
-                    SnackBar.postMsg("上次看到" + ": ${ep.name}", type = SnackBar.MessageType.INFO)
+                    SnackBar.postMsg("即将播放" + ": ${ep.name}", type = SnackBar.MessageType.INFO)
                     Play.start(result.url.v(), ep.name)
                 }
             }
@@ -1560,8 +1572,8 @@ class DetailViewModel : BaseViewModel() {
                     val findEp = dt.findAndSetEpByName(controller.history.value!!, oldNumber)
                     log.debug("切换线路，新的剧集数据: {}", findEp)
                     if (findEp != null) {
-                        playEp(dt, findEp)
-                    }//手动选择线路后根据历史记录自动播放
+                        playEp(dt, findEp)//手动选择线路后根据历史记录自动播放
+                    }
                 }
 
                 // 步骤6: 更新最终状态
@@ -1594,32 +1606,31 @@ class DetailViewModel : BaseViewModel() {
      * @param v 可选的播放 URL 字符串，用于更新状态流中的当前播放 URL。若为 null，则使用空字符串。
      */
     fun chooseLevel(i: Url?, v: String?) {
-    scope.launch {
-        _state.update { it.copy(isLoading = true, isBuffering = false) }
-        log.debug("切换清晰度，结束播放,当前播放器状态: {}", lifecycleManager.lifecycleState.value)
+        scope.launch {
+            _state.update { it.copy(isLoading = true, isBuffering = false) }
+            log.debug("切换清晰度，结束播放,当前播放器状态: {}", lifecycleManager.lifecycleState.value)
 
-        try {
-            // 确保在状态转换前清理旧资源
-            controller.cleanupBeforeQualityChange()
+            try {
+                // 确保在状态转换前清理旧资源
+                controller.cleanupBeforeQualityChange()
 
-            lifecycleManager.transitionTo(Ended) { lifecycleManager.ended() }
-            lifecycleManager.transitionTo(Ready) { lifecycleManager.ready() }
+                lifecycleManager.transitionTo(Ended) { lifecycleManager.ended() }
+                lifecycleManager.transitionTo(Ready) { lifecycleManager.ready() }
 
-            _state.update {
-                it.copy(
-                    currentPlayUrl = v ?: "",
-                    currentUrl = i,
-                )
+                _state.update {
+                    it.copy(
+                        currentPlayUrl = v ?: "",
+                        currentUrl = i,
+                    )
+                }
+            } catch (e: Exception) {
+                log.error("切换清晰度时发生错误", e)
+                SnackBar.postMsg("切换清晰度失败: ${e.message}", type = SnackBar.MessageType.ERROR)
             }
-        } catch (e: Exception) {
-            log.error("切换清晰度时发生错误", e)
-            SnackBar.postMsg("切换清晰度失败: ${e.message}", type = SnackBar.MessageType.ERROR)
+        }.invokeOnCompletion {
+            _state.update { it.copy(isLoading = false, isBuffering = false) }
         }
-    }.invokeOnCompletion {
-        _state.update { it.copy(isLoading = false, isBuffering = false) }
     }
-}
-
 
 
     /**
@@ -1760,10 +1771,18 @@ class DetailViewModel : BaseViewModel() {
     private val playerStateLock = Mutex()
     fun setPlayUrl(string: String) {
         _state.update { it.copy(isLoading = true) }
+
+        log.debug("<DLNA> 开始播放")
+
+        if (vmPlayerType.first() == PlayerType.Outie.id){
+            Play.start(string, "LumenTV-DLNA")
+            _state.update { it.copy(isLoading = false) }
+            return
+        }
+
         scope.launch {
             // 加锁确保状态转换原子性
             playerStateLock.withLock {
-                log.debug("DLNA - 开始播放")
                 when (lifecycleManager.lifecycleState.value) {// 检查当前状态
                     Idle -> {
                         log.debug("播放器未初始化，开始初始化...")

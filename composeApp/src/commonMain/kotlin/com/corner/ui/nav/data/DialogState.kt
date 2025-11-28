@@ -12,7 +12,7 @@ object DialogState {
     var showPngDialog = false
         private set
 
-    var currentM3U8Url = ""
+    var currentM3U8Url: String = ""
         set(value) {
             if (value.isNotEmpty()) {
                 log.debug("DialogState.currentM3U8Url --> {}", value)

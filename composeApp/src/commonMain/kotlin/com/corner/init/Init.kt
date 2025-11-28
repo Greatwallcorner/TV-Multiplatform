@@ -97,8 +97,8 @@ class Init {
             GlobalAppState.upnpService = null
         }
 
-        fun initConfig() {
-            if (_isInitializedSuccessfully.value) {
+        fun initConfig(forceReinit: Boolean = false) {
+            if (!forceReinit && _isInitializedSuccessfully.value) {
                 log.warn("配置已初始化，跳过重复操作")
                 return
             }

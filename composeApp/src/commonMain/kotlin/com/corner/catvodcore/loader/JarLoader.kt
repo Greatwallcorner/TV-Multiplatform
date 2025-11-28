@@ -56,8 +56,8 @@ object JarLoader {
                 val texts = currentSpider.split(Constant.md5Split)
                 val md5 = if (texts.size <= 1) "" else texts[1].trim()
                 val jar = texts[0]
-                log.debug("md5 is {}", md5)
-                log.debug("texts is {}", texts)
+                log.debug("<loadJar>md5 is {}", md5)
+                log.debug("<loadJar>texts is {}", texts)
                 when {
                     md5.isNotEmpty() && Utils.equals(parseJarUrl(jar), md5) -> {
                         load(key, Paths.jar(parseJarUrl(jar)))
