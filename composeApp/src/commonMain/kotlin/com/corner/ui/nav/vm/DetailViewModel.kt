@@ -245,9 +245,9 @@ class DetailViewModel : BaseViewModel() {
                         loadVodDetail(dt)
 
                         if (vmPlayerType.first() == PlayerType.Innie.id) {
-                            lifecycleManager.transitionTo(Loading) { lifecycleManager.loading() }
-                                .onFailure { log.warn("load fun -- 切换状态失败,可能会影响后续状态管理") }
-                                .onSuccess { log.info("load fun -- Start Play") }
+                            lifecycleManager.transitionTo(Loading) {
+                                lifecycleManager.loading().onFailure { log.warn("初始化内部播放器失败!") }
+                            }
                         }
 
                         startPlay()//load加载完成后启动播放流程
@@ -286,39 +286,30 @@ class DetailViewModel : BaseViewModel() {
      *
      */
     fun quickSearch() {
-        // 更新状态流，标记当前正在进行快速搜索
         _state.update { it.copy(isLoading = true, isBuffering = false) }
-        // 在搜索协程作用域中启动一个新的协程
         searchScope.launch {
             // 筛选出可切换的站点列表，并打乱顺序
             val quickSearchSites = ApiConfig.api.sites.filter { it.changeable == 1 }.shuffled()
-
             val totalSites = quickSearchSites.size  // 获取总站点数
             var completedCount = 0  // 已完成计数器
 
-            // 记录开始执行快速搜索的日志，包含参与搜索的站点名称
             log.debug("开始执行快搜 sites:{}", quickSearchSites.map { it.name }.toString())
-            // 发送开始搜索消息
-            postQuickSearchProgress(0, totalSites)
-            // 创建一个信号量，限制同时执行的搜索任务数量为 2
-            val semaphore = Semaphore(2)
-            // 遍历可搜索的站点列表
-            quickSearchSites.forEach {
-                // 为每个站点启动一个新的协程进行搜索
-                val job = launch {
-                    // 获取信号量许可，若没有可用许可则挂起协程
-                    semaphore.acquire()
+
+            postQuickSearchProgress(0, totalSites)  // 发送开始搜索消息
+            val semaphore = Semaphore(2)            // 创建一个信号量，限制同时执行的搜索任务数量为 2
+
+            quickSearchSites.forEach {      // 遍历可搜索的站点列表
+                val job = launch {          // 为每个站点启动一个新的协程进行搜索
+                    semaphore.acquire()     // 获取信号量许可，若没有可用许可则挂起协程
                     try {
-                        // 设置超时时间为 2500 毫秒，在超时时间内执行搜索操作
-                        withTimeout(2500L) {
-                            // 调用 SiteViewModel 的搜索方法进行搜索
+                        withTimeout(2500L) {// 设置超时时间为 2500 毫秒，在超时时间内执行搜索操作
                             SiteViewModel.searchContent(it, getChooseVod().vodName ?: "", true)
-                            // 记录该站点搜索完成的日志
-                            log.debug("{}完成搜索", it.name)
+                            log.debug("{}完成搜索", it.name) // 记录该站点搜索完成的日志
                         }
+                    } catch (e: Exception) {
+                        log.error("搜索站点 {} 时发生异常: {}", it.name, e.message)
                     } finally {
-                        // 释放信号量许可，允许其他协程获取许可
-                        semaphore.release()
+                        semaphore.release() // 释放信号量许可，允许其他协程获取许可
                     }
                 }
 
@@ -348,7 +339,7 @@ class DetailViewModel : BaseViewModel() {
                     if (throwable == null) {
                         // 若协程正常完成，记录完成日志并输出结果列表大小
                         log.debug(
-                            "一个job执行完毕 {}/{} result size:{}",
+                            "job执行完毕 {}/{} result size:{}",
                             completedCount,
                             totalSites,
                             _state.value.quickSearchResult.size
@@ -357,14 +348,22 @@ class DetailViewModel : BaseViewModel() {
 
                     // 使用同步锁确保线程安全
                     synchronized(lock) {
-                        // 若快速搜索结果不为空，详情信息为空，且未启动加载详情操作
-                        if (_state.value.quickSearchResult.isNotEmpty() && (_state.value.detail.isEmpty()) && !launched) {
-                            // 记录开始加载详情的日志
-                            log.info("开始加载 详情")
-                            // 标记已启动加载详情操作
-                            launched = true
-                            // 加载快速搜索结果中的第一个视频详情
-                            loadDetail(_state.value.quickSearchResult[0])
+                        try {
+                            // 检查状态是否仍然有效
+                            if (!_state.value.quickSearchResult.isNullOrEmpty() &&
+                                _state.value.detail.isEmpty() &&
+                                !launched &&
+                                isActive
+                            ) {  // 检查协程是否仍活跃
+                                // 记录开始加载详情的日志
+                                log.info("开始加载 详情")
+                                // 标记已启动加载详情操作
+                                launched = true
+                                // 加载快速搜索结果中的第一个视频详情
+                                loadDetail(_state.value.quickSearchResult[0])
+                            }
+                        } catch (e: Exception) {
+                            log.error("处理搜索完成时发生异常: {}", e.message)
                         }
                     }
                 }
@@ -372,7 +371,11 @@ class DetailViewModel : BaseViewModel() {
                 jobList.add(job)
             }
             // 等待所有搜索任务完成
-            jobList.joinAll()
+            try {
+                jobList.joinAll()
+            } catch (e: Exception) {
+                log.error("等待搜索任务完成时发生异常: {}", e.message)
+            }
             // 统一关闭加载指示器
             _state.update { it.copy(isLoading = false) }
             // 若快速搜索结果为空
@@ -383,10 +386,15 @@ class DetailViewModel : BaseViewModel() {
                 SnackBar.postMsg("暂无线路数据", type = SnackBar.MessageType.WARNING)
             }
         }.invokeOnCompletion {
-            // 所有搜索任务完成后，更新状态流，标记搜索结束
-            _state.update { it.copy() }
+            try {
+                // 所有搜索任务完成后，更新状态流，标记搜索结束
+                _state.update { it.copy() }
+            } catch (e: Exception) {
+                log.error("搜索完成回调时发生异常: {}", e.message)
+            }
         }
     }
+
 
     /**
      * 加载**快速搜索**出的视频的的详细信息。
@@ -520,6 +528,17 @@ class DetailViewModel : BaseViewModel() {
                 isLoading = true
             )
         }
+
+        // 获取第一个剧集作为默认选中剧集
+        val firstEpisode = vod.vodFlags.first().episodes.firstOrNull()
+        if (firstEpisode != null) {
+            // 使用统一的方法更新剧集激活状态和当前选中的剧集信息
+            updateEpisodeActivation(firstEpisode)
+        } else {
+            // 如果没有剧集，至少更新currentEp为null
+            _state.update { it.copy(currentEp = null) }
+        }
+
         // 在开始播放新视频前，强制停止当前正在播放的视频
         scope.launch {
             when (
@@ -531,36 +550,36 @@ class DetailViewModel : BaseViewModel() {
                     lifecycleManager.stop()
                         .onSuccess {
                             lifecycleManager.ended()
-                                .onSuccess { transitionToLoading() }
+                                .onSuccess { startPlay() }
                         }
                         .onFailure {
                             log.error("停止播放失败，强行播放视频...")
-                            transitionToLoading()
+                            startPlay()
                         }
                 }
                 // 如果已暂停，直接停止
                 Paused -> {
                     log.debug("setDetail - 已暂停，直接停止")
                     lifecycleManager.ended()
-                        .onSuccess { transitionToLoading() }
-                        .onFailure { transitionToLoading() }
+                        .onSuccess { startPlay() }
+                        .onFailure { startPlay() }
                 }
                 // 如果已结束，直接转换到loading
                 Ended -> {
                     log.debug("setDetail - 已结束，直接转换到loading")
-                    transitionToLoading()
+                    startPlay()
                 }
                 //如果初始化完成，直接转换到loading
                 Initialized -> {
                     log.debug("setDetail - 正在初始化，直接转换到loading")
-                    transitionToLoading()
+                    startPlay()
                 }
                 // 其他状态，尝试停止后转换到loading
                 else -> {
                     log.debug("setDetail - 其他状态，尝试停止后转换到loading,当前状态:{}", currentState)
                     lifecycleManager.ended()
-                        .onSuccess { transitionToLoading() }
-                        .onFailure { transitionToLoading() }
+                        .onSuccess { startPlay() }
+                        .onFailure { startPlay() }
                 }
             }
         }.invokeOnCompletion { _state.update { it.copy(isLoading = false) } }
@@ -586,18 +605,6 @@ class DetailViewModel : BaseViewModel() {
         SnackBar.postMsg(message, priority = 1, type = SnackBar.MessageType.INFO, key = "quick_search_progress")
     }
 
-
-    /**
-     * 转换到加载状态并启动播放。
-     *
-     * 若当前状态允许转换到加载状态，会先转换到加载状态，然后启动播放。
-     *
-     * 属于setDetail私有辅助方法
-     */
-    private suspend fun transitionToLoading() {
-        lifecycleManager.transitionTo(Loading) { lifecycleManager.loading() }
-        startPlay()//setDetail启动播放流程
-    }
     //////////////////////////////////////////////////////////////////////////////
     //------------------------------quick Search END----------------------------//
     //////////////////////////////////////////////////////////////////////////////
@@ -623,18 +630,23 @@ class DetailViewModel : BaseViewModel() {
                     showProgress()
                 }
 
-                log.debug("<清理资源>当前播放器类型: ${vmPlayerType.first()}")
+                log.debug("<清理资源>当前播放器类型:${vmPlayerType.first()}，手动放弃清理播放器资源:{${!releaseController}}")
 
                 if (releaseController && vmPlayerType.first() == PlayerType.Innie.id) {
                     // 使用串行清理，避免并发问题
                     // 特殊状态转换，将关闭视频放在了特殊清理方法中，且直接状态转换playing->cleanup
-                    lifecycleManager.cleanup()
-                        .onSuccess {
-                            // 确保清理完成后再释放
-                            lifecycleManager.release()
-                                .onSuccess { log.debug("生命周期释放完成") }
-                                .onFailure { e -> log.error("生命周期释放失败", e) }
-                        }
+                    try {
+                        lifecycleManager.cleanup()
+                            .onSuccess {
+                                // 确保清理完成后再释放
+                                lifecycleManager.release()
+                                    .onSuccess { log.debug("生命周期释放完成") }
+                                    .onFailure { e -> log.error("生命周期释放失败", e) }
+                            }
+                            .onFailure { e -> log.error("生命周期清理失败", e) }
+                    } catch (e: Exception) {
+                        log.error("清理播放器时发生异常", e)
+                    }
                 }
 
                 // 清理协程任务
@@ -651,7 +663,7 @@ class DetailViewModel : BaseViewModel() {
                 SiteViewModel.clearQuickSearch()
                 launched = false
 
-                supervisor.cancelChildren() // 取消所有子任务
+                //supervisor.cancelChildren() // 取消所有子任务
 
                 log.debug("----------清理详情页资源完成----------")
 
@@ -676,7 +688,6 @@ class DetailViewModel : BaseViewModel() {
      * @param result 播放结果对象，可能为 null。
      */
     fun play(result: Result?) {
-
         if (result == null || result.playResultIsEmpty()) {
             SnackBar.postMsg("加载内容失败，尝试切换线路", type = SnackBar.MessageType.WARNING)
             nextFlag()
@@ -711,8 +722,8 @@ class DetailViewModel : BaseViewModel() {
      * @param needAutoPlay 是否需要自动播放。
      */
     private suspend fun prepareForPlayback(result: Result) {
-        log.debug("prepareForPlayback -- 开始处理播放器状态")
-        log.debug("prepareForPlayback -- 当前状态为: {}", lifecycleManager.lifecycleState.value)
+        log.debug("<prepareForPlayback> -- 开始处理播放器状态")
+        log.debug("<prepareForPlayback> -- 当前状态为: {}", lifecycleManager.lifecycleState.value)
 
         // 统一确保播放器处于 Ready 状态
         val success = when (lifecycleManager.lifecycleState.value) {
@@ -722,25 +733,22 @@ class DetailViewModel : BaseViewModel() {
             }
 
             Playing -> {
-                log.debug("prepareForPlayback -- 当前状态为playing，需要状态转换")
+                log.debug("<prepareForPlayback> -- 当前状态为playing，需要状态转换")
                 lifecycleManager.stop().isSuccess &&
                         lifecycleManager.ended().isSuccess &&
                         lifecycleManager.ready().isSuccess
             }
 
             Loading -> {
-                log.debug("prepareForPlayback -- 当前状态为loading，需要状态转换")
-                lifecycleManager.ended().isSuccess &&
-                        lifecycleManager.ready().isSuccess
+                lifecycleManager.ready().isSuccess
             }
 
             Ended -> {
-                log.debug("prepareForPlayback -- 当前状态为ended，需要状态转换")
                 lifecycleManager.ready().isSuccess
             }
 
             else -> {
-                log.debug("prepareForPlayback -- 当前状态为{}，转换到ready状态", lifecycleManager.lifecycleState.value)
+                log.debug("<prepareForPlayback> -- 当前状态为{}，转换到ready状态", lifecycleManager.lifecycleState.value)
                 lifecycleManager.ended().isSuccess &&
                         lifecycleManager.ready().isSuccess
             }
@@ -749,7 +757,7 @@ class DetailViewModel : BaseViewModel() {
         if (success) {
             playInitPlayer(result)
         } else {
-            log.error("prepareForPlayback -- 状态转换失败，无法进入 Ready 状态")
+            log.error("<prepareForPlayback> -- 状态转换失败，无法进入 Ready 状态")
             SnackBar.postMsg("播放器状态错误，无法准备播放", type = SnackBar.MessageType.ERROR)
         }
     }
@@ -766,17 +774,17 @@ class DetailViewModel : BaseViewModel() {
      */
     private suspend fun playInitPlayer(result: Result) {
         _state.update { it.copy(isLoading = false, isBuffering = false) }
-        log.debug("playInitPlayer - 设置播放链接")
+        log.debug("<playInitPlayer> -- 设置播放链接")
         // 检查当前状态，避免重复加载
         if (lifecycleManager.lifecycleState.value != Ready) {
-            log.warn("playInitPlayer - 播放器状态不正确: {}", lifecycleManager.lifecycleState.value)
+            log.error("<playInitPlayer> -- 播放器状态不正确: {},播放器检查失败！", lifecycleManager.lifecycleState.value)
             return
         }
 
         try {
             controller.load(result.url.v())// playEP加载播放流程
         } catch (e: Exception) {
-            log.error("playInitPlayer - 加载或播放 URL 失败: ${result.url.v()}", e)
+            log.error("<playInitPlayer> -- 加载或播放 URL 失败: ${result.url.v()}", e)
             // 可能需要通知 UI 或回滚状态
             SnackBar.postMsg("加载播放链接失败: ${e.message}", type = SnackBar.MessageType.ERROR)
             return // 退出函数，不尝试收集 playerReady
@@ -785,18 +793,18 @@ class DetailViewModel : BaseViewModel() {
         // 为 collect 添加超时，防止无限期挂起
         try {
             withTimeout(30000) { // 30秒超时
-                log.info("play - 播放器加载完成，开始转换状态")
+                log.info("<playInitPlayer> -- 播放器加载完成，开始转换状态")
                 lifecycleManager.transitionTo(Playing) {
                     lifecycleManager.start()
                         .onFailure {
-                            log.error("play - 播放器状态转换 Playing 失败", it)
+                            log.error("<playInitPlayer> -- 播放器状态转换 Playing 失败", it)
                             SnackBar.postMsg(
-                                "播放器状态转换 Playing 失败: ${it.message}",
+                                "播放器状态转换失败: ${it.message}",
                                 type = SnackBar.MessageType.ERROR
                             )
                         }
                 }.onFailure { e ->
-                    log.error("play - 播放器就绪失败", e)
+                    log.error("<playInitPlayer> -- 播放器就绪失败", e)
                     SnackBar.postMsg(
                         "播放器就绪失败: ${e.message}",
                         type = SnackBar.MessageType.ERROR
@@ -805,11 +813,11 @@ class DetailViewModel : BaseViewModel() {
 
             }
         } catch (e: TimeoutCancellationException) {
-            log.error("playInitPlayer - 等待播放器就绪超时:{\n$e\n}")
+            log.error("<playInitPlayer> -- 等待播放器就绪超时:{\n$e\n}")
             SnackBar.postMsg("播放器加载超时", type = SnackBar.MessageType.ERROR)
             lifecycleManager.ended() // 或者尝试结束当前加载
         } catch (e: Exception) {
-            log.error("playInitPlayer - 等待播放器就绪时发生错误", e)
+            log.error("<playInitPlayer> -- 等待播放器就绪时发生错误", e)
             SnackBar.postMsg("播放器准备就绪时发生错误: ${e.message}", type = SnackBar.MessageType.ERROR)
             lifecycleManager.ended() // 或者尝试结束当前加载
         }
@@ -872,7 +880,7 @@ class DetailViewModel : BaseViewModel() {
         when (playerType.first()) {
             PlayerType.Innie.id -> {
                 scope.launch {
-                    log.debug("play - 播放器状态{}", lifecycleManager.lifecycleState.value)
+                    log.debug("<play>当前播放器状态{}", lifecycleManager.lifecycleState.value)
                     play(result)
                 }
             }
@@ -880,6 +888,7 @@ class DetailViewModel : BaseViewModel() {
             PlayerType.Outie.id -> {
                 scope.launch {
                     SnackBar.postMsg("即将播放" + ": ${ep.name}", type = SnackBar.MessageType.INFO)
+                    _state.update { it.copy(isBuffering = false) }
                     Play.start(result.url.v(), ep.name)
                 }
             }
@@ -916,7 +925,7 @@ class DetailViewModel : BaseViewModel() {
      */
     private suspend fun handlePlaybackHistory(detail: Vod): Episode? {
         val historyKey = Utils.getHistoryKey(detail.site?.key!!, detail.vodId)
-        log.debug("[StartPlay]查询历史记录，Key: {}", historyKey)
+        log.debug("<查询历史记录>Key: {}", historyKey)
 
         // 查询历史记录
         val history = Db.History.findHistory(historyKey)
@@ -949,43 +958,36 @@ class DetailViewModel : BaseViewModel() {
     fun startPlay() {
         //显示加载状态
         _state.update { it.copy(isLoading = true) }
+
+        val detail = _state.value.detail        // 获取当前视频详情信息
+
         // 检查视频详情信息是否为空，若为空则不进行播放操作
-        if (!_state.value.detail.isEmpty()) {
-            if (controller.isReleased()) {// 检查播放器控制器是否已释放，若已释放则记录错误日志并返回
+        if (!detail.isEmpty()) {
+            if (controller.isReleased()) {
+                // 检查播放器是否已释放
                 log.error("播放器已被释放，无法播放!")
                 SnackBar.postMsg("播放器已被释放,无法播放!请重启软件或去GITHUB反馈!", type = SnackBar.MessageType.ERROR)
+                _state.update { it.copy(isLoading = false, isBuffering = false) }
                 return
-            }
-
-            if (controller.isPlaying() && !_state.value.shouldPlay) {// 检查视频是否正在播放且不需要重新播放，若是则记录日志并返回
+            } else if (controller.isPlaying()) {
+                // 检查是否正在播放
                 log.warn("视频播放中,播放请求被驳回")
                 SnackBar.postMsg("视频播放中,播放请求被驳回!", type = SnackBar.MessageType.WARNING)
                 _state.update { it.copy(isLoading = false, isBuffering = false) }
                 return
-            }
-
-            _state.value.shouldPlay = false         // 将 shouldPlay 标志置为 false，表示不需要重新播放
-            val detail = _state.value.detail        // 获取当前视频详情信息
-
-            if (detail.isEmpty()) {                 // 再次检查视频详情信息是否为空，若为空则返回
+            } else if (detail.isEmpty()) {
+                // 检查视频详情是否为空
                 log.error("视频详情信息为空，无法播放!")
                 SnackBar.postMsg("视频详情信息为空,无法播放!", type = SnackBar.MessageType.ERROR)
-                _state.update { it.copy(isLoading = false) }
+                _state.update { it.copy(isLoading = false, isBuffering = false) }
                 return
             }
 
             scope.launch {
                 val findEp = handlePlaybackHistory(detail)
-                if (findEp != null) {
-                    log.debug("[StartPlay]handlePlaybackHistory - 找到历史记录:{}", findEp.name)
-                }
-//                controllerHistory?.let { history ->
-//                    log.debug("[StartPlay]controllerHistory - 找到历史记录:{}", history)
-//                    controller.setControllerHistory(history)
-//                }
                 detail.subEpisode.apply {   // 处理视频的子剧集列表
                     val ep = findEp ?: first()
-                    log.debug("[StartPlay]startPlay - 开始播放视频:{}", ep.name)
+                    log.debug("<startPlay>开始播放视频:{}", ep.name)
                     _state.update { it.copy(isLoading = false) }
 
                     playEp(detail, ep) //startPlay调用playEp()方法开始播放视频
@@ -1512,13 +1514,16 @@ class DetailViewModel : BaseViewModel() {
             val newEpisodes = it.episodes                           //获取新的剧集列表
             val newEp = newEpisodes.find { it.number == oldNumber } ?: newEpisodes.firstOrNull() //获取新的剧集对象
             currentSelectedEpNumber = newEp?.number ?: 1 //设置新的剧集编号
+
             log.debug("chooseFlag -- 切换线路，新的线路标识: ${it.flag},剧集编号${newEp?.number}")
+
             _currentFlagName.value = it.flag.toString()  //更新线路标识
 
             _state.update { it.copy(isLoading = true, isBuffering = false) }
 
             lifecycleManager.transitionTo(Ended) {
-                lifecycleManager.ended().onFailure { e -> log.error("转换为ended失败", e) }
+                lifecycleManager.ended()
+                    .onFailure { e -> log.error("转换为ended失败", e) }
                     .onSuccess { log.debug("转换为ended成功") }
             }
 
@@ -1580,7 +1585,6 @@ class DetailViewModel : BaseViewModel() {
                 _state.update { model ->      // 更新状态流：设置新详情、标记需要播放、取消缓冲状态
                     model.copy(
                         detail = dt,
-                        shouldPlay = true,    // 触发播放器开始播放
                         isLoading = false,    // 取消加载状态
                         isBuffering = false,  // 取消缓冲状态
                     )
@@ -1774,7 +1778,7 @@ class DetailViewModel : BaseViewModel() {
 
         log.debug("<DLNA> 开始播放")
 
-        if (vmPlayerType.first() == PlayerType.Outie.id){
+        if (vmPlayerType.first() == PlayerType.Outie.id) {
             Play.start(string, "LumenTV-DLNA")
             _state.update { it.copy(isLoading = false) }
             return

@@ -131,11 +131,13 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
             vm.load()
         }
         onDispose {
-            //重置播放器状态
-            vm.clear()
-            if (localShowPngDialog) {
-                //关闭websocket服务
-                BrowserUtils.cleanup()
+            if (!GlobalAppState.closeApp.value) {
+                //重置播放器状态
+                vm.clear()
+                if (localShowPngDialog) {
+                    //关闭websocket服务
+                    BrowserUtils.cleanup()
+                }
             }
         }
     }
@@ -202,10 +204,10 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                          * 但是controller.isReleased为true，导致无法播放
                                          * 传入releaseController = false时不释放播放器资源
                                          * */
-
+                                        log.info("<DetailScreen>执行快速搜索，释放非播放器的其他资源")
                                         vm.clear(false)
                                         vm.quickSearch()
-                                        SnackBar.postMsg("重新加载", type = SnackBar.MessageType.INFO)
+                                        SnackBar.postMsg("执行快速搜索", type = SnackBar.MessageType.INFO)
                                     }
                                 },
                                 enabled = !model.isLoading,

@@ -27,6 +27,7 @@ object JarLoader {
     private const val MAX_RETRY_COUNT = 30
 
     fun clear() {
+        log.info("clear jar loader")
         spiders.values.forEach { spider ->
             CoroutineScope(Dispatchers.IO).launch {
                 spider.destroy()

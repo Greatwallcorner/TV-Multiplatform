@@ -32,8 +32,12 @@ object GlobalAppState {
     val closeApp = MutableStateFlow(false)
     val videoFullScreen = MutableStateFlow(false)
     val DLNAUrl = MutableStateFlow("")
-    private val mainJob = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + mainJob)
+
+    // App Root CoroutineScope
+    private val rootJob = Job()
+    val rootScope = CoroutineScope(Dispatchers.IO + rootJob)
+
+
     private val upnpServiceLock = Any()
     private var _upnpService: UpnpService? = null
     var upnpService: UpnpService?
@@ -44,9 +48,9 @@ object GlobalAppState {
     var detailFrom = DetailFromPage.HOME
 
     fun cancelAllOperations(reason: String = "Normal shutdown") {
-        if (!mainJob.isCancelled) {
+        if (!rootJob.isCancelled) {
             log.info("Cancelling all operations: $reason")
-            mainJob.cancel(reason)
+            rootScope.cancel(reason)
         }
     }
 
@@ -69,7 +73,6 @@ object GlobalAppState {
         hotList.value = emptyList()
         home.value = Site.get("", "")
         clear.value = false
-        closeApp.value = false
         videoFullScreen.value = false
         DLNAUrl.value = ""
         chooseVod.value = Vod()

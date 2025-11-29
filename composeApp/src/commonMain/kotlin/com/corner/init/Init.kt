@@ -58,11 +58,11 @@ class Init {
         }
 
         fun stop() {
-            GlobalAppState.cancelAllOperations("Application shutdown")
+            GlobalAppState.cancelAllOperations("Application shutdown")// stop CoroutineScope
             try {
+                VlcJInit.release()      //release VlcJ
                 resetAllStates()        //reset all states
                 BrowserUtils.cleanup()  //stop webSocket
-                VlcJInit.release()      //release VlcJ
                 KtorD.stop()            //stop KtorD
                 stopKoin()              //stop Koin
                 stopDLNA()              //stop DLNA
@@ -78,7 +78,7 @@ class Init {
             }
         }
 
-        private fun  stopKoin() {
+        private fun stopKoin() {
             log.info("Stop Koin")
             instance?.close()
             instance = null

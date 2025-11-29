@@ -36,22 +36,6 @@ fun main() {
     launchErrorCatcher()
     printSystemInfo()
 
-    // Application Stop Hook
-    Runtime.getRuntime().addShutdownHook(Thread {
-        log.info("Shutdown started")
-        try {
-            // 设置超时防止卡死
-            runBlocking {
-                withTimeout(5000) {
-                    //执行清理程序
-                    Init.stop()
-                }
-            }
-        } catch (e: Exception) {
-            log.error("Shutdown failed", e)
-        }
-    })
-
     application {
         val windowState = rememberWindowState(
             size = Util.getPreferWindowSize(600, 500), position = WindowPosition.Aligned(Alignment.Center)
@@ -90,8 +74,8 @@ fun main() {
                             window.isVisible = false
                             // 2. 保存设置
                             SettingStore.write()
-                            // 3. 等待500ms确保清理完成
-                            delay(500)
+                            // 3. 清理函数
+                            Init.stop()
                         } catch (e: Exception) {
                             log.error("关闭应用异常", e)
                         } finally {
