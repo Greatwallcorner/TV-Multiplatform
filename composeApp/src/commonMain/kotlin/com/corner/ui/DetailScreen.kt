@@ -112,9 +112,8 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
     var localShowPngDialog by remember { mutableStateOf(DialogState.showPngDialog) }
     var localCurrentM3U8Url by remember { mutableStateOf(DialogState.currentM3U8Url) }
 
-// 监听 DialogState 中的状态变化
+    // 监听 DialogState 中的状态变化
     LaunchedEffect(DialogState.showPngDialog, DialogState.currentM3U8Url) {
-//        log.debug("DialogState.showPngDialog:{}",DialogState.showPngDialog)
         localShowPngDialog = DialogState.showPngDialog
         localCurrentM3U8Url = DialogState.currentM3U8Url
     }
@@ -132,11 +131,13 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
             vm.load()
         }
         onDispose {
-            //重置播放器状态
-            vm.clear()
-            if (localShowPngDialog) {
-                //关闭websocket服务
-                BrowserUtils.cleanup()
+            if (!GlobalAppState.closeApp.value) {
+                //重置播放器状态
+                vm.clear()
+                if (localShowPngDialog) {
+                    //关闭websocket服务
+                    BrowserUtils.cleanup()
+                }
             }
         }
     }
@@ -203,10 +204,10 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                          * 但是controller.isReleased为true，导致无法播放
                                          * 传入releaseController = false时不释放播放器资源
                                          * */
-
+                                        log.info("<DetailScreen>执行快速搜索，释放非播放器的其他资源")
                                         vm.clear(false)
                                         vm.quickSearch()
-                                        SnackBar.postMsg("重新加载", type = SnackBar.MessageType.INFO)
+                                        SnackBar.postMsg("执行快速搜索", type = SnackBar.MessageType.INFO)
                                     }
                                 },
                                 enabled = !model.isLoading,
@@ -300,30 +301,32 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                     .padding(start = if (isFullScreen.value) 0.dp else 16.dp),//全屏取消左侧缩进
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
+                // 将弹窗显示逻辑提取到更外层，不受 internalPlayer 限制
+                if (localShowPngDialog && !DialogState.userChoseOpenInBrowser) {
+                    PngFoundDialog(
+                        m3u8Url = localCurrentM3U8Url,
+                        Text = "在当前播放的m3u8文件中，检测到了特殊链接，是否跳转到浏览器播放？",
+                        onDismiss = {
+                            localShowPngDialog = false
+                            DialogState.dismissPngDialog()
+                        },
+                        onOpenInBrowser = {
+                            // 获取当前选中的剧集
+                            val currentEpisode = model.detail.subEpisode.find { it.activated }
+                            val episodeName = model.detail.vodName ?: ""
+                            val episodeNumber = currentEpisode?.number ?: 0
+                            log.debug("Name is {},Number is {}", episodeName, episodeNumber)
+                            BrowserUtils.openBrowserWithHtml(localCurrentM3U8Url, episodeName, episodeNumber)
+                            localShowPngDialog = false
+                            DialogState.dismissPngDialog()
+                        },
+                        vm
+                    )
+                }
+
                 if (internalPlayer.value) {
-                    // 检查用户是否选择在浏览器打开，若选择则不显示对话框
-                    if (localShowPngDialog && !DialogState.userChoseOpenInBrowser) {
-                        PngFoundDialog(
-                            m3u8Url = localCurrentM3U8Url,
-                            Text = "在当前播放的m3u8文件中，检测到了特殊链接，是否跳转到浏览器播放？",
-                            onDismiss = {
-                                localShowPngDialog = false
-                                DialogState.dismissPngDialog()
-                            },
-                            onOpenInBrowser = {
-                                // 获取当前选中的剧集
-                                val currentEpisode = model.detail.subEpisode.find { it.activated }
-                                val episodeName = model.detail.vodName ?: ""
-                                val episodeNumber = currentEpisode?.number ?: 0
-                                log.debug("Name is {},Number is {}", episodeName, episodeNumber)
-                                BrowserUtils.openBrowserWithHtml(localCurrentM3U8Url, episodeName, episodeNumber)
-                                localShowPngDialog = false
-                                DialogState.dismissPngDialog()
-                            },
-                            vm
-                        )
-                        NoPlayerContent(message = "正在 Web 播放器中播放", subtitle = "请使用 Web 播放器")
-                    } else if (!DialogState.userChoseOpenInBrowser) {
+                    // 检查用户是否选择在浏览器打开，若选择则不显示播放器
+                    if (!DialogState.userChoseOpenInBrowser) {
                         if (!openDialogState) {
                             Player(
                                 mrl.value,
@@ -344,6 +347,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                 } else {
                     NoPlayerContent(message = "正在外部播放器中播放", subtitle = "请使用外部播放器")
                 }
+
                 AnimatedVisibility(!isFullScreen.value, modifier = Modifier.fillMaxSize().padding(end = 16.dp)) {
                     val detail = model.detail
                     val hasEpisodes = detail.subEpisode.isNotEmpty()
@@ -365,6 +369,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                     }
                 }
             }
+
             AnimatedVisibility(!isFullScreen.value) {
                 val searchResultList = derivedStateOf { model.quickSearchResult.toList() }
                 Row(

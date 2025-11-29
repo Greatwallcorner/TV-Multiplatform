@@ -103,7 +103,6 @@ fun Player(
 
     DisposableEffect(videoFullScreen.value, showControllerBar.value) {
         try {
-            player_log.debug("robot cancel")
             keepScreenOnJob?.cancel()
 
             if (videoFullScreen.value && !showControllerBar.value) {

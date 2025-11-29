@@ -1146,7 +1146,7 @@ fun setConfig(textFieldValue: String?) {
         }
 
         ApiConfig.api.cfg = Db.Config.find(textFieldValue, ConfigType.SITE.ordinal.toLong()).firstOrNull()
-        initConfig()
+        initConfig(true)
     }.invokeOnCompletion {
         hideProgress()
     }

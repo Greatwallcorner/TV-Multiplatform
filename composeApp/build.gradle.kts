@@ -73,7 +73,6 @@ kotlin {
                 //ktor http server
                 implementation("io.ktor:ktor-server-core:$ktorVer")
                 implementation("io.ktor:ktor-server-netty:$ktorVer")
-//                implementation("io.ktor:ktor-server-status-pages:$ktorVer")
                 implementation("io.ktor:ktor-server-cors:$ktorVer")
                 implementation("io.ktor:ktor-server-default-headers:$ktorVer")
                 implementation("io.ktor:ktor-server-content-negotiation:$ktorVer")
@@ -84,8 +83,10 @@ kotlin {
 
                 // log
                 implementation("ch.qos.logback:logback-classic:$logbackVer")
-                //implementation("org.apache.logging.log4j:log4j-api:2.20.0")
+                implementation("org.apache.logging.log4j:log4j-core:2.20.0")
+                implementation("org.apache.logging.log4j:log4j-api:2.20.0")
                 implementation("org.fusesource.jansi:jansi:2.4.0")
+
                 // image-loader
                 api(libs.image.loader)
                 // optional - Moko Resources Decoder
@@ -166,7 +167,7 @@ compose.desktop {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("src/desktopMain/appResources"))
 //            app icons https://github.com/JetBrains/compose-multiplatform/tree/master/tutorials/Native_distributions_and_local_execution#app-icon
             windows {
-                iconFile.set(project.file("src/commonMain/composeResources/drawable/LumenTV-icon-win.ico"))
+                iconFile.set(project.file("src/commonMain/composeResources/drawable/LumenTV-icon-png.png"))
                 dirChooser = true
                 upgradeUuid = "161FA5A0-A30B-4568-9E84-B3CD637CC8FE"
             }

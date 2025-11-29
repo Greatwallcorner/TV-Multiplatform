@@ -15,7 +15,6 @@ data class DetailScreenState(
     var currentPlayUrl: String = "",
     var currentEp: Episode? = null,
     var showEpChooserDialog: Boolean = false,
-    var shouldPlay: Boolean = false,
     val currentUrl: Url? = null,
     val playResult: Result? = null,
     val loadingMessage: String = "",

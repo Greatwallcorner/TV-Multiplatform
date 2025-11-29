@@ -192,7 +192,7 @@ object ApiConfig{
             } else if (str.startsWith("http")) {
                 return Http.Get(str, connectTimeout = 60, readTimeout = 60)
                     .execute()
-                    .use { response ->  // 自动关闭Response
+                    .use { response ->
                         response.body?.string() ?: ""
                     }
             } else if (str.startsWith("file")) {

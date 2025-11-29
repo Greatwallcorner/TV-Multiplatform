@@ -31,31 +31,31 @@ fun createIcons(): Array<Icon> {
     list.add(
         Icon(
             "image/png",
-            72,
-            68,
-            24,
-            "images/icon-s.png",
-            runBlocking { Res.readBytes("drawable/TV-icon-s.png") }
-        )
-    )
-    list.add(
-        Icon(
-            "image/png",
-            269,
-            248,
-            24,
-            "images/icon-x.png",
-            runBlocking { Res.readBytes("drawable/TV-icon-x.png") }
-        )
-    )
-    list.add(
-        Icon(
-            "image/png",
-            17,
-            40,
+            48,
+            48,
             24,
             "images/icon-xs.png",
-            runBlocking { Res.readBytes("drawable/TV-icon-xs.png") }
+            runBlocking { Res.readBytes("drawable/LumenTV-icon-48.png") }
+        )
+    )
+    list.add(
+        Icon(
+            "image/png",
+            128,
+            128,
+            24,
+            "images/icon-s.png",
+            runBlocking { Res.readBytes("drawable/LumenTV-icon-128.png") }
+        )
+    )
+    list.add(
+        Icon(
+            "image/png",
+            256,
+            256,
+            24,
+            "images/icon-x.png",
+            runBlocking { Res.readBytes("drawable/LumenTV-icon-256.png") }
         )
     )
     return list.toTypedArray()

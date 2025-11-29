@@ -167,6 +167,10 @@ object SiteViewModel {
         val site = ApiConfig.getSite(key) ?: return null
 
         return try {
+            // 重置特殊链接标志位
+            _state.update { it.copy(isSpecialVideoLink = false) }
+            changeDialogState(false)
+
             val rawResult = when (site.type) {
                 3 -> handleType3Site(site, flag, id)    // 爬虫类型站点
                 4 -> handleType4Site(site, flag, id)    // 参数请求类型站点
@@ -357,7 +361,7 @@ object SiteViewModel {
             )
 
             if (pattern.containsMatchIn(processedKeyContent)) {
-                log.debug("process检测到特殊链接，弹出弹窗")
+                log.debug("<process>检测到特殊链接，弹出弹窗")
                 if (!DialogState.userChoseOpenInBrowser) {
                     DialogState.showPngDialog(url.v())
                     changeDialogState(true)

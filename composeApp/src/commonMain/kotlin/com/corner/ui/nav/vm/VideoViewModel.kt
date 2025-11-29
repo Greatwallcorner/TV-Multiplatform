@@ -44,7 +44,7 @@ class VideoViewModel : BaseViewModel() {
         }
         scope.launch {
             GlobalAppState.clear.collect {
-                log.debug("清空")
+                log.debug("清空视频数据")
                 clear()
             }
         }
