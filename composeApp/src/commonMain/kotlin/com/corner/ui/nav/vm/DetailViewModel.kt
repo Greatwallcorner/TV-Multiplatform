@@ -719,7 +719,6 @@ class DetailViewModel : BaseViewModel() {
      * 如果当前状态允许转换到准备就绪状态，则转换并加载播放链接。
      *
      * @param result 播放结果对象。
-     * @param needAutoPlay 是否需要自动播放。
      */
     private suspend fun prepareForPlayback(result: Result) {
         log.debug("<prepareForPlayback> -- 开始处理播放器状态")
@@ -815,7 +814,6 @@ class DetailViewModel : BaseViewModel() {
      * 并在播放器准备就绪后开始播放视频。
      *
      * @param result 视频结果对象，包含视频的 URL 和其他相关信息。
-     * @param needAutoPlay 自动播放标志，若为 true 则在初始化完成后自动播放视频。
      */
     private suspend fun playInitPlayer(result: Result) {
         _state.update { it.copy(isLoading = false, isBuffering = false) }
@@ -943,7 +941,6 @@ class DetailViewModel : BaseViewModel() {
 
     /**
      * 检测处理play()方法中的特殊链接
-     * @param result 播放结果对象
      * @param ep 当前剧集对象
      * */
     private fun isSpecialVideoLink(ep: Episode): Boolean {
@@ -1736,11 +1733,9 @@ class DetailViewModel : BaseViewModel() {
 
         // 恢复之前激活的剧集状态
         if (currentGlobalActiveEpisodeUrl != null) {
-            var foundActiveEpisode = false
             newSubEpisodes.forEach { episode ->
                 if (episode.url == currentGlobalActiveEpisodeUrl) {
                     episode.activated = true
-                    foundActiveEpisode = true
                 } else {
                     episode.activated = false
                 }
@@ -1765,7 +1760,7 @@ class DetailViewModel : BaseViewModel() {
      * 选择指定剧集进行播放操作，根据剧集链接类型和播放器设置执行不同播放逻辑。
      * 在操作开始时标记视频加载中，操作完成后标记加载结束。
      *
-     * @param episode 要选择播放的剧集对象，包含剧集的名称、URL 等信息。
+     * @param it 要选择播放的剧集对象，包含剧集的名称、URL 等信息。
      * @param openUri 一个函数，用于处理打开特定 URI 的操作，传入参数为 URI 字符串。
      */
     fun chooseEp(it: Episode, openUri: (String) -> Unit) {
@@ -1773,7 +1768,6 @@ class DetailViewModel : BaseViewModel() {
         videoLoading.value = true        // ui层面标记视频正在加载
 
         currentSelectedEpNumber = it.number // 记录当前选中剧集的编号
-        val detail = _state.value.detail    // 获取当前状态中的视频详情信息
 
         scope.launch {
             val isDownloadLink = Utils.isDownloadLink(it.url)
