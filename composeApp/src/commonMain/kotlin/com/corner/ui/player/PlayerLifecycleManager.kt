@@ -47,6 +47,7 @@ class PlayerLifecycleManager(
                     PlayerLifecycleState.Loading -> loadingInternal()
                     PlayerLifecycleState.Playing -> playingInternal()
                     PlayerLifecycleState.Ended -> endedInternal()
+                    PlayerLifecycleState.Ended_Async -> endedInternalAsync()
                     else -> Result.success(Unit)
                 }
             } catch (e: Exception) {
@@ -102,7 +103,7 @@ class PlayerLifecycleManager(
     private suspend fun cleanupInternal(): Result<Unit> {
         return withContext(lifecycleDispatcher) {
             try {
-                controller.stopAsync()
+                controller.cleanupAsync()
                 Result.success(Unit)
             } catch (e: Exception) {
                 log.error("停止播放失败:", e)
@@ -132,7 +133,23 @@ class PlayerLifecycleManager(
     private suspend fun endedInternal(): Result<Unit> {
         return withContext(lifecycleDispatcher) {
             try {
+                log.debug("<LifecycleManager> -- 停止播放媒体")
                 controller.stop()
+                Result.success(Unit)
+            } catch (e: Exception) {
+                log.error("播放结束失败", e)
+                Result.failure(e)
+            }
+        }
+    }
+
+
+    suspend fun endedAsync(): Result<Unit> = transitionTo(PlayerLifecycleState.Ended_Async)
+    private suspend fun endedInternalAsync(): Result<Unit> {
+        return withContext(lifecycleDispatcher) {
+            try {
+                log.debug("<LifecycleManager> -- 异步停止播放媒体")
+                controller.stopAsync()
                 Result.success(Unit)
             } catch (e: Exception) {
                 log.error("播放结束失败", e)
@@ -193,12 +210,7 @@ class PlayerLifecycleManager(
     private suspend fun loadingInternal(): Result<Unit> {
         return withContext(lifecycleDispatcher) {
             try {
-                controller.playerLoading.let { player ->
-                    if (player) {
-                        return@withContext Result.success(Unit)
-                    }
-                }
-                return@withContext Result.failure(IllegalStateException("Player not initialized"))
+                Result.success(Unit)
             } catch (e: Exception) {
                 log.error("加载失败", e)
                 Result.failure(e)
@@ -252,6 +264,7 @@ class PlayerLifecycleManager(
                 PlayerLifecycleState.Ready,
                 PlayerLifecycleState.Error,
                 PlayerLifecycleState.Ended,
+                PlayerLifecycleState.Ended_Async,
                 PlayerLifecycleState.Cleaning
             )
 
@@ -264,12 +277,14 @@ class PlayerLifecycleManager(
             PlayerLifecycleState.Playing -> to in listOf(
                 PlayerLifecycleState.Paused,
                 PlayerLifecycleState.Ended,
+                PlayerLifecycleState.Ended_Async,
                 PlayerLifecycleState.Cleaning
             )
 
             PlayerLifecycleState.Paused -> to in listOf(
                 PlayerLifecycleState.Playing,
                 PlayerLifecycleState.Ended,
+                PlayerLifecycleState.Ended_Async,
                 PlayerLifecycleState.Cleaning
             )
 
@@ -279,6 +294,7 @@ class PlayerLifecycleManager(
             )
 
             PlayerLifecycleState.Cleaning -> to in listOf(
+                PlayerLifecycleState.Initializing_Sync,
                 PlayerLifecycleState.Initialized,
                 PlayerLifecycleState.Released,
                 PlayerLifecycleState.Error
@@ -295,6 +311,11 @@ class PlayerLifecycleManager(
                 PlayerLifecycleState.Loading,
                 PlayerLifecycleState.Paused,
                 PlayerLifecycleState.Initialized
+            )
+
+            PlayerLifecycleState.Ended_Async -> to in listOf(
+                PlayerLifecycleState.Ready,
+                PlayerLifecycleState.Cleaning
             )
 
             PlayerLifecycleState.Released -> to == PlayerLifecycleState.Idle

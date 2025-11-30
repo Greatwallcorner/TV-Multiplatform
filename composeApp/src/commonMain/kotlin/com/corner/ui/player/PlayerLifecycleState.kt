@@ -38,6 +38,9 @@ enum class PlayerLifecycleState {
     /** 发生错误 */
     Error,
 
-    /** 同步初始化 */
-    Initializing_Sync
+    /** 异步初始化 */
+    Initializing_Sync,
+
+    /** 异步停止播放 */
+    Ended_Async
 }

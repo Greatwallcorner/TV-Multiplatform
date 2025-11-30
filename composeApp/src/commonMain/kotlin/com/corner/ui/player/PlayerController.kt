@@ -19,7 +19,7 @@ interface PlayerController {
     fun load(url: String): PlayerController
     fun onMediaPlayerReady(mediaPlayer: EmbeddedMediaPlayer)
     fun doWithMediaPlayer(block: (MediaPlayer) -> Unit)
-    suspend fun stopAsync()
+    suspend fun cleanupAsync()
     suspend fun loadURL(url: String, timeoutMillis: Long = 10000): PlayerController
     fun play()
     fun setAspectRatio(aspectRatio: String)
@@ -27,6 +27,7 @@ interface PlayerController {
     fun play(url:String)
     fun pause()
     fun stop()
+    suspend fun stopAsync()
     fun dispose()
     fun seekTo(timestamp: Long)
     fun setVolume(value: Float)

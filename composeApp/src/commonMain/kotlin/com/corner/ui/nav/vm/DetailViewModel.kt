@@ -286,8 +286,8 @@ class DetailViewModel : BaseViewModel() {
      *
      */
     fun quickSearch() {
-        _state.update { it.copy(isLoading = true, isBuffering = false) }
         searchScope.launch {
+            _state.update { it.copy(isLoading = true, isBuffering = false) }
             // 筛选出可切换的站点列表，并打乱顺序
             val quickSearchSites = ApiConfig.api.sites.filter { it.changeable == 1 }.shuffled()
             val totalSites = quickSearchSites.size  // 获取总站点数
@@ -376,8 +376,6 @@ class DetailViewModel : BaseViewModel() {
             } catch (e: Exception) {
                 log.error("等待搜索任务完成时发生异常: {}", e.message)
             }
-            // 统一关闭加载指示器
-            _state.update { it.copy(isLoading = false) }
             // 若快速搜索结果为空
             if (_state.value.quickSearchResult.isEmpty()) {
                 // 更新状态流，将详情信息设置为全局选中的视频信息
@@ -386,6 +384,8 @@ class DetailViewModel : BaseViewModel() {
                 SnackBar.postMsg("暂无线路数据", type = SnackBar.MessageType.WARNING)
             }
         }.invokeOnCompletion {
+            // 统一关闭加载指示器
+            _state.update { it.copy(isLoading = false) }
             try {
                 // 所有搜索任务完成后，更新状态流，标记搜索结束
                 _state.update { it.copy() }
@@ -745,6 +745,51 @@ class DetailViewModel : BaseViewModel() {
 
             Ended -> {
                 lifecycleManager.ready().isSuccess
+            }
+
+            Ended_Async -> {
+                lifecycleManager.ready().isSuccess
+            }
+
+            Error -> {
+                try {
+                    // 清理资源
+                    val cleanupSuccess = lifecycleManager.cleanup().isSuccess
+                    if (!cleanupSuccess) {
+                        log.warn("清理资源失败")
+                    }
+
+                    // 重新初始化
+                    val initSuccess = lifecycleManager.initializeSync().isSuccess
+                    if (!initSuccess) {
+                        log.error("重新初始化失败")
+                        SnackBar.postMsg("播放器初始化失败", type = SnackBar.MessageType.ERROR)
+                        false
+                    } else {
+                        // 进入加载状态
+                        val loadingSuccess = lifecycleManager.loading().isSuccess
+                        if (!loadingSuccess) {
+                            log.error("播放器加载失败")
+                            SnackBar.postMsg("播放器加载失败", type = SnackBar.MessageType.ERROR)
+                            false
+                        } else {
+                            // 进入就绪状态
+                            val readySuccess = lifecycleManager.ready().isSuccess
+                            if (!readySuccess) {
+                                log.error("播放器准备就绪失败")
+                                SnackBar.postMsg("播放器准备就绪失败", type = SnackBar.MessageType.ERROR)
+                                false
+                            } else {
+                                log.debug("错误状态恢复成功")
+                                true
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    log.error("错误状态恢复过程中发生异常", e)
+                    SnackBar.postMsg("播放器恢复失败: ${e.message}", type = SnackBar.MessageType.ERROR)
+                    false
+                }
             }
 
             else -> {
@@ -1521,74 +1566,91 @@ class DetailViewModel : BaseViewModel() {
 
             _state.update { it.copy(isLoading = true, isBuffering = false) }
 
-            lifecycleManager.transitionTo(Ended) {
-                lifecycleManager.ended()
-                    .onFailure { e -> log.error("转换为ended失败", e) }
-                    .onSuccess { log.debug("转换为ended成功") }
+            val endedDeferred = async {
+                try {
+                    withTimeout(3000) { // 3秒超时
+                        lifecycleManager.endedAsync()
+                    }
+                } catch (e: TimeoutCancellationException) {
+                    SnackBar.postMsg("关闭媒体超时！请稍后切换线路重试...", type = SnackBar.MessageType.ERROR)
+                    log.error("关闭媒体超时,等待播放器缓存完成...")
+                    throw e
+                }
             }
 
             try {
-                // 步骤1: 更新所有线路的激活状态
-                for (vodFlag in detail.vodFlags) {           // 遍历视频的所有可用播放线路
-                    if (it.show == vodFlag.show) {           // 匹配用户选择的线路
-                        vodFlag.activated = true             // 激活选中的线路
-                        detail.currentFlag = vodFlag         // 设置为当前播放线路
+                // 添加7秒超时检测，如果切换线路超过7秒则触发切换线路失败
+                withTimeout(7000) {
+                    // 步骤1: 更新所有线路的激活状态
+                    for (vodFlag in detail.vodFlags) {           // 遍历视频的所有可用播放线路
+                        if (it.show == vodFlag.show) {           // 匹配用户选择的线路
+                            vodFlag.activated = true             // 激活选中的线路
+                            detail.currentFlag = vodFlag         // 设置为当前播放线路
+                        } else {
+                            vodFlag.activated = false            // 取消其他线路的激活状态
+                        }
+                    }
+
+                    // 步骤2: 计算新的分组索引
+                    var newTabIndex = detail.currentTabIndex     // 查找之前选中的剧集在新线路中的位置
+                    if (newEp != null) {
+                        val newEpisodeIndex = newEpisodes.indexOfFirst { ep -> ep.number == newEp.number }
+                        if (newEpisodeIndex != -1) {
+                            newTabIndex = newEpisodeIndex / Constants.EpSize  // 计算新剧集所在的分组索引
+                        }
+                    }
+
+                    // 如果新分组索引超出范围，则设置为最后一组
+                    val maxTabIndex = if (newEpisodes.isNotEmpty()) {
+                        (newEpisodes.size - 1) / Constants.EpSize
                     } else {
-                        vodFlag.activated = false            // 取消其他线路的激活状态
+                        0
                     }
-                }
-
-                // 步骤2: 计算新的分组索引
-                var newTabIndex = detail.currentTabIndex     // 查找之前选中的剧集在新线路中的位置
-                if (newEp != null) {
-                    val newEpisodeIndex = newEpisodes.indexOfFirst { ep -> ep.number == newEp.number }
-                    if (newEpisodeIndex != -1) {
-                        newTabIndex = newEpisodeIndex / Constants.EpSize  // 计算新剧集所在的分组索引
+                    if (newTabIndex > maxTabIndex) {
+                        newTabIndex = maxTabIndex
                     }
-                }
 
-                // 如果新分组索引超出范围，则设置为最后一组
-                val maxTabIndex = if (newEpisodes.isNotEmpty()) {
-                    (newEpisodes.size - 1) / Constants.EpSize
-                } else {
-                    0
-                }
-                if (newTabIndex > maxTabIndex) {
-                    newTabIndex = maxTabIndex
-                }
-
-                // 步骤3: 创建更新后的视频详情对象
-                // 复制视频详情，更新当前线路和对应剧集列表
-                val dt = detail.copy(
-                    currentFlag = detail.currentFlag,
-                    currentTabIndex = newTabIndex,
-                    // 根据新的标签页索引获取对应页码的剧集
-                    subEpisode = detail.currentFlag.episodes.getPage(newTabIndex).toMutableList()
-                )
-
-                // 步骤4: 更新观看历史记录
-                // 在历史记录中保存当前选择的线路标识
-                controller.doWithHistory { it.copy(vodFlag = detail.currentFlag.flag) }
-
-                // 步骤5: 根据历史记录自动播放
-                val history = controller.history.value
-                if (history != null) {
-                    // 在历史记录中查找上次观看的剧集数据
-                    val findEp = dt.findAndSetEpByName(controller.history.value!!, oldNumber)
-                    log.debug("切换线路，新的剧集数据: {}", findEp)
-                    if (findEp != null) {
-                        playEp(dt, findEp)//手动选择线路后根据历史记录自动播放
-                    }
-                }
-
-                // 步骤6: 更新最终状态
-                _state.update { model ->      // 更新状态流：设置新详情、标记需要播放、取消缓冲状态
-                    model.copy(
-                        detail = dt,
-                        isLoading = false,    // 取消加载状态
-                        isBuffering = false,  // 取消缓冲状态
+                    // 步骤3: 创建更新后的视频详情对象
+                    // 复制视频详情，更新当前线路和对应剧集列表
+                    val dt = detail.copy(
+                        currentFlag = detail.currentFlag,
+                        currentTabIndex = newTabIndex,
+                        // 根据新的标签页索引获取对应页码的剧集
+                        subEpisode = detail.currentFlag.episodes.getPage(newTabIndex).toMutableList()
                     )
+
+                    // 步骤4: 更新观看历史记录
+                    // 在历史记录中保存当前选择的线路标识
+                    controller.doWithHistory { it.copy(vodFlag = detail.currentFlag.flag) }
+
+                    // 等待 ended 操作完成
+                    endedDeferred.await()
+
+                    // 步骤5: 根据历史记录自动播放
+                    val history = controller.history.value
+                    if (history != null) {
+                        // 在历史记录中查找上次观看的剧集数据
+                        val findEp = dt.findAndSetEpByName(controller.history.value!!, oldNumber)
+                        log.debug("切换线路，新的剧集数据: {}", findEp)
+                        if (findEp != null) {
+                            playEp(dt, findEp)//手动选择线路后根据历史记录自动播放
+                        }
+                    }
+
+                    // 步骤6: 更新最终状态
+                    _state.update { model ->      // 更新状态流：设置新详情、标记需要播放、取消缓冲状态
+                        model.copy(
+                            detail = dt,
+                            isLoading = false,    // 取消加载状态
+                            isBuffering = false,  // 取消缓冲状态
+                        )
+                    }
                 }
+            } catch (e: TimeoutCancellationException) {
+                // 7秒超时处理：触发切换线路失败
+                log.error("切换线路超时(7秒)，切换失败", e)
+                SnackBar.postMsg("切换线路超时，切换失败", type = SnackBar.MessageType.ERROR)
+                _state.update { it.copy(isLoading = false, isBuffering = false) }
             } catch (e: Exception) {
                 // 异常处理：记录错误并提示用户
                 log.error("切换线路失败", e)
