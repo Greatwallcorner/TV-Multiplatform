@@ -517,7 +517,6 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     override fun setVolume(value: Float) = catch {
         player?.audio()?.setVolume((value * 100).toInt().coerceIn(0..150))
         _state.update { it.copy(volume = value) }
-        showTips("音量：${player?.audio()?.volume()}")
         if (value > 0f) {
             SettingStore.doWithCache {
                 var state = it["playerState"]
@@ -527,6 +526,10 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
                 }
                 (state as PlayerStateCache).add("volume", value.toString())
             }
+        }
+        scope.launch {
+            delay(50) // 短暂延迟确保状态同步
+            showTips("音量：${(value * 100).toInt().coerceIn(0..100)}")
         }
     }
 

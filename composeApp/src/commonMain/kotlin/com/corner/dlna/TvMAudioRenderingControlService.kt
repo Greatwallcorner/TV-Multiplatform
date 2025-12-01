@@ -1,5 +1,6 @@
 package com.corner.dlna
 
+import com.corner.ui.player.vlcj.VlcJInit
 import com.corner.util.thisLogger
 import org.jupnp.model.types.UnsignedIntegerFourBytes
 import org.jupnp.model.types.UnsignedIntegerTwoBytes
@@ -24,7 +25,13 @@ class TvMAudioRenderingControlService:AbstractAudioRenderingControl() {
     }
 
     override fun getVolume(instanceId: UnsignedIntegerFourBytes?, channelName: String?): UnsignedIntegerTwoBytes {
-        TODO("Not yet implemented")
+        val controller = VlcJInit.getController()
+        if (controller != null && !controller.isReleased()) {
+            val state = controller.state.value
+            val volumeValue = (state.volume * 100).toInt().coerceIn(0, 100)
+            return UnsignedIntegerTwoBytes(volumeValue.toLong())
+        }
+        return UnsignedIntegerTwoBytes(50) // 默认返回 50%
     }
 
     override fun setVolume(
@@ -33,6 +40,12 @@ class TvMAudioRenderingControlService:AbstractAudioRenderingControl() {
         desiredVolume: UnsignedIntegerTwoBytes?
     ) {
         log.info("setVolume instanceId:{} channelName:{} desiredVolume:{}", instanceId, channelName, desiredVolume)
+
+        val controller = VlcJInit.getController()
+        if (controller != null && !controller.isReleased()) {
+            val volumeValue = desiredVolume?.value?.toFloat()?.div(100.0f) ?: 0f
+            controller.setVolume(volumeValue)
+        }
     }
 
     override fun getCurrentChannels(): Array<Channel> {

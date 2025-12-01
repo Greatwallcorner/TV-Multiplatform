@@ -12,6 +12,9 @@ class VlcJInit {
         private var controller: VlcjFrameController? = null
         @Volatile private var isReleased = false
 
+        fun getController(): VlcjFrameController? {
+            return controller
+        }
         fun setController(controller: VlcjFrameController) {
             this.controller = controller
             isReleased = false

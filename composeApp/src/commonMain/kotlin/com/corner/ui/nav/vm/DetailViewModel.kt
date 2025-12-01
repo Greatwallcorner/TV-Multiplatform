@@ -350,7 +350,7 @@ class DetailViewModel : BaseViewModel() {
                     synchronized(lock) {
                         try {
                             // 检查状态是否仍然有效
-                            if (!_state.value.quickSearchResult.isNullOrEmpty() &&
+                            if (!_state.value.quickSearchResult.isEmpty() &&
                                 _state.value.detail.isEmpty() &&
                                 !launched &&
                                 isActive
@@ -1646,7 +1646,7 @@ class DetailViewModel : BaseViewModel() {
             } catch (e: TimeoutCancellationException) {
                 // 7秒超时处理：触发切换线路失败
                 log.error("切换线路超时(7秒)，切换失败", e)
-                SnackBar.postMsg("切换线路超时，切换失败", type = SnackBar.MessageType.ERROR)
+                SnackBar.postMsg("切换线路超时，切换失败！请等待播放器缓存完毕!", type = SnackBar.MessageType.ERROR)
                 _state.update { it.copy(isLoading = false, isBuffering = false) }
             } catch (e: Exception) {
                 // 异常处理：记录错误并提示用户
@@ -1674,8 +1674,8 @@ class DetailViewModel : BaseViewModel() {
             log.debug("切换清晰度，结束播放,当前播放器状态: {}", lifecycleManager.lifecycleState.value)
 
             try {
-                // 确保在状态转换前清理旧资源
-                controller.cleanupBeforeQualityChange()
+//                // 确保在状态转换前清理旧资源
+//                controller.cleanupBeforeQualityChange()
 
                 lifecycleManager.transitionTo(Ended) { lifecycleManager.ended() }
                 lifecycleManager.transitionTo(Ready) { lifecycleManager.ready() }
@@ -1820,15 +1820,13 @@ class DetailViewModel : BaseViewModel() {
         }.invokeOnCompletion { videoLoading.value = false }
     }
 
-
+    private val playerStateLock = Mutex()
     /**
      * 设置当前播放的 URL。
      * 该方法会更新状态流中的 `currentPlayUrl` 字段为传入的 URL 字符串。
      *
      * @param string 要设置的播放 URL 字符串。
      */
-
-    private val playerStateLock = Mutex()
     fun setPlayUrl(string: String) {
         _state.update { it.copy(isLoading = true) }
 
