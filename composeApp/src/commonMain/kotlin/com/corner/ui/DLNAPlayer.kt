@@ -49,7 +49,7 @@ fun WindowScope.DLNAPlayer(vm:DetailViewModel, onClickBack:() -> Unit) {
 
     val isFullScreen = GlobalAppState.videoFullScreen.collectAsState()
 
-    val mrl = derivedStateOf { model.value.currentPlayUrl }
+    val mrl = derivedStateOf { model.value.currentPlayUrl }//监听播放地址
 
     val focus = remember { FocusRequester() }
 

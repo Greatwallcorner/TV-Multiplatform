@@ -248,8 +248,8 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                     )
                 }
             }
+            val mrl = derivedStateOf { model.currentPlayUrl }//监听播放地址
             //顶栏通知
-            val mrl = derivedStateOf { model.currentPlayUrl }
             if (openDialogState && showWebSocketDisconnected) {
                 Column(modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
                     Box(
@@ -695,7 +695,6 @@ private fun quickSearchResult(
                         SiteViewModel.viewModelScope.launch {
                             log.debug("开始加载新内容...")
                             component.loadDetail(it)
-                            log.debug("加载新内容完毕...")
                         }
                     }
                 }

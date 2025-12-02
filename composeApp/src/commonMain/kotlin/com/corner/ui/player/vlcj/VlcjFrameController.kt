@@ -209,7 +209,7 @@ class VlcjFrameController(
     }
 
     /**
-     * 在切换视频质量前清理资源，防止内存访问冲突
+     * 清理bitmap资源
      */
     fun cleanupBeforeQualityChange() {
         synchronized(this) {

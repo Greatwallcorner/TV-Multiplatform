@@ -439,7 +439,6 @@ class VlcjController(val vm: DetailViewModel) : PlayerController {
     private val stateList = listOf(State.ENDED, State.ERROR)
     override fun play() {
         catch {
-            log.debug("play() -- play")
             showTips("播放")
             playerStartTime = System.currentTimeMillis()// 记录播放开始时间
             if (stateList.contains(player?.status()?.state())) {
