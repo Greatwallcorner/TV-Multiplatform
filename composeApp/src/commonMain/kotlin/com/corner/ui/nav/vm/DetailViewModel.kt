@@ -923,6 +923,7 @@ class DetailViewModel : BaseViewModel() {
     fun startPlay(dt: Vod, ep: Episode = Episode.create("", "")) {
         if (!dt.isEmpty()) {
             scope.launch {
+                _state.update { it.copy(isLoading = true) }
                 val effectiveEp = if (ep.url.isNotBlank()) {
                     ep
                 } else {
@@ -931,6 +932,7 @@ class DetailViewModel : BaseViewModel() {
                 }
 
                 log.debug("<startPlay> -- 开始播放视频:{}", effectiveEp.name)
+                _state.update { it.copy(isLoading = false) }
                 playEp(dt, effectiveEp)
             }
         } else {
