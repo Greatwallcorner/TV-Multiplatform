@@ -1,4 +1,12 @@
 # LumenTV Compose
+## v1.0.9
+- 更新：DLNA投屏部分控制支持
+- 更新：GitHub Actions mac构建镜像更新为MacOS 15,详见update Actions
+- 修复：音量弹窗延迟显示问题
+- 修复：Linux安装包icon替换,详见App Icons
+- 其他更新详情见：v1.0.9 update
+- 暂时不再更新自更新
+- 应用内版本号说明还显示为v1.0.8（忘换了）😓
 ## v1.0.8
 - 重构播放逻辑
 - 搜索历史页面优化
@@ -62,7 +70,6 @@
 - 添加删除历史记录二级弹窗
 - 修改About
 - 添加预发行版本分支
-- 
 # TV-Multiplatform
 ## v1.2.5
 - 升级依赖
