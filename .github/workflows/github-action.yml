@@ -47,8 +47,8 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - run: ls
-      - run: chmod +x ./gradlew && ./gradlew createReleaseDistributable
-      - run: ./gradlew packageReleaseDistributionForCurrentOS
+      - run: chmod +x ./gradlew && ./gradlew packageReleaseDistributionForCurrentOS
+      - run: ./gradlew createReleaseDistributable
       - run: ls && tree
       - name: compress
         run: cd ./composeApp/build/compose/binaries/main-release/app && zip -q -r ./LumenTV-linux-${{ needs.set-tag.outputs.tag }}.zip ./LumenTV
@@ -73,8 +73,8 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - run: ls
-      - run: chmod +x ./gradlew && ./gradlew createReleaseDistributable
-      - run: ./gradlew packageReleaseDistributionForCurrentOS
+      - run: chmod +x ./gradlew && ./gradlew packageReleaseDistributionForCurrentOS
+      - run: ./gradlew createReleaseDistributable
       - run: ls
       - name: compress
         run: zip -q -r ./LumenTV-mac-${{ needs.set-tag.outputs.tag }}.zip ./composeApp/build/compose/binaries/main-release/app
