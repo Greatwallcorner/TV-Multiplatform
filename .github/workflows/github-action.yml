@@ -64,7 +64,7 @@ jobs:
             #            https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Signing_and_notarization_on_macOS/README.md
   build-mac:
     needs: set-tag
-    runs-on: macos-13
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
