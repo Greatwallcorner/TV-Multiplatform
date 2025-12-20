@@ -173,7 +173,7 @@ compose.desktop {
             }
 
             linux {
-                iconFile.set(project.file("src/commonMain/composeResources/drawable/TV-icon-s.png"))
+                iconFile.set(project.file("src/commonMain/composeResources/drawable/LumenTV-icon-256.png"))
             }
 
             macOS {
