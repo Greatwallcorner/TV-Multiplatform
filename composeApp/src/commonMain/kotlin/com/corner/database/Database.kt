@@ -10,10 +10,12 @@ import com.corner.database.dao.ConfigDao
 import com.corner.database.dao.HistoryDao
 import com.corner.database.dao.KeepDao
 import com.corner.database.dao.SiteDao
+import com.corner.database.dao.SpiderStatusDao
 import com.corner.database.entity.Config
 import com.corner.database.entity.History
 import com.corner.database.entity.Keep
 import com.corner.database.entity.Site
+import com.corner.database.entity.SpiderStatus
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.module.Module
@@ -33,14 +35,14 @@ object Db:KoinComponent{
     val History:HistoryDao by lazy { database.getHistoryDao() }
 }
 
-@Database(entities = [Config::class, History::class, Keep::class, Site::class], version = 2)
+@Database(entities = [Config::class, History::class, Keep::class, Site::class, SpiderStatus::class], version = 3)
 @ConstructedBy(TvDatabaseConstructor::class)
 abstract class TvDatabase: RoomDatabase(){
     abstract fun getConfigDao(): ConfigDao
     abstract fun getHistoryDao(): HistoryDao
     abstract fun getSiteDao(): SiteDao
     abstract fun getKeepDap(): KeepDao
-
+    abstract fun getSpiderStatusDao(): SpiderStatusDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")

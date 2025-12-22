@@ -1,4 +1,8 @@
 # LumenTV Compose
+## v1.0.10
+- 更新:爬虫测试
+- 更新：爬虫测试结果持久化保存
+- 修复：爬虫测试期间无指示器的显示
 ## v1.0.9
 - 更新：DLNA投屏部分控制支持
 - 更新：GitHub Actions mac构建镜像更新为MacOS 15,详见update Actions

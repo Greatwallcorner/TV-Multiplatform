@@ -14,16 +14,27 @@ import kotlinx.serialization.json.*
 import okhttp3.Request
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
+import com.corner.database.Db
+import com.corner.database.entity.SpiderStatus as DbSpiderStatus
 
 object SpiderTestUtil {
     private val log = thisLogger()
-    private val spiderStatusMap = ConcurrentHashMap<String, SpiderStatus>()
+    val spiderStatusMap = ConcurrentHashMap<String, SpiderStatus>()
     private val testJobs = ConcurrentHashMap<String, Job>()
     private var globalTestJob: Job? = null
     private val activeTestCount = AtomicInteger(0)
 
     private val _enableAdvancedMode = MutableStateFlow(false)
     val enableAdvancedMode: StateFlow<Boolean> = _enableAdvancedMode.asStateFlow()
+
+    private val _spiderStatusMap = MutableStateFlow<Map<String, SpiderStatus>>(emptyMap())
+    val spiderStatusMapFlow: StateFlow<Map<String, SpiderStatus>> = _spiderStatusMap.asStateFlow()
+
+    private val _spiderStatusFlow = MutableStateFlow<Map<String, SpiderStatus>>(emptyMap())
+    val spiderStatusFlow: StateFlow<Map<String, SpiderStatus>> = _spiderStatusFlow.asStateFlow()
+
+    private val _testingSites = MutableStateFlow<Set<String>>(emptySet())
+    val testingSites: StateFlow<Set<String>> = _testingSites.asStateFlow()
 
     fun setEnableAdvancedMode(enabled: Boolean) {
         _enableAdvancedMode.value = enabled
@@ -33,7 +44,47 @@ object SpiderTestUtil {
         UNKNOWN, AVAILABLE, UNAVAILABLE, TESTING
     }
 
+    suspend fun initializeSpiderStatuses() {
+        try {
+            val dbStatuses = Db.database.getSpiderStatusDao().getAll()
+            // 注意：这里需要转换数据库状态到内存状态
+            dbStatuses.collect { statuses ->
+                spiderStatusMap.clear()
+                statuses.forEach { status ->
+                    val spiderStatus = SpiderStatus.valueOf(status.status)
+                    spiderStatusMap[status.siteKey] = spiderStatus
+                }
+                _spiderStatusMap.value = spiderStatusMap.toMap()
+            }
+        } catch (e: Exception) {
+            log.warn("Failed to load spider statuses from database: ${e.message}")
+        }
+    }
+
+    // 添加更新单个站点状态的方法
+    fun updateSiteStatus(siteKey: String, status: SpiderStatus) {
+        val currentMap = HashMap(_spiderStatusFlow.value)
+        currentMap[siteKey] = status
+        _spiderStatusFlow.value = currentMap
+    }
+
+    // 添加批量更新站点状态的方法
+    fun updateMultipleSiteStatus(statusMap: Map<String, SpiderStatus>) {
+        val currentMap = HashMap(_spiderStatusFlow.value)
+        currentMap.putAll(statusMap)
+        _spiderStatusFlow.value = currentMap
+    }
+
     suspend fun testSpider(siteKey: String, onStatusChange: (String, SpiderStatus) -> Unit) {
+        if (siteKey in _testingSites.value) {
+            log.debug("Spider $siteKey is already being tested, skipping duplicate test")
+            return
+        }
+
+        val currentTesting = _testingSites.value.toMutableSet()
+        currentTesting.add(siteKey)
+        _testingSites.value = currentTesting
+
         testJobs[siteKey]?.cancel()
         activeTestCount.incrementAndGet()
         try {
@@ -62,6 +113,10 @@ object SpiderTestUtil {
                 }
             }
         } finally {
+            val currentTesting = _testingSites.value.toMutableSet()
+            currentTesting.remove(siteKey)
+            _testingSites.value = currentTesting
+
             testJobs.remove(siteKey)
             activeTestCount.decrementAndGet()
         }
@@ -284,8 +339,30 @@ object SpiderTestUtil {
     }
 
     private fun updateSpiderStatus(siteKey: String, status: SpiderStatus, onStatusChange: (String, SpiderStatus) -> Unit) {
+        if (status != SpiderStatus.TESTING) {
+            val currentTesting = _testingSites.value.toMutableSet()
+            currentTesting.remove(siteKey)
+            _testingSites.value = currentTesting
+        }
+
         spiderStatusMap[siteKey] = status
+        _spiderStatusMap.value = spiderStatusMap.toMap()
         onStatusChange(siteKey, status)
+
+        // 同步保存到数据库
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val dbStatus = DbSpiderStatus(
+                    siteKey = siteKey,
+                    status = status.name,
+                    lastTested = System.currentTimeMillis()
+                )
+                log.debug("Saving spider status to database: {}", dbStatus)
+                Db.database.getSpiderStatusDao().insert(dbStatus)
+            } catch (e: Exception) {
+                log.warn("Failed to save spider status to database: ${e.message}")
+            }
+        }
     }
 
     private fun getTestUrl(site: Site): String {

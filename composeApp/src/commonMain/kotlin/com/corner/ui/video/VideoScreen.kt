@@ -229,7 +229,7 @@ fun WindowScope.VideoScene(
                 val isLoading by vm.isLoading
                 //加载配置文件时，调用了showProgress，通过监听showProgress的值来决定显示加载图标
                 val showProgress by GlobalAppState.showProgress.collectAsState()
-                if (!isInitialized){
+                if (!isInitialized) {
                     emptyShow(
                         onRefresh = { initConfig() },
                         title = "初始化失败",
@@ -741,9 +741,11 @@ fun ChooseHomeDialog(
     val model = vm.state.collectAsState()
     val apiState = ApiConfig.apiFlow.collectAsState()
     val sites by derivedStateOf { apiState.value.sites.toList() }
-    var spiderStatusMap by remember { mutableStateOf<Map<String, SpiderTestUtil.SpiderStatus>>(emptyMap()) }
     var isTestingAll by remember { mutableStateOf(false) }
     val enableAdvancedMode by SpiderTestUtil.enableAdvancedMode.collectAsState()
+    val spiderStatusMap by SpiderTestUtil.spiderStatusMapFlow.collectAsState()
+    val testingSites by SpiderTestUtil.testingSites.collectAsState()
+
     AnimatedVisibility(
         visible = showDialog && !isClosing,
         enter = EnterTransition.None, // 禁用进入动画
@@ -793,10 +795,10 @@ fun ChooseHomeDialog(
                                     } else {
                                         isTestingAll = true
                                         SpiderTestUtil.testAllSpiders { siteKey, status ->
-                                            spiderStatusMap = spiderStatusMap + (siteKey to status)
+                                            // 不再需要手动更新 spiderStatusMap，因为 SpiderTestUtil 会自动更新状态流
                                             if (status != SpiderTestUtil.SpiderStatus.TESTING) {
-                                                // 检查是否所有测试都已完成
-                                                val allCompleted = spiderStatusMap.values.none { it == SpiderTestUtil.SpiderStatus.TESTING }
+                                                val allCompleted =
+                                                    SpiderTestUtil.spiderStatusMap.values.none { it == SpiderTestUtil.SpiderStatus.TESTING }
                                                 if (allCompleted) {
                                                     isTestingAll = false
                                                 }
@@ -861,7 +863,11 @@ fun ChooseHomeDialog(
                                                 SiteViewModel.viewModelScope.launch {
                                                     ApiConfig.setHome(item)
                                                     model.value.homeLoaded = false
-                                                    Db.Config.setHome(ApiConfig.api.url, ConfigType.SITE.ordinal, item.key)
+                                                    Db.Config.setHome(
+                                                        ApiConfig.api.url,
+                                                        ConfigType.SITE.ordinal,
+                                                        item.key
+                                                    )
                                                 }
                                                 onClick(item)
                                             },
@@ -885,11 +891,12 @@ fun ChooseHomeDialog(
                                         // 搜索开关
                                         IconToggleButton(
                                             checked = item.isSearchable(),
-                                            onCheckedChange = {
-                                                // 立即更新本地状态
-                                                val newValue = !item.isSearchable()
-                                                // 先更新UI状态
-                                                spiderStatusMap = HashMap(spiderStatusMap)
+                                            onCheckedChange = { newValue ->
+                                                // 通过 SpiderTestUtil 更新状态
+                                                SpiderTestUtil.updateSiteStatus(
+                                                    item.key,
+                                                    if (newValue) SpiderTestUtil.SpiderStatus.AVAILABLE else SpiderTestUtil.SpiderStatus.UNAVAILABLE
+                                                )
                                                 // 然后更新数据源
                                                 vm.changeSite {
                                                     item.searchable = if (newValue) 1 else 0
@@ -909,11 +916,12 @@ fun ChooseHomeDialog(
                                         // 换源开关
                                         IconToggleButton(
                                             checked = item.isChangeable(),
-                                            onCheckedChange = {
-                                                // 立即更新本地状态
-                                                val newValue = !item.isChangeable()
-                                                // 先更新UI状态
-                                                spiderStatusMap = HashMap(spiderStatusMap)
+                                            onCheckedChange = { newValue ->
+                                                // 通过 SpiderTestUtil 更新状态
+                                                SpiderTestUtil.updateSiteStatus(
+                                                    item.key,
+                                                    if (newValue) SpiderTestUtil.SpiderStatus.AVAILABLE else SpiderTestUtil.SpiderStatus.UNAVAILABLE
+                                                )
                                                 // 然后更新数据源
                                                 vm.changeSite {
                                                     item.changeable = if (newValue) 1 else 0
@@ -931,7 +939,8 @@ fun ChooseHomeDialog(
                                         }
 
                                         // 爬虫状态图标
-                                        val spiderStatus = spiderStatusMap.getOrDefault(item.key, SpiderTestUtil.SpiderStatus.UNKNOWN)
+                                        val spiderStatus =
+                                            spiderStatusMap.getOrDefault(item.key, SpiderTestUtil.SpiderStatus.UNKNOWN)
                                         if (spiderStatus != SpiderTestUtil.SpiderStatus.UNKNOWN) {
                                             Icon(
                                                 imageVector = when (spiderStatus) {
@@ -958,31 +967,36 @@ fun ChooseHomeDialog(
                                             )
                                         }
 
-
-                                        // 测试爬虫按钮
+                                        // 单个测试按钮的 onClick 回调
                                         IconButton(
                                             onClick = {
-                                                // 立即设置测试中状态，提供即时反馈
-                                                val newMap = HashMap(spiderStatusMap)
-                                                newMap[item.key] = SpiderTestUtil.SpiderStatus.TESTING
-                                                spiderStatusMap = newMap
-                                                
+                                                SpiderTestUtil.updateSiteStatus(item.key, SpiderTestUtil.SpiderStatus.TESTING)
+
                                                 CoroutineScope(Dispatchers.IO).launch {
                                                     SpiderTestUtil.testSpider(item.key) { siteKey, status ->
-                                                        // 使用HashMap创建新集合以强制状态更新
-                                                        val updateMap = HashMap(spiderStatusMap)
-                                                        updateMap[siteKey] = status
-                                                        spiderStatusMap = updateMap
+                                                        // 通过 SpiderTestUtil 更新最终状态
+                                                        SpiderTestUtil.updateSiteStatus(siteKey, status)
                                                     }
                                                 }
                                             },
-                                            modifier = Modifier.size(36.dp).padding(horizontal = 4.dp)
+                                            modifier = Modifier.size(36.dp).padding(horizontal = 4.dp),
+                                            enabled = item.key !in testingSites
                                         ) {
-                                            Icon(
-                                                Icons.Default.SettingsRemote,
-                                                contentDescription = "测试爬虫",
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
+                                            if (item.key in testingSites) {
+                                                // 显示加载图标
+                                                CircularProgressIndicator(
+                                                    modifier = Modifier.size(24.dp),
+                                                    strokeWidth = 2.dp,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                            } else {
+                                                // 显示测试图标
+                                                Icon(
+                                                    Icons.Default.SettingsRemote,
+                                                    contentDescription = "测试爬虫",
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
                                         }
                                     }
                                 }

@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory
 import androidx.compose.runtime.State
 import com.corner.catvodcore.viewmodel.GlobalAppState.resetAllStates
 import com.corner.util.BrowserUtils
+import com.corner.util.SpiderTestUtil
 
 private val log = LoggerFactory.getLogger("Init")
 
@@ -52,6 +53,8 @@ class Init {
                 VlcJInit.init()
                 //DLNA
                 initDLNA()
+                //初始化爬虫状态
+                SpiderTestUtil.initializeSpiderStatuses()
             } finally {
                 hideProgress()
             }
@@ -110,6 +113,7 @@ class Init {
             } ?: run {
                 log.error("未找到站点配置")
                 _isInitializedSuccessfully.value = false  // 初始化失败
+                hideProgress()
                 return
             }
 
