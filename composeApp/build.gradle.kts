@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.room)
     alias(libs.plugins.ksp)
-//    id("java")
 }
 
 room {
@@ -15,7 +14,6 @@ room {
 }
 
 dependencies {
-//    implementation("io.ktor:ktor-server-cors:3.1.2")
     ksp(libs.roomCompiler)
 }
 
@@ -29,8 +27,6 @@ kotlin {
                 val ktorVer = "3.1.2"
                 val logbackVer = "1.3.14"
                 val hutoolVer = "5.8.27"
-//              val kotlinVersion = extra["kotlin.version"] as String
-//              implementation(project(":CatVod"))
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material3)
@@ -38,7 +34,6 @@ kotlin {
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
                 implementation(compose.materialIconsExtended)
-//              implementation(libs.roomCompiler)
 
                 // room database access
                 implementation(libs.roomRuntime)
@@ -50,7 +45,6 @@ kotlin {
                 implementation(libs.androidx.navigation.compose)
 
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-//              implementation("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
 
                 // tool
                 api("com.google.guava:guava:31.1-jre")
@@ -89,8 +83,6 @@ kotlin {
 
                 // image-loader
                 api(libs.image.loader)
-                // optional - Moko Resources Decoder
-//                api("io.github.qdsfdhvh:image-loader-extension-moko-resources:$imageLoader")
 
                 api(project.dependencies.platform("com.squareup.okhttp3:okhttp-bom:5.0.0-alpha.14"))
                 api("com.squareup.okhttp3:okhttp")
@@ -105,19 +97,6 @@ kotlin {
 
                 //web-player
                 implementation("org.java-websocket:Java-WebSocket:1.6.0")
-
-//              implementation(libs.jupnp)
-//              implementation(libs.jetty.servlet)
-//              implementation(libs.jetty.server)
-//              implementation(libs.jetty.client)
-//              implementation(project(":Upnp"))
-
-//              api("com.arkivanov.decompose:decompose:3.3.0")
-//              api("com.arkivanov.decompose:extensions-compose:3.3.0")
-
-//              Add the dependency, typically under the commonMain source set
-
-//              api("com.arkivanov.essenty:lifecycle:2.5.0")
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
             }
@@ -139,7 +118,6 @@ compose.desktop {
         mainClass = "MainKt"
 
         buildTypes.release.proguard {
-//            obfuscate.set(true)
             isEnabled.set(true)
             version.set("7.7.0")
             configurationFiles.from(project.file("src/desktopMain/rules.pro"))
@@ -165,9 +143,8 @@ compose.desktop {
             val dir = project.layout.projectDirectory.dir("src/desktopMain/appResources")
             println(dir)
             appResourcesRootDir.set(project.layout.projectDirectory.dir("src/desktopMain/appResources"))
-//            app icons https://github.com/JetBrains/compose-multiplatform/tree/master/tutorials/Native_distributions_and_local_execution#app-icon
             windows {
-                iconFile.set(project.file("src/commonMain/composeResources/drawable/LumenTV-icon-png.png"))
+                iconFile.set(project.file("src/commonMain/composeResources/drawable/LumenTV-icon-win.ico"))
                 dirChooser = true
                 upgradeUuid = "161FA5A0-A30B-4568-9E84-B3CD637CC8FE"
             }
