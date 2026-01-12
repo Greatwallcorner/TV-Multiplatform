@@ -1,6 +1,6 @@
 package com.corner.ui
 
-import SiteViewModel
+import com.corner.catvodcore.viewmodel.SiteViewModel
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -88,7 +88,7 @@ import java.net.URI
 import androidx.compose.runtime.collectAsState
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.viewmodel.GlobalAppState
-import com.corner.util.M3U8FilterConfig
+import com.corner.util.m3u8.M3U8FilterConfig
 import com.github.catvod.bean.Doh
 import lumentv_compose.composeapp.generated.resources.LumenTV_icon_svg
 import org.slf4j.LoggerFactory
@@ -1211,7 +1211,7 @@ fun AboutDialog(
                         )
 
                         Text(
-                            text = "1.0.9",
+                            text = "1.1.0",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )

@@ -199,14 +199,13 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
                                 modifier = Modifier
                                     .padding(start = 24.dp, top = 12.dp, bottom = 8.dp)
                             )
-
-                            // 2. 热搜内容区域
+// 2. 热搜内容区域
                             Box(modifier = Modifier.weight(1f)) {
                                 LazyVerticalGrid(
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .padding(horizontal = 8.dp),
-                                    columns = GridCells.FixedSize(100.dp),
+                                    columns = GridCells.FixedSize(200.dp), // 增加列宽以容纳自适应卡片
                                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                                     verticalArrangement = Arrangement.spacedBy(8.dp),
                                     contentPadding = PaddingValues(
@@ -218,7 +217,7 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
                                         HotItem(
                                             hotData = item,
                                             onClick = { onSearch(it.title) },
-                                            modifier = Modifier.fillMaxWidth()
+                                            modifier = Modifier.fillMaxWidth() // 让卡片填充网格列的宽度
                                         )
                                     }
                                 }
@@ -307,7 +306,7 @@ fun HotItem(
     ) {
         Card(
             modifier = modifier
-                .fillMaxWidth()
+                .wrapContentWidth() // 改为自适应内容宽度
                 .height(80.dp),
             shape = cardShape,
             colors = CardDefaults.cardColors(
@@ -361,98 +360,6 @@ fun HotItem(
 }
 
 
-/*
-@Preview
-@Composable
-fun previewHotItem() {
-    AppTheme {
-        val hot = HotData("阿凡达", "潘多拉", "更新到第二季", "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfffffff")
-        HotItem(Modifier, hot) {}
-    }
-}
-
-@Preview
-@Composable
-fun previewHotPanel() {
-    AppTheme {
-        val hot = HotData("阿凡达", "潘多拉", "更新到第二季", "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfffffff")
-        val hots = mutableListOf<HotData>()
-        for (i in 0 until 10) {
-            hots.add(hot.copy(title = hot.title + i))
-        }
-        HotPanel(Modifier, hots) {}
-    }
-}
-
-@Composable
-fun HistoryPanel(
-    modifier: Modifier = Modifier,
-    histories: Set<String>,
-    onClick: (String) -> Unit
-) {
-    val list by rememberUpdatedState(histories)
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(150.dp) // 固定高度保持一致性
-            .border(1.dp, Color.Red) // 调试边框
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // 1. 标题区域（与热搜样式一致）
-            Text(
-                text = "搜索历史",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-                modifier = Modifier
-                    .padding(start = 24.dp, top = 12.dp, bottom = 8.dp)
-            )
-
-            // 2. 横向滚动内容区域
-            Box(modifier = Modifier.weight(1f)) {
-                val scrollState = rememberLazyListState()
-
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 8.dp),
-                    state = scrollState,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp)
-                ) {
-                    items(list.toList()) { query ->
-                        HistoryItem(
-                            modifier = Modifier.height(55.dp), // 固定高度
-                            query = query,
-                            onClick = onClick
-                        )
-                    }
-                }
-
-                // 3. 滚动条（与热搜样式一致）
-                HorizontalScrollbar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .align(Alignment.BottomCenter)
-                        .padding(horizontal = 24.dp),
-                    adapter = rememberScrollbarAdapter(scrollState),
-                    style = ScrollbarStyle(
-                        minimalHeight = 4.dp,
-                        thickness = 4.dp,
-                        shape = RoundedCornerShape(2.dp),
-                        hoverDurationMillis = 300,
-                        unhoverColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                        hoverColor = MaterialTheme.colorScheme.primary
-                    )
-                )
-            }
-        }
-    }
-}
-*/
 @Composable
 private fun HistoryItem(
     modifier: Modifier = Modifier,

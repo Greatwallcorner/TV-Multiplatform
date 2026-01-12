@@ -1,6 +1,6 @@
 package com.corner.bean
 
-import SiteViewModel
+import com.corner.catvodcore.viewmodel.SiteViewModel
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.viewmodel.GlobalAppState
@@ -10,7 +10,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.decodeFromStream
 import okhttp3.Headers.Companion.toHeaders
-import okhttp3.Response
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("Hot")

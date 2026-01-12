@@ -180,16 +180,3 @@ fun RatioBtn(
         buttonContent()
     }
 }
-/*
-@Preview
-@Composable
-fun RatioBtnPreview() {
-    AppTheme {
-        Column {
-//            RatioBtn("测试", onClick = {}, true, loading = true)
-//            Spacer(Modifier.size(15.dp))
-            RatioBtn(Modifier, "测试2", onClick = {}, false, loading = true)
-        }
-    }
-}
-*/

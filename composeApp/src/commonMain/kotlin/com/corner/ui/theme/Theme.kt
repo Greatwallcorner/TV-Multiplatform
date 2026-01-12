@@ -74,21 +74,22 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun AppTheme(
-  content: @Composable() () -> Unit
+    content: @Composable() () -> Unit
 ) {
-  val isDarkThemeState = GlobalAppState.isDarkTheme.collectAsState()
-  val isDarkTheme = isDarkThemeState.value
-  val colors = if (!isDarkTheme) {
-    LightColors
-  } else {
-    DarkColors
-  }
+    val isDarkThemeState = GlobalAppState.isDarkTheme.collectAsState()
+    val isDarkTheme = isDarkThemeState.value
+    val colors = if (!isDarkTheme) {
+        LightColors
+    } else {
+        DarkColors
+    }
 
-  MaterialTheme(
-    colorScheme = colors,
-    content = content
-  )
+    MaterialTheme(
+        colorScheme = colors,
+        content = content
+    )
 }
+
 val PlayerLightColors = lightColorScheme(
     primary = Color(0xFF35BCF6),
     onPrimary = Color.White,

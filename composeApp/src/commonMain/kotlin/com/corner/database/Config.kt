@@ -5,17 +5,17 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 
 
-fun Config.create() {
+fun create() {
 
 }
 
 private var config: Config? = null
 
-fun Config.get(): Config? {
+fun get(): Config? {
     return config
 }
 
-fun Config.find(url: String, type: Long): Config {
+fun find(url: String, type: Long): Config {
     val configFlow = Db.Config.find(url, type)
     var config: Config?
     runBlocking {
@@ -25,10 +25,5 @@ fun Config.find(url: String, type: Long): Config {
             config = Db.Config.find(url, type).firstOrNull()
         }
     }
-
-//    if (config == null){
-//        Db.Config.save(Config(type = type, url = url))
-//        config = Db.Config.find(url, type)
-//    }
     return config!!
 }

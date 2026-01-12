@@ -1,4 +1,4 @@
-package com.corner.util
+package com.corner.util.network
 
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType

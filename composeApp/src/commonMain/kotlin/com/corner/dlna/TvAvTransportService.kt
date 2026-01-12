@@ -61,7 +61,6 @@ class TvAvTransportService : AbstractAVTransportService() {
                 PlayState.PAUSE -> TransportState.PAUSED_PLAYBACK
                 PlayState.BUFFERING -> TransportState.TRANSITIONING
                 PlayState.ERROR -> TransportState.NO_MEDIA_PRESENT
-                else -> TransportState.NO_MEDIA_PRESENT
             }
 
             return TransportInfo(
@@ -230,7 +229,7 @@ class TvAvTransportService : AbstractAVTransportService() {
                 }
                 else -> {
                     // 只有秒数
-                    (timeString.toDoubleOrNull() ?: 0.0 * 1000).toLong()
+                    ((timeString.toDoubleOrNull() ?: (0.0 * 1000))).toLong()
                 }
             }
         } catch (e: Exception) {

@@ -1,4 +1,4 @@
-package com.corner.util
+package com.corner.util.m3u8
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable

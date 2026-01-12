@@ -41,7 +41,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun WindowScope.RootContent(
-    modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
     val toDetail = fun(it: Vod, from: DetailFromPage) {
@@ -51,23 +50,23 @@ fun WindowScope.RootContent(
     }
 
     val isFullScreen = GlobalAppState.videoFullScreen.collectAsState()
+
     val modifierVar = derivedStateOf {
         if (isFullScreen.value) {
-            Modifier.fillMaxSize().border(border = BorderStroke(0.dp, Color.Transparent))
+            Modifier.fillMaxSize().border(border = BorderStroke(0.dp, Color.Black))
         } else {
             Modifier.fillMaxSize().border(BorderStroke(1.dp, Color.FirefoxGray)).shadow(15.dp)
         }
-
     }
 
     val scope = rememberCoroutineScope()
+
     scope.launch {
         GlobalAppState.DLNAUrl.collect {
-            if (it.isNullOrBlank()) return@collect
+            if (it.isBlank()) return@collect
             navController.navigate(TVScreen.DLNAPlayerScreen.name)
         }
     }
-
 
     AppTheme {
         Box(

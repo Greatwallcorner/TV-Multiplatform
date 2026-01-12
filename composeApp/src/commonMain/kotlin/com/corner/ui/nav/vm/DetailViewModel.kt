@@ -1,6 +1,6 @@
 package com.corner.ui.nav.vm
 
-import SiteViewModel
+import com.corner.catvodcore.viewmodel.SiteViewModel
 import com.corner.ui.scene.SnackBar
 import androidx.compose.runtime.*
 import com.corner.bean.SettingStore
@@ -76,7 +76,6 @@ class DetailViewModel : BaseViewModel() {
         }
     private val _currentFlagName = MutableStateFlow("")
     val currentFlagName: StateFlow<String> = _currentFlagName
-    val videoLoading = mutableStateOf(false)    //ui状态：视频加载中
     var controllerHistory: History? = null
     val vmPlayerType = SettingStore.getSettingItem(SettingType.PLAYER.id)
         .getPlayerSetting(_state.value.detail.site?.playerType)
@@ -1675,7 +1674,6 @@ class DetailViewModel : BaseViewModel() {
      */
     fun chooseEp(it: Episode, openUri: (String) -> Unit) {
         log.debug("切换剧集: {}", it)
-        videoLoading.value = true        // ui层面标记视频正在加载
 
         currentSelectedEpNumber = it.number // 记录当前选中剧集的编号
 
@@ -1727,7 +1725,7 @@ class DetailViewModel : BaseViewModel() {
                 val correctDetailForPlay = _state.value.detail // 获取包含正确 activated 状态的最新 detail
                 startPlay(correctDetailForPlay, it) // 使用最新的 detail 来播放
             }
-        }.invokeOnCompletion { videoLoading.value = false }
+        }
     }
 
     /**

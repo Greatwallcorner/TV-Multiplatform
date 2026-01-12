@@ -1,4 +1,4 @@
-package com.corner.util
+package com.corner.util.play
 
 import com.corner.ui.nav.vm.DetailViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow

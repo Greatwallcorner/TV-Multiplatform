@@ -1,4 +1,4 @@
-package com.corner.util
+package com.corner.util.spider
 
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
@@ -6,16 +6,29 @@ import com.corner.catvodcore.bean.Site
 import com.corner.catvodcore.config.ApiConfig
 import com.corner.catvodcore.util.Http
 import com.corner.catvodcore.util.Jsons
-import kotlinx.coroutines.*
+import com.corner.database.Db
+import com.corner.util.thisLogger
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.serialization.json.*
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Request
+import okhttp3.Response
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
-import com.corner.database.Db
-import com.corner.database.entity.SpiderStatus as DbSpiderStatus
 
 object SpiderTestUtil {
     private val log = thisLogger()
@@ -98,7 +111,7 @@ object SpiderTestUtil {
             }
 
             withContext(Dispatchers.IO) {
-                val job = currentCoroutineContext()[Job]!!
+                val job = currentCoroutineContext()[Job.Key]!!
                 try {
                     if (!enableAdvancedMode.value) {
                         testSpiderSimpleMode(siteKey, site, onStatusChange, job)
@@ -283,10 +296,11 @@ object SpiderTestUtil {
     }
 
     private suspend fun testUrlConnectivity(url: String, job: Job): TestResponse? {
-        var response: okhttp3.Response? = null
+        var response: Response? = null
         try {
             response = withTimeoutOrNull(3000) {
-                if (job.isCancelled) null else Http.client().newCall(Request.Builder().url(url).build()).execute()
+                if (job.isCancelled) null else Http.Companion.client().newCall(Request.Builder().url(url).build())
+                    .execute()
             }
 
             if (response != null && response.isSuccessful) {
@@ -352,7 +366,7 @@ object SpiderTestUtil {
         // 同步保存到数据库
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val dbStatus = DbSpiderStatus(
+                val dbStatus = com.corner.database.entity.SpiderStatus(
                     siteKey = siteKey,
                     status = status.name,
                     lastTested = System.currentTimeMillis()

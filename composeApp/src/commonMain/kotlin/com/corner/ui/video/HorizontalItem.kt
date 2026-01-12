@@ -23,7 +23,6 @@ fun HorizontalItem(modifier: Modifier, vod:Vod, onClick:(Vod)->Unit){
     Box(modifier.padding(8.dp)
         .background(MaterialTheme.colorScheme.primaryContainer,RoundedCornerShape(8.dp))
         .clip(RoundedCornerShape(8.dp))
-//        .border(1.dp, Color.Gray,RoundedCornerShape(8.dp))
     ){
         Row(Modifier.padding(8.dp).fillMaxSize()) {
             AutoSizeImage(url = vod.vodPic ?: "",
@@ -41,12 +40,3 @@ fun HorizontalItem(modifier: Modifier, vod:Vod, onClick:(Vod)->Unit){
         }
     }
 }
-
-//@androidx.compose.desktop.ui.tooling.preview.Preview
-//@Composable
-//fun previewHorizonTaoItem(){
-//    AppTheme {
-//        val v = Vod(vodName = "testedahdkasjfdkladjflkadfdsf")
-//        HorizontalItem(Modifier.height(80.dp), v){}
-//    }
-//}

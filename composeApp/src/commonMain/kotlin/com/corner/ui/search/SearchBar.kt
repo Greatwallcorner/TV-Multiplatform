@@ -1,6 +1,6 @@
 package com.corner.ui.search
 
-import SiteViewModel
+import com.corner.catvodcore.viewmodel.SiteViewModel
 import androidx.compose.animation.*
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ScrollState
@@ -29,7 +29,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.corner.bean.Suggest
 import com.corner.ui.nav.vm.SearchViewModel
-import com.corner.util.KtorClient
+import com.corner.util.network.KtorClient
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*

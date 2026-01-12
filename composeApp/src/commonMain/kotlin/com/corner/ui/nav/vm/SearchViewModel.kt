@@ -1,6 +1,6 @@
 package com.corner.ui.nav.vm
 
-import SiteViewModel
+import com.corner.catvodcore.viewmodel.SiteViewModel
 import com.corner.bean.SettingStore
 import com.corner.catvodcore.bean.Collect
 import com.corner.catvodcore.config.ApiConfig

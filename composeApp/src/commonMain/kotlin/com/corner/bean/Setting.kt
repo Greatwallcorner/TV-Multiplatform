@@ -4,7 +4,7 @@ import ch.qos.logback.classic.Level
 import com.corner.bean.enums.PlayerType
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.Paths
-import com.corner.util.M3U8FilterConfig
+import com.corner.util.m3u8.M3U8FilterConfig
 import kotlinx.serialization.Serializable
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -20,6 +20,7 @@ data class Setting(val id: String, val label: String, var value: String = "")
  * 以井号分割的字符串
  * #
  */
+@Suppress("UNUSED_FUNCTION")
 fun Setting.parseValueToList():List<String>{
     return value?.split("#") ?: listOf()
 }
@@ -214,16 +215,14 @@ object SettingStore {
 
     fun getM3U8FilterConfig(): M3U8FilterConfig {
         val configJson = getSettingItem(SettingType.M3U8_FILTER_CONFIG)
-//        log.debug("获取 M3U8FilterConfig，原始JSON: \n{}", configJson)
         return if (configJson.isBlank()) {
             M3U8FilterConfig()
         } else {
             try {
                 val config = Jsons.decodeFromString<M3U8FilterConfig>(configJson)
-//                log.debug("成功反序列化 M3U8FilterConfig: {}", config)
                 config
             } catch (e: Exception) {
-//                log.error("反序列化 M3U8FilterConfig 失败，使用默认配置: ${e.message}")
+                log.error("M3U8FilterConfig 解析失败", e)
                 M3U8FilterConfig()
             }
         }

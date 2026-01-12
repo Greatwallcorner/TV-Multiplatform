@@ -1,6 +1,6 @@
 package com.corner.catvodcore.config
 
-import SiteViewModel
+import com.corner.catvodcore.viewmodel.SiteViewModel
 import com.corner.bean.SettingStore
 import com.corner.bean.SettingType
 import com.corner.catvodcore.bean.Rule
@@ -15,7 +15,7 @@ import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.database.Db
 import com.corner.database.entity.Config
 import com.corner.ui.scene.SnackBar
-import com.corner.util.createCoroutineScope
+import com.corner.util.scope.createCoroutineScope
 import com.corner.util.isEmpty
 import com.github.catvod.crawler.Spider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,22 +31,22 @@ import com.github.catvod.bean.Doh
 
 private val log = LoggerFactory.getLogger("apiConfig")
 
-object ApiConfig{
+object ApiConfig {
     private val scope = createCoroutineScope()
     var apiFlow = MutableStateFlow(Api(spider = ""))
-    var api:Api = apiFlow.value
+    var api: Api = apiFlow.value
 
     init {
         collectApi()
     }
 
-    private fun collectApi(){
+    private fun collectApi() {
         scope.launch {
-            apiFlow.collect{api = it}
+            apiFlow.collect { api = it }
         }
     }
 
-    fun clear(){
+    fun clear() {
         apiFlow.value = Api(spider = "")
     }
 
@@ -74,8 +74,6 @@ object ApiConfig{
                 ap.copy(url = cfg.url, data = data, cfg = cfg, ref = ap.ref + 1)
             }
 
-            //加载jar
-            //注意：由于内部自动处理了key所以这里不需要传入key
             JarLoader.loadJar("", apiConfig.spider)
 
             if (cfg.home?.isNotBlank() == true) {
@@ -98,39 +96,23 @@ object ApiConfig{
         }
     }
 
-    fun setHome(home:Site?){
-        GlobalAppState.home.value = home ?: Site.get("","")
+    fun setHome(home: Site?) {
+        GlobalAppState.home.value = home ?: Site.get("", "")
     }
 
     fun getSpider(site: Site): Spider {
-//    val js: Boolean = site.api.contains(".js")
-//    val py: Boolean = site.api.contains(".py")
         val csp: Boolean = site.api.startsWith("csp_")
-        return/* if (py) pyLoader.getSpider(
-        site.key,
-        site.api,
-        site.ext
-    ) else if (js) jsLoader.getSpider(
-        site.key,
-        site.api,
-        site.ext,
-        site.jar
-    ) else*/ if (csp) JarLoader.getSpider(site.key, site.api, site.ext , site.jar ?: "") else Spider()
+        return if (csp) JarLoader.getSpider(site.key, site.api, site.ext, site.jar ?: "") else Spider()
     }
 
-    fun getSite(key:String): Site? {
+    fun getSite(key: String): Site? {
         return api.sites.find { it.key == key }
     }
 
     fun setRecent(site: Site) {
         api.recent = site.key
-        //注释js和py实现
-//        val js: Boolean = site.api.contains(".js")
-//        val py: Boolean = site.api.startsWith("py_")
         val csp: Boolean = site.api.startsWith("csp_")
-        /*if (js) jsLoader.setRecent(site.getKey())
-        else if (py) pyLoader.setRecent(site.getKey())
-        else*/ if (csp) JarLoader.setRecentJar(
+        if (csp) JarLoader.setRecentJar(
             site.jar
         )
     }
@@ -149,6 +131,7 @@ object ApiConfig{
                     if (newExt == currentExt) return currentExt // 无变化时终止
                     currentExt = newExt
                 }
+
                 else -> return currentExt
             }
             attempts++
@@ -193,7 +176,7 @@ object ApiConfig{
                 return Http.Get(str, connectTimeout = 60, readTimeout = 60)
                     .execute()
                     .use { response ->
-                        response.body?.string() ?: ""
+                        response.body.string()
                     }
             } else if (str.startsWith("file")) {
                 val file = Urls.convert(str).toPath().toFile()
@@ -203,7 +186,7 @@ object ApiConfig{
                 return Files.readString(file.toPath())
             }
         } catch (e: Exception) {
-            SnackBar.postMsg("获取配置失败: "+e.message, type = SnackBar.MessageType.ERROR)
+            SnackBar.postMsg("获取配置失败: " + e.message, type = SnackBar.MessageType.ERROR)
             log.error("获取配置失败", e)
             return ""
         }
@@ -224,7 +207,7 @@ fun Api.initSite() {
         site.api = ApiConfig.parseApi(site.api)
         site.ext = ApiConfig.parseExt(site.ext)
     }
-    if (GlobalAppState.home.value.isEmpty() && sites.size > 0) {
+    if (GlobalAppState.home.value.isEmpty() && sites.isNotEmpty()) {
         GlobalAppState.home.value = sites.first()
         SiteViewModel.viewModelScope.launch {
             Db.Config.setHome(url, ConfigType.SITE.ordinal, GlobalAppState.home.value.toString())

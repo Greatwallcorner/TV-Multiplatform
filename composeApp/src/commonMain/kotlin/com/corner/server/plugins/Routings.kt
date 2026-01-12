@@ -10,15 +10,12 @@ import io.ktor.server.http.content.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import okhttp3.Response
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.InputStream
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.net.URLDecoder
-
-private val log = LoggerFactory.getLogger("Routing")
 
 fun Application.configureRouting() {
 
@@ -113,7 +110,7 @@ fun Application.configureRouting() {
                         } ?: errorResp(call)
                     }
                 }
-            } catch (e: IOException) {
+            } catch (_: IOException) {
             } catch (e: Exception) {
                 log.error("proxy处理失败", e)
             }
@@ -131,7 +128,7 @@ fun Application.configureRouting() {
                         return@get
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 errorResp(call, "URL解码失败")
                 return@get
             }
@@ -143,7 +140,7 @@ fun Application.configureRouting() {
                             errorResp(call, "上游服务器返回错误: ${response.code}")
                             return@get
                         }
-                        response.body?.string() ?: ""
+                        response.body.string()
                     }
                 call.respondText(content, ContentType.Application.OctetStream)
             } catch (e: Exception) {
@@ -171,14 +168,14 @@ suspend fun errorResp(call: ApplicationCall) {
     call.respondText(
         text = HttpStatusCode.InternalServerError.description,
         contentType = ContentType.Application.OctetStream,
-        status = HttpStatusCode.InternalServerError,
-        {})
+        status = HttpStatusCode.InternalServerError
+    ) {}
 }
 
 suspend fun errorResp(call: ApplicationCall, msg: String) {
     call.respondText(
         text = HttpStatusCode.InternalServerError.description,
         contentType = ContentType.Application.OctetStream,
-        status = HttpStatusCode.InternalServerError,
-        {})
+        status = HttpStatusCode.InternalServerError
+    ) {}
 }

@@ -1,4 +1,4 @@
-package com.corner.util
+package com.corner.util.scope
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope

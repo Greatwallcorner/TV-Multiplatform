@@ -1,8 +1,9 @@
-package com.corner.util
+package com.corner.util.m3u8
 
 import M3U8Filter
 import com.corner.bean.SettingStore
 import com.corner.ui.scene.SnackBar
+import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -16,7 +17,7 @@ class M3U8AdFilterInterceptor {
         private val config = SettingStore.getM3U8FilterConfig() // 主动获取最新配置
         private val filter = M3U8Filter(config)
 
-        override fun intercept(chain: okhttp3.Interceptor.Chain): okhttp3.Response {
+        override fun intercept(chain: okhttp3.Interceptor.Chain): Response {
             val request = chain.request()
             val url = request.url.toString()
 

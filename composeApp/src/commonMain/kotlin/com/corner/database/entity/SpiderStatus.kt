@@ -6,6 +6,6 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "spider_status")
 data class SpiderStatus(
     @PrimaryKey val siteKey: String,
-    val status: String, // 可用状态: AVAILABLE, UNAVAILABLE, UNKNOWN
-    val lastTested: Long = System.currentTimeMillis() // 上次测试时间戳
+    val status: String,
+    val lastTested: Long = System.currentTimeMillis()
 )

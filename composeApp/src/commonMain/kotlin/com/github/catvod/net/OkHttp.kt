@@ -1,8 +1,8 @@
 @file:Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "UNCHECKED_CAST")
 package com.github.catvod.net
 
-import com.corner.util.KtorClient.Companion.getProxy
-import com.corner.util.M3U8AdFilterInterceptor
+import com.corner.util.network.KtorClient.Companion.getProxy
+import com.corner.util.m3u8.M3U8AdFilterInterceptor
 import com.github.catvod.crawler.Spider.Companion.safeDns
 import com.github.catvod.crawler.SpiderDebug
 import com.github.catvod.crawler.SpiderDebug.log

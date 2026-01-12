@@ -1,6 +1,6 @@
 package com.corner.ui.video
 
-import SiteViewModel
+import com.corner.catvodcore.viewmodel.SiteViewModel
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.scrollBy
@@ -55,7 +55,7 @@ import com.corner.init.Init
 import com.corner.init.Init.Companion.initConfig
 import com.corner.ui.nav.vm.VideoViewModel
 import com.corner.ui.scene.*
-import com.corner.util.SpiderTestUtil
+import com.corner.util.spider.SpiderTestUtil
 import com.corner.util.isScrollingUp
 import com.seiko.imageloader.ui.AutoSizeImage
 import kotlinx.coroutines.CoroutineScope

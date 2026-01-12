@@ -10,16 +10,16 @@ import java.nio.file.Path
 object Paths {
 //    private val runPath = System.getProperty("user.dir")
     private val classPath = System.getProperty("java.class.path")
-    private val ApplicationName = "Lumen-TV"
+    private const val APPNAME = "Lumen-TV"
     private val log = LoggerFactory.getLogger("Paths")
 
     private val userDataDir = getUserDataDir()
 
     private fun getUserDataDir() = run {
         when (UserDataDirProvider.currentOs) {
-            OperatingSystem.Windows -> File(System.getenv("AppData"), "$ApplicationName/cache")
-            OperatingSystem.Linux -> File(System.getProperty("user.home"), ".cache/$ApplicationName")
-            OperatingSystem.MacOS -> File(System.getProperty("user.home"), "Library/Caches/$ApplicationName")
+            OperatingSystem.Windows -> File(System.getenv("AppData"), "$APPNAME/cache")
+            OperatingSystem.Linux -> File(System.getProperty("user.home"), ".cache/$APPNAME")
+            OperatingSystem.MacOS -> File(System.getProperty("user.home"), "Library/Caches/$APPNAME")
             OperatingSystem.Unknown -> throw RuntimeException("未知操作系统")
         }
     }

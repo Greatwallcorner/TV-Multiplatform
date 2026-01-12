@@ -1,6 +1,6 @@
 package com.corner.ui.nav.vm
 
-import SiteViewModel
+import com.corner.catvodcore.viewmodel.SiteViewModel
 import androidx.compose.runtime.mutableStateOf
 import com.corner.catvodcore.bean.Site
 import com.corner.catvodcore.bean.Vod
@@ -86,7 +86,7 @@ class VideoViewModel : BaseViewModel() {
                 }
 
                 if (!_state.value.homeLoaded) {
-                    val home = GlobalAppState.home.value
+                    val home = home.value
                     if (home.isEmpty()) {
                         log.debug("主页配置为空")
                         isLoading.value = false
@@ -322,7 +322,7 @@ class VideoViewModel : BaseViewModel() {
             } else {
                 state.value.page.set(1)
                 val result = SiteViewModel.categoryContent(
-                    GlobalAppState.home.value.key,
+                    home.value.key,
                     type.typeId,
                     state.value.page.get().toString(),
                     false,

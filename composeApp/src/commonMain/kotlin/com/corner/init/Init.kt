@@ -26,8 +26,8 @@ import org.koin.core.context.startKoin
 import org.slf4j.LoggerFactory
 import androidx.compose.runtime.State
 import com.corner.catvodcore.viewmodel.GlobalAppState.resetAllStates
-import com.corner.util.BrowserUtils
-import com.corner.util.SpiderTestUtil
+import com.corner.util.play.BrowserUtils
+import com.corner.util.spider.SpiderTestUtil
 
 private val log = LoggerFactory.getLogger("Init")
 
@@ -135,7 +135,7 @@ class Init {
                     cfg = siteConfig,
                     isJson = false,
                     onSuccess = { _isInitializedSuccessfully.value = true },
-                    onError = { e ->
+                    onError = { _ ->
                         _isInitializedSuccessfully.value = false
                     }
                 ).init()
@@ -149,7 +149,7 @@ class Init {
                         cfg = siteConfig,
                         isJson = true,
                         onSuccess = { _isInitializedSuccessfully.value = true },
-                        onError = { e ->
+                        onError = { _ ->
                             _isInitializedSuccessfully.value = false
                         }
                     ).init()

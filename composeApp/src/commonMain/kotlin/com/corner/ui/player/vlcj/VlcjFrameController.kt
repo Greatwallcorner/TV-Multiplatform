@@ -11,7 +11,7 @@ import com.corner.ui.player.BitmapPool
 import com.corner.ui.player.PlayerController
 import com.corner.ui.player.PlayerLifecycleManager
 import com.corner.ui.player.frame.FrameRenderer
-import com.corner.util.BrowserUtils.scope
+import com.corner.util.play.BrowserUtils.scope
 import com.corner.util.thisLogger
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -106,7 +106,7 @@ class VlcjFrameController(
             override fun allocatedBuffers(buffers: Array<out ByteBuffer>) {
                 byteArray = ByteArray(buffers[0].limit())
             }
-        }, object : RenderCallback {
+            }, object : RenderCallback {
             override fun lock(mediaPlayer: MediaPlayer?) {
             }
 

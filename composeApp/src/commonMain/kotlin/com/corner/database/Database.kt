@@ -20,13 +20,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.module.Module
 
-//expect class DriverFactory {
-//    fun createDriver(): SqlDriver
-//}
-//expect fun appModule():Module
-
-
-
 object Db:KoinComponent{
     const val SYMBOL = "@@@"
     val database by inject<TvDatabase>()

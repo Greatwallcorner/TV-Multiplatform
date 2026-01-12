@@ -1,4 +1,4 @@
-import com.corner.util.M3U8FilterConfig
+import com.corner.util.m3u8.M3U8FilterConfig
 import org.slf4j.LoggerFactory
 
 // 基于 ltxlong 的 JavaScript 项目 M3U8-Filter-Ad-Script (MIT License) 重构为 Kotlin

@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.corner.ui.nav.data.DialogState
 import com.corner.ui.nav.vm.DetailViewModel
-import com.corner.util.BrowserUtils
+import com.corner.util.play.BrowserUtils
 import org.slf4j.LoggerFactory
 
 private val pngLog = LoggerFactory.getLogger("PngFoundDialog")

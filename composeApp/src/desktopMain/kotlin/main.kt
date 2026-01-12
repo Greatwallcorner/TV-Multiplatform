@@ -20,10 +20,7 @@ import com.corner.ui.Util
 import com.corner.ui.scene.SnackBar
 import com.seiko.imageloader.LocalImageLoader
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import lumentv_compose.composeapp.generated.resources.LumenTV_icon_png
 import org.jetbrains.compose.resources.painterResource
 import org.slf4j.LoggerFactory
@@ -58,14 +55,13 @@ fun main() {
             undecorated = true,
             transparent = false,
         ) {
-            window.minimumSize = Dimension(700, 600)
+            window.minimumSize = Dimension(800, 600)
             CompositionLocalProvider(
                 LocalImageLoader provides remember { generateImageLoader() },
                 LocalContextMenuRepresentation provides remember { contextMenuRepresentation },
             ) {
-                RootContent(modifier = Modifier.fillMaxSize())
+                RootContent()
             }
-
             scope.launch {
                 GlobalAppState.closeApp.collect {
                     if (it) {

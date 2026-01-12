@@ -1,6 +1,6 @@
 package com.corner.catvodcore.util
 
-import com.corner.util.KtorClient
+import com.corner.util.network.KtorClient
 import com.github.catvod.bean.Doh
 import kotlinx.serialization.json.Json
 import okhttp3.*

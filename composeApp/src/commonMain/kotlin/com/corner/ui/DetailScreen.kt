@@ -1,6 +1,6 @@
 package com.corner.ui
 
-import SiteViewModel
+import com.corner.catvodcore.viewmodel.SiteViewModel
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -62,10 +62,15 @@ import com.corner.ui.nav.data.DetailScreenState
 import com.corner.ui.nav.data.DialogState
 import com.corner.ui.nav.data.DialogState.openDialogState
 import com.corner.ui.nav.vm.DetailViewModel
+import com.corner.ui.player.vlcj.VlcjFrameController
 import com.corner.ui.scene.*
 import com.corner.ui.video.QuickSearchItem
-import com.corner.util.BrowserUtils
+import com.corner.util.play.BrowserUtils
 import com.corner.util.Constants
+import com.corner.util.thisLogger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 
@@ -111,7 +116,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
     var showWebSocketDisconnected by remember { mutableStateOf(false) }
     var localShowPngDialog by remember { mutableStateOf(DialogState.showPngDialog) }
     var localCurrentM3U8Url by remember { mutableStateOf(DialogState.currentM3U8Url) }
-
+    val mrl = derivedStateOf { model.currentPlayUrl } //监听播放地址
     // 监听 DialogState 中的状态变化
     LaunchedEffect(DialogState.showPngDialog, DialogState.currentM3U8Url) {
         localShowPngDialog = DialogState.showPngDialog
@@ -148,28 +153,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
         playerSetting.first() == PlayerType.Innie.id
     }
 
-    // 提取重复的 UI 组件
-    @Composable
-    fun NoPlayerContent(message: String, subtitle: String) {
-        Box(
-            Modifier.fillMaxWidth(videoWidth.value).fillMaxHeight()
-                .background(MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(4.dp))
-                .focusable() // 确保可获取焦点
-                .focusRequester(focus)
-        ) {
-            emptyShow(
-                modifier = Modifier.align(Alignment.Center),
-                title = message,
-                subtitle = subtitle,
-                onRefresh = {
-                    scope.launch {
-                        vm.load()
-                    }
-                },
-                showRefresh = false
-            )
-        }
-    }
 
     Box(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
@@ -248,60 +231,19 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                     )
                 }
             }
-            val mrl = derivedStateOf { model.currentPlayUrl }//监听播放地址
-            //顶栏通知
-            if (openDialogState && showWebSocketDisconnected) {
-                Column(modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .background(MaterialTheme.colorScheme.errorContainer)
-                            .padding(start = 16.dp, end = 16.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "WebSocket连接已断开，请使用Web播放器",
-                                color = MaterialTheme.colorScheme.onErrorContainer,
-                                fontWeight = FontWeight.Medium
-                            )
-                            IconButton(
-                                onClick = { showWebSocketDisconnected = false },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "关闭通知",
-                                    tint = MaterialTheme.colorScheme.onErrorContainer
-                                )
-                            }
-                        }
-                    }
-                    if (openDialogState && showWebSocketDisconnected) {
-                        TopEmptyShow(
-                            title = "当前播放器无法播放",
-                            subtitle = "请使用 Web 播放器；点击选集按钮重新进入浏览器播放，或点击刷新重试",
-                            onRefresh = { scope.launch { vm.load() } },
-                            modifier = Modifier
-                                .height(50.dp)
-                                .fillMaxWidth(),
-                            showIcon = false,
-                            buttonAlignment = ButtonAlignment.RIGHT
-                        )
-                    }
-                }
-            }
+
+            TopNotification(
+                show = showWebSocketDisconnected && openDialogState,
+                vm = vm,
+                scope = scope,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+            )
+
             Row(
                 modifier = Modifier.fillMaxHeight(videoHeight.value)
                     .padding(start = if (isFullScreen.value) 0.dp else 16.dp),//全屏取消左侧缩进
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                // 将弹窗显示逻辑提取到更外层，不受 internalPlayer 限制
                 if (localShowPngDialog && !DialogState.userChoseOpenInBrowser) {
                     PngFoundDialog(
                         m3u8Url = localCurrentM3U8Url,
@@ -325,7 +267,6 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                 }
 
                 if (internalPlayer.value) {
-                    // 检查用户是否选择在浏览器打开，若选择则不显示播放器
                     if (!DialogState.userChoseOpenInBrowser) {
                         if (!openDialogState) {
                             Player(
@@ -339,13 +280,31 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                 focusRequester = focus
                             )
                         } else {
-                            NoPlayerContent(message = "需要使用 Web 播放器播放", subtitle = "请使用 Web 播放器")
+                            NoPlayerContent(
+                                message = "需要使用 Web 播放器播放", subtitle = "请使用 Web 播放器",
+                                videoWidth = videoWidth,
+                                focus = focus,
+                                scope = scope,
+                                vm = vm
+                            )
                         }
                     } else {
-                        NoPlayerContent(message = "正在 Web 播放器中播放", subtitle = "请使用 Web 播放器")
+                        NoPlayerContent(
+                            message = "正在 Web 播放器中播放", subtitle = "请使用 Web 播放器",
+                            videoWidth = videoWidth,
+                            focus = focus,
+                            scope = scope,
+                            vm = vm
+                        )
                     }
                 } else {
-                    NoPlayerContent(message = "正在外部播放器中播放", subtitle = "请使用外部播放器")
+                    NoPlayerContent(
+                        message = "正在外部播放器中播放", subtitle = "请使用外部播放器",
+                        videoWidth = videoWidth,
+                        focus = focus,
+                        scope = scope,
+                        vm = vm
+                    )
                 }
 
                 AnimatedVisibility(!isFullScreen.value, modifier = Modifier.fillMaxSize().padding(end = 16.dp)) {
@@ -771,7 +730,6 @@ private fun VodInfo(detail: Vod?) {
     }
 }
 
-// 可展开描述组件
 @Composable
 private fun ExpandableDescription(
     label: String,
@@ -869,120 +827,152 @@ private fun LabeledText(
 fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
     val model = vm.state.collectAsState()
     val detail = rememberUpdatedState(model.value.detail)
+    val currentEp = model.value.currentEp
+
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(top = 8.dp, end = 10.dp, bottom = 8.dp, start = 8.dp)
     ) {
         // 标题行
-        Row(
+        EpisodeTitleRow(
+            episodeCount = detail.value.currentFlag.episodes.size,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "选集",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-                modifier = Modifier.weight(1f)
-            )
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+        )
 
-            val show by remember { derivedStateOf { detail.value.currentFlag.episodes.isNotEmpty() } }
-            if (show) {
-                Text(
-                    text = "共${detail.value.currentFlag.episodes.size}集",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                )
-            }
-        }
+        // 剧集批次选择
+        EpisodeBatchSelector(
+            epSize = detail.value.currentFlag.episodes.size,
+            currentTabIndex = detail.value.currentTabIndex,
+            onBatchClick = { vm.chooseEpBatch(it) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp)
+        )
 
-        // 剧集批次选择（仅当剧集数量>15时显示）
-        val epSize by remember { derivedStateOf { detail.value.currentFlag.episodes.size } }
-        if (epSize > 15) {
-            val scrollState = rememberLazyListState()
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 4.dp)
-            ) {
-                LazyRow(
-                    state = scrollState,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(bottom = 8.dp)
-                ) {
-                    items((0 until epSize step Constants.EpSize).toList()) { i ->
-                        RatioBtn(
-                            selected = detail.value.currentTabIndex == (i / Constants.EpSize),
-                            onClick = { vm.chooseEpBatch(i) },
-                            text = buildString {
-                                append(i + 1)
-                                append("-")
-                                append(minOf(i + Constants.EpSize, epSize))
-                            },
-                            modifier = Modifier.height(32.dp)
-                        )
-                    }
-                }
-
-                HorizontalScrollbar(
-                    adapter = rememberScrollbarAdapter(scrollState),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .align(Alignment.BottomCenter),
-                    style = LocalScrollbarStyle.current.copy(
-                        unhoverColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                        hoverColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                    )
-                )
-            }
-        }
         val uriHandler = LocalUriHandler.current
         val epList by remember { derivedStateOf { detail.value.subEpisode } }
-        val gridState = rememberLazyGridState()
 
-        Box(
+        EpisodeGrid(
+            episodes = epList,
+            currentEp = currentEp,
+            onEpisodeClick = { episode ->
+                vm.chooseEp(episode) { url ->
+                    uriHandler.openUri(url)
+                }
+                onUserSelectEpisode()
+                DialogState.resetBrowserChoice()
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun EpisodeGrid(
+    episodes: List<Episode>,
+    currentEp: Episode?,
+    onEpisodeClick: (Episode) -> Unit,
+    modifier: Modifier = Modifier,
+    scope: CoroutineScope = rememberCoroutineScope()
+) {
+    val gridState = rememberLazyGridState()
+    var clickedEpisodeUrl by remember { mutableStateOf<String?>(null) }
+
+    Box(modifier = modifier) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(1),
+            state = gridState,
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(end = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(end = 8.dp)
         ) {
-            // 网格列表（占满宽度减去滚动条宽度）
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(1),
-                state = gridState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(end = 12.dp), // 为滚动条预留空间
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(end = 8.dp)
-            ) {
-                items(epList, key = { it.url }) { episode -> // 使用 url 作为唯一 key
-                    EpisodeItem(
-                        isSelected = episode.activated, // 直接使用 activated 状态
-                        episode = episode,
-                        onSelect = {
-                            vm.chooseEp(it) { url ->
-                                uriHandler.openUri(url)
+            items(episodes, key = { it.url }) { episode ->
+                val isCurrentlyLoading = clickedEpisodeUrl == episode.url
+                val index = episodes.indexOf(episode)
+                val isSelected = if (currentEp != null && currentEp.name == episode.name) {
+                    true
+                } else if (currentEp == null && index == 0) {
+                    true
+                } else {
+                    false
+                }
+
+                EpisodeItem(
+                    isSelected = isSelected,
+                    episode = episode,
+                    onSelect = {
+                        clickedEpisodeUrl = episode.url
+                        onEpisodeClick(episode)
+
+                        // 延迟清除点击状态
+                        scope.launch {
+                            delay(1000)
+                            if (clickedEpisodeUrl == episode.url) {
+                                clickedEpisodeUrl = null
                             }
-                            onUserSelectEpisode()
-                            DialogState.resetBrowserChoice()
+                        }
+                    },
+                    isLoading = isCurrentlyLoading
+                )
+            }
+        }
+
+        VerticalScrollbar(
+            adapter = rememberScrollbarAdapter(gridState),
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .width(8.dp),
+            style = LocalScrollbarStyle.current.copy(
+                unhoverColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                hoverColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            )
+        )
+    }
+}
+
+@Composable
+fun EpisodeBatchSelector(
+    epSize: Int,
+    currentTabIndex: Int,
+    onBatchClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (epSize > 15) {
+        val scrollState = rememberLazyListState()
+        Box(modifier = modifier) {
+            LazyRow(
+                state = scrollState,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(bottom = 8.dp)
+            ) {
+                items((0 until epSize step Constants.EpSize).toList()) { i ->
+                    RatioBtn(
+                        selected = currentTabIndex == (i / Constants.EpSize),
+                        onClick = { onBatchClick(i) },
+                        text = buildString {
+                            append(i + 1)
+                            append("-")
+                            append(minOf(i + Constants.EpSize, epSize))
                         },
-                        isLoading = episode.activated && vm.videoLoading.value
+                        modifier = Modifier.height(32.dp)
                     )
                 }
             }
 
-            // 滚动条（固定在右侧）
-            VerticalScrollbar(
-                adapter = rememberScrollbarAdapter(gridState),
+            HorizontalScrollbar(
+                adapter = rememberScrollbarAdapter(scrollState),
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .width(8.dp),
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .align(Alignment.BottomCenter),
                 style = LocalScrollbarStyle.current.copy(
                     unhoverColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
                     hoverColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
@@ -992,6 +982,117 @@ fun EpChooser(vm: DetailViewModel, modifier: Modifier) {
     }
 }
 
+@Composable
+fun EpisodeTitleRow(
+    episodeCount: Int,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "选集",
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            modifier = Modifier.weight(1f)
+        )
+
+        if (episodeCount > 0) {
+            Text(
+                text = "共${episodeCount}集",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun TopNotification(
+    show: Boolean,
+    vm: DetailViewModel,
+    scope: CoroutineScope,
+    modifier: Modifier = Modifier
+) {
+    if (show) {
+        Column(modifier = modifier) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(start = 16.dp, end = 16.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "WebSocket连接已断开，请使用Web播放器",
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        fontWeight = FontWeight.Medium
+                    )
+                    IconButton(
+                        onClick = { /* 处理关闭通知 */ },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "关闭通知",
+                            tint = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+            }
+
+            TopEmptyShow(
+                title = "当前播放器无法播放",
+                subtitle = "请使用 Web 播放器；点击选集按钮重新进入浏览器播放，或点击刷新重试",
+                onRefresh = { scope.launch { vm.load() } },
+                modifier = Modifier
+                    .height(50.dp)
+                    .fillMaxWidth(),
+                showIcon = false,
+                buttonAlignment = ButtonAlignment.RIGHT
+            )
+        }
+    }
+}
+
+@Composable
+fun NoPlayerContent(
+    message: String,
+    subtitle: String,
+    videoWidth: State<Float>,
+    focus: FocusRequester,
+    scope: CoroutineScope,
+    vm: DetailViewModel
+) {
+    Box(
+        Modifier.fillMaxWidth(videoWidth.value).fillMaxHeight()
+            .background(MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(4.dp))
+            .focusable() // 确保可获取焦点
+            .focusRequester(focus)
+    ) {
+        emptyShow(
+            modifier = Modifier.align(Alignment.Center),
+            title = message,
+            subtitle = subtitle,
+            onRefresh = {
+                scope.launch {
+                    vm.load()
+                }
+            },
+            showRefresh = false
+        )
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -1001,6 +1102,32 @@ fun EpisodeItem(
     onSelect: (Episode) -> Unit,
     isLoading: Boolean
 ) {
+    // 管理实际的加载状态，确保至少显示1秒
+    var actualLoadingState by remember { mutableStateOf(false) }
+    var loadingStartTime by remember { mutableStateOf<Long?>(null) }
+
+    // 处理加载状态变化
+    LaunchedEffect(isLoading) {
+        if (isLoading) {
+            // 开始加载
+            actualLoadingState = true
+            loadingStartTime = System.currentTimeMillis()
+        } else {
+            // 结束加载前检查是否已满1秒
+            val startTime = loadingStartTime
+            if (startTime != null) {
+                val elapsed = System.currentTimeMillis() - startTime
+                val remainingTime = maxOf(0L, 1000L - elapsed) // 至少1秒
+
+                if (remainingTime > 0) {
+                    // 等待剩余时间后结束加载
+                    delay(remainingTime)
+                }
+            }
+            actualLoadingState = false
+        }
+    }
+
     TooltipArea(
         tooltip = {
             Surface(
@@ -1021,7 +1148,7 @@ fun EpisodeItem(
             text = episode.name,
             onClick = { onSelect(episode) },
             selected = isSelected,
-            loading = isLoading,
+            loading = actualLoadingState,
             tag = {
                 if (Utils.isDownloadLink(episode.url)) {
                     Pair(true, "下载")
