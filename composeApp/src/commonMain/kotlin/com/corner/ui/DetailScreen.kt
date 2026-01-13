@@ -83,7 +83,7 @@ fun onUserSelectEpisode() {
 
 @Composable
 fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
-    val model by vm.state.collectAsState()  // 自动响应状态更新
+    val model by vm.state.collectAsState()
     val scope = rememberCoroutineScope()
     val focus = remember { FocusRequester() }
     val detail = model.detail
@@ -268,7 +268,7 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
 
                 if (internalPlayer.value) {
                     if (!DialogState.userChoseOpenInBrowser) {
-                        if (!openDialogState) {
+                        if (!openDialogState && !vm.isDownloadUrl.value) {
                             Player(
                                 mrl.value,
                                 controller.value,
@@ -278,6 +278,14 @@ fun WindowScope.DetailScene(vm: DetailViewModel, onClickBack: () -> Unit) {
                                     .focusRequester(focus),
                                 vm,
                                 focusRequester = focus
+                            )
+                        } else if (vm.isDownloadUrl.value) {
+                            NoPlayerContent(
+                                message = "下载链接，无法播放", subtitle = "可选择下载",
+                                videoWidth = videoWidth,
+                                focus = focus,
+                                scope = scope,
+                                vm = vm
                             )
                         } else {
                             NoPlayerContent(

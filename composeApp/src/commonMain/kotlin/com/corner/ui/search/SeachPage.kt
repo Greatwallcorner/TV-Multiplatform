@@ -199,7 +199,7 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
                                 modifier = Modifier
                                     .padding(start = 24.dp, top = 12.dp, bottom = 8.dp)
                             )
-// 2. 热搜内容区域
+                            // 2. 热搜内容区域
                             Box(modifier = Modifier.weight(1f)) {
                                 LazyVerticalGrid(
                                     modifier = Modifier
@@ -224,34 +224,6 @@ fun WindowScope.SearchPage(vm: SearchViewModel, onClickBack: () -> Unit, onSearc
                             }
                         }
                     }
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun HotPanel(modifier: Modifier, hots: List<HotData>, onClick: (HotData) -> Unit) {
-    val hotList by rememberUpdatedState(hots)
-    Column(modifier = modifier) {
-        Text(
-            "热搜",
-            modifier = Modifier.padding(vertical = 5.dp, horizontal = 15.dp),
-            color = MaterialTheme.colorScheme.onBackground,
-            style = MaterialTheme.typography.headlineMedium
-        )
-        LazyHorizontalStaggeredGrid(
-            rows = StaggeredGridCells.Adaptive(80.dp),
-            state = rememberLazyStaggeredGridState(), contentPadding = PaddingValues(10.dp),
-            horizontalItemSpacing = 8.dp,
-            verticalArrangement = Arrangement.spacedBy(5.dp),
-            modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally),
-            userScrollEnabled = true
-        ) {
-            items(hotList.toList(), key = { i -> i.title + i.hashCode() }) { hotData ->
-                HotItem(Modifier.wrapContentHeight(), hotData) {
-                    onClick(it)
                 }
             }
         }

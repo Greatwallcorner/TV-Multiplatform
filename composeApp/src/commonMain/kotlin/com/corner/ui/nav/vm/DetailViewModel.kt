@@ -83,6 +83,7 @@ class DetailViewModel : BaseViewModel() {
     private val playerStateLock = Mutex()
     private var consecutiveLoadFailures = 0
     private val maxConsecutiveFailures = 3
+    var isDownloadUrl = MutableStateFlow<Boolean>(false)
 
     init {
         scope.launch {
@@ -867,7 +868,8 @@ class DetailViewModel : BaseViewModel() {
      * */
     private fun isSpecialVideoLink(ep: Episode): Boolean {
         if (Utils.isDownloadLink(ep.url)) {
-            log.info("播放链接为下载链接,驳回播放请求")
+            isDownloadUrl.value = true
+            log.info("播放链接为下载链接,驳回播放请求，isDownloadUrl:{}", isDownloadUrl.value)
             SnackBar.postMsg("播放链接为下载链接,无法播放", type = SnackBar.MessageType.WARNING)
             return true
         }

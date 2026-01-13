@@ -18,11 +18,23 @@ jobs:
           distribution: 'temurin'
           java-version: 17
           cache: 'gradle'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
       - run: echo ${{needs.set-tag.outputs.tag}}
       - run: ls
       - run: ./gradlew packageReleaseDistributionForCurrentOS
       - run: ./gradlew createReleaseDistributable
       - run: ls && tree ./desktopApp /f
+      - name: build updater
+        shell: pwsh
+        run: |
+          cd Updater
+          go build -o updater.exe main.go
+          cd ..
+      - name: copy updater to app
+        shell: pwsh
+        run: Copy-Item -Path "./Updater/updater.exe" -Destination "./composeApp/build/compose/binaries/main-release/app/LumenTV/updater.exe"
       - name: compress
         shell: pwsh
         run: Compress-Archive -Path "./composeApp/build/compose/binaries/main-release/app/LumenTV" -DestinationPath ./LumenTV-win-${{ needs.set-tag.outputs.tag }}.zip
@@ -46,10 +58,20 @@ jobs:
           distribution: 'temurin'
           java-version: 17
           cache: 'gradle'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
       - run: ls
       - run: chmod +x ./gradlew && ./gradlew packageReleaseDistributionForCurrentOS
       - run: ./gradlew createReleaseDistributable
       - run: ls && tree
+      - name: build updater
+        run: |
+          cd Updater
+          go build -o updater main.go
+          cd ..
+      - name: copy updater to app
+        run: cp ./Updater/updater ./composeApp/build/compose/binaries/main-release/app/LumenTV/updater
       - name: compress
         run: cd ./composeApp/build/compose/binaries/main-release/app && zip -q -r ./LumenTV-linux-${{ needs.set-tag.outputs.tag }}.zip ./LumenTV
       - name: move file
@@ -72,10 +94,20 @@ jobs:
           distribution: 'temurin'
           java-version: 17
           cache: 'gradle'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
       - run: ls
       - run: chmod +x ./gradlew && ./gradlew packageReleaseDistributionForCurrentOS
       - run: ./gradlew createReleaseDistributable
       - run: ls
+      - name: build updater
+        run: |
+          cd Updater
+          go build -o updater main.go
+          cd ..
+      - name: copy updater to app
+        run: cp ./Updater/updater ./composeApp/build/compose/binaries/main-release/app/LumenTV/updater
       - name: compress
         run: zip -q -r ./LumenTV-mac-${{ needs.set-tag.outputs.tag }}.zip ./composeApp/build/compose/binaries/main-release/app
       - name: move file
@@ -94,6 +126,25 @@ jobs:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
       - run: ls && tree
+      - name: generate version.json
+        run: |
+          cat > version.json << EOF
+          {
+            "version": "${{ needs.set-tag.outputs.tag }}",
+            "windows": {
+              "download_url": "https://github.com/${{ github.repository }}/releases/download/${{ needs.set-tag.outputs.tag }}/LumenTV-win-${{ needs.set-tag.outputs.tag }}.zip",
+              "msi_url": "https://github.com/${{ github.repository }}/releases/download/${{ needs.set-tag.outputs.tag }}/LumenTV-win-${{ needs.set-tag.outputs.tag }}.msi"
+            },
+            "linux": {
+              "download_url": "https://github.com/${{ github.repository }}/releases/download/${{ needs.set-tag.outputs.tag }}/LumenTV-linux-${{ needs.set-tag.outputs.tag }}.zip",
+              "deb_url": "https://github.com/${{ github.repository }}/releases/download/${{ needs.set-tag.outputs.tag }}/LumenTV-linux-${{ needs.set-tag.outputs.tag }}.deb"
+            },
+            "mac": {
+              "download_url": "https://github.com/${{ github.repository }}/releases/download/${{ needs.set-tag.outputs.tag }}/LumenTV-mac-${{ needs.set-tag.outputs.tag }}.zip",
+              "dmg_url": "https://github.com/${{ github.repository }}/releases/download/${{ needs.set-tag.outputs.tag }}/LumenTV-mac-${{ needs.set-tag.outputs.tag }}.dmg"
+            }
+          }
+          EOF
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
@@ -103,6 +154,7 @@ jobs:
             **/*.pkg
             **/*.dmg
             **/*.msi
+            version.json
           tag_name: ${{ needs.set-tag.outputs.tag }}
     permissions:
       contents: write

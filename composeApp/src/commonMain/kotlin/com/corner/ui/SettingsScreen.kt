@@ -526,22 +526,7 @@ fun WindowScope.SettingScene(vm: SettingViewModel, config: M3U8FilterConfig, onC
                                     "格式：\n" +
                                     "file://C:\\\\json\\\\config.json \n" +
                                     "或\n" +
-                                    "http://example.com/config.json \n" +
-                                    "或\n" +
-                                    "{\n" +
-                                    "  \"spider\": \"jar路径;md5;校验值\",\n" +
-                                    "  \"sites\": [\n" +
-                                    "    {\n" +
-                                    "      \"key\": \"唯一标识\",\n" +
-                                    "      \"name\": \"显示名称\",\n" +
-                                    "      \"type\": 3,\n" +
-                                    "      \"api\": \"接口类名\",\n" +
-                                    "      \"searchable\": 0,\n" +
-                                    "      \"changeable\": 0,\n" +
-                                    "      \"ext\": {}\n" +
-                                    "    }\n" +
-                                    "  ]\n" +
-                                    "}",
+                                    "http://example.com/config.json \n",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 4.dp)

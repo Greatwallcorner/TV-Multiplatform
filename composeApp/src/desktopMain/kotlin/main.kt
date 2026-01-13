@@ -16,8 +16,14 @@ import com.corner.catvodcore.util.Utils.printSystemInfo
 import com.corner.catvodcore.viewmodel.GlobalAppState
 import com.corner.init.Init
 import com.corner.init.generateImageLoader
+import com.corner.ui.UpdateDialog
 import com.corner.ui.Util
 import com.corner.ui.scene.SnackBar
+import com.corner.util.update.DownloadProgress
+import com.corner.util.update.UpdateDownloader
+import com.corner.util.update.UpdateLauncher
+import com.corner.util.update.UpdateManager
+import com.corner.util.update.UpdateResult
 import com.seiko.imageloader.LocalImageLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,6 +31,7 @@ import lumentv_compose.composeapp.generated.resources.LumenTV_icon_png
 import org.jetbrains.compose.resources.painterResource
 import org.slf4j.LoggerFactory
 import lumentv_compose.composeapp.generated.resources.Res
+import java.io.File
 import java.awt.Dimension
 
 private val log = LoggerFactory.getLogger("main")
@@ -39,13 +46,24 @@ fun main() {
         )
         GlobalAppState.windowState = windowState
 
+        val scope = rememberCoroutineScope()
+
+        var showUpdateDialog by remember { mutableStateOf(false) }
+        var updateResult by remember { mutableStateOf<UpdateResult.Available?>(null) }
+        var downloadProgress by remember { mutableStateOf<DownloadProgress?>(null) }
+
         LaunchedEffect(Unit) {
             launch(Dispatchers.Default) {
                 Init.start()
             }
+            launch(Dispatchers.IO) {
+                val result = UpdateManager.checkForUpdate()
+                if (result is UpdateResult.Available) {
+                    updateResult = result
+                    showUpdateDialog = true
+                }
+            }
         }
-
-        val scope = rememberCoroutineScope()
 
         val contextMenuRepresentation =
             if (isSystemInDarkTheme()) DarkDefaultContextMenuRepresentation else LightDefaultContextMenuRepresentation
@@ -66,11 +84,8 @@ fun main() {
                 GlobalAppState.closeApp.collect {
                     if (it) {
                         try {
-                            // 1. 隐藏窗口
                             window.isVisible = false
-                            // 2. 保存设置
                             SettingStore.write()
-                            // 3. 清理函数
                             Init.stop()
                         } catch (e: Exception) {
                             log.error("关闭应用异常", e)
@@ -79,6 +94,40 @@ fun main() {
                         }
                     }
                 }
+            }
+
+            if (showUpdateDialog && updateResult != null) {
+                UpdateDialog(
+                    currentVersion = updateResult!!.currentVersion,
+                    latestVersion = updateResult!!.latestVersion,
+                    downloadProgress = downloadProgress,
+                    onDismiss = {
+                        showUpdateDialog = false
+                        downloadProgress = null
+                    },
+                    onUpdate = {
+                        scope.launch(Dispatchers.IO) {
+                            downloadProgress = DownloadProgress.Starting
+                            val tempDir = System.getProperty("java.io.tmpdir")
+                            val zipFile = File(tempDir, "LumenTV-update.zip")
+
+                            try {
+                                UpdateDownloader.downloadUpdateSync(
+                                    updateResult!!.downloadUrl,
+                                    zipFile
+                                ).onSuccess {
+                                    downloadProgress = DownloadProgress.Completed(zipFile)
+                                    UpdateLauncher.launchUpdater(zipFile)
+                                    UpdateLauncher.exitApplication()
+                                }.onFailure { e ->
+                                    downloadProgress = DownloadProgress.Failed(e.message ?: "下载失败")
+                                }
+                            } catch (e: Exception) {
+                                downloadProgress = DownloadProgress.Failed(e.message ?: "下载失败")
+                            }
+                        }
+                    }
+                )
             }
         }
     }
