@@ -127,68 +127,113 @@ func copyFile(src, dst string) error {
 }
 
 func removeAllFiles(dir, excludePath string) error {
-	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+    return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+        // 如果遇到错误，检查是否是"文件不存在"错误
+        if err != nil {
+            // 如果文件不存在，跳过它
+            if os.IsNotExist(err) {
+                return nil
+            }
+            return err
+        }
 
-		if path == dir {
-			return nil
-		}
+        if path == dir {
+            return nil
+        }
 
-		if strings.EqualFold(path, excludePath) {
-			return nil
-		}
+        if strings.EqualFold(path, excludePath) {
+            return nil
+        }
 
-		if info.IsDir() {
-			return os.RemoveAll(path)
-		}
+        if info.IsDir() {
+            return os.RemoveAll(path)
+        }
 
-		return os.Remove(path)
-	})
+        // 删除文件前再次检查文件是否存在
+        if _, err := os.Stat(path); os.IsNotExist(err) {
+            return nil // 文件已经不存在，跳过
+        }
+
+        return os.Remove(path)
+    })
 }
 
 func extractZip(zipPath, dest string) error {
-	r, err := zip.OpenReader(zipPath)
-	if err != nil {
-		return err
-	}
-	defer r.Close()
+    r, err := zip.OpenReader(zipPath)
+    if err != nil {
+        return err
+    }
+    defer r.Close()
 
-	for _, f := range r.File {
-		fpath := filepath.Join(dest, f.Name)
+    // 检测是否有统一的根目录
+    rootFolder := detectRootFolder(r)
 
-		if f.FileInfo().IsDir() {
-			os.MkdirAll(fpath, f.Mode())
-			continue
-		}
+    for _, f := range r.File {
+        var fpath string
+        if rootFolder != "" && strings.HasPrefix(f.Name, rootFolder+"/") {
+            // 如果有统一的根目录，去掉这一层
+            relativePath := f.Name[len(rootFolder)+1:]
+            fpath = filepath.Join(dest, relativePath)
+        } else {
+            fpath = filepath.Join(dest, f.Name)
+        }
 
-		if err := os.MkdirAll(filepath.Dir(fpath), 0755); err != nil {
-			return err
-		}
+        if f.FileInfo().IsDir() {
+            os.MkdirAll(fpath, f.Mode())
+            continue
+        }
 
-		outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-		if err != nil {
-			return err
-		}
+        if err := os.MkdirAll(filepath.Dir(fpath), 0755); err != nil {
+            return err
+        }
 
-		rc, err := f.Open()
-		if err != nil {
-			outFile.Close()
-			return err
-		}
+        outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+        if err != nil {
+            return err
+        }
 
-		_, err = io.Copy(outFile, rc)
-		rc.Close()
-		outFile.Close()
+        rc, err := f.Open()
+        if err != nil {
+            outFile.Close()
+            return err
+        }
 
-		if err != nil {
-			return err
-		}
-	}
+        _, err = io.Copy(outFile, rc)
+        rc.Close()
+        outFile.Close()
 
-	return nil
+        if err != nil {
+            return err
+        }
+    }
+
+    return nil
 }
+
+// 检测ZIP文件是否有一个统一的根目录
+func detectRootFolder(r *zip.ReadCloser) string {
+    folderCount := make(map[string]int)
+
+    for _, f := range r.File {
+        parts := strings.Split(strings.Trim(f.Name, "/"), "/")
+        if len(parts) > 0 && parts[0] != "" {
+            folderCount[parts[0]]++
+        }
+    }
+
+    // 如果只有一个顶级文件夹，且该文件夹包含大部分文件，则认为是统一的根目录
+    if len(folderCount) == 1 {
+        for folder, count := range folderCount {
+            totalFiles := len(r.File)
+            if count == totalFiles || float64(count)/float64(totalFiles) > 0.8 {
+                return folder
+            }
+        }
+    }
+
+    return ""
+}
+
 
 func restoreBackup(backupPath, destPath string) error {
 	fmt.Println("Restoring backup...")

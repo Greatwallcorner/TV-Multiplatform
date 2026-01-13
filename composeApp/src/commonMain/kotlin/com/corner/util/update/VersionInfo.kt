@@ -7,7 +7,8 @@ data class VersionInfo(
     val version: String,
     val windows: PlatformInfo? = null,
     val linux: PlatformInfo? = null,
-    val mac: PlatformInfo? = null
+    val mac: PlatformInfo? = null,
+    val updater_url: String? = null
 )
 
 @Serializable

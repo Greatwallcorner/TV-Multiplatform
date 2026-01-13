@@ -1,0 +1,96 @@
+name: Build Updater
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-updater:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            binary_name: updater
+            output_name: updater-linux-amd64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm64
+            binary_name: updater
+            output_name: updater-linux-arm64
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+            binary_name: updater.exe
+            output_name: updater-windows-amd64.exe
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+            binary_name: updater
+            output_name: updater-macos-amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+            binary_name: updater
+            output_name: updater-macos-arm64
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+        cache: true
+
+    - name: Build updater for ${{ matrix.goos }}/${{ matrix.goarch }}
+      working-directory: ./Updater
+      run: |
+        go mod tidy
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -o ${{ matrix.binary_name }} .
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+
+    - name: Upload binaries
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.output_name }}
+        path: ./Updater/${{ matrix.binary_name }}
+
+  create-release:
+    needs: build-updater
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./artifacts
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ./artifacts/*/updater*
+        name: Updater v${{ github.ref_name }}
+        tag_name: ${{ github.ref }}
+        body: |
+          ## 更新程序二进制文件
+          
+          此版本包含适用于不同操作系统的更新程序：
+          
+          - `updater-linux-amd64` - Linux AMD64 架构
+          - `updater-linux-arm64` - Linux ARM64 架构  
+          - `updater-windows-amd64.exe` - Windows AMD64 架构
+          - `updater-macos-amd64` - macOS AMD64 架构
+          - `updater-macos-arm64` - macOS ARM64 架构
+        draft: false
+        prerelease: false

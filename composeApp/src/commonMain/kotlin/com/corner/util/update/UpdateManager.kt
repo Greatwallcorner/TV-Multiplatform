@@ -29,13 +29,16 @@ class UpdateManager {
 
                     val hasUpdate = compareVersions(CURRENT_VERSION, versionInfo.version) < 0
 
+                    log.debug("Current version: $CURRENT_VERSION, Latest version: ${versionInfo.version}")
+
                     if (hasUpdate) {
                         val platformInfo = getPlatformInfo(versionInfo)
                         if (platformInfo != null) {
                             UpdateResult.Available(
                                 versionInfo.version,
                                 CURRENT_VERSION,
-                                platformInfo.download_url
+                                platformInfo.download_url,
+                                versionInfo.updater_url
                             )
                         } else {
                             log.warn("No platform info found for current OS")
@@ -61,8 +64,12 @@ class UpdateManager {
         }
 
         private fun compareVersions(current: String, latest: String): Int {
-            val currentParts = current.split(".").map { it.toIntOrNull() ?: 0 }
-            val latestParts = latest.split(".").map { it.toIntOrNull() ?: 0 }
+            // 清理版本字符串，移除可能的前缀
+            val cleanCurrent = cleanVersion(current)
+            val cleanLatest = cleanVersion(latest)
+
+            val currentParts = cleanCurrent.split(".").map { it.toIntOrNull() ?: 0 }
+            val latestParts = cleanLatest.split(".").map { it.toIntOrNull() ?: 0 }
 
             val maxLength = maxOf(currentParts.size, latestParts.size)
 
@@ -77,6 +84,11 @@ class UpdateManager {
 
             return 0
         }
+
+        private fun cleanVersion(version: String): String {
+            // 移除常见的版本前缀，如 "v", "V", "ver" 等
+            return version.trim().removePrefix("v").removePrefix("V").removePrefix("ver").trimStart('.')
+        }
     }
 }
 
@@ -84,7 +96,8 @@ sealed class UpdateResult {
     data class Available(
         val latestVersion: String,
         val currentVersion: String,
-        val downloadUrl: String
+        val downloadUrl: String,
+        val updaterUrl: String? = null
     ) : UpdateResult()
 
     object NoUpdate : UpdateResult()

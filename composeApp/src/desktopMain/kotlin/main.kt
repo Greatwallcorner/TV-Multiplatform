@@ -117,8 +117,10 @@ fun main() {
                                     zipFile
                                 ).onSuccess {
                                     downloadProgress = DownloadProgress.Completed(zipFile)
-                                    UpdateLauncher.launchUpdater(zipFile)
-                                    UpdateLauncher.exitApplication()
+                                    scope.launch {
+                                        UpdateLauncher.launchUpdater(zipFile, updateResult!!.updaterUrl)
+                                        UpdateLauncher.exitApplication()
+                                    }
                                 }.onFailure { e ->
                                     downloadProgress = DownloadProgress.Failed(e.message ?: "下载失败")
                                 }
