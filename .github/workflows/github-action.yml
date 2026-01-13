@@ -101,17 +101,38 @@ jobs:
       - run: chmod +x ./gradlew && ./gradlew packageReleaseDistributionForCurrentOS
       - run: ./gradlew createReleaseDistributable
       - run: ls
+
       - name: build updater
         run: |
           cd Updater
           go build -o updater main.go
           cd ..
+
+      - name: debug app structure
+        run: |
+          echo "Checking app path..."
+          ls -la ./composeApp/build/compose/binaries/main-release/dmg/
+          if [ -d "./composeApp/build/compose/binaries/main-release/dmg/LumenTV.app" ]; then
+            echo "LumenTV.app found!"
+            ls -la "./composeApp/build/compose/binaries/main-release/dmg/LumenTV.app/Contents/"
+          else
+            echo "ERROR: LumenTV.app not found!"
+            exit 1
+          fi
+
       - name: copy updater to app
-        run: cp ./Updater/updater ./composeApp/build/compose/binaries/main-release/app/LumenTV/updater
+        run: |
+          APP_PATH="./composeApp/build/compose/binaries/main-release/dmg/LumenTV.app"
+          mkdir -p "$APP_PATH/Contents/Resources/"
+          cp ./Updater/updater "$APP_PATH/Contents/Resources/updater"
+          chmod +x "$APP_PATH/Contents/Resources/updater"
+
       - name: compress
-        run: zip -q -r ./LumenTV-mac-${{ needs.set-tag.outputs.tag }}.zip ./composeApp/build/compose/binaries/main-release/app
+        run: zip -q -r ./LumenTV-mac-${{ needs.set-tag.outputs.tag }}.zip ./composeApp/build/compose/binaries/main-release/dmg/LumenTV.app
+
       - name: move file
         run: mv ./composeApp/build/compose/binaries/main-release/dmg/*.dmg ./LumenTV-mac-${{ needs.set-tag.outputs.tag }}.dmg
+
       - run: ls
       - uses: actions/upload-artifact@v4
         with:
