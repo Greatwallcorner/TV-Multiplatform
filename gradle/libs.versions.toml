@@ -1,17 +1,17 @@
 [versions]
-compose = "1.8.0-beta01"
-androidx-lifecycle = "2.8.0-rc03"
+compose = "1.10.0"
+androidx-lifecycle = "2.9.6"
 junit = "4.13.2"
-kotlin = "2.1.10"
-vlcj = "4.10.1"
+kotlin = "2.3.0"
+vlcj = "4.12.1"
 app-version = "1.2.5"
-sqldelight = "2.0.2"
 conveyor = "2.1"
-room = "2.7.0-alpha13"
-room-sqlite-bundled = "2.5.0-alpha13"
-ksp = "2.1.10-1.0.29"
-jupnp = "3.0.3"
-androidx-navigation = "2.7.0-alpha06"
+room = "2.8.4"
+room-sqlite-bundled = "2.6.2"
+#ksp = "2.1.10-1.0.29"
+ksp = "2.3.3"
+jupnp = "3.0.4"
+androidx-navigation = "2.9.1"
 jetty = "12.0.16"
 image-loader = '1.10.0'
 
@@ -50,7 +50,7 @@ jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+#sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 conveyor = { id = "dev.hydraulic.conveyor", version.ref = "conveyor" }
 room = { id = "androidx.room", version.ref = "room" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

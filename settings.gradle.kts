@@ -15,8 +15,8 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        kotlin("jvm") version "2.1.20"
-        id("com.google.devtools.ksp") version "2.1.10-1.0.29"
+        kotlin("jvm") version "2.3.0"
+        id("com.google.devtools.ksp") version "2.3.3"
     }
 }
 plugins {

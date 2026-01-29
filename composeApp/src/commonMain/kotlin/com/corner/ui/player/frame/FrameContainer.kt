@@ -39,7 +39,7 @@ import tv_multiplatform.composeapp.generated.resources.Res
 import tv_multiplatform.composeapp.generated.resources.TV_icon_x
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class, InternalFoundationApi::class)
 @Composable
 fun FrameContainer(
     modifier: Modifier = Modifier,

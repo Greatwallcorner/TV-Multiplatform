@@ -61,7 +61,7 @@ class DetailViewModel : BaseViewModel() {
     fun updateHistory(it: History) {
         if (StringUtils.isNotBlank(state.value.detail.site?.key)) {
             scope.launch {
-                Db.History.update(it.copy(createTime = Clock.System.now().toEpochMilliseconds()))
+                Db.History.update(it.copy(createTime = System.currentTimeMillis()))
             }
         }
     }

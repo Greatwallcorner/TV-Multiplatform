@@ -27,29 +27,29 @@ import java.nio.file.Paths
 
 private val log = LoggerFactory.getLogger("apiConfig")
 
-object ApiConfig{
+object ApiConfig {
     private val scope = createCoroutineScope()
     var apiFlow = MutableStateFlow(Api(spider = ""))
-    var api:Api = apiFlow.value
+    var api: Api = apiFlow.value
 
     init {
         collectApi()
     }
 
-    private fun collectApi(){
+    private fun collectApi() {
         scope.launch {
-            apiFlow.collect{api = it}
+            apiFlow.collect { api = it }
         }
     }
 
-    fun clear(){
+    fun clear() {
         apiFlow.value = Api(spider = "")
     }
 
     fun parseConfig(cfg: Config, isJson: Boolean): Api {
         log.info("parseConfig start cfg:{} isJson:{}", cfg, isJson)
         val data = getData(if (isJson) cfg.json ?: "" else cfg.url!!, isJson) ?: throw RuntimeException("配置读取异常")
-        if(StringUtils.isBlank(data)) {
+        if (StringUtils.isBlank(data)) {
             log.warn("配置数据为空")
             SnackBar.postMsg("配置数据为空 请检查")
             setHome(null)
@@ -57,11 +57,11 @@ object ApiConfig{
         }
         val apiConfig = Jsons.decodeFromString<Api>(data)
         apiFlow.update { apiConfig }
-        apiFlow.update { ap ->  ap.copy(url = cfg.url, data = data, cfg = cfg, ref = ap.ref+1)}
+        apiFlow.update { ap -> ap.copy(url = cfg.url, data = data, cfg = cfg, ref = ap.ref + 1) }
         JarLoader.loadJar("", apiConfig.spider)
-        if(cfg.home?.isNotBlank() == true) {
+        if (cfg.home?.isNotBlank() == true) {
             setHome(api.sites.find { it.key == cfg.home })
-        }else{
+        } else {
             setHome(api.sites.first())
         }
         scope.launch {
@@ -71,8 +71,8 @@ object ApiConfig{
         return apiConfig
     }
 
-    fun setHome(home:Site?){
-        GlobalAppState.home.value = home ?: Site.get("","")
+    fun setHome(home: Site?) {
+        GlobalAppState.home.value = home ?: Site.get("", "")
     }
 
     fun getSpider(site: Site): Spider {
@@ -88,10 +88,10 @@ object ApiConfig{
         site.api,
         site.ext,
         site.jar
-    ) else*/ if (csp) JarLoader.getSpider(site.key, site.api, site.ext , site.jar ?: "") else Spider()
+    ) else*/ if (csp) JarLoader.getSpider(site.key, site.api, site.ext, site.jar ?: "") else Spider()
     }
 
-    fun getSite(key:String): Site? {
+    fun getSite(key: String): Site? {
         return api.sites.find { it.key == key }
     }
 
@@ -112,12 +112,12 @@ object ApiConfig{
         if (ext.startsWith("file")) {
             return Files.readString(Paths.get(Urls.convert(ext)))
         }
-        if (ext.endsWith(".js") || ext.endsWith(".json") || ext.endsWith(".txt")) return parseExt(
-            Urls.convert(
+        if (ext.endsWith(".js") || ext.endsWith(".json") || ext.endsWith(".txt")) {
+            return Urls.convert(
                 api.url ?: "",
                 ext
             )
-        )
+        }
         return ext
     }
 
@@ -154,7 +154,7 @@ object ApiConfig{
                 return Files.readString(file.toPath())
             }
         } catch (e: Exception) {
-            SnackBar.postMsg("获取配置失败: "+e.message)
+            SnackBar.postMsg("获取配置失败: " + e.message)
             log.error("获取配置失败", e)
             return ""
         }

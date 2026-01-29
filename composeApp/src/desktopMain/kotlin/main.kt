@@ -3,6 +3,7 @@ import androidx.compose.foundation.LightDefaultContextMenuRepresentation
 import androidx.compose.foundation.LocalContextMenuRepresentation
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,6 +67,7 @@ fun main() {
             CompositionLocalProvider(
                 LocalImageLoader provides remember { generateImageLoader() },
                 LocalContextMenuRepresentation provides remember { contextMenuRepresentation },
+                LocalTextStyle provides LocalTextStyle.current.copy(),
             ) {
                 RootContent(modifier = Modifier.fillMaxSize())
             }
